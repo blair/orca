@@ -1,3 +1,14 @@
+Have Orca's pages look much nicer.  Check out some of our competition
+from Cacti:
+
+    http://www.raxnet.net/products/cacti/
+    http://www.bigspring.k12.pa.us/cacti/graph_view.php?action=tree&tree_id=31&leaf_id=408&select_first=true
+
+Remove the warnings that procallator generates when it runs.
+
+See how much work there is to do (if any) in getting procallator to
+run on Linux 2.6 kernels.
+
 From Hans-Werner Jouy:
 
     Is it possilbe to use different config files with a "include

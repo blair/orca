@@ -1,6 +1,6 @@
 ##
 ##
-## Orca_services: a log generating services usage monitor
+## Orca_Services: a log generating services usage monitor
 ##
 ##
 
@@ -22,29 +22,29 @@
 ##
 
 PERL_SCRIPTS
-	orca_services_running
-		warn if orca_services files are not up to date.
+	Orca_Services_running
+		warn if Orca_Services files are not up to date.
 		Not changed by canau.
-	orca_services
+	Orca_Services
 		main data collector
 
 SHELL_SCRIPTS
-	restart_orca_services
+	restart_Orca_Services
 		guess!
-	stop_orca_services
+	stop_Orca_Services
 		I'll give you a hint... stopping
-	start_orca_services
+	start_Orca_Services
 		need a hint, look above
-	S99orca_services
-		used for automatic start of orca_services
+	S99Orca_Services
+		used for automatic start of Orca_Services
 
 Other Files:
- 	orca_services.cfg
+ 	Orca_Services.cfg
 
 		Configuration of services to monitor
 		graph details etc
 
-        $libdir/orca_services.$HOSTNAME
+        $libdir/Orca_Services.$HOSTNAME
                 services can be disabled editing this file.
                 $libdir defaults to /usr/local/lib
 
@@ -52,7 +52,7 @@ Other Files:
                 the switch for input file and setting it to off: ex:
                 --smtp_logfile=off
 
-        $libdir/orca_services.DB.$HOSTNAME
+        $libdir/Orca_Services.DB.$HOSTNAME
                 $libdir defaults to /usr/local/lib
                 auth info for accessing database
                 SYNTAX:  proto:drv:database:user:pass
@@ -75,16 +75,16 @@ radius stats via the "--radius_db=off" parameter
    make
    make install
 
-   * if orca_services should run at boottime
+   * if Orca_Services should run at boottime
 
-   make orca_services_run_at_boot
+   make Orca_Services_run_at_boot
 
-   Most of the skeleton code of orca_services comes from orcallator. So
+   Most of the skeleton code of Orca_Services comes from orcallator. So
    everything is very similar.
 
-4) You might need to edit orca_services to suit your needs. Look for
+4) You might need to edit Orca_Services to suit your needs. Look for
    code need the ATTENTION string.  You'll probably need to edit
-   orca_services.cfg.in.
+   Orca_Services.cfg.in.
 
 
 ###########################################################################
@@ -121,13 +121,13 @@ DISABLE: --pop_logfile=off
 
 RADIUS FROM DATABASE
 --------------------
-DEFAULT: $def_radius_auth = "/usr/local/lib/orca_services.DB.$nodename";
+DEFAULT: $def_radius_auth = "/usr/local/lib/Orca_Services.DB.$nodename";
 DISABLE: --radius_db=off
 
 
 	Reads Radius stop records from Database and do stats.  You
 	might need to change the SQL query in the code.  You'll have
-	to create the orca_services.DB.$hostname file with the database
+	to create the Orca_Services.DB.$hostname file with the database
 	options.
 
 MAILQ

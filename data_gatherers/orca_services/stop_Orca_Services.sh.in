@@ -12,16 +12,16 @@ else
     PSCMD="/usr/ucb/ps" # Solaris
 fi
 
-pids=`$PSCMD auxww | $AWK '/orca_services/ && !/awk/ && !/stop_orca_services/ && !/ \/etc\/init\.d/ && !/ \/etc\/rc/ {print $2}'`
+pids=`$PSCMD auxww | $AWK '/Orca_Services/ && !/awk/ && !/stop_Orca_Services/ && !/ \/etc\/init\.d/ && !/ \/etc\/rc/ {print $2}'`
 if test "$pids" != ""; then
   echo "Killing pids $pids."
   kill -HUP $pids
   sleep 1
-  pids=`$PSCMD auxww | $AWK '/orca_services/ && !/awk/ && !/stop_orca_services/ && !/ \/etc\/init\.d/ && !/ \/etc\/rc/ {print $2}'`
+  pids=`$PSCMD auxww | $AWK '/Orca_Services/ && !/awk/ && !/stop_Orca_Services/ && !/ \/etc\/init\.d/ && !/ \/etc\/rc/ {print $2}'`
   if test "$pids" != ""; then
     kill -TERM $pids
     sleep 1
-    pids=`$PSCMD auxww | $AWK '/orca_services/ && !/awk/ && !/stop_orca_services/ && !/ \/etc\/init\.d/ && !/ \/etc\/rc/ {print $2}'`
+    pids=`$PSCMD auxww | $AWK '/Orca_Services/ && !/awk/ && !/stop_Orca_Services/ && !/ \/etc\/init\.d/ && !/ \/etc\/rc/ {print $2}'`
     if test "$pids" != ""; then
       kill -9 $pids
       sleep 1

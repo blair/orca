@@ -510,14 +510,14 @@ AC_OUTPUT(Makefile
           contrib/rotate_orca_graphs/rotate_orca_graphs.sh
           data_gatherers/Makefile
           $ORCALLATOR_OUTPUT
-          data_gatherers/orca_services/Makefile
-          data_gatherers/orca_services/orca_services.cfg
-          data_gatherers/orca_services/orca_services.pl
-          data_gatherers/orca_services/orca_services_running.pl
-          data_gatherers/orca_services/restart_orca_services.sh
-          data_gatherers/orca_services/start_orca_services.sh
-          data_gatherers/orca_services/stop_orca_services.sh
-          data_gatherers/orca_services/S99orca_services.sh
+          data_gatherers/Orca_Services/Makefile
+          data_gatherers/Orca_Services/Orca_Services.cfg
+          data_gatherers/Orca_Services/Orca_Services.pl
+          data_gatherers/Orca_Services/Orca_Services_running.pl
+          data_gatherers/Orca_Services/restart_Orca_Services.sh
+          data_gatherers/Orca_Services/start_Orca_Services.sh
+          data_gatherers/Orca_Services/stop_Orca_Services.sh
+          data_gatherers/Orca_Services/S99Orca_Services.sh
           docs/Makefile
           lib/Makefile
           packages/Makefile

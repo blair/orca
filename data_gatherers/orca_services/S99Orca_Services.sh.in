@@ -6,19 +6,19 @@ bindir=@bindir@
 
 case "$1" in
 'start')
-	if [ -x $bindir/start_orca_services.sh ]; then
+	if [ -x $bindir/start_Orca_Services.sh ]; then
 		umask 022
-		$bindir/start_orca_services.sh
+		$bindir/start_Orca_Services.sh
 	else
-		echo "$0: $bindir/start_orca_services.sh does not exist or is not executable."
+		echo "$0: $bindir/start_Orca_Services.sh does not exist or is not executable."
 	fi
 	;;
 
 'stop')
-	if [ -x $bindir/stop_orca_services.sh ]; then
-		$bindir/stop_orca_services.sh
+	if [ -x $bindir/stop_Orca_Services.sh ]; then
+		$bindir/stop_Orca_Services.sh
 	else
-		echo "$0: $bindir/stop_orca_services.sh does not exist or is not executable."
+		echo "$0: $bindir/stop_Orca_Services.sh does not exist or is not executable."
 	fi
 	;;
 

@@ -1,4 +1,4 @@
-# Orca configuration file for orca_services files.
+# Orca configuration file for Orca_Services files.
 
 # Require at least this version of Orca.
 require			0.27
@@ -6,7 +6,7 @@ require			0.27
 # base_dir is prepended to the paths find_files, html_dir, rrd_dir,
 # and state_file only if the path does not match the regular
 # expression ^\\?\.{0,2}/, which matches /, ./, ../, and \./.
-base_dir		@RRD_DIR@/orca_services
+base_dir		@RRD_DIR@/Orca_Services
 
 # rrd_dir specifies the location of the generated RRD data files.  If
 # rrd_dir is a relative path, then it is made relative to base_dir if
@@ -18,15 +18,15 @@ rrd_dir			.
 # relative path, then it is made relative to base_dir is base_dir is
 # set.
 state_file		orca.state
-html_dir		@HTML_DIR@/orca_services
+html_dir		@HTML_DIR@/Orca_Services
 
 # By default create .meta tag files for all PNGs or GIFs so that the
 # web browser will automatically reload them.
 expire_images		1
 
 # Find files at the following times:
-#    0:10 to pick up new orca_services files for the new day.
-#    1:00 to pick up late comer orca_services files for the new day.
+#    0:10 to pick up new Orca_Services files for the new day.
+#    1:00 to pick up late comer Orca_Services files for the new day.
 #    6:00 to pick up new files before the working day.
 #   12:00 to pick up new files during the working day.
 #   19:00 to pick up new files after the working day.
@@ -58,11 +58,11 @@ generate_yearly_plot	1
 #   generate a subgroup name, hence all the (?:...) for matching
 #   anything else.
 # interval
-#   The interval here must match the interval used by orca_services to
+#   The interval here must match the interval used by Orca_Services to
 #   record data.  Do not change this, as it has an effect on the
 #   generated RRD data files.
-group orca_services {
-find_files		@VAR_DIR@/orca_services/(.*)/(?:(?:orca_services)|(?:orcaservices))-\d{4}-\d{2}-\d{2}(?:-\d{3,})?(?:\.(?:Z|gz|bz2))?
+group Orca_Services {
+find_files		@VAR_DIR@/Orca_Services/(.*)/(?:(?:Orca_Services)|(?:orcaservices))-\d{4}-\d{2}-\d{2}(?:-\d{3,})?(?:\.(?:Z|gz|bz2))?
 column_description	first_line
 date_source		column_name timestamp
 interval		300
@@ -82,7 +82,7 @@ filename_compare	sub {
 #
 # ATTENTION: change this to your values
 #
-html_top_title		Orca_services Status
+html_top_title		Orca_Services Status
 
 #
 # ATTENTION: change this to your values
@@ -98,19 +98,19 @@ html_page_footer
 
 plot {
 title			%g SMTP Mail Queue
-source			orca_services
+source			Orca_Services
 data			mailq_total
 legend			Msgs. in queue (5m)
 y_legend		Number of Messages
 line_type		line2
 data_min		0
 data_max		U
-href			http://o-s.kpnqwest.pt/orca_services.html#SMTP_Mail_Queue
+href			http://o-s.kpnqwest.pt/Orca_Services.html#SMTP_Mail_Queue
 }
 
 plot {
 title			%g SMTP Messages in 5 minutes
-source			orca_services
+source			Orca_Services
 data			smtp_from
 data			smtp_sent
 legend			Messages In (5m)
@@ -118,12 +118,12 @@ legend			Messages Out (5m)
 y_legend		Number of Messages
 data_min		0
 data_max		U
-href			http://o-s.kpnqwest.pt/orca_services.html#SMTP_Messages_in_5_minutes
+href			http://o-s.kpnqwest.pt/Orca_Services.html#SMTP_Messages_in_5_minutes
 }
 
 plot {
 title			%g SMTP Virus & Spam in 5 minutes
-source			orca_services
+source			Orca_Services
 data			smtp_virus
 data			smtp_spam
 legend			Virus (5m)
@@ -131,12 +131,12 @@ legend			Spam Messages (5m)
 y_legend		Number of Messages
 data_min		0
 data_max		U
-href			http://o-s.kpnqwest.pt/orca_services.html
+href			http://o-s.kpnqwest.pt/Orca_Services.html
 }
 
 plot {
 title			%g SMTP Failed
-source			orca_services
+source			Orca_Services
 data			smtp_torf
 data			smtp_c_ml
 data			smtp_c_rt
@@ -148,12 +148,12 @@ legend			Portmaster Notifies (5m)
 y_legend		Number of Messages
 data_min		0
 data_max		U
-href			http://o-s.kpnqwest.pt/orca_services.html#SMTP_Failed
+href			http://o-s.kpnqwest.pt/Orca_Services.html#SMTP_Failed
 }
 
 plot {
 title			%g SMTP Size
-source			orca_services
+source			Orca_Services
 data			smtp_sizes
 data			smtp_tops
 line_type		area
@@ -163,12 +163,12 @@ legend			Peak 5 minute
 y_legend		Message size (bytes)
 data_min		0
 data_max		U
-href			http://o-s.kpnqwest.pt/orca_services.html#SMTP_Size
+href			http://o-s.kpnqwest.pt/Orca_Services.html#SMTP_Size
 }
 
 plot {
 title			%g SMTP Delay
-source			orca_services
+source			Orca_Services
 data			smtp_delay
 data			smtp_maxd
 line_type		area
@@ -178,12 +178,12 @@ legend			Peak 5 minute
 y_legend		Message Delay (seconds)
 data_min		0
 data_max		U
-href			http://o-s.kpnqwest.pt/orca_services.html#SMTP_Delay
+href			http://o-s.kpnqwest.pt/Orca_Services.html#SMTP_Delay
 }
 
 plot {
 title			%g SMTP Retries and Queueing
-source			orca_services
+source			Orca_Services
 data			smtp_rtrs
 data			smtp_queued
 legend			Retries (5m)
@@ -191,12 +191,12 @@ legend			Messages Queued (5m)
 y_legend		Number of Messages
 data_min		0
 data_max		U
-href			http://o-s.kpnqwest.pt/orca_services.html#SMTP_Retries_and_Queueing
+href			http://o-s.kpnqwest.pt/Orca_Services.html#SMTP_Retries_and_Queueing
 }
 
 plot {
 title			%g SMTP DSN and Undefs
-source			orca_services
+source			Orca_Services
 data			smtp_dsns
 data			smtp_undf
 legend			Number of DSNs (5m)
@@ -204,18 +204,18 @@ legend			Undefined log (5m)
 y_legend		Number of Messages
 data_min		0
 data_max		U
-href			http://o-s.kpnqwest.pt/orca_services.html#SMTP_DSN_and_Undefs
+href			http://o-s.kpnqwest.pt/Orca_Services.html#SMTP_DSN_and_Undefs
 }
 
 plot {
 title			%g SMTP Over Quota in 5 minutes
-source			orca_services
+source			Orca_Services
 data			smtp_overquota
 legend			Over Quota (5m)
 y_legend		Number of Messages
 data_min		0
 data_max		U
-href			http://o-s.kpnqwest.pt/orca_services.html
+href			http://o-s.kpnqwest.pt/Orca_Services.html
 }
 
 
@@ -223,7 +223,7 @@ href			http://o-s.kpnqwest.pt/orca_services.html
 
 plot {
 title			%g MERIT RADIUS AUTH in 5 minutes
-source			orca_services
+source			Orca_Services
 data			radius_auth
 data			radius_auth_ok
 data			radius_auth_nok
@@ -233,12 +233,12 @@ legend			Auth FAILED (5m)
 y_legend		Number of Auth Packets
 data_min		0
 data_max		U
-href			http://o-s.kpnqwest.pt/orca_services.html#MERIT_RADIUS_AUTH_in_5_minutes
+href			http://o-s.kpnqwest.pt/Orca_Services.html#MERIT_RADIUS_AUTH_in_5_minutes
 }
 
 plot {
 title			%g MERIT RADIUS ACCT in 5 minutes
-source			orca_services
+source			Orca_Services
 data			radius_acct_start
 data			radius_acct_stop
 legend			Start records (5m)
@@ -246,12 +246,12 @@ legend			Stop records (5m)
 y_legend		Number of Acct Packets
 data_min		0
 data_max		U
-href			http://o-s.kpnqwest.pt/orca_services.html#MERIT_RADIUS_ACCT_in_5_minutes
+href			http://o-s.kpnqwest.pt/Orca_Services.html#MERIT_RADIUS_ACCT_in_5_minutes
 }
 
 plot {
 title			%g MERIT RADIUS REMOTE AUTH in 5 minutes
-source			orca_services
+source			Orca_Services
 data			radius_rem_auth
 data			radius_rem_auth_ok
 data			radius_rem_auth_nok
@@ -261,25 +261,25 @@ legend			Remote Auth FAILED (5m)
 y_legend		Number of Remote Auth Packets
 data_min		0
 data_max		U
-href			http://o-s.kpnqwest.pt/orca_services.html#MERIT_RADIUS_REMOTE_AUTH_in_5_minutes
+href			http://o-s.kpnqwest.pt/Orca_Services.html#MERIT_RADIUS_REMOTE_AUTH_in_5_minutes
 }
 
 plot {
 title			%g MERIT RADIUS UNDEFS in 5 minutes
-source			orca_services
+source			Orca_Services
 data			radius_undefs
 legend			Undef lines (5m)
 y_legend		Number of undef lines
 data_min		0
 data_max		U
-href			http://o-s.kpnqwest.pt/orca_services.html#MERIT_RADIUS_UNDEFS_in_5_minutes
+href			http://o-s.kpnqwest.pt/Orca_Services.html#MERIT_RADIUS_UNDEFS_in_5_minutes
 }
 
 
 
 plot {
 title			%g POP SESSIONS in 5 minutes
-source			orca_services
+source			Orca_Services
 data			pop_connect
 data			pop_login
 data			pop_logout
@@ -289,12 +289,12 @@ legend			Logout (5m)
 y_legend		Units in 5 minutes
 data_min		0
 data_max		U
-href			http://o-s.kpnqwest.pt/orca_services.html#POP_SESSIONS_in_5_minutes
+href			http://o-s.kpnqwest.pt/Orca_Services.html#POP_SESSIONS_in_5_minutes
 }
 
 plot {
 title			%g POP DENIED in 5 minutes
-source			orca_services
+source			Orca_Services
 data			pop_failure
 data			pop_refused
 legend			Failures (5m)
@@ -302,12 +302,12 @@ legend			Refused (5m)
 y_legend		Units in 5 minutes
 data_min		0
 data_max		U
-href			http://o-s.kpnqwest.pt/orca_services.html#POP_DENIED_in_5_minutes
+href			http://o-s.kpnqwest.pt/Orca_Services.html#POP_DENIED_in_5_minutes
 }
 
 plot {
 title			%g POP FAILURES in 5 minutes
-source			orca_services
+source			Orca_Services
 data			pop_net_error
 data			pop_local_error
 legend			Network errors (5m)
@@ -315,73 +315,73 @@ legend			Local errors (5m)
 y_legend		Units in 5 minutes
 data_min		0
 data_max		U
-href			http://o-s.kpnqwest.pt/orca_services.html#POP_FAILURES_in_5_minutes
+href			http://o-s.kpnqwest.pt/Orca_Services.html#POP_FAILURES_in_5_minutes
 }
 
 plot {
 title			%g POP UNDEFS in 5 minutes
-source			orca_services
+source			Orca_Services
 data			pop_undefs
 legend			Undefs (5m)
 y_legend		Units in 5 minutes
 data_min		0
 data_max		U
-href			http://o-s.kpnqwest.pt/orca_services.html#POP_UNDEFS_in_5_minutes
+href			http://o-s.kpnqwest.pt/Orca_Services.html#POP_UNDEFS_in_5_minutes
 }
 
 plot {
 title			%g Radius time usage
-source			orca_services
+source			Orca_Services
 line_type		line2
 data			rad_time / 60
 legend			Time consumption (5 min)
 y_legend		Minutes
 data_min		0
 data_max		U
-href			http://o-s.kpnqwest.pt/orca_services.html#Radius_time_usage
+href			http://o-s.kpnqwest.pt/Orca_Services.html#Radius_time_usage
 }
 
 plot {
 title			%g Radius accumulated time usage
-source			orca_services
+source			Orca_Services
 line_type		line2
 data			radius_inc_time / 60
 legend			Time consumption (5 min)
 y_legend		Minutes
 data_min		0
 data_max		U
-href			http://o-s.kpnqwest.pt/orca_services.html#Radius_time_usage
+href			http://o-s.kpnqwest.pt/Orca_Services.html#Radius_time_usage
 }
 
 plot {
 title			%g Radius sessions
-source			orca_services
+source			Orca_Services
 line_type		line2
 data			rad_sessions
 legend			Number of Sessions (5 min)
 y_legend		Terminated Sessions
 data_min		0
 data_max		U
-href			http://o-s.kpnqwest.pt/orca_services.html#Radius_sessions
+href			http://o-s.kpnqwest.pt/Orca_Services.html#Radius_sessions
 }
 
 plot {
 title			%g Radius accumulated sessions
-source			orca_services
+source			Orca_Services
 line_type		line2
 data			radius_inc_sessions
 legend			Number of Sessions (5 min)
 y_legend		Terminated Sessions
 data_min		0
 data_max		U
-href			http://o-s.kpnqwest.pt/orca_services.html#Radius_sessions
+href			http://o-s.kpnqwest.pt/Orca_Services.html#Radius_sessions
 }
 
 
 
 plot {
 title			%g NAMED CPU Usage in 10 minutes
-source			orca_services
+source			Orca_Services
 data			dns_cpu_u
 data			dns_cpu_s
 data			dns_ccpu_u
@@ -397,12 +397,12 @@ legend			Child System
 y_legend		Seconds in 10 minutes
 data_min		0
 data_max		U
-href			http://o-s.kpnqwest.pt/orca_services.html#NAMED_CPU_Usage_in_1_hour
+href			http://o-s.kpnqwest.pt/Orca_Services.html#NAMED_CPU_Usage_in_1_hour
 }
 
 plot {
 title			%g NAMED Major queries
-source			orca_services
+source			Orca_Services
 data			dns_a
 data			dns_ptr
 data			dns_mx
@@ -418,12 +418,12 @@ legend			ANY
 y_legend		Units in 10 minutes
 data_min		0
 data_max		U
-href			http://o-s.kpnqwest.pt/orca_services.html#NAMED_Major_queries
+href			http://o-s.kpnqwest.pt/Orca_Services.html#NAMED_Major_queries
 }
 
 plot {
 title			%g NAMED Minor queries
-source			orca_services
+source			Orca_Services
 data			dns_ns
 data			dns_soa
 data			dns_axfr
@@ -442,12 +442,12 @@ legend			OTHER
 y_legend		Units in 10 minutes
 data_min		0
 data_max		U
-href			http://o-s.kpnqwest.pt/orca_services.html#NAMED_Minor_queries
+href			http://o-s.kpnqwest.pt/Orca_Services.html#NAMED_Minor_queries
 }
 
 plot {
 title			%g NAMED Received
-source			orca_services
+source			Orca_Services
 data			dns_rr
 data			dns_rq
 data			dns_rother
@@ -460,12 +460,12 @@ legend			R-OTHER
 y_legend		Units in 10 minutes
 data_min		0
 data_max		U
-href			http://o-s.kpnqwest.pt/orca_services.html#NAMED_Received
+href			http://o-s.kpnqwest.pt/Orca_Services.html#NAMED_Received
 }
 
 plot {
 title			%g NAMED Sent
-source			orca_services
+source			Orca_Services
 data			dns_sans
 data			dns_snaans
 data			dns_snxd
@@ -481,24 +481,24 @@ legend			S-OTHER
 y_legend		Units in 10 minutes
 data_min		0
 data_max		U
-href			http://o-s.kpnqwest.pt/orca_services.html#NAMED_Sent
+href			http://o-s.kpnqwest.pt/Orca_Services.html#NAMED_Sent
 }
 
 plot {
 title			%g HTTP Processes
-source			orca_services
+source			Orca_Services
 data			http_procs
 line_type		line2
 legend			HTTP Processes
 y_legend		Number of processes
 data_min		0
 data_max		U
-href			http://o-s.kpnqwest.pt/orca_services.html#HTTP_Processes
+href			http://o-s.kpnqwest.pt/Orca_Services.html#HTTP_Processes
 }
 
 plot {
 title			%g HTTP requests
-source			orca_services
+source			Orca_Services
 data			http_hits
 data			http_condgets
 data			http_gets
@@ -523,24 +523,24 @@ legend			Undefs
 y_legend		Units in 5 minutes
 data_min		0
 data_max		U
-href			http://o-s.kpnqwest.pt/orca_services.html#HTTP_requests
+href			http://o-s.kpnqwest.pt/Orca_Services.html#HTTP_requests
 }
 
 plot {
 title			%g HTTP Bps
-source			orca_services
+source			Orca_Services
 data			http_Bps
 line_type		line2
 legend			HTTP bandwidth
 y_legend		BYTES per Second
 data_min		0
 data_max		U
-href			http://o-s.kpnqwest.pt/orca_services.html#HTTP_Bps
+href			http://o-s.kpnqwest.pt/Orca_Services.html#HTTP_Bps
 }
 
 plot {
 title			%g HTTP request size
-source			orca_services
+source			Orca_Services
 data			http_1k * 100
 data			http_10k * 100
 data			http_100k * 100
@@ -559,14 +559,14 @@ legend			% of > 1Mb requests
 y_legend		Percent
 data_min		0
 data_max		120
-href			http://o-s.kpnqwest.pt/orca_services.html#HTTP_request_size
+href			http://o-s.kpnqwest.pt/Orca_Services.html#HTTP_request_size
 }
 
 
 
 plot {
 title			%g NNTP Statistics in 5 minutes
-source			orca_services
+source			Orca_Services
 data			nntpcache_connects
 data			nntpcache_groups
 data			nntpcache_articles
@@ -576,12 +576,12 @@ legend			ARTICLEs (5m)
 y_legend		Units in 5 minutes
 data_min		0
 data_max		U
-href			http://o-s.kpnqwest.pt/orca_services.html
+href			http://o-s.kpnqwest.pt/Orca_Services.html
 }
 
 plot {
 title			%g SLAPD Statistics in 5 minutes
-source			orca_services
+source			Orca_Services
 data			slapd_binds
 data			slapd_searchs
 legend			BINDs (5m)
@@ -589,6 +589,6 @@ legend			SRCHs (5m)
 y_legend		Units in 5 minutes
 data_min		0
 data_max		U
-href			http://o-s.kpnqwest.pt/orca_services.html
+href			http://o-s.kpnqwest.pt/Orca_Services.html
 }
 

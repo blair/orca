@@ -1,4 +1,4 @@
-# orca_services.pl, a log generating services usage monitor
+# Orca_Services.pl, a log generating services usage monitor
 #
 # This program logs many different services usage to a log file
 # for later processing.

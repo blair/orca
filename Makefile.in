@@ -50,8 +50,8 @@ install_contrib:
 orcallator_run_at_boot:
 	cd data_gatherers/orcallator && $(MAKE) orcallator_run_at_boot
 
-orca_services_run_at_boot:
-	cd data_gatherers/orca_services && $(MAKE) orca_services_run_at_boot
+Orca_Services_run_at_boot:
+	cd data_gatherers/Orca_Services && $(MAKE) Orca_Services_run_at_boot
 
 test_modules:
 	cd packages && $(MAKE) CFLAGS="$(CFLAGS)" test_modules

@@ -59,15 +59,18 @@ and above CVS.  To get an overview of Subversion, check out
 
 The Orca Subversion repository is located at
 
-   http://svn.orcaware.com:8000/repos/trunk/orca/
+   http://www.orcaware.com/svn/repos/trunk/orca/
 
 with tagged releases located at
 
-   http://svn.orcaware.com:8000/repos/tags/orca/
+   http://www.orcaware.com/svn/repos/tags/orca/
 
 The Subversion home page is at
 
-   http://subversion.tigris.org
+   http://subversion.tigris.org/
+
+You'll need a Subversion client to check out the latest Orca code and
+make commits to the repository.
 
 If you are using Windows, then you can use the Windows binaries
 available at
@@ -76,20 +79,20 @@ available at
 
 Make sure to use the latest svn-*-setup.exe file.
 
-If you are running Unix, then you'll need to compile Subversion for
-yourself.  To get the source code for Subversion, go to
+If you are running Unix, then you'll either need to compile Subversion
+for yourself, or if you're lucky and on a recent enough OS, then it's
+probably a simple download and install.  If you do need to compile it,
+get the source code for Subversion at
 
    http://subversion.tigris.org/servlets/ProjectDocumentList?folderID=260
 
-and download the latest tar.gz.  To build Subversion, read these pages
-
-   http://svn.collab.net/repos/svn/trunk/INSTALL
-   http://subversion.tigris.org/project_source.html
+and download the latest tar.gz.  To build Subversion, read the INSTALL
+file in the tar.gz.
 
 Once you've downloaded and installed Subversion, run the following
 command to check out Orca HEAD:
 
-   % svn co http://svn.orcaware.com:8000/repos/trunk/orca/
+   % svn co http://www.orcaware.com/svn/repos/trunk/orca/
 
 This will create a directory named 'orca' in the current working
 directory.

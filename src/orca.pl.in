@@ -26,7 +26,7 @@ use Cwd;
 # modules to keep all the requiste numbers here.
 use Data::Dumper         @DATA_DUMPER_VER@;
 use Digest::MD5          @DIGEST_MD5_VER@;
-use Math::IntervalSearch @MATH_INTERPOLATE_VER@ qw(interval_search);
+use Math::IntervalSearch @MATH_INTERVALSEARCH_VER@ qw(interval_search);
 use Storable             @STORABLE_VER@;
 use RRDs                 @RRDTOOL_VER@;
 

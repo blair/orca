@@ -1085,8 +1085,8 @@ DATE_PARSE_DIR=TimeDate-1.14
 DATE_PARSE_VER=2.24
 DIGEST_MD5_DIR=Digest-MD5-2.21
 DIGEST_MD5_VER=2.21
-MATH_INTERPOLATE_DIR=Math-Interpolate-1.05
-MATH_INTERPOLATE_VER=1.05
+MATH_INTERVALSEARCH_DIR=Math-Interpolate-1.05
+MATH_INTERVALSEARCH_VER=1.05
 RRDTOOL_DIR=rrdtool-1.0.40
 RRDTOOL_VER=1.000401
 STORABLE_DIR=Storable-2.06
@@ -2833,25 +2833,25 @@ if test "$orca_cv_perl_digest_md5" = no; then
   DISTCLEAN_DIGEST_MD5=distclean_digest_md5
 fi
 
-  echo "$as_me:2836: checking if Perl module Math::Interpolate version $MATH_INTERPOLATE_VER is installed" >&5
-echo $ECHO_N "checking if Perl module Math::Interpolate version $MATH_INTERPOLATE_VER is installed... $ECHO_C" >&6
-  if $PERL ./config/check_for_perl_mod Math::Interpolate $MATH_INTERPOLATE_VER; then
-    orca_cv_perl_math_interpolate=yes
+  echo "$as_me:2836: checking if Perl module Math::IntervalSearch version $MATH_INTERVALSEARCH_VER is installed" >&5
+echo $ECHO_N "checking if Perl module Math::IntervalSearch version $MATH_INTERVALSEARCH_VER is installed... $ECHO_C" >&6
+  if $PERL ./config/check_for_perl_mod Math::IntervalSearch $MATH_INTERVALSEARCH_VER; then
+    orca_cv_perl_math_intervalsearch=yes
 
   else
-    orca_cv_perl_math_interpolate=no
+    orca_cv_perl_math_intervalsearch=no
 
   fi
-  echo "$as_me:2845: result: $orca_cv_perl_math_interpolate" >&5
-echo "${ECHO_T}$orca_cv_perl_math_interpolate" >&6
+  echo "$as_me:2845: result: $orca_cv_perl_math_intervalsearch" >&5
+echo "${ECHO_T}$orca_cv_perl_math_intervalsearch" >&6
 
-test "$ALWAYS_BUILD_PERL_MODULES" && orca_cv_perl_math_interpolate=no
-if test "$orca_cv_perl_math_interpolate" = no; then
-  MAKE_MATH_INTERPOLATE=make_math_interpolate
-  TEST_MATH_INTERPOLATE=test_math_interpolate
-  INSTALL_PERL_MATH_INTERPOLATE=install_perl_math_interpolate
-  CLEAN_MATH_INTERPOLATE=clean_math_interpolate
-  DISTCLEAN_MATH_INTERPOLATE=distclean_math_interpolate
+test "$ALWAYS_BUILD_PERL_MODULES" && orca_cv_perl_math_intervalsearch=no
+if test "$orca_cv_perl_math_intervalsearch" = no; then
+  MAKE_MATH_INTERVALSEARCH=make_math_intervalsearch
+  TEST_MATH_INTERVALSEARCH=test_math_intervalsearch
+  INSTALL_PERL_MATH_INTERVALSEARCH=install_perl_math_intervalsearch
+  CLEAN_MATH_INTERVALSEARCH=clean_math_intervalsearch
+  DISTCLEAN_MATH_INTERVALSEARCH=distclean_math_intervalsearch
 fi
 
   echo "$as_me:2857: checking if Perl module RRDs version $RRDTOOL_VER is installed" >&5
@@ -3410,7 +3410,7 @@ s,@COMPRESS_ZLIB_DIR@,$COMPRESS_ZLIB_DIR,;t t
 s,@DATA_DUMPER_DIR@,$DATA_DUMPER_DIR,;t t
 s,@DATE_PARSE_DIR@,$DATE_PARSE_DIR,;t t
 s,@DIGEST_MD5_DIR@,$DIGEST_MD5_DIR,;t t
-s,@MATH_INTERPOLATE_DIR@,$MATH_INTERPOLATE_DIR,;t t
+s,@MATH_INTERVALSEARCH_DIR@,$MATH_INTERVALSEARCH_DIR,;t t
 s,@RRDTOOL_DIR@,$RRDTOOL_DIR,;t t
 s,@STORABLE_DIR@,$STORABLE_DIR,;t t
 s,@TIME_HIRES_DIR@,$TIME_HIRES_DIR,;t t
@@ -3418,7 +3418,7 @@ s,@COMPRESS_ZLIB_VER@,$COMPRESS_ZLIB_VER,;t t
 s,@DATA_DUMPER_VER@,$DATA_DUMPER_VER,;t t
 s,@DATE_PARSE_VER@,$DATE_PARSE_VER,;t t
 s,@DIGEST_MD5_VER@,$DIGEST_MD5_VER,;t t
-s,@MATH_INTERPOLATE_VER@,$MATH_INTERPOLATE_VER,;t t
+s,@MATH_INTERVALSEARCH_VER@,$MATH_INTERVALSEARCH_VER,;t t
 s,@RRDTOOL_VER@,$RRDTOOL_VER,;t t
 s,@STORABLE_VER@,$STORABLE_VER,;t t
 s,@TIME_HIRES_VER@,$TIME_HIRES_VER,;t t
@@ -3478,11 +3478,11 @@ s,@TEST_DIGEST_MD5@,$TEST_DIGEST_MD5,;t t
 s,@INSTALL_PERL_DIGEST_MD5@,$INSTALL_PERL_DIGEST_MD5,;t t
 s,@CLEAN_DIGEST_MD5@,$CLEAN_DIGEST_MD5,;t t
 s,@DISTCLEAN_DIGEST_MD5@,$DISTCLEAN_DIGEST_MD5,;t t
-s,@MAKE_MATH_INTERPOLATE@,$MAKE_MATH_INTERPOLATE,;t t
-s,@TEST_MATH_INTERPOLATE@,$TEST_MATH_INTERPOLATE,;t t
-s,@INSTALL_PERL_MATH_INTERPOLATE@,$INSTALL_PERL_MATH_INTERPOLATE,;t t
-s,@CLEAN_MATH_INTERPOLATE@,$CLEAN_MATH_INTERPOLATE,;t t
-s,@DISTCLEAN_MATH_INTERPOLATE@,$DISTCLEAN_MATH_INTERPOLATE,;t t
+s,@MAKE_MATH_INTERVALSEARCH@,$MAKE_MATH_INTERVALSEARCH,;t t
+s,@TEST_MATH_INTERVALSEARCH@,$TEST_MATH_INTERVALSEARCH,;t t
+s,@INSTALL_PERL_MATH_INTERVALSEARCH@,$INSTALL_PERL_MATH_INTERVALSEARCH,;t t
+s,@CLEAN_MATH_INTERVALSEARCH@,$CLEAN_MATH_INTERVALSEARCH,;t t
+s,@DISTCLEAN_MATH_INTERVALSEARCH@,$DISTCLEAN_MATH_INTERVALSEARCH,;t t
 s,@MAKE_RRDTOOL@,$MAKE_RRDTOOL,;t t
 s,@TEST_RRDTOOL@,$TEST_RRDTOOL,;t t
 s,@INSTALL_PERL_RRDTOOL@,$INSTALL_PERL_RRDTOOL,;t t

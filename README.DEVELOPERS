@@ -130,20 +130,20 @@ A rough guide to the source tree:
       Files for the configure auto-configuration system.
    contrib/
       Contributed tools.
+   data_gatherers/
+       OS specific data gathering tools.
    docs/
       User documentation.
    lib/
       Perl modules and image files for Orca.
    lib/Orca/
       Perl modules that Orca uses.
-   orcallator/
-      All programs and scripts for the Solaris orcallator.se program.
+   orca/
+      The main Orca script and key utility scripts.
    packages/
       Important Perl modules used by Orca that don't come with Perl.
    patches/
       Patches for the SE toolkit.
-   src/
-      The main Orca script and key utility scripts.
 
 
 

@@ -923,7 +923,7 @@ sub create_html_files {
                                                        $image->subgroup_name);
       my $summarize_name       = "$html_dir/$with_subgroup_name.html";
       my $summarize_html       = Orca::HTMLFile->new($summarize_name,
-                                                     "$html_title_name ZZZ $legend_with_subgroup",
+                                                     "$html_title_name $legend_with_subgroup",
                                                      $config_global{html_page_header},
                                                      $config_global{html_page_footer});
       unless ($summarize_html) {

@@ -759,14 +759,14 @@ raw_disk_update() {
 
   kc[0] = kstat_open();
   // Read them.
-  if (kstat_read(kc,kp,0) == -1) {
+  if (kstat_read(kc, kp, 0) == -1) {
     perror("raw_disk_update:kstat_read");
     exit(1);
   }
 
   // Traverse the chain looking for IO events.
   for (ul=kc[0].kc_chain; ul !=0; ul=nkp[0].ks_next) {
-    struct_fill(nkp[0],ul);
+    struct_fill(nkp[0], ul);
     if (nkp[0].ks_type == KSTAT_TYPE_IO) {
       strcpy(short_name, nkp[0].ks_name);
       if (short_name[0] != 'm' &&
@@ -800,7 +800,7 @@ raw_disk_update() {
         }
 
         // Update the device registers.
-        if (kstat_read(kc,nkp,0) == -1) {
+        if (kstat_read(kc, nkp, 0) == -1) {
           perror("raw_disk_update:kstat_read error");
           exit(1);
         } else {
@@ -813,7 +813,7 @@ raw_disk_update() {
           // choice.  Currently only kio.nread glitches.  Correcting
           // the error forces the IOs to get attributed to the next IO
           // cycle.
-          struct_fill(kio,nkp[0].ks_data);
+          struct_fill(kio, nkp[0].ks_data);
           _nread  =  kio.nread;
           if (RAW_disk[rdisk]._nread > _nread) {
             _nread = RAW_disk[rdisk]._nread;

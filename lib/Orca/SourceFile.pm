@@ -349,7 +349,7 @@ sub add_plots {
     my $number_datas         = @{$plot->{data}};
     my $number_elements      = @{$plot->{data}[0]};
     my $regexp_element_index = -1;
-    for (my $j=0; $j<@{$plot->{data}[0]}; ++$j) {
+    for (my $j=0; $j<$number_elements; ++$j) {
       if ($plot->{data}[0][$j] =~ m:\(.+\):) {
         $regexp_element_index = $j;
         last;

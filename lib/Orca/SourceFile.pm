@@ -352,9 +352,9 @@ sub add_plots {
     }
 
     # There are three cases to handle:
-    # 1) Regular expression match in the first data with additional datas.
-    # 2) Regular expression match in the first data with no additional datas.
-    # 3) All others.
+    # 1) Regular expression match in the first data with no additional datas.
+    # 2) Regular expression match in the first data with additional datas.
+    # 3) All others cases.
     # The first is a single data source that has a regular expression.  In
     # this case, all of the columns are searched to match the regular
     # expression.  This generates a single plot with all of the different
@@ -374,7 +374,7 @@ sub add_plots {
       }
     }
 
-    # 1) Regular expression match in the first data with additional datas.
+    # 1) Regular expression match in the first data with no additional datas.
     if ($number_datas == 1 and $regexp_element_index != -1) {
 
       # If we've gone up to the last column to match, then go on.
@@ -463,7 +463,7 @@ sub add_plots {
       next unless $new_data_index;
     }
 
-    # 2) Regular expression match in the first data with no additional datas.
+    # 2) Regular expression match in the first data with additional datas.
     elsif ($number_datas > 1 and $regexp_element_index != -1) {
       $handle_regexps = 1;
 
@@ -527,7 +527,7 @@ sub add_plots {
       $i = $plot->{flush_regexps} ? $oldest_regexp_index : $i + 1;
     }
 
-    # 3) All others.
+    # 3) All others cases.
     else {
       $old_i = $i++;
       ++$oldest_regexp_index unless $handle_regexps;

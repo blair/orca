@@ -135,9 +135,14 @@ plot {
 title			%g Uptime
 source			orcallator
 data			uptime / 86400
+data			uptime / ( 86400 * 7 )
+data			uptime / ( 86400 * 30 )
 line_type		area
-legend			Uptime
-y_legend		Days
+legend			Uptime in Days
+legend			Uptime in Weeks
+legend			Uptime in Months
+y_legend		Total Time
+
 data_min		0
 plot_min		0
 href			http://www.orcaware.com/orca/docs/orcallator.html#system_uptime

@@ -180,6 +180,13 @@ sub _update_graph_options {
     my $rrd_version  = $rrd->version;
     push(@options, "DEF:average$i=$rrd_filename:Orca$rrd_version:AVERAGE");
   }
+
+  # Add any hrule's to the plot.
+  for (my $i=0; $i<@{$plot_ref->{hrule}}; ++$i) {
+    push(@options, "HRULE:$plot_ref->{hrule}[$i]");
+  }
+
+  # Put the legends on the plot.
   my @legends;
   my $max_legend_length = 0;
   for (my $i=0; $i<$data_sources; ++$i) {

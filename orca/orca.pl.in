@@ -2234,10 +2234,18 @@ any ()'s in the group B<find_files> parameter.  %g gets replaced with
 the exact text matched by the ()'s and %G is replaced with the same
 text, except the first character is capitalized.
 
-=item B<y_legend> <text>
+=item B<y_legend> I<text>
 
 Setting B<y_legend> sets the text to be displayed along the Y axis of
 the PNG plot.
+
+=item B<hrule> I<value>#I<rrggbb>[:I<legend>]
+
+Draw a horizontal line (rule) into the graph at the vertical Y
+I<value> with the specified color I<rrggbb> and optionally add a
+I<legend> for it.
+
+An arbitrary number of B<hrule>'s may be added to a plot.
 
 =back
 

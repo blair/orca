@@ -102,6 +102,7 @@ my %pcl_plot_elements          =   (base                => 1,
                                     data_type           => 1,
                                     flush_regexps       => 1,
                                     href                => 1,
+                                    hrule               => 1,
                                     legend              => 1,
                                     line_type           => 1,
                                     logarithmic         => 1,
@@ -127,6 +128,7 @@ my %pcl_plot_append_elements   =   (color               => 1,
                                     data_min            => 1,
                                     data_max            => 1,
                                     data_type           => 1,
+                                    hrule               => 1,
                                     legend              => 1,
                                     line_type           => 1,
                                     summary_format      => 1);
@@ -830,7 +832,7 @@ sub check_config {
       $plot->{y_legend} = $plot->{legend}[0];
     }
 
-    # Set the colors of any data not defined.
+    # Set the colors of any data's not defined.
     $plot->{color} = [] unless defined $plot->{color};
     for (my $k=@{$plot->{color}}; $k<$number_datas; ++$k) {
       $plot->{color}[$k] = data_index_to_color($k);
@@ -873,6 +875,9 @@ sub check_config {
       }
       $plot->{title} = $title;
     }
+
+    # The hrule array reference must exist.
+    $plot->{hrule} = [] unless defined $plot->{hrule}
   }
 
   $number_errors;

@@ -3,15 +3,15 @@
 # Version 1.5
 
 # Description:
-# Collect general perfromance statistics formatted for
-# interpretaion by Orca.
+# Collect general performance statistics formatted for
+# interpretation by Orca.
 
 # Usage: 
 # The following variables may be set:
 # 
-# OUT_ROOT root directory for datafiles (eg /opt/log/performance)
+# OUT_ROOT root directory for data files (eg /opt/log/performance)
 # INTERVAL the number of seconds between checks (eg 300 = 5 min)
-# DURATION numer of hours to run (eg 1 = 1 hr)
+# DURATION number of hours to run (eg 1 = 1 hr)
 # 
 # This script runs various standard system utilities to collect
 # system performance statistics and writes them out to datafile named
@@ -21,7 +21,7 @@
 # every INTERVAL number of seconds. After DURATION, the script
 # closes and compresses it's datafile via /usr/bin/compress and then
 # exits. If DURATION=24 and INTERVAL=300 (recommended) then the
-# following cron entry would collect continuos stats for a system:
+# following cron entry would collect continuous stats for a system:
 # 
 # 0 0 * * * /<PATH_TO_SCRIPT>/orca-hp-stat.pl
 # 
@@ -32,7 +32,7 @@
 # Added #open connections, pagestotl.
 # 2001-07-06 - JDK - added command-line args & data checks
 # 2001-07-09 - JDK - added signal handler, column checks, & umask
-# 2001-07-10 - JDK - now autodetects interfaces via netstat -i
+# 2001-07-10 - JDK - now auto detects interfaces via netstat -i
 # v1.5
 #
 # $HeadURL$
@@ -43,14 +43,14 @@
 # Note: Execution speed is more important than cleanliness here.
 #
 #
-# There are some script which are used for gettting data and there are 
+# There are some script which are used for getting data and there are 
 # 
 # phymem -- for getting physical memory
 # Copy this script in the path /usr/local/bin
 #
 ##################BEGIN OF FILE##################
-#/* Programma to determine statistics about the physical and virtual
-#  memory of a HP workstation, independant of HP-UX version.
+#/* Program to determine statistics about the physical and virtual
+#  memory of a HP workstation, independent of HP-UX version.
 #Shows some of the fields on std out.
 #
 #Program:     phymem
@@ -139,7 +139,7 @@ while ( $#ARGV >= 0 ) {
 
 ## BEGIN set defaults
 
-$OUT_ROOT ||= '/home/orca/orcallator';    # root directory for datafiles
+$OUT_ROOT ||= '/home/orca/orcallator';    # root directory for dateless
 $INTERVAL ||= 300;                       # seconds between checks
 $DURATION ||= 24;                        # number of hours to run
 
@@ -200,7 +200,7 @@ $SIG{INT}  = \&exit_nicely;
 $SIG{QUIT} = \&exit_nicely;
 $SIG{TERM} = \&exit_nicely;
 
-# Set gloabals used for printing (or not) headers.
+# Set globals used for printing (or not) headers.
 $need_header     = 1;
 $prev_header_cnt = 0;
 $prev_info_cnt   = 0;

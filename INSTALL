@@ -142,7 +142,7 @@ Outline:
     Name			Required Version	Included With Orca
     ----------------------------------------------------------------------
     Data::Dumper		2.101 or greater	2.101
-    Digest::MD5			2.20 or greater		2.20
+    Digest::MD5			2.21 or greater		2.21
     Math::IntervalSearch	1.05 or greater		1.05
     RRDs			1.0.33 or greater	1.0.33
     Storable			2.06 or greater		2.06
@@ -173,10 +173,10 @@ Outline:
 
     Digest::MD5
 
-      http://www.perl.com/CPAN/authors/id/G/GA/GAAS/Digest-MD5-2.20.tar.gz
+      http://www.perl.com/CPAN/authors/id/G/GA/GAAS/Digest-MD5-2.21.tar.gz
 
-      % gunzip -c Digest-MD5-2.20.tar.gz | tar xvf -
-      % cd Digest-MD5-2.20
+      % gunzip -c Digest-MD5-2.21.tar.gz | tar xvf -
+      % cd Digest-MD5-2.21
       % perl Makefile.PL
       % make
       % make test

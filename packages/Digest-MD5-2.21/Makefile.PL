@@ -6,12 +6,23 @@ use ExtUtils::MakeMaker;
 my @extra;
 @extra = (DEFINE => "-DU32_ALIGNMENT_REQUIRED") unless free_u32_alignment();
 
+if ($^O eq 'VMS') {
+    if (defined($Config{ccname})) {
+        if (grep(/VMS_VAX/, @INC) && ($Config{ccname} eq 'DEC')) {
+            # VAX compiler optimizer even as late as v6.4 gets stuck
+            push(@extra, OPTIMIZE => "/Optimize=(NODISJOINT)");
+        }
+    }
+}
+
+
 WriteMakefile(
     'NAME'	   => 'Digest::MD5',
     'VERSION_FROM' => 'MD5.pm',
     @extra,
     'dist'         => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
 );
+exit;
 
 
 

@@ -53,10 +53,14 @@ install: all
 	  $(INSTALL) $$file $(bindir); \
 	done
 	$(INSTALL) -m 0644 orcallator.se $(libdir)
-	if test -r $(sysconfdir)/orcallator.cfg; then \
-	  cp -p $(sysconfdir)/orcallator.cfg $(sysconfdir)/orcallator.cfg.`date +%Y-%m-%d-%H:%M:%S`; \
+	@if test -r $(sysconfdir)/orcallator.cfg; then \
+	  date="`date +%Y-%m-%d-%H:%M:%S`"; \
+	  echo $(INSTALL) -m 0644 orcallator.cfg $(sysconfdir)/orcallator.cfg.$$date; \
+	  $(INSTALL) -m 0644 orcallator.cfg $(sysconfdir)/orcallator.cfg.$$date; \
+	else \
+	  echo $(INSTALL) -m 0644 orcallator.cfg $(sysconfdir); \
+	  $(INSTALL) -m 0644 orcallator.cfg $(sysconfdir); \
 	fi
-	$(INSTALL) -m 0644 orcallator.cfg $(sysconfdir)
 
 orcallator_run_at_boot: all
 	test "$(INIT_D_DIR)"

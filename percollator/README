@@ -1,14 +1,19 @@
 This directory contains several files for getting percollator.se running
 on your system.
 
-When you install the FMRTG/percollator.se combination, you are going
+Tools:
+   percol_column
+   Perl script to show the contents of only a few columns of data from
+   percollator.se output.
+
+When you install the Orca/percollator.se combination, you are going
 to be running percollator.se on all systems that you wish to monitor
-and running FMRTG on one host.  The percollator.se programs should all
-place their data into a single NFS mounted directory where FMRTG will
-collect it and plot it.  It is not too important that FMRTG have the
+and running Orca on one host.  The percollator.se programs should all
+place their data into a single NFS mounted directory where Orca will
+collect it and plot it.  It is not too important that Orca have the
 data directory that percollator.se uses locally mounted, since it is
 only read.  More importantly are the considerations on where the data_dir
-and html_dir.  Please see the descriptions of these options in fmrtg's
+and html_dir.  Please see the descriptions of these options in Orca's
 manual page for a more thorough discussion.
 
 To install percollator.se, you need to perform the following steps:
@@ -39,5 +44,5 @@ To install percollator.se, you need to perform the following steps:
 5) Run the start_percol script on each system as root.  It should create
    the needed directories under STATSDIR/stats_percollator.
 
-6) Update the fmrtg/sample_configs/percollator.cfg file to look in the
+6) Update the orca/sample_configs/percollator.cfg file to look in the
    new STATSDIR/stats_percollator directory.

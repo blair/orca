@@ -1,12 +1,12 @@
 NAME
-    fmrtg - Make HTML & GIF plots of daily, weekly, monthly & yearly
+    orca - Make HTML & GIF plots of daily, weekly, monthly & yearly
     data
 
 SYNOPSIS
-      fmrtg [-v [-v [-v]]] [-o] configuration_file
+      orca [-v [-v [-v]]] [-o] configuration_file
 
 DESCRIPTION
-    FMRTG is a tool useful for plotting arbitrary data from text
+    Orca is a tool useful for plotting arbitrary data from text
     files onto a directory on Web server. It has the following
     features:
 
@@ -34,38 +34,44 @@ DESCRIPTION
       * Can be run under cron or it can sleep itself waiting for file updates
         based on when the file was last updated.
 
-    FMRTG is based the the RRD tool by Tobias Oetiker. While it is
-    similar to the other tools based on RRD, such as SMRTG and MRTG,
-    it is significantly different.
+    Orca is based the the RRD tool by Tobias Oetiker. While it is
+    similar to the other tools based on RRD, such as Cricket and
+    MRTG, it is significantly different. To see these other tools,
+    examine
+
+      http://ee-staff.ethz.ch/~oetiker/webtools/mrtg/mrtg.html
+
+    and
+
+      http://www.munitions.com/~jra/cricket/
 
 EXAMPLES
-    A small static example of FMRTG is at
+    A small static example of Orca is at
 
-    http://www.geocities.com/ResearchTriangle/Thinktank/4996/fmrtg-
-    example/
+      http://www.geocities.com/ResearchTriangle/Thinktank/4996/orca-example/
 
-    Please inform me of any other sites using FMRTG and I will
+    Please inform me of any other sites using Orca and I will
     include them here.
 
 REQUIREMENTS
-    I have used only version version 5.005_02 of Perl with FMRTG.
-    Because FMRTG makes very heavy use of references, it may or may
-    not work with older versions of Perl. I welcome feedback if
-    FMRTG works with older Perls.
+    I have used only version version 5.005_02 of Perl with Orca.
+    Because Orca makes very heavy use of references, it may or may
+    not work with older versions of Perl. I welcome feedback if Orca
+    works with older Perls.
 
-    FMRTG also requires several other Perl modules. These are:
+    Orca also requires several other Perl modules. These are:
 
       Math::IntervalSearch
        Version 1.00 or greater.
-       ftp://ftp.gps.caltech.edu/pub/blair/Perl/Math-Interpolate-1.00.tar.gz
-       http://www.perl.com/CPAN/authors/id/B/BZ/BZAJAC/Math-Interpolate-1.00.tar.gz
+       ftp://ftp.gps.caltech.edu/pub/blair/Perl/Math-Interpolate-1.01.tar.gz
+       http://www.perl.com/CPAN/authors/id/B/BZ/BZAJAC/Math-Interpolate-1.01.tar.gz
 
       Digest::MD5
        Version 2.00 or greater.
-       http://www.perl.com/CPAN/authors/id/GAAS/Digest-MD5-2.00.tar.gz
+       http://www.perl.com/CPAN/authors/id/GAAS/Digest-MD5-2.01.tar.gz
 
       RRD
-       Version 19981122.22 or greater.
+       Version 19981217.00 or greater.
        http://ee-staff.ethz.ch/~oetiker/webtools/mrtg/3.0/
 
     The modules can be installed into your Perl tree with the
@@ -73,8 +79,8 @@ REQUIREMENTS
 
     Math::Interval:
 
-      % gunzip -c Math-Interpolate-1.00.tar.gz | tar xvf -
-      % cd Math-Interpolate-1.00
+      % gunzip -c Math-Interpolate-1.01.tar.gz | tar xvf -
+      % cd Math-Interpolate-1.01
       % perl Makefile.PL
       % make
       % make test
@@ -82,8 +88,8 @@ REQUIREMENTS
 
     Digest::MD5
 
-      % gunzip -c Digest-MD5-2.00.tar.gz | tar xvf -
-      % cd Digest-MD5-2.00
+      % gunzip -c Digest-MD5-2.01.tar.gz | tar xvf -
+      % cd Digest-MD5-2.01
       % perl Makefile.PL
       % make
       % make test
@@ -105,31 +111,31 @@ REQUIREMENTS
     optimization turned on.
 
 COMMAND LINE OPTIONS
-    FMRTG has only two command line options. They are:
+    Orca has only two command line options. They are:
 
-    -v: Verbose. Have FMRTG spit out more verbose messages. As you
+    -v: Verbose. Have Orca spit out more verbose messages. As you
     add more -v's to the command line, more messages are sent out.
-    Any more than three -v's are not used by FMRTG.
+    Any more than three -v's are not used by Orca.
 
-    -o: Once. This tells FMRTG to go through the steps of finding
+    -o: Once. This tells Orca to go through the steps of finding
     files, updating the RRDs, updating the GIFs, and creating the
-    HTML files once. Normally, FMRTG loops continuously looking for
+    HTML files once. Normally, Orca loops continuously looking for
     new and updated files.
 
-    After the command line options are listed, FMRTG takes one more
+    After the command line options are listed, Orca takes one more
     argument which is the name of the configuration file to use.
     Sample configuration files can be found in the sample_configs
     directory with the distribution of this tool.
 
 INSTALLATION AND CONFIGURATION
-    The first step in using FMRTG is to set up a configuration file
-    that instructs FMRTG on what to do. The configuration file is
+    The first step in using Orca is to set up a configuration file
+    that instructs Orca on what to do. The configuration file is
     based on a key/value pair structure. The key name must start at
     the beginning of a line. Lines that begin with whitespace are
     concatenated onto the the last key's value. This is the same
-    format as used by MRTG and SMRTG.
+    format as used by MRTG and Cricket.
 
-    There are three main groups of options in a FMRTG confg: general
+    There are three main groups of options in a Orca confg: general
     options, file specific options, and plot specific options.
     General options may be used by the file and plot specific
     options. If an option is required, then it is only placed one
@@ -141,9 +147,9 @@ INSTALLATION AND CONFIGURATION
   Required General Options
 
     state_file *filename*
-    For FMRTG to work efficiently, it saves the last modification
+    For Orca to work efficiently, it saves the last modification
     time of all input data files and the Unix epoch time when they
-    were last read by FMRTG into a state file. The value for
+    were last read by Orca into a state file. The value for
     state_file must be a valid, writable filename. If *filename*
     does not begin with a / and the base_dir option was set, then
     the base_dir directory will be prepended to the *filename*.
@@ -153,10 +159,10 @@ INSTALLATION AND CONFIGURATION
 
     html_dir *directory*
     html_dir specifies the root directory for the main index.html
-    and all underlying HTML and GIF files that FMRTG generates. This
+    and all underlying HTML and GIF files that Orca generates. This
     should not be a directory that normal users will edit. Ideally
     this directory should be on a disk locally attached to the host
-    running FMRTG, but is not necessary.
+    running Orca, but is not necessary.
 
     If *directory* does not begin with a / and the base_dir option
     was set, then the base_dir directory will be prepended to
@@ -164,9 +170,9 @@ INSTALLATION AND CONFIGURATION
 
     data_dir *directory*
     data_dir specifies the root directory for the location of the
-    RRD data files that FMRTG generates. For best performance, this
+    RRD data files that Orca generates. For best performance, this
     directory should be on a disk locally attached to the host
-    running FMRTG. Otherwise, the many IO operations that FMRTG
+    running Orca. Otherwise, the many IO operations that Orca
     performs will be greatly slowed down. It is more important this
     data_dir be locally stored than html_dir for performance
     concerns.
@@ -206,7 +212,7 @@ INSTALLATION AND CONFIGURATION
 
     warn_email *email_address* [*email_address* ...]
     warn_email takes a list of email addresses of people to email
-    when something goes wrong with either FMRTG or the input data
+    when something goes wrong with either Orca or the input data
     files. Currently email messages are sent out the the following
     circumstances:
 
@@ -235,7 +241,7 @@ INSTALLATION AND CONFIGURATION
     By default, expiring the GIF files is not enabled.
 
     find_times *hours:minutes* [*hours:minutes* ...]
-    The find_times option is used to tell FMRTG when to go and find
+    The find_times option is used to tell Orca when to go and find
     new files. This particularly useful when new input data files
     are created at midnight. In this case, something like
 
@@ -243,33 +249,33 @@ INSTALLATION AND CONFIGURATION
 
     would work.
 
-    By default, files are only searched for when FMRTG starts up.
+    By default, files are only searched for when Orca starts up.
 
     html_top_title *text* ...
-    The *text* is placed at the top of the main index.html that
-    FMRTG creates. By default, no addition text is placed at the top
-    of the main index.html.
+    The *text* is placed at the top of the main index.html that Orca
+    creates. By default, no addition text is placed at the top of
+    the main index.html.
 
     html_page_header *text* ...
-    The *text* is placed at the top of each HTML file that FMRTG
+    The *text* is placed at the top of each HTML file that Orca
     creates. By default, no additional text is placed at the top of
     each HTML file.
 
     html_page_footer *text* ...
-    The *text* is placed at the bottom of each HTML file that FMRTG
+    The *text* is placed at the bottom of each HTML file that Orca
     creates. By default, no additional text is placed at the bottom
     of each HTML file.
 
     sub_dir *directory*
-    In certain cases FMRTG will not create sub directories for the
+    In certain cases Orca will not create sub directories for the
     different groups of files that it processes. If you wish to
-    force FMRTG to create sub directories, then do this
+    force Orca to create sub directories, then do this
 
       sub_dir 1
 
   Files Options
 
-    The next step in configuring FMRTG is telling where to find the
+    The next step in configuring Orca is telling where to find the
     files to use as input, a description of the columns of data
     comprising the file, the interval at which the file is updated,
     and where the measurement time is stored in the file. This is
@@ -303,34 +309,33 @@ INSTALLATION AND CONFIGURATION
   Required Files Options
 
     find_files *path|regexp* [*path|regexp* ...]
-    The find_files option tells FMRTG what data files to use as its
+    The find_files option tells Orca what data files to use as its
     input. The arguments to find_files may be a simple filename, a
     complete path to a filename, or a regular expression to find
     files. The regular expression match is not the normal shell
     globbing that the Bourne shell, C shell or other shells use.
-    Rather, FMRTG uses the Perl regular expressions to find files.
+    Rather, Orca uses the Perl regular expressions to find files.
     For example:
 
       find_files /data/source1 /data/source2
 
-    will have FMRTG use /data/source1 and /data/source2 as the
-    inputs to FMRTG. This could have also been written as
+    will have Orca use /data/source1 and /data/source2 as the inputs
+    to Orca. This could have also been written as
 
       find_files /data/source\d
 
     and both data files will be used.
 
-    In the two above examples, FMRTG will assume that both data
-    files represent data from the same source. If this is not the
-    case, such as source1 is data from one place and source2 is data
-    from another place, then FMRTG needs to be told to treat the
-    data from each file as distinct data sources. This be
-    accomplished in two ways. The first is by creating another files
-    { ... } option set. However, this requires copying all of the
-    text and makes maintenance of the configuration file complex.
-    The second and recommend approach is to place ()'s around parts
-    of the regular expression to tell FMRTG how to distinguish the
-    two data files:
+    In the two above examples, Orca will assume that both data files
+    represent data from the same source. If this is not the case,
+    such as source1 is data from one place and source2 is data from
+    another place, then Orca needs to be told to treat the data from
+    each file as distinct data sources. This be accomplished in two
+    ways. The first is by creating another files { ... } option set.
+    However, this requires copying all of the text and makes
+    maintenance of the configuration file complex. The second and
+    recommend approach is to place ()'s around parts of the regular
+    expression to tell Orca how to distinguish the two data files:
 
       find_files /data/(source\d)
 
@@ -361,11 +366,11 @@ INSTALLATION AND CONFIGURATION
 
     column_description *column_name* [*column_name* ...]
     column_description first_line
-    For FMRTG to plot the data, it needs to be told what each column
+    For Orca to plot the data, it needs to be told what each column
     of data holds. This is accomplished by creating a text
     description for each column. There are two ways this may be
-    loaded into FMRTG. If the input data files for a files set do
-    not change, then the column names can be listed after
+    loaded into Orca. If the input data files for a files set do not
+    change, then the column names can be listed after
     column_description:
 
       column_description date in_packets/s out_packets/s
@@ -375,8 +380,8 @@ INSTALLATION AND CONFIGURATION
 
       column_description first_line
 
-    This informs FMRTG that it should read the first line of all the
-    input data files for the column description. FMRTG can handle
+    This informs Orca that it should read the first line of all the
+    input data files for the column description. Orca can handle
     different files in the same files set that have different number
     of columns and column descriptions. The only limitation here is
     that column descriptions are white space separated and
@@ -384,29 +389,29 @@ INSTALLATION AND CONFIGURATION
 
     date_source column_name *column_name*
     date_source file_mtime
-    The date_source option tells FMRTG where time and date of the
+    The date_source option tells Orca where time and date of the
     measurement is located. The first form of the date_source
     options lists the column name as given to column_description
     that contains the Unix epoch time. The second form with the
-    file_mtime argument tells FMRTG that the date and time for any
+    file_mtime argument tells Orca that the date and time for any
     new data in the file is the last modification time of the file.
 
     date_format *string*
     The date_format option is only required if the column_name
     argument to date_source is used. Current, this argument is not
-    used by FMRTG.
+    used by Orca.
 
   Optional Files Options
 
     reopen 1
-    Using the reopen option for a files set instructs FMRTG to close
+    Using the reopen option for a files set instructs Orca to close
     and reopen any input data files when there is new data to be
     read. This is of most use when an input data file is erased and
     rewritten by some other process.
 
   Plot Options
 
-    The final step is to tell FMRTG what plots to create and how to
+    The final step is to tell Orca what plots to create and how to
     create them. The general format for creating a plot is:
 
       plot {
@@ -447,9 +452,9 @@ INSTALLATION AND CONFIGURATION
 
     data *Perl expression*
     data *regular expression*
-    The data plot option tells FMRTG the data sources to use to
-    place in a single GIF plot. At least one data option is required
-    for a particular plot and as many as needed may be placed into a
+    The data plot option tells Orca the data sources to use to place
+    in a single GIF plot. At least one data option is required for a
+    particular plot and as many as needed may be placed into a
     single plot.
 
     Two forms of arguments to data are allowed. The first form
@@ -469,7 +474,7 @@ INSTALLATION AND CONFIGURATION
 
     The second form allows for matching column names that match a
     regular expression and plotting all of those columns that match
-    the regular expression in a single plot. To tell FMRTG that a
+    the regular expression in a single plot. To tell Orca that a
     regular expression is being used, then only a single non
     whitespace separated argument to data is allowed. In addition,
     the argument must contain at least one set of parentheses ()'s.
@@ -513,7 +518,7 @@ INSTALLATION AND CONFIGURATION
       .
       }
 
-    If the following data files are found by FMRTG
+    If the following data files are found by Orca
 
       /data/solaris-2.6/olympia/percol-1998-12-01
       /data/solaris-2.6/olympia/percol-1998-12-02
@@ -524,13 +529,13 @@ INSTALLATION AND CONFIGURATION
     with each plot containing the input and output number of packets
     per second.
 
-    By default, when FMRTG finds a plot set with a regular
-    expression match, it will only find one match, and then go on to
-    the next plot set. After it reaches the last plot set, it will
-    go back to the first plot set with a regular expression match
-    and look for the next data that matches the regular expression.
-    The net result of this is that the generated HTML files using
-    the above configuration will have links in this order:
+    By default, when Orca finds a plot set with a regular expression
+    match, it will only find one match, and then go on to the next
+    plot set. After it reaches the last plot set, it will go back to
+    the first plot set with a regular expression match and look for
+    the next data that matches the regular expression. The net
+    result of this is that the generated HTML files using the above
+    configuration will have links in this order:
 
       hme0 Input & Output Packets per Second
       hme0 Input & Output Kilobytes per Second
@@ -540,7 +545,7 @@ INSTALLATION AND CONFIGURATION
       hme1 Input & Output Errors per Second
 
     If you wanted to have the links listed in order of hme0 and
-    hme1, then you would add the flush_regexps option to tell FMRTG
+    hme1, then you would add the flush_regexps option to tell Orca
     to find all regular expression matches for a particular plot set
     and all plot sets before the plot set containing flush_regexps
     before continuing on to the next plot set. For example, if
@@ -576,7 +581,7 @@ INSTALLATION AND CONFIGURATION
     second option refers to the second data option, etc.
 
     data_type *type*
-    When defining data types, FMRTG uses the same data types as
+    When defining data types, Orca uses the same data types as
     provided by RRD. These are (a direct quote from the RRDcreate
     manual page):
 
@@ -621,7 +626,7 @@ INSTALLATION AND CONFIGURATION
     hexadecimal.
 
     flush_regexps 1
-    Using the flush_regexps option tells FMRTG to make sure that the
+    Using the flush_regexps option tells Orca to make sure that the
     plot set including this option and all previous plot sets have
     matched all of the columns with their regular expressions. See
     the above description of using regular expressions in the data
@@ -629,10 +634,10 @@ INSTALLATION AND CONFIGURATION
 
     optional 1
     Because some of the input data files may not contain the column
-    names that are listed in a particular plot, FMRTG provides two
-    ways to handle missing data. By default, FMRTG will generate a
+    names that are listed in a particular plot, Orca provides two
+    ways to handle missing data. By default, Orca will generate a
     plot with **UNKNOWN** data if the data is mission. If you want
-    FMRTG to not generate a plot if the data does not exist, then
+    Orca to not generate a plot if the data does not exist, then
     place
 
       optional 1
@@ -660,7 +665,7 @@ INSTALLATION AND CONFIGURATION
     you select with the graphing functions.
 
     rigid_min_max 1
-    Normally FMRTG will automatically expand the lower and upper
+    Normally Orca will automatically expand the lower and upper
     limit if the graph contains a value outside the valid range. By
     setting the rigid_min_max option, this is disabled.
 
@@ -696,16 +701,22 @@ INSTALLATION AND CONFIGURATION
     that is placed below the GIF plot.
 
 ARCHITECTURE ISSUES
-    Because FMRTG is extremely IO intensive, I recommend that the
+    Because Orca is extremely IO intensive, I recommend that the
     host that locally mounts the web server content be the same
-    machine that runs FMRTG. In addition, the RRD data files that
-    FMRTG uses also require a good amount of IO. The machine running
-    FMRTG should always have the data_dir directory locally mounted.
+    machine that runs Orca. In addition, the RRD data files that
+    Orca uses also require a good amount of IO. The machine running
+    Orca should always have the data_dir directory locally mounted.
     It is more important this data_dir be locally stored than
     html_dir for performance concerns.
 
+MAILING LISTS
+    Discussions regarding Orca take place on the mrtg-developers
+    mailing list located at mrtg-developers@list.ee.ethz.ch. To
+    place yourself on the mailing list, send a message with the word
+    subscribe to it to mrtg-developers-request@list.ee.ethz.ch.
+
 IMPLEMENTATION NOTES
-    FMRTG makes very heavy use of references to hashes and arrays to
+    Orca makes very heavy use of references to hashes and arrays to
     store all of the different data it uses.
 
     The *Digest::MD5* module is used to cache the result of some

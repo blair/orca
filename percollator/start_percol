@@ -7,7 +7,7 @@
 # base directory for the statistics.  Underneath STATSDIR is a bin/ and
 # stats_percollator/ directory.
 AWK=/usr/public/bin/gawk
-STATSDIR=/home/bzajac/Code/MRTG/bzajac/percollator
+STATSDIR=/home/bzajac/Code/Orca/bzajac/percollator
 
 # Get the real hostname without any trailing .*.
 uname=`/usr/bin/uname -n | /usr/bin/cut -d. -f1`

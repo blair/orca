@@ -1,12 +1,13 @@
-fmrtg:
+orca:
+	Make it easier to install and get running
 	Lock file
 	Arbitrary date reading
-	Use SMRTG's configuration ConfigTree?????
+	Use Cricket's configuration ConfigTree?????
 	More configuration file defaults
 	Better date loading support
 	Make plots from multiple files sets: delete source files_key and put
 		it into data
-	Update HTML files if a new file is found with a new group.
+	Update HTML files if a new file is found with a new group
 
 percollator.se:
 	Better documentation

@@ -1,3 +1,22 @@
+Wed Jan  6 09:47:44 PST 1999
+
+	Change the program's name from FMRTG to Orca.
+
+	Change all references of SMRTG to Cricket.
+
+	Version 0.14.
+
+Fri Dec 18 13:10:47 PST 1998
+
+	Change all occurances of MRTG in fmrtg to FMRTG.
+
+Thu Dec 10 16:47:20 PST 1998
+
+	Add percol_column to the list of programs in the percollator
+	directory.  This program makes it easy to read several columns of
+	data from a percollator.se output file instead of trying to look
+	at 1000 character lines that percollator.se generally outputs.
+
 Thu Dec 10 12:50:19 PST 1998
 
 	Found an extra loop in creating the HTML files.  They are now

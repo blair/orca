@@ -93,7 +93,7 @@
 .nr % 0
 .rr F
 .\}
-.TH FMRTG 1 "perl 5.005, patch 02" "10/Dec/98" "User Contributed Perl Documentation"
+.TH ORCA 1 "perl 5.005, patch 02" "6/Jan/99" "User Contributed Perl Documentation"
 .UC
 .if n .hy 0
 .if n .na
@@ -188,14 +188,14 @@
 .\}
 .rm #[ #] #H #V #F C
 .SH "NAME"
-fmrtg \- Make HTML & GIF plots of daily, weekly, monthly & yearly data
+orca \- Make HTML & GIF plots of daily, weekly, monthly & yearly data
 .SH "SYNOPSIS"
 .PP
 .Vb 1
-\&  fmrtg [-v [-v [-v]]] [-o] configuration_file
+\&  orca [-v [-v [-v]]] [-o] configuration_file
 .Ve
 .SH "DESCRIPTION"
-FMRTG is a tool useful for plotting arbitrary data from text files onto
+Orca is a tool useful for plotting arbitrary data from text files onto
 a directory on Web server.  It has the following features:
 .PP
 .Vb 23
@@ -223,38 +223,48 @@ a directory on Web server.  It has the following features:
 \&  * Can be run under cron or it can sleep itself waiting for file updates
 \&    based on when the file was last updated.
 .Ve
-FMRTG is based the the RRD tool by Tobias Oetiker.  While it is similar to
-the other tools based on RRD, such as SMRTG and MRTG, it is significantly
-different.
+Orca is based the the RRD tool by Tobias Oetiker.  While it is similar to
+the other tools based on RRD, such as Cricket and MRTG, it is significantly
+different.  To see these other tools, examine
+.PP
+.Vb 1
+\&  http://ee-staff.ethz.ch/~oetiker/webtools/mrtg/mrtg.html
+.Ve
+and
+.PP
+.Vb 1
+\&  http://www.munitions.com/~jra/cricket/
+.Ve
 .SH "EXAMPLES"
-A small static example of FMRTG is at
+A small static example of Orca is at
 .PP
-http://www.geocities.com/ResearchTriangle/Thinktank/4996/fmrtg-example/
-.PP
-Please inform me of any other sites using FMRTG and I will include them
+.Vb 1
+\&  http://www.geocities.com/ResearchTriangle/Thinktank/4996/orca-example/
+.Ve
+Please inform me of any other sites using Orca and I will include them
 here.
 .SH "REQUIREMENTS"
-I have used only version version 5.005_02 of Perl with FMRTG.  Because
-FMRTG makes very heavy use of references, it may or may not work
-with older versions of Perl.  I welcome feedback if FMRTG works with
+I have used only version version 5.005_02 of Perl with Orca.  Because
+Orca makes very heavy use of references, it may or may not work
+with older versions of Perl.  I welcome feedback if Orca works with
 older Perls.
 .PP
-FMRTG also requires several other Perl modules.  These are:
+Orca also requires several other Perl modules.  These are:
 .PP
 .Vb 4
 \&  Math::IntervalSearch
 \&   Version 1.00 or greater.
-\&   ftp://ftp.gps.caltech.edu/pub/blair/Perl/Math-Interpolate-1.00.tar.gz
-\&   http://www.perl.com/CPAN/authors/id/B/BZ/BZAJAC/Math-Interpolate-1.00.tar.gz
+\&   ftp://ftp.gps.caltech.edu/pub/blair/Perl/Math-Interpolate-1.01.tar.gz
+\&   http://www.perl.com/CPAN/authors/id/B/BZ/BZAJAC/Math-Interpolate-1.01.tar.gz
 .Ve
 .Vb 3
 \&  Digest::MD5
 \&   Version 2.00 or greater.
-\&   http://www.perl.com/CPAN/authors/id/GAAS/Digest-MD5-2.00.tar.gz
+\&   http://www.perl.com/CPAN/authors/id/GAAS/Digest-MD5-2.01.tar.gz
 .Ve
 .Vb 3
 \&  RRD
-\&   Version 19981122.22 or greater.
+\&   Version 19981217.00 or greater.
 \&   http://ee-staff.ethz.ch/~oetiker/webtools/mrtg/3.0/
 .Ve
 The modules can be installed into your Perl tree with the following
@@ -263,8 +273,8 @@ commands:
 Math::Interval:
 .PP
 .Vb 6
-\&  % gunzip -c Math-Interpolate-1.00.tar.gz | tar xvf -
-\&  % cd Math-Interpolate-1.00
+\&  % gunzip -c Math-Interpolate-1.01.tar.gz | tar xvf -
+\&  % cd Math-Interpolate-1.01
 \&  % perl Makefile.PL
 \&  % make
 \&  % make test
@@ -273,8 +283,8 @@ Math::Interval:
 Digest::MD5
 .PP
 .Vb 6
-\&  % gunzip -c Digest-MD5-2.00.tar.gz | tar xvf -
-\&  % cd Digest-MD5-2.00
+\&  % gunzip -c Digest-MD5-2.01.tar.gz | tar xvf -
+\&  % cd Digest-MD5-2.01
 \&  % perl Makefile.PL
 \&  % make
 \&  % make test
@@ -296,28 +306,28 @@ RRD:
 For large installations, I recommend that RRD be compiled with
 optimization turned on.
 .SH "COMMAND LINE OPTIONS"
-FMRTG has only two command line options.  They are:
+Orca has only two command line options.  They are:
 .PP
-\fB\-v\fR: Verbose.  Have FMRTG spit out more verbose messages.  As you add
+\fB\-v\fR: Verbose.  Have Orca spit out more verbose messages.  As you add
 more \fB\-v\fR's to the command line, more messages are sent out.  Any more
-than three \fB\-v\fR's are not used by FMRTG.
+than three \fB\-v\fR's are not used by Orca.
 .PP
-\fB\-o\fR: Once.  This tells FMRTG to go through the steps of finding files,
+\fB\-o\fR: Once.  This tells Orca to go through the steps of finding files,
 updating the RRDs, updating the GIFs, and creating the HTML files once.
-Normally, FMRTG loops continuously looking for new and updated files.
+Normally, Orca loops continuously looking for new and updated files.
 .PP
-After the command line options are listed, FMRTG takes one more argument
+After the command line options are listed, Orca takes one more argument
 which is the name of the configuration file to use.  Sample configuration
 files can be found in the sample_configs directory with the distribution
 of this tool.
 .SH "INSTALLATION AND CONFIGURATION"
-The first step in using FMRTG is to set up a configuration file that
-instructs FMRTG on what to do.  The configuration file is based on a
+The first step in using Orca is to set up a configuration file that
+instructs Orca on what to do.  The configuration file is based on a
 key/value pair structure.  The key name must start at the beginning of
 a line.  Lines that begin with whitespace are concatenated onto the the
-last key's value.  This is the same format as used by MRTG and SMRTG.
+last key's value.  This is the same format as used by MRTG and Cricket.
 .PP
-There are three main groups of options in a FMRTG confg: general options,
+There are three main groups of options in a Orca confg: general options,
 file specific options, and plot specific options.  General options may
 be used by the file and plot specific options.  If an option is required,
 then it is only placed one time into the configuration file.
@@ -326,9 +336,9 @@ General options break down into two main groups, required and options.
 These are the required options:
 .Sh "Required General Options"
 .Ip "\fBstate_file\fR \fIfilename\fR" 0
-For \s-1FMRTG\s0 to work efficiently, it saves the last modification time of
+For Orca to work efficiently, it saves the last modification time of
 all input data files and the Unix epoch time when they were last read
-by \s-1FMRTG\s0 into a state file.  The value for \fBstate_file\fR must be a
+by Orca into a state file.  The value for \fBstate_file\fR must be a
 valid, writable filename.  If \fIfilename\fR does not begin with a / and
 the \fBbase_dir\fR option was set, then the \fBbase_dir\fR directory will be
 prepended to the \fIfilename\fR.
@@ -337,18 +347,18 @@ Each entry for a data input file is roughly 100 bytes, so for small sites,
 this file will not be large.
 .Ip "\fBhtml_dir\fR \fIdirectory\fR" 0
 \fBhtml_dir\fR specifies the root directory for the main index.html and
-all underlying \s-1HTML\s0 and \s-1GIF\s0 files that \s-1FMRTG\s0 generates.  This should
+all underlying \s-1HTML\s0 and \s-1GIF\s0 files that Orca generates.  This should
 not be a directory that normal users will edit.  Ideally this directory
-should be on a disk locally attached to the host running \s-1FMRTG\s0, but is
+should be on a disk locally attached to the host running Orca, but is
 not necessary.
 .PP
 If \fIdirectory\fR does not begin with a / and the \fBbase_dir\fR option was
 set, then the \fBbase_dir\fR directory will be prepended to \fIdirectory\fR.
 .Ip "\fBdata_dir\fR \fIdirectory\fR" 0
 \fBdata_dir\fR specifies the root directory for the location of the \s-1RRD\s0 data
-files that \s-1FMRTG\s0 generates.  For best performance, this directory should
-be on a disk locally attached to the host running \s-1FMRTG\s0.  Otherwise,
-the many \s-1IO\s0 operations that \s-1FMRTG\s0 performs will be greatly slowed down.
+files that Orca generates.  For best performance, this directory should
+be on a disk locally attached to the host running Orca.  Otherwise,
+the many \s-1IO\s0 operations that Orca performs will be greatly slowed down.
 It is more important this \fBdata_dir\fR be locally stored than \fBhtml_dir\fR
 for performance concerns.
 .PP
@@ -382,7 +392,7 @@ By default, the input file's sampling interval is used as the
 late_interval.
 .Ip "\fBwarn_email\fR \fIemail_address\fR [\fIemail_address\fR ...]" 0
 \fBwarn_email\fR takes a list of email addresses of people to email
-when something goes wrong with either \s-1FMRTG\s0 or the input data files.
+when something goes wrong with either Orca or the input data files.
 Currently email messages are sent out the the following circumstances:
 .PP
 .Vb 2
@@ -410,7 +420,7 @@ used, then the following modifications must added to srm.conf:
 .Ve
 By default, expiring the \s-1GIF\s0 files is not enabled.
 .Ip "\fBfind_times\fR \fIhours:minutes\fR [\fIhours:minutes\fR ...]" 0
-The \fBfind_times\fR option is used to tell \s-1FMRTG\s0 when to go and find new
+The \fBfind_times\fR option is used to tell Orca when to go and find new
 files.  This particularly useful when new input data files are created
 at midnight.  In this case, something like
 .PP
@@ -419,27 +429,27 @@ at midnight.  In this case, something like
 .Ve
 would work.
 .PP
-By default, files are only searched for when \s-1FMRTG\s0 starts up.
+By default, files are only searched for when Orca starts up.
 .Ip "\fBhtml_top_title\fR \fItext\fR ..." 0
-The \fItext\fR is placed at the top of the main index.html that \s-1FMRTG\s0
+The \fItext\fR is placed at the top of the main index.html that Orca
 creates.  By default, no addition text is placed at the top of the
 main index.html.
 .Ip "\fBhtml_page_header\fR \fItext\fR ..." 0
-The \fItext\fR is placed at the top of each \s-1HTML\s0 file that \s-1FMRTG\s0 creates.
+The \fItext\fR is placed at the top of each \s-1HTML\s0 file that Orca creates.
 By default, no additional text is placed at the top of each \s-1HTML\s0 file.
 .Ip "\fBhtml_page_footer\fR \fItext\fR ..." 0
-The \fItext\fR is placed at the bottom of each \s-1HTML\s0 file that \s-1FMRTG\s0 creates.
+The \fItext\fR is placed at the bottom of each \s-1HTML\s0 file that Orca creates.
 By default, no additional text is placed at the bottom of each \s-1HTML\s0 file.
 .Ip "\fBsub_dir\fR \fIdirectory\fR" 0
-In certain cases \s-1FMRTG\s0 will not create sub directories for the different
-groups of files that it processes.  If you wish to force \s-1FMRTG\s0 to create
+In certain cases Orca will not create sub directories for the different
+groups of files that it processes.  If you wish to force Orca to create
 sub directories, then do this
 .PP
 .Vb 1
 \&  sub_dir 1
 .Ve
 .Sh "Files Options"
-The next step in configuring \s-1FMRTG\s0 is telling where to find the files to
+The next step in configuring Orca is telling where to find the files to
 use as input, a description of the columns of data comprising the file,
 the interval at which the file is updated, and where the measurement
 time is stored in the file.  This is stored into a files set.
@@ -471,33 +481,33 @@ for a particular files set must be enclosed in the curly brackets {}'s.
 An unlimited number of file sets may be listed.
 .Sh "Required Files Options"
 .Ip "\fBfind_files\fR \fIpath|regexp\fR [\fIpath|regexp\fR ...]" 0
-The \fBfind_files\fR option tells \s-1FMRTG\s0 what data files to use as
+The \fBfind_files\fR option tells Orca what data files to use as
 its input.  The arguments to \fBfind_files\fR may be a simple filename,
 a complete path to a filename, or a regular expression to find files.
 The regular expression match is not the normal shell globbing that the
-Bourne shell, C shell or other shells use.  Rather, \s-1FMRTG\s0 uses the Perl
+Bourne shell, C shell or other shells use.  Rather, Orca uses the Perl
 regular expressions to find files.  For example:
 .PP
 .Vb 1
 \&  find_files /data/source1 /data/source2
 .Ve
-will have \s-1FMRTG\s0 use /data/source1 and /data/source2 as the inputs
-to \s-1FMRTG\s0.  This could have also been written as
+will have Orca use /data/source1 and /data/source2 as the inputs
+to Orca.  This could have also been written as
 .PP
 .Vb 1
 \&  find_files /data/source\ed
 .Ve
 and both data files will be used.
 .PP
-In the two above examples, \s-1FMRTG\s0 will assume that both data files
+In the two above examples, Orca will assume that both data files
 represent data from the same source.  If this is not the case, such as
 source1 is data from one place and source2 is data from another place,
-then \s-1FMRTG\s0 needs to be told to treat the data from each file as distinct
+then Orca needs to be told to treat the data from each file as distinct
 data sources.  This be accomplished in two ways.  The first is by creating
 another files { ... } option set.  However, this requires copying all
 of the text and makes maintenance of the configuration file complex.
 The second and recommend approach is to place ()'s around parts of the
-regular expression to tell \s-1FMRTG\s0 how to distinguish the two data files:
+regular expression to tell Orca how to distinguish the two data files:
 .PP
 .Vb 1
 \&  find_files /data/(source\ed)
@@ -527,9 +537,9 @@ The \fBinterval\fR options takes the number of seconds between updates for
 the input data files listed in this files set.
 .Ip "\fBcolumn_description\fR \fIcolumn_name\fR [\fIcolumn_name\fR ...]" 0
 .Ip "\fBcolumn_description\fR first_line" 0
-For \s-1FMRTG\s0 to plot the data, it needs to be told what each column of
+For Orca to plot the data, it needs to be told what each column of
 data holds.  This is accomplished by creating a text description for
-each column.  There are two ways this may be loaded into \s-1FMRTG\s0.  If the
+each column.  There are two ways this may be loaded into Orca.  If the
 input data files for a files set do not change, then the column names
 can be listed after \fBcolumn_description\fR:
 .PP
@@ -542,31 +552,31 @@ use the argument \*(L"first_line\*(R" to \fBcolumn_description\fR:
 .Vb 1
 \&  column_description first_line
 .Ve
-This informs \s-1FMRTG\s0 that it should read the first line of all the input
-data files for the column description.  \s-1FMRTG\s0 can handle different files
+This informs Orca that it should read the first line of all the input
+data files for the column description.  Orca can handle different files
 in the same files set that have different number of columns and column
 descriptions.  The only limitation here is that column descriptions
 are white space separated and therefore, no spaces are allowed in the
 column descriptions.
 .Ip "\fBdate_source\fR column_name \fIcolumn_name\fR" 0
 .Ip "\fBdate_source\fR file_mtime" 0
-The \fBdate_source\fR option tells \s-1FMRTG\s0 where time and date of the
+The \fBdate_source\fR option tells Orca where time and date of the
 measurement is located.  The first form of the \fBdate_source\fR options
 lists the column name as given to \fBcolumn_description\fR that contains
 the Unix epoch time.  The second form with the file_mtime argument tells
-\s-1FMRTG\s0 that the date and time for any new data in the file is the last
+Orca that the date and time for any new data in the file is the last
 modification time of the file.
 .Ip "\fBdate_format\fR \fIstring\fR" 0
 The \fBdate_format\fR option is only required if the column_name argument
-to \fBdate_source\fR is used.  Current, this argument is not used by \s-1FMRTG\s0.
+to \fBdate_source\fR is used.  Current, this argument is not used by Orca.
 .Sh "Optional Files Options"
 .Ip "\fBreopen\fR 1" 0
-Using the \fBreopen\fR option for a files set instructs \s-1FMRTG\s0 to close
+Using the \fBreopen\fR option for a files set instructs Orca to close
 and reopen any input data files when there is new data to be read.
 This is of most use when an input data file is erased and rewritten by
 some other process.
 .Sh "Plot Options"
-The final step is to tell \s-1FMRTG\s0 what plots to create and how to create
+The final step is to tell Orca what plots to create and how to create
 them.  The general format for creating a plot is:
 .PP
 .Vb 13
@@ -606,7 +616,7 @@ which data will be plotted.  Currently, only data from a single files
 set may be put into a single plot.
 .Ip "\fBdata\fR \fIPerl expression\fR" 0
 .Ip "\fBdata\fR \fIregular expression\fR" 0
-The \fBdata\fR plot option tells \s-1FMRTG\s0 the data sources to use to place
+The \fBdata\fR plot option tells Orca the data sources to use to place
 in a single \s-1GIF\s0 plot.  At least one \fBdata\fR option is required for a
 particular plot and as many as needed may be placed into a single plot.
 .PP
@@ -627,7 +637,7 @@ total number of bits per second, you could do this:
 .Ve
 The second form allows for matching column names that match a regular
 expression and plotting all of those columns that match the regular
-expression in a single plot.  To tell \s-1FMRTG\s0 that a regular expression
+expression in a single plot.  To tell Orca that a regular expression
 is being used, then only a single non whitespace separated argument to
 \fBdata\fR is allowed.  In addition, the argument must contain at least one
 set of parentheses ()'s.  When a regular expression matches a column name,
@@ -674,7 +684,7 @@ the portion of the match in the ()'s is placed into the normal Perl \f(CW$1\fR,
 \&  .
 \&  }
 .Ve
-If the following data files are found by \s-1FMRTG\s0
+If the following data files are found by Orca
 .PP
 .Vb 4
 \&  /data/solaris-2.6/olympia/percol-1998-12-01
@@ -685,7 +695,7 @@ If the following data files are found by \s-1FMRTG\s0
 then separate plots will be created for olympia and sunridge, with each
 plot containing the input and output number of packets per second.
 .PP
-By default, when \s-1FMRTG\s0 finds a plot set with a regular expression
+By default, when Orca finds a plot set with a regular expression
 match, it will only find one match, and then go on to the next plot set.
 After it reaches the last plot set, it will go back to the first plot set
 with a regular expression match and look for the next data that matches
@@ -701,7 +711,7 @@ the regular expression.  The net result of this is that the generated
 \&  hme1 Input & Output Errors per Second
 .Ve
 If you wanted to have the links listed in order of hme0 and hme1,
-then you would add the \fBflush_regexps\fR option to tell \s-1FMRTG\s0 to find
+then you would add the \fBflush_regexps\fR option to tell Orca to find
 all regular expression matches for a particular plot set and all plot
 sets before the plot set containing \fBflush_regexps\fR before continuing
 on to the next plot set.  For example, if
@@ -737,7 +747,7 @@ multiple copies of these may be specified.  The first option of a
 particular type sets the option for the first \fBdata\fR option, the second
 option refers to the second \fBdata\fR option, etc.
 .Ip "\fBdata_type\fR \fItype\fR" 0
-When defining data types, \s-1FMRTG\s0 uses the same data types as provided
+When defining data types, Orca uses the same data types as provided
 by \s-1RRD\s0.  These are (a direct quote from the RRDcreate manual page):
 .PP
 \fItype\fR can be one of the following: \fB\s-1GAUGE\s0\fR this is for things like
@@ -778,15 +788,15 @@ For example:
 The optional \fBcolor\fR option specifies the color to use for a particular
 plot.  The color should be of the form \fIrrggbb\fR in hexadecimal.
 .Ip "\fBflush_regexps\fR 1" 0
-Using the \fBflush_regexps\fR option tells \s-1FMRTG\s0 to make sure that the plot
+Using the \fBflush_regexps\fR option tells Orca to make sure that the plot
 set including this option and all previous plot sets have matched all of
 the columns with their regular expressions.  See the above description
 of using regular expressions in the \fBdata\fR option for an example.
 .Ip "\fBoptional\fR 1" 0
 Because some of the input data files may not contain the column names
-that are listed in a particular plot, \s-1FMRTG\s0 provides two ways to handle
-missing data.  By default, \s-1FMRTG\s0 will generate a plot with \fI*\s-1UNKNOWN\s0*\fR
-data if the data is mission.  If you want \s-1FMRTG\s0 to not generate a plot
+that are listed in a particular plot, Orca provides two ways to handle
+missing data.  By default, Orca will generate a plot with \fI*\s-1UNKNOWN\s0*\fR
+data if the data is mission.  If you want Orca to not generate a plot
 if the data does not exist, then place
 .PP
 .Vb 1
@@ -809,7 +819,7 @@ By setting the \fBplot_max\fR option, the minimum value to be graphed is set.
 By default this will be auto-configured from the data you select with
 the graphing functions.
 .Ip "\fBrigid_min_max\fR 1" 0
-Normally \s-1FMRTG\s0 will automatically expand the lower and upper limit if
+Normally Orca will automatically expand the lower and upper limit if
 the graph contains a value outside the valid range.  By setting the
 \fBrigid_min_max\fR option, this is disabled.
 .Ip "\fBtitle\fR <text>" 0
@@ -836,14 +846,19 @@ previous graph, the \s-1STACK\s0 will either be a \s-1LINE\s0? or an \s-1AREA\s0
 The \fBlegend\fR option specifies for a single data source the comment that
 is placed below the \s-1GIF\s0 plot.
 .SH "ARCHITECTURE ISSUES"
-Because FMRTG is extremely IO intensive, I recommend that the host that
-locally mounts the web server content be the same machine that runs FMRTG.
-In addition, the RRD data files that FMRTG uses also require a good amount
-of IO.  The machine running FMRTG should always have the \fBdata_dir\fR
+Because Orca is extremely IO intensive, I recommend that the host that
+locally mounts the web server content be the same machine that runs Orca.
+In addition, the RRD data files that Orca uses also require a good amount
+of IO.  The machine running Orca should always have the \fBdata_dir\fR
 directory locally mounted.  It is more important this \fBdata_dir\fR be
 locally stored than \fBhtml_dir\fR for performance concerns.
+.SH "MAILING LISTS"
+Discussions regarding Orca take place on the mrtg-developers mailing
+list located at mrtg-developers@list.ee.ethz.ch.  To place yourself
+on the mailing list, send a message with the word subscribe to it
+to mrtg-developers-request@list.ee.ethz.ch.
 .SH "IMPLEMENTATION NOTES"
-FMRTG makes very heavy use of references to hashes and arrays to store
+Orca makes very heavy use of references to hashes and arrays to store
 all of the different data it uses.
 .PP
 The \fIDigest::MD5\fR module is used to cache the result of some
@@ -860,8 +875,8 @@ I welcome all comments and bug reports.  Please email them to Blair
 Zajac <blair@geostaff.com>.
 
 .rn }` ''
-.IX Title "FMRTG 1"
-.IX Name "fmrtg - Make HTML & GIF plots of daily, weekly, monthly & yearly data"
+.IX Title "ORCA 1"
+.IX Name "orca - Make HTML & GIF plots of daily, weekly, monthly & yearly data"
 
 .IX Header "NAME"
 
@@ -974,6 +989,8 @@ Zajac <blair@geostaff.com>.
 .IX Item "\fBlegend\fR \fItext\fR"
 
 .IX Header "ARCHITECTURE ISSUES"
+
+.IX Header "MAILING LISTS"
 
 .IX Header "IMPLEMENTATION NOTES"
 

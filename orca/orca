@@ -1,6 +1,6 @@
 #!/home/bzajac/opt-sparc-solaris/perl5/bin/perl -w
 
-# FMRTG: display arbitrary data from files onto web pages using RRD.
+# Orca: display arbitrary data from files onto web pages using RRD.
 #
 # Copyright (C) 1998 Blair Zajac and GeoCities, Inc.
 
@@ -18,7 +18,7 @@ $Data::Dumper::Purity   = 1;
 $Data::Dumper::Deepcopy = 1;
 
 # This is the version of this code.
-my $VERSION = 0.13;
+my $VERSION = 0.14;
 
 # The number of seconds in one day.
 my $day_seconds = 24*60*60;
@@ -55,13 +55,13 @@ sub handle_hup {
 }
 $SIG{HUP} = \&handle_hup;
 
-package MRTG::HTMLFile;
+package Orca::HTMLFile;
 
 use Carp;
 
 sub new {
   unless (@_ >= 4) {
-    confess "$0: MRTG::HTMLFile::new passed wrong number of arguments.\n";
+    confess "$0: Orca::HTMLFile::new passed wrong number of arguments.\n";
   }
   my ($class, $filename, $title, $top, $bottom) = @_;
   $bottom = '' unless defined $bottom;
@@ -318,13 +318,13 @@ package main;
 use vars qw($open_file_cache);
 $open_file_cache = OpenFileHash->new(150) unless $open_file_cache;
 
-package MRTG::DataFile;
+package Orca::DataFile;
 
 use Carp;
 
 sub new {
   unless (@_ == 2) {
-    confess "$0: MRTG::DataFile::new passed wrong number of arguments.\n";
+    confess "$0: Orca::DataFile::new passed wrong number of arguments.\n";
   }
 
   my $class    = shift;
@@ -416,14 +416,14 @@ sub status {
   $result;
 }
 
-package MRTG::GIFFile;
+package Orca::GIFFile;
 
 use RRD;
 use Carp;
 
 sub new {
   unless (@_ == 11) {
-    confess "$0: MRTG::GIFFile::new passed incorrect number of arguments.\n";
+    confess "$0: Orca::GIFFile::new passed incorrect number of arguments.\n";
   }
 
   my ($class,
@@ -439,10 +439,10 @@ sub new {
       $my_rrds_ref) = @_;
 
   unless (@$my_rrds_ref) {
-    confess "$0: MRTG::GIFFile::new passed empty \@rrds_ref reference.\n";
+    confess "$0: Orca::GIFFile::new passed empty \@rrds_ref reference.\n";
   }
   unless ($name) {
-    confess "$0: MRTG::GIFFile::new passed empty \$name.\n";
+    confess "$0: Orca::GIFFile::new passed empty \$name.\n";
   }
 
   # Remove any special characters from the unique name and do some
@@ -662,17 +662,17 @@ sub expire_string {
   return "$wday, $mday $month ".($year+1900)." $hour:$min:$sec GMT";
 }
 
-package MRTG::RRDFile;
+package Orca::RRDFile;
 
 use RRD;
 use Carp;
 use vars qw(@ISA);
 
-@ISA = qw(MRTG::DataFile);
+@ISA = qw(Orca::DataFile);
 
 sub new {
   unless (@_ == 8) {
-    confess "$0: MRTG::RRDFile::new passed incorrect number of arguments.\n";
+    confess "$0: Orca::RRDFile::new passed incorrect number of arguments.\n";
   }
 
   my ($class,
@@ -780,7 +780,7 @@ sub flush_data {
 
   my $rrd_filename = $self->filename;
 
-  # Create the MRTG data file if it needs to be created.
+  # Create the Orca data file if it needs to be created.
   if ($self->{_rrd_update_time} == -2) {
 
     # Assume that a maximum of two time intervals are needed before a
@@ -852,13 +852,13 @@ sub flush_data {
   return 1;
 }
 
-package MRTG::SourceDataFile;
+package Orca::SourceDataFile;
 
 use Carp;
 use Digest::MD5 qw(md5);
 use vars qw(@ISA);
 
-@ISA = qw(MRTG::DataFile);
+@ISA = qw(Orca::DataFile);
 
 # This is a static variable that caches the anonymous subroutines that
 # return the correct data from the input file.
@@ -866,7 +866,7 @@ my %read_value_subs;
 
 sub new {
   unless (@_ == 10) {
-    confess "$0: MRTG::SourceDataFile::new passed incorrect number of arguments.\n";
+    confess "$0: Orca::SourceDataFile::new passed incorrect number of arguments.\n";
   }
 
   my ($class,
@@ -1037,7 +1037,7 @@ my %my_rrds_cache;
 
 sub add_plots {
   unless (@_ == 8) {
-    confess "$0: MRTG::SourceDataFile::add_plots passed wrong number of arguments.\n";
+    confess "$0: Orca::SourceDataFile::add_plots passed wrong number of arguments.\n";
   }
 
   my ($self,
@@ -1272,7 +1272,7 @@ sub add_plots {
 
     # For each data source, create an executable subroutine that takes a
     # row of elements and returns the requested value.  Also create an
-    # unique MRTG data file name for this plot and a name for this plot
+    # unique Orca data file name for this plot and a name for this plot
     # that does not include the group.
     my @my_rrds;
     my @no_group_name;
@@ -1309,13 +1309,13 @@ sub add_plots {
 
       # Create a new RRD only if it doesn't already exist.
       unless (defined $rrd_data_files_ref->{$name}) {
-        my $rrd_file = MRTG::RRDFile->new($config_options,
-                                          $config_files,
-                                          $files_key,
-                                          $group,
-                                          $name,
-                                          $plot,
-                                          $choose_data_sub);
+        my $rrd_file = Orca::RRDFile->new($config_options,
+                                           $config_files,
+                                           $files_key,
+                                           $group,
+                                           $name,
+                                           $plot,
+                                           $choose_data_sub);
         $rrd_data_files_ref->{$name} = $rrd_file;
       }
       $self->{_all_rrd_ref} = $rrd_data_files_ref;
@@ -1331,16 +1331,16 @@ sub add_plots {
       $gif->add_rrds(@my_rrds);
     }
     else {
-      $gif = MRTG::GIFFile->new($config_options,
-                                $config_files,
-                                $config_plots,
-                                $files_key,
-                                $group,
-                                join(',', @my_rrds),
-                                join(',', @no_group_name),
-                                $plot,
-                                $rrd_data_files_ref,
-                                \@my_rrds);
+      $gif = Orca::GIFFile->new($config_options,
+                                 $config_files,
+                                 $config_plots,
+                                 $files_key,
+                                 $group,
+                                 join(',', @my_rrds),
+                                 join(',', @no_group_name),
+                                 $plot,
+                                 $rrd_data_files_ref,
+                                 \@my_rrds);
       $gif_files_ref->{hash}{$group_name} = $gif;
       push(@{$gif_files_ref->{list}}, $gif);
       push(@{$config_plots->[$old_i]{creates}}, $gif);
@@ -1500,7 +1500,7 @@ while (@ARGV and $ARGV[0] =~ /^-\w/) {
 
 die "usage: $0 [-o] [-v] config_file\n" unless @ARGV;
 
-print "FMRTG Version $VERSION.\n" if $opt_verbose;
+print "Orca Version $VERSION.\n" if $opt_verbose;
 
 &main(@ARGV);
 
@@ -1777,10 +1777,10 @@ sub create_html_files {
   print "Creating HTML files in `$html_dir/'.\n" if $opt_verbose;
 
   # Create the main HTML index.html file.
-  my $index_html = MRTG::HTMLFile->new($index_filename,
-                                       $config_options->{html_top_title},
-                                       $config_options->{html_page_header},
-                                       $config_options->{html_page_footer});
+  my $index_html = Orca::HTMLFile->new($index_filename,
+                                        $config_options->{html_top_title},
+                                        $config_options->{html_page_header},
+                                        $config_options->{html_page_footer});
   unless ($index_html) {
     warn "$0: warning: cannot open `$index_filename' for writing: $!\n";
     return;
@@ -1827,10 +1827,10 @@ sub create_html_files {
         my $href      = "$group_basename-$plot_type.html";
         my $filename  = "$html_dir/$href";
         my $Plot_Type = Capatialize($plot_type);
-        my $fd = MRTG::HTMLFile->new($filename,
-                                     "$Plot_Type $group",
-                                     $config_options->{html_page_header},
-                                     $config_options->{html_page_footer});
+        my $fd = Orca::HTMLFile->new($filename,
+                                      "$Plot_Type $group",
+                                      $config_options->{html_page_header},
+                                      $config_options->{html_page_footer});
         unless ($fd) {
           warn "$0: warning: cannot open `$filename' for writing: $!\n";
           next;
@@ -1975,10 +1975,10 @@ sub create_html_files {
           my $href      = "$no_group_name-$plot_type.html";
           my $filename  = "$html_dir/$href";
           my $Plot_Type = Capatialize($plot_type);
-          my $fd = MRTG::HTMLFile->new($filename,
-                                       "$Plot_Type $legend_no_group",
-                                       $config_options->{html_page_header},
-                                       "<hr>\n$config_options->{html_page_footer}");
+          my $fd = Orca::HTMLFile->new($filename,
+                                        "$Plot_Type $legend_no_group",
+                                        $config_options->{html_page_header},
+                                        "<hr>\n$config_options->{html_page_footer}");
           unless ($fd) {
             warn "$0: warning: cannot open `$filename' for writing: $!\n";
             next;
@@ -2037,10 +2037,10 @@ sub create_html_files {
       my $legend_with_group = replace_group_name($gif->plot_ref->{title},
                                                  $gif->group);
       my $summarize_name = "$html_dir/$with_group_name.html";
-      my $summarize_html = MRTG::HTMLFile->new($summarize_name,
-                                               $legend_with_group,
-                                               $config_options->{html_page_header},
-                                               $config_options->{html_page_footer});
+      my $summarize_html = Orca::HTMLFile->new($summarize_name,
+                                                $legend_with_group,
+                                                $config_options->{html_page_header},
+                                                $config_options->{html_page_footer});
       unless ($summarize_html) {
         warn "$0: warning: cannot open `$summarize_name' for writing: $!\n";
         next;
@@ -2138,9 +2138,9 @@ sub email_message {
   if (open(SENDMAIL, "|/usr/lib/sendmail -oi -t")) {
     print SENDMAIL <<"EOF";
 To: $people
-Subject: MRTG: $subject
+Subject: Orca: $subject
  
-MRTG: $subject
+Orca: $subject
 EOF
     close(SENDMAIL) or
       warn "$0: warning: sendmail did not close: $!\n";
@@ -2269,15 +2269,15 @@ sub find_files {
         else {
           print "  $filename\n" if $opt_verbose;
           my $data_file = 
-            MRTG::SourceDataFile->new($filename,
-                                      $config_files->{$files_key}{interval},
-                                      $config_options->{late_interval},
-                                      $config_files->{$files_key}{reopen},
-                                      $config_files->{$files_key}{column_description},
-                                      $config_files->{$files_key}{date_source},
-                                      $config_files->{$files_key}{date_format},
-                                      $config_options->{warn_email},
-                                      $source_file_state);
+            Orca::SourceDataFile->new($filename,
+                                       $config_files->{$files_key}{interval},
+                                       $config_options->{late_interval},
+                                       $config_files->{$files_key}{reopen},
+                                       $config_files->{$files_key}{column_description},
+                                       $config_files->{$files_key}{date_source},
+                                       $config_files->{$files_key}{date_format},
+                                       $config_options->{warn_email},
+                                       $source_file_state);
           unless ($data_file) {
             warn "$0: warning: cannot process `$filename'.\n";
             next;
@@ -2693,7 +2693,7 @@ my $pcl_plot_index;
 
 # The following options go into the options and files hashes.  If you
 # add any elements to pcl_plot_append_elements, make sure up update
-# MRTG::SourceDataFile::add_plots.
+# Orca::SourceDataFile::add_plots.
 my @pcl_option_elements;
 my @pcl_file_elements;
 my @pcl_plot_elements;
@@ -2947,15 +2947,15 @@ __END__
 
 =head1 NAME
 
-fmrtg - Make HTML & GIF plots of daily, weekly, monthly & yearly data
+orca - Make HTML & GIF plots of daily, weekly, monthly & yearly data
 
 =head1 SYNOPSIS
 
-  fmrtg [-v [-v [-v]]] [-o] configuration_file
+  orca [-v [-v [-v]]] [-o] configuration_file
 
 =head1 DESCRIPTION
 
-FMRTG is a tool useful for plotting arbitrary data from text files onto
+Orca is a tool useful for plotting arbitrary data from text files onto
 a directory on Web server.  It has the following features:
 
   * Configuration file based.
@@ -2982,39 +2982,45 @@ a directory on Web server.  It has the following features:
   * Can be run under cron or it can sleep itself waiting for file updates
     based on when the file was last updated.
 
-FMRTG is based the the RRD tool by Tobias Oetiker.  While it is similar to
-the other tools based on RRD, such as SMRTG and MRTG, it is significantly
-different.
+Orca is based the the RRD tool by Tobias Oetiker.  While it is similar to
+the other tools based on RRD, such as Cricket and MRTG, it is significantly
+different.  To see these other tools, examine
+
+  http://ee-staff.ethz.ch/~oetiker/webtools/mrtg/mrtg.html
+
+and
+
+  http://www.munitions.com/~jra/cricket/
 
 =head1 EXAMPLES
 
-A small static example of FMRTG is at
+A small static example of Orca is at
 
-http://www.geocities.com/ResearchTriangle/Thinktank/4996/fmrtg-example/
+  http://www.geocities.com/ResearchTriangle/Thinktank/4996/orca-example/
 
-Please inform me of any other sites using FMRTG and I will include them
+Please inform me of any other sites using Orca and I will include them
 here.
 
 =head1 REQUIREMENTS
 
-I have used only version version 5.005_02 of Perl with FMRTG.  Because
-FMRTG makes very heavy use of references, it may or may not work
-with older versions of Perl.  I welcome feedback if FMRTG works with
+I have used only version version 5.005_02 of Perl with Orca.  Because
+Orca makes very heavy use of references, it may or may not work
+with older versions of Perl.  I welcome feedback if Orca works with
 older Perls.
 
-FMRTG also requires several other Perl modules.  These are:
+Orca also requires several other Perl modules.  These are:
 
   Math::IntervalSearch
    Version 1.00 or greater.
-   ftp://ftp.gps.caltech.edu/pub/blair/Perl/Math-Interpolate-1.00.tar.gz
-   http://www.perl.com/CPAN/authors/id/B/BZ/BZAJAC/Math-Interpolate-1.00.tar.gz
+   ftp://ftp.gps.caltech.edu/pub/blair/Perl/Math-Interpolate-1.01.tar.gz
+   http://www.perl.com/CPAN/authors/id/B/BZ/BZAJAC/Math-Interpolate-1.01.tar.gz
 
   Digest::MD5
    Version 2.00 or greater.
-   http://www.perl.com/CPAN/authors/id/GAAS/Digest-MD5-2.00.tar.gz
+   http://www.perl.com/CPAN/authors/id/GAAS/Digest-MD5-2.01.tar.gz
 
   RRD
-   Version 19981122.22 or greater.
+   Version 19981217.00 or greater.
    http://ee-staff.ethz.ch/~oetiker/webtools/mrtg/3.0/
 
 The modules can be installed into your Perl tree with the following
@@ -3022,8 +3028,8 @@ commands:
 
 Math::Interval:
 
-  % gunzip -c Math-Interpolate-1.00.tar.gz | tar xvf -
-  % cd Math-Interpolate-1.00
+  % gunzip -c Math-Interpolate-1.01.tar.gz | tar xvf -
+  % cd Math-Interpolate-1.01
   % perl Makefile.PL
   % make
   % make test
@@ -3031,8 +3037,8 @@ Math::Interval:
 
 Digest::MD5
 
-  % gunzip -c Digest-MD5-2.00.tar.gz | tar xvf -
-  % cd Digest-MD5-2.00
+  % gunzip -c Digest-MD5-2.01.tar.gz | tar xvf -
+  % cd Digest-MD5-2.01
   % perl Makefile.PL
   % make
   % make test
@@ -3055,30 +3061,30 @@ optimization turned on.
 
 =head1 COMMAND LINE OPTIONS
 
-FMRTG has only two command line options.  They are:
+Orca has only two command line options.  They are:
 
-B<-v>: Verbose.  Have FMRTG spit out more verbose messages.  As you add
+B<-v>: Verbose.  Have Orca spit out more verbose messages.  As you add
 more B<-v>'s to the command line, more messages are sent out.  Any more
-than three B<-v>'s are not used by FMRTG.
+than three B<-v>'s are not used by Orca.
 
-B<-o>: Once.  This tells FMRTG to go through the steps of finding files,
+B<-o>: Once.  This tells Orca to go through the steps of finding files,
 updating the RRDs, updating the GIFs, and creating the HTML files once.
-Normally, FMRTG loops continuously looking for new and updated files.
+Normally, Orca loops continuously looking for new and updated files.
 
-After the command line options are listed, FMRTG takes one more argument
+After the command line options are listed, Orca takes one more argument
 which is the name of the configuration file to use.  Sample configuration
 files can be found in the sample_configs directory with the distribution
 of this tool.
 
 =head1 INSTALLATION AND CONFIGURATION
 
-The first step in using FMRTG is to set up a configuration file that
-instructs FMRTG on what to do.  The configuration file is based on a
+The first step in using Orca is to set up a configuration file that
+instructs Orca on what to do.  The configuration file is based on a
 key/value pair structure.  The key name must start at the beginning of
 a line.  Lines that begin with whitespace are concatenated onto the the
-last key's value.  This is the same format as used by MRTG and SMRTG.
+last key's value.  This is the same format as used by MRTG and Cricket.
 
-There are three main groups of options in a FMRTG confg: general options,
+There are three main groups of options in a Orca confg: general options,
 file specific options, and plot specific options.  General options may
 be used by the file and plot specific options.  If an option is required,
 then it is only placed one time into the configuration file.
@@ -3090,9 +3096,9 @@ These are the required options:
 
 =item B<state_file> I<filename>
 
-For FMRTG to work efficiently, it saves the last modification time of
+For Orca to work efficiently, it saves the last modification time of
 all input data files and the Unix epoch time when they were last read
-by FMRTG into a state file.  The value for B<state_file> must be a
+by Orca into a state file.  The value for B<state_file> must be a
 valid, writable filename.  If I<filename> does not begin with a / and
 the B<base_dir> option was set, then the B<base_dir> directory will be
 prepended to the I<filename>.
@@ -3103,9 +3109,9 @@ this file will not be large.
 =item B<html_dir> I<directory>
 
 B<html_dir> specifies the root directory for the main index.html and
-all underlying HTML and GIF files that FMRTG generates.  This should
+all underlying HTML and GIF files that Orca generates.  This should
 not be a directory that normal users will edit.  Ideally this directory
-should be on a disk locally attached to the host running FMRTG, but is
+should be on a disk locally attached to the host running Orca, but is
 not necessary.
 
 If I<directory> does not begin with a / and the B<base_dir> option was
@@ -3114,9 +3120,9 @@ set, then the B<base_dir> directory will be prepended to I<directory>.
 =item B<data_dir> I<directory>
 
 B<data_dir> specifies the root directory for the location of the RRD data
-files that FMRTG generates.  For best performance, this directory should
-be on a disk locally attached to the host running FMRTG.  Otherwise,
-the many IO operations that FMRTG performs will be greatly slowed down.
+files that Orca generates.  For best performance, this directory should
+be on a disk locally attached to the host running Orca.  Otherwise,
+the many IO operations that Orca performs will be greatly slowed down.
 It is more important this B<data_dir> be locally stored than B<html_dir>
 for performance concerns.
 
@@ -3156,7 +3162,7 @@ late_interval.
 =item B<warn_email> I<email_address> [I<email_address> ...]
 
 B<warn_email> takes a list of email addresses of people to email
-when something goes wrong with either FMRTG or the input data files.
+when something goes wrong with either Orca or the input data files.
 Currently email messages are sent out the the following circumstances:
 
   1) When a file did exist and now is gone.
@@ -3185,7 +3191,7 @@ By default, expiring the GIF files is not enabled.
 
 =item B<find_times> I<hours:minutes> [I<hours:minutes> ...]
 
-The B<find_times> option is used to tell FMRTG when to go and find new
+The B<find_times> option is used to tell Orca when to go and find new
 files.  This particularly useful when new input data files are created
 at midnight.  In this case, something like
 
@@ -3193,35 +3199,35 @@ at midnight.  In this case, something like
 
 would work.
 
-By default, files are only searched for when FMRTG starts up.
+By default, files are only searched for when Orca starts up.
 
 =item B<html_top_title> I<text> ...
 
-The I<text> is placed at the top of the main index.html that FMRTG
+The I<text> is placed at the top of the main index.html that Orca
 creates.  By default, no addition text is placed at the top of the
 main index.html.
 
 =item B<html_page_header> I<text> ...
 
-The I<text> is placed at the top of each HTML file that FMRTG creates.
+The I<text> is placed at the top of each HTML file that Orca creates.
 By default, no additional text is placed at the top of each HTML file.
 
 =item B<html_page_footer> I<text> ...
 
-The I<text> is placed at the bottom of each HTML file that FMRTG creates.
+The I<text> is placed at the bottom of each HTML file that Orca creates.
 By default, no additional text is placed at the bottom of each HTML file.
 
 =item B<sub_dir> I<directory>
 
-In certain cases FMRTG will not create sub directories for the different
-groups of files that it processes.  If you wish to force FMRTG to create
+In certain cases Orca will not create sub directories for the different
+groups of files that it processes.  If you wish to force Orca to create
 sub directories, then do this
 
   sub_dir 1
 
 =head2 Files Options
 
-The next step in configuring FMRTG is telling where to find the files to
+The next step in configuring Orca is telling where to find the files to
 use as input, a description of the columns of data comprising the file,
 the interval at which the file is updated, and where the measurement
 time is stored in the file.  This is stored into a files set.
@@ -3254,31 +3260,31 @@ An unlimited number of file sets may be listed.
 
 =item B<find_files> I<path|regexp> [I<path|regexp> ...]
 
-The B<find_files> option tells FMRTG what data files to use as
+The B<find_files> option tells Orca what data files to use as
 its input.  The arguments to B<find_files> may be a simple filename,
 a complete path to a filename, or a regular expression to find files.
 The regular expression match is not the normal shell globbing that the
-Bourne shell, C shell or other shells use.  Rather, FMRTG uses the Perl
+Bourne shell, C shell or other shells use.  Rather, Orca uses the Perl
 regular expressions to find files.  For example:
 
   find_files /data/source1 /data/source2
 
-will have FMRTG use /data/source1 and /data/source2 as the inputs
-to FMRTG.  This could have also been written as
+will have Orca use /data/source1 and /data/source2 as the inputs
+to Orca.  This could have also been written as
 
   find_files /data/source\d
 
 and both data files will be used.
 
-In the two above examples, FMRTG will assume that both data files
+In the two above examples, Orca will assume that both data files
 represent data from the same source.  If this is not the case, such as
 source1 is data from one place and source2 is data from another place,
-then FMRTG needs to be told to treat the data from each file as distinct
+then Orca needs to be told to treat the data from each file as distinct
 data sources.  This be accomplished in two ways.  The first is by creating
 another files { ... } option set.  However, this requires copying all
 of the text and makes maintenance of the configuration file complex.
 The second and recommend approach is to place ()'s around parts of the
-regular expression to tell FMRTG how to distinguish the two data files:
+regular expression to tell Orca how to distinguish the two data files:
 
   find_files /data/(source\d)
 
@@ -3310,9 +3316,9 @@ the input data files listed in this files set.
 
 =item B<column_description> first_line
 
-For FMRTG to plot the data, it needs to be told what each column of
+For Orca to plot the data, it needs to be told what each column of
 data holds.  This is accomplished by creating a text description for
-each column.  There are two ways this may be loaded into FMRTG.  If the
+each column.  There are two ways this may be loaded into Orca.  If the
 input data files for a files set do not change, then the column names
 can be listed after B<column_description>:
 
@@ -3323,8 +3329,8 @@ use the argument "first_line" to B<column_description>:
 
   column_description first_line
 
-This informs FMRTG that it should read the first line of all the input
-data files for the column description.  FMRTG can handle different files
+This informs Orca that it should read the first line of all the input
+data files for the column description.  Orca can handle different files
 in the same files set that have different number of columns and column
 descriptions.  The only limitation here is that column descriptions
 are white space separated and therefore, no spaces are allowed in the
@@ -3334,30 +3340,30 @@ column descriptions.
 
 =item B<date_source> file_mtime
 
-The B<date_source> option tells FMRTG where time and date of the
+The B<date_source> option tells Orca where time and date of the
 measurement is located.  The first form of the B<date_source> options
 lists the column name as given to B<column_description> that contains
 the Unix epoch time.  The second form with the file_mtime argument tells
-FMRTG that the date and time for any new data in the file is the last
+Orca that the date and time for any new data in the file is the last
 modification time of the file.
 
 =item B<date_format> I<string>
 
 The B<date_format> option is only required if the column_name argument
-to B<date_source> is used.  Current, this argument is not used by FMRTG.
+to B<date_source> is used.  Current, this argument is not used by Orca.
 
 =head2 Optional Files Options
 
 =item B<reopen> 1
 
-Using the B<reopen> option for a files set instructs FMRTG to close
+Using the B<reopen> option for a files set instructs Orca to close
 and reopen any input data files when there is new data to be read.
 This is of most use when an input data file is erased and rewritten by
 some other process.
 
 =head2 Plot Options
 
-The final step is to tell FMRTG what plots to create and how to create
+The final step is to tell Orca what plots to create and how to create
 them.  The general format for creating a plot is:
 
   plot {
@@ -3401,7 +3407,7 @@ set may be put into a single plot.
 
 =item B<data> I<regular expression>
 
-The B<data> plot option tells FMRTG the data sources to use to place
+The B<data> plot option tells Orca the data sources to use to place
 in a single GIF plot.  At least one B<data> option is required for a
 particular plot and as many as needed may be placed into a single plot.
 
@@ -3421,7 +3427,7 @@ total number of bits per second, you could do this:
 
 The second form allows for matching column names that match a regular
 expression and plotting all of those columns that match the regular
-expression in a single plot.  To tell FMRTG that a regular expression
+expression in a single plot.  To tell Orca that a regular expression
 is being used, then only a single non whitespace separated argument to
 B<data> is allowed.  In addition, the argument must contain at least one
 set of parentheses ()'s.  When a regular expression matches a column name,
@@ -3464,7 +3470,7 @@ $2, etc variables.  Take the following configuration for example:
   .
   }
 
-If the following data files are found by FMRTG
+If the following data files are found by Orca
 
   /data/solaris-2.6/olympia/percol-1998-12-01
   /data/solaris-2.6/olympia/percol-1998-12-02
@@ -3474,7 +3480,7 @@ If the following data files are found by FMRTG
 then separate plots will be created for olympia and sunridge, with each
 plot containing the input and output number of packets per second.
 
-By default, when FMRTG finds a plot set with a regular expression
+By default, when Orca finds a plot set with a regular expression
 match, it will only find one match, and then go on to the next plot set.
 After it reaches the last plot set, it will go back to the first plot set
 with a regular expression match and look for the next data that matches
@@ -3489,7 +3495,7 @@ HTML files using the above configuration will have links in this order:
   hme1 Input & Output Errors per Second
 
 If you wanted to have the links listed in order of hme0 and hme1,
-then you would add the B<flush_regexps> option to tell FMRTG to find
+then you would add the B<flush_regexps> option to tell Orca to find
 all regular expression matches for a particular plot set and all plot
 sets before the plot set containing B<flush_regexps> before continuing
 on to the next plot set.  For example, if
@@ -3525,7 +3531,7 @@ option refers to the second B<data> option, etc.
 
 =item B<data_type> I<type>
 
-When defining data types, FMRTG uses the same data types as provided
+When defining data types, Orca uses the same data types as provided
 by RRD.  These are (a direct quote from the RRDcreate manual page):
 
 I<type> can be one of the following: B<GAUGE> this is for things like
@@ -3571,7 +3577,7 @@ plot.  The color should be of the form I<rrggbb> in hexadecimal.
 
 =item B<flush_regexps> 1
 
-Using the B<flush_regexps> option tells FMRTG to make sure that the plot
+Using the B<flush_regexps> option tells Orca to make sure that the plot
 set including this option and all previous plot sets have matched all of
 the columns with their regular expressions.  See the above description
 of using regular expressions in the B<data> option for an example.
@@ -3579,9 +3585,9 @@ of using regular expressions in the B<data> option for an example.
 =item B<optional> 1
 
 Because some of the input data files may not contain the column names
-that are listed in a particular plot, FMRTG provides two ways to handle
-missing data.  By default, FMRTG will generate a plot with I<*UNKNOWN*>
-data if the data is mission.  If you want FMRTG to not generate a plot
+that are listed in a particular plot, Orca provides two ways to handle
+missing data.  By default, Orca will generate a plot with I<*UNKNOWN*>
+data if the data is mission.  If you want Orca to not generate a plot
 if the data does not exist, then place
 
   optional 1
@@ -3614,7 +3620,7 @@ the graphing functions.
 
 =item B<rigid_min_max> 1
 
-Normally FMRTG will automatically expand the lower and upper limit if
+Normally Orca will automatically expand the lower and upper limit if
 the graph contains a value outside the valid range.  By setting the
 B<rigid_min_max> option, this is disabled.
 
@@ -3653,16 +3659,23 @@ is placed below the GIF plot.
 
 =head1 ARCHITECTURE ISSUES
 
-Because FMRTG is extremely IO intensive, I recommend that the host that
-locally mounts the web server content be the same machine that runs FMRTG.
-In addition, the RRD data files that FMRTG uses also require a good amount
-of IO.  The machine running FMRTG should always have the B<data_dir>
+Because Orca is extremely IO intensive, I recommend that the host that
+locally mounts the web server content be the same machine that runs Orca.
+In addition, the RRD data files that Orca uses also require a good amount
+of IO.  The machine running Orca should always have the B<data_dir>
 directory locally mounted.  It is more important this B<data_dir> be
 locally stored than B<html_dir> for performance concerns.
 
+=head1 MAILING LISTS
+
+Discussions regarding Orca take place on the mrtg-developers mailing
+list located at mrtg-developers@list.ee.ethz.ch.  To place yourself
+on the mailing list, send a message with the word subscribe to it
+to mrtg-developers-request@list.ee.ethz.ch.
+
 =head1 IMPLEMENTATION NOTES
 
-FMRTG makes very heavy use of references to hashes and arrays to store
+Orca makes very heavy use of references to hashes and arrays to store
 all of the different data it uses.
 
 The I<Digest::MD5> module is used to cache the result of some

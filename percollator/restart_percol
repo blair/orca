@@ -3,7 +3,7 @@
 # This script runs percollator.se with the proper options for our site.
 
 # Set this variable.
-STATSDIR=/home/bzajac/Code/MRTG/bzajac/percollator
+STATSDIR=/home/bzajac/Code/Orca/bzajac/percollator
 
 # Kill any running percollators.
 $STATSDIR/bin/stop_percol

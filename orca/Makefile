@@ -1,7 +1,7 @@
-all:	README fmrtg.man
+all:	README orca.man
 
-fmrtg.man:	fmrtg
+orca.man:	orca
 	pod2man $< > $@
 
-README:		fmrtg
+README:		orca
 	pod2text $< > $@

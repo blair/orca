@@ -1,3 +1,13 @@
+Tue Jan 26 10:07:40 PST 1999
+
+	Fix a bug in lib/Makefile.in where the variable $(CP) was used
+	but never defined.
+
+	Fix a bug where watch_data_sources() would do an extra loop
+	each time file updates were looked for.
+
+	Version 0.16.
+
 Mon Jan 25 15:25:12 PST 1999
 
 	Update to use RRDtool 0.99.1.

@@ -16,7 +16,7 @@ orca.gif.hex: orca.gif
 
 install: all
 	$(MKDIR) $(libdir)
-	-$(CP) -p $(libdir)/percollator.cfg $(libdir)/percollator.cfg.`date +%Y-%m-%d-%H:%M:%S`
+	-cp -p $(libdir)/percollator.cfg $(libdir)/percollator.cfg.`date +%Y-%m-%d-%H:%M:%S`
 	$(INSTALL) -m 0644 percollator.cfg $(libdir)
 	$(INSTALL) -m 0644 percollator.se $(libdir)
 

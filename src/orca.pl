@@ -17,7 +17,7 @@ $Data::Dumper::Deepcopy = 1;
 
 # This is the version of this code.
 use vars qw($VERSION);
-$VERSION = 0.15;
+$VERSION = 0.16;
 
 # The number of seconds in one day.
 my $day_seconds = 24*60*60;
@@ -1597,8 +1597,9 @@ sub watch_data_sources {
   # Load the current state of the source data files.
   my $source_file_state = &load_state($config_options->{state_file});
 
-  # The first time through we always find new files.  Calculate the time
-  # interval the current time is in.
+  # The first time through we always find new files.  Determine the
+  # time interval that the current time is in, where the intervals are
+  # defined as the times to have Orca find new source data files.
   my $find_new_files = 1;
   my $time_interval  = get_time_interval($config_options->{find_times});
 
@@ -1607,9 +1608,8 @@ sub watch_data_sources {
   my %group_load_time;
 
   for (;;) {
-    # Get the list of files to watch and the plots that will be created.
-    # Use the previous time through new_found_files_ref if it is defined,
-    # otherwise use the old one.
+    # If Orca is being forced to find new files, then set up the variables
+    # here.  Determine the current time interval we're in.
     if ($force_find_files) {
       $force_find_files = 0;
       $find_new_files   = 1;
@@ -1618,14 +1618,17 @@ sub watch_data_sources {
 
     my $found_new_files = 0;
     if ($find_new_files) {
+      $find_new_files = 0;
       if ($opt_verbose) {
         print "Finding files and setting up data structures at ",
               scalar localtime, ".\n";
       }
+
+      # Get the list of files to watch and the plots that will be created.
+      # If files have been previously found, then use those files in the
+      # search for new ones.
       $old_found_files_ref = $new_found_files_ref if $new_found_files_ref;
-      ($found_new_files,
-       $new_found_files_ref,
-       $group_files_ref) =
+      ($found_new_files, $new_found_files_ref, $group_files_ref) =
          &find_files($config_filename,
                      $config_options,
                      $config_files,
@@ -1634,15 +1637,19 @@ sub watch_data_sources {
                      $old_found_files_ref,
                      $rrd_data_files_ref,
                      $gif_files_ref);
-      $find_new_files = 0;
 
-      # Go through all of the groups and find the maximum load time.
+      # Go through all of the groups and for each group and all of the files
+      # in the group find the next load time in the future.
       undef %group_load_time;
-      foreach my $group (sort keys %$group_files_ref) {
+      my $now = time;
+      foreach my $group (keys %$group_files_ref) {
         my $group_load_time = 1e20;
         foreach my $filename (@{$group_files_ref->{$group}}) {
           my $load_time    = $new_found_files_ref->{$filename}->next_load_time;
           $group_load_time = $load_time if $load_time < $group_load_time;
+        }
+        if ($group_load_time < $now) {
+          die "$0: internal error: group_load_time less than current time.\n"
         }
         $group_load_time{$group} = $group_load_time;
       }
@@ -1650,30 +1657,32 @@ sub watch_data_sources {
 
 #    system("/bin/ps -p $$ -o\"rss vsz pmem time user pid comm\"");
 
-    # Because the amount of data load from the source data files can be
-    # large, go through each group of source files, load all of the data
-    # for that group, flush the data, and then go on to the next group.
-    # For each source file that had new data, note the RRDs that get
-    # updated from that source file.  To decide if the data from the 
+    # Because the amount of data loaded from the source data files can
+    # be large, go through each group of source files, load all of the
+    # data for that group, flush the data, and then go on to the next
+    # group.  For each source file that had new data, note the RRDs
+    # that get updated from that source file.  When going through each
+    # group note the time when the group should be next examined for
+    # updates.  Only note the time to sleep to if it is in the future.
     my $updated_source_files = 0;
     my $sleep_till_time;
     foreach my $group (sort keys %group_load_time) {
+
+      # Skip this group if the load time has not been reached and if
+      # no new files were found.
       my $group_load_time = $group_load_time{$group};
-      $sleep_till_time    = $group_load_time unless $sleep_till_time;
       if ($group_load_time > time) {
-        if ($group_load_time < $sleep_till_time) {
-          $sleep_till_time = $group_load_time;
-        }
-        # Skip this group unless new files were found, then we need to
-        # load the data from them.
+        $sleep_till_time = $group_load_time unless $sleep_till_time;
+        $sleep_till_time = $group_load_time if $group_load_time < $sleep_till_time;
         next unless $found_new_files;
       }
 
       if ($opt_verbose) {
         print "Loading new data", $group ? " from $group" : "", ".\n";
       }
-      my $number_new_data_points = 0;
+
       my %this_group_rrds;
+      my $number_new_data_points = 0;
       $group_load_time = 1e20;
       foreach my $filename (@{$group_files_ref->{$group}}) {
         my $source_file = $new_found_files_ref->{$filename};
@@ -1691,8 +1700,16 @@ sub watch_data_sources {
         my $load_time    = $source_file->next_load_time;
         $group_load_time = $load_time if $load_time < $group_load_time;
       }
+
       # Update the load time for this group.
       $group_load_time{$group} = $group_load_time;
+
+      # Now that the source data files have been read, recalculate the
+      # time to sleep to if the load time for this group is in the future.
+      if (time < $group_load_time) {
+        $sleep_till_time = $group_load_time unless $sleep_till_time;
+        $sleep_till_time = $group_load_time if $group_load_time < $sleep_till_time;
+      }
 
       next unless $number_new_data_points;
       $updated_source_files = 1;
@@ -1748,17 +1765,21 @@ sub watch_data_sources {
       $time_interval  = $new_time_interval;
     }
 
-    # Sleep if the sleep_till_time has not passed.
-    my $now = time;
-    if ($sleep_till_time > $now) {
-      if ($opt_verbose) {
-        print "Sleeping at ",
-              scalar localtime($now),
-              " until ",
-              scalar localtime($sleep_till_time),
-              ".\n";
+    # Sleep if the sleep_till_time has not passed.  If sleep_till_time is
+    # now defined, then loop immediately.  Sleep at least one second if
+    # we need to sleep at all.
+    if ($sleep_till_time) {
+      my $now = time;
+      if ($sleep_till_time > $now) {
+        if ($opt_verbose) {
+          print "Sleeping at ",
+                scalar localtime($now),
+                " until ",
+                scalar localtime($sleep_till_time),
+                ".\n";
+        }
+        sleep($sleep_till_time - $now + 1);
       }
-      sleep($sleep_till_time - $now + 1);
     }
   }
 }

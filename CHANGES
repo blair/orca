@@ -1,3 +1,9 @@
+Wed Dec  9 09:55:01 PST 1998
+
+	Correct incorrect URL for Digest::MD5 in fmrtg.
+
+	Version 0.12.
+
 Tue Dec  8 12:12:07 PST 1998
 
 	Update the sample FMRTG configuration files to work properly with

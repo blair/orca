@@ -18,7 +18,7 @@ $Data::Dumper::Purity   = 1;
 $Data::Dumper::Deepcopy = 1;
 
 # This is the version of this code.
-my $VERSION = 0.11;
+my $VERSION = 0.12;
 
 # The number of seconds in one day.
 my $day_seconds = 24*60*60;
@@ -2935,7 +2935,7 @@ FMRTG also requires several other Perl modules.  These are:
 
   Digest::MD5
    Version 2.00 or greater.
-   http://www.perl.com/CPAN/authors/id/authors/id/GAAS/Digest-MD5-2.00.tar.gz
+   http://www.perl.com/CPAN/authors/id/GAAS/Digest-MD5-2.00.tar.gz
 
   RRD
    Version 19981122.22 or greater.

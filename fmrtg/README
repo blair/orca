@@ -62,7 +62,7 @@ REQUIREMENTS
 
       Digest::MD5
        Version 2.00 or greater.
-       http://www.perl.com/CPAN/authors/id/authors/id/GAAS/Digest-MD5-2.00.tar.gz
+       http://www.perl.com/CPAN/authors/id/GAAS/Digest-MD5-2.00.tar.gz
 
       RRD
        Version 19981122.22 or greater.

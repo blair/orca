@@ -4,7 +4,7 @@ FMRTG
 =====
 
 FMRTG is a tool useful for plotting arbitrary data from text files onto
-a directory on Web server.  It has the following features:
+a directory on a Web server.  It has the following features:
 
   * Configuration file based.
   * Reads white space separated data files.

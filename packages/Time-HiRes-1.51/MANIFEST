@@ -5,6 +5,7 @@ hints/dec_osf.pl	Hints for Time::HiRes for named architecture
 hints/dynixptx.pl	Hints for Time::HiRes for named architecture
 hints/irix.pl		Hints for Time::HiRes for named architecture
 hints/sco.pl		Hints for Time::HiRes for named architecture
+hints/svr4.pl		Hints for Time::HiRes for named architecture
 HiRes.pm		Time::HiRes extension
 t/HiRes.t		Test for Time::HiRes
 HiRes.xs		Time::HiRes extension

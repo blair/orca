@@ -8,6 +8,14 @@
 //
 // Portions copied from percollator.se written by Adrian Cockroft.
 //
+// Version 1.37:   Dec 28, 2002	Improved algorithm in raw_disk_map() which
+//				detects the end of the GLOBAL_disk_info array.
+//				To deal with occasions when the first disk is a
+//				CD-ROM and the second disk is an unmounted
+//				CD-ROM, revise the check in raw_disk_map() to
+//				detect both the first and second disk mentioned
+//				in GLOBAL_disk_info.  Patch contributed by Alan
+//				LeGrand <alegrand@wallace.com>.
 // Version 1.36:   Dec 17, 2002	Add measurements for tape (st) devices.  These
 //				tape measurements are only taken when the
 //				RAWDISK code is enabled.  The new measurements
@@ -288,8 +296,7 @@
 // The maximum number of columns of data.
 #define MAX_COLUMNS		2048
 
-// Use the new raw disk code all the time because it has been very
-// well tested and there are no major bug reports in it.
+// Enable the raw disk measuring code.
 #define USE_RAWDISK		1
 
 // If WATCH_OS is defined, then measure every part of the operating
@@ -607,12 +614,49 @@ int			RAW_disk_map=0;
 int			RAW_disk_count=0;
 double			RAW_disk_lastupdate;
 
+// Compare two short disk names and return if they have on the same
+// physical device name, ignoring slice info.
+int raw_disk_short_name_cmp(char disk1[],
+                            int  disk1_length,
+                            char disk2[],
+                            int  disk2_length)
+{
+  int i;
+
+  // Handle dad disks first since they do not have commas.
+  if (strncmp("dad", disk1, 3) == 0) {
+    return strncmp(disk1, disk2, disk1_length);
+  }
+
+  // Extract the physical disk name from disk slices.  This only works
+  // with SCSI disks where slices have commma separators.
+  for (i=0; i<disk1_length; ++i) {
+    if (disk1[i] == ',') {
+      disk1_length = i;
+      break;
+    }
+  }
+  for (i=0; i<disk2_length; ++i) {
+    if (disk2[i] == ',') {
+      disk2_length = i;
+      break;
+    }
+  }
+  if (disk1_length != disk2_length) {
+    return 1;
+  }
+  return strncmp(disk1, disk2, disk1_length);
+}
+
 // Function to scan kstat and map short device names to long device names.
 raw_disk_map() {
-  int  first_len;
+  int  first_name_length;
   char first_name[16];
+  int  second_name_length;
+  char second_name[16];
   char long_name[16];
   char short_name[16];
+  int  short_name_length;
   int  i;
   int  j;
 
@@ -627,25 +671,49 @@ raw_disk_map() {
   // uses MAX_RAWDISKS for the table length and the assumption that
   // short disks names come before short disk partition names to
   // detect the end of the table.  If it fails to detect the end it
-  // will coredump when it addresses unallocated memory.
+  // will core dump when it addresses unallocated memory.
+  //
+  // These symbols are used to recognize when we slip past the end of
+  // the raw devices in GLOBAL_disk_info.  It would be nice to just
+  // look for a slice like sd0,a but unfortunately EIDE disks do not
+  // have slices.
+  //
+  // Check for the first and second disk in case the CD-ROM shows up
+  // as the first disk since it will not show slice information unless
+  // it is mounted.
   strcpy(first_name, GLOBAL_disk_info[0].short_name);
-  first_len = strlen(first_name);
+  first_name_length = strlen(first_name);
+  if (MAX_RAWDISKS > 1) {
+    strcpy(second_name, GLOBAL_disk_info[1].short_name);
+    second_name_length = strlen(second_name);
+  }
   for (i=0; i<RAW_disk_count; ++i) {
     // Do not map st & fd devices.
-    if (strncmp(RAW_disk[i].short_name, "st", 2) != 0) {
-      if (strncmp(RAW_disk[i].short_name, "fd", 2) != 0) {
-        for (j=0; j<MAX_RAWDISKS; ++j) {
-          strcpy(short_name, GLOBAL_disk_info[j].short_name);
-          if (j > 0) {
-            if (strncmp(first_name, short_name, first_len) == 0) {
+    if (strncmp(RAW_disk[i].short_name, "st", 2) != 0 &&
+        strncmp(RAW_disk[i].short_name, "fd", 2) != 0) {
+      for (j=0; j<MAX_RAWDISKS; ++j) {
+        strcpy(short_name, GLOBAL_disk_info[j].short_name);
+        if (j > 0) {
+          short_name_length = strlen(short_name);
+          if (raw_disk_short_name_cmp(first_name,
+                                      first_name_length,
+                                      short_name,
+                                      short_name_length) == 0) {
+            break;
+          }
+          if (j > 1) {
+            if (raw_disk_short_name_cmp(second_name,
+                                        second_name_length,
+                                        short_name,
+                                        short_name_length) == 0) {
               break;
             }
           }
-          if (strcmp(RAW_disk[i].short_name, short_name) == 0) {
-            strcpy(long_name,GLOBAL_disk_info[j].long_name);
-            strcpy(RAW_disk[i].long_name, long_name);
-            break;
-          }
+        }
+        if (strcmp(RAW_disk[i].short_name, short_name) == 0) {
+          strcpy(long_name, GLOBAL_disk_info[j].long_name);
+          strcpy(RAW_disk[i].long_name, long_name);
+          break;
         }
       }
     }

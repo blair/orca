@@ -1,11 +1,6 @@
-#!/usr/contrib/bin/perl
-#
-# Version 1.5
-
-# Description:
-# Collect general performance statistics formatted for
+# Collect general HP performance statistics formatted for
 # interpretation by Orca.
-
+#
 # Usage: 
 # The following variables may be set:
 # 
@@ -40,45 +35,43 @@
 # $LastChangedBy$
 # $LastChangedRevision$
 
-# Note: Execution speed is more important than cleanliness here.
+# There are some scripts which are used for getting data and there is
+# phymem -- for getting physical memory.
 #
-#
-# There are some script which are used for getting data and there are 
-# 
-# phymem -- for getting physical memory
-# Copy this script in the path /usr/local/bin
+# Copy this script into a location in your path.
 #
 ##################BEGIN OF FILE##################
 #/* Program to determine statistics about the physical and virtual
-#  memory of a HP workstation, independent of HP-UX version.
-#Shows some of the fields on std out.
-#
-#Program:     phymem
-#Author:      Eef Hartman
-#Version:     1.1
-#Last change: 97/01/06
-#Compiled:    97/10/17 09:17:31
-#
-#Based on code, posted in the HPadmin mailing list.
-#
-#To compile: cc -o phys_mem phys_mem.c
-#
-#*/
+# * memory of a HP workstation, independent of HP-UX version.
+# * Shows some of the fields on std out.
+# *
+# * Program:     phymem
+# * Author:      Eef Hartman
+# * Version:     1.1
+# * Last change: 97/01/06
+# * Compiled:    97/10/17 09:17:31
+# *
+# * Based on code, posted in the HPadmin mailing list.
+# *
+# * To compile: cc -o phys_mem phys_mem.c
+# *
+# */
 #
 #static char SCCSid[] = "@(#)phys_mem    1.1";
 #
 ##include <sys/pstat.h>
 #
-#void main() {
-#struct pst_static stat_buf;
-#struct pst_dynamic dyn_buf;
+#int main(void) {
+#  struct pst_static stat_buf;
+#  struct pst_dynamic dyn_buf;
 #
-#pstat(PSTAT_STATIC,&stat_buf,sizeof(stat_buf),0,0);
-#pstat(PSTAT_DYNAMIC,&dyn_buf,sizeof(dyn_buf),0,0);
+#  pstat(PSTAT_STATIC, &stat_buf, sizeof(stat_buf), 0, 0);
+#  pstat(PSTAT_DYNAMIC, &dyn_buf, sizeof(dyn_buf), 0, 0);
 #
-#printf("Physical %ld \n",(stat_buf.physical_memory/256)*1000);
+#  printf("Physical %ld \n",(stat_buf.physical_memory/256)*1000);
 #
-#return; }
+#  return0 ;
+#}
 #
 ############END OF FILE#################
 #Other script is to get the df output correctly.
@@ -91,24 +84,20 @@
 #s/[     ]*\n[   ]*/ /
 #}'
 #####################EOF#####################
-#
-#
-#
 
 my $COMPRESS = '@COMPRESSOR@';
 
 # Explicitly set PATH to prevent odd problems if run manually.
-$ENV{PATH} = '/usr/bin:/etc:/usr/sbin:/usr/ucb:/sbin';
+$ENV{PATH} = '/bin:/usr/bin:/etc:/usr/sbin:/usr/ucb:/sbin';
 
-$Usage_Message = '
-Usage: orca-hp-stat.pl [-r out_root] [-i interval] [-d duration] [-h]
+my $Usage_Message = "
+usage: $0 [-r out_root] [-i interval] [-d duration] [-h]
 
 -r out_root set root output directory, default: /opt/log/performance
 -i interval number of seconds between checks, default: 300
 -d duration number of hours to run, default: 24
 -h this message
-
-';
+";
 
 # Parse the command line arguments
 while ($#ARGV >= 0) {
@@ -133,7 +122,7 @@ while ($#ARGV >= 0) {
 
 ## BEGIN set defaults
 
-$OUT_ROOT ||= '/home/orca/orcallator';    # root directory for dateless
+$OUT_ROOT ||= '/home/orca/orcallator';   # root directory for data files
 $INTERVAL ||= 300;                       # seconds between checks
 $DURATION ||= 24;                        # number of hours to run
 
@@ -158,7 +147,7 @@ $stat_file =
 $start_time = time();
 $timestamp  = 0;
 
-## Autodetect network interfaces
+# Auto detect network interfaces
 #open IN, "ifconfig -a|";
 open IN, "netstat -i|";
 while (<IN>) {
@@ -181,8 +170,9 @@ close IN;
 
 ## Make sure we can write output.
 umask 0022;    # make sure the file can be harvested
-unless ( -d $out_dir) {
-    system( "mkdir", "-p", "$out_dir" );
+unless (-d $out_dir) {
+  mkdir($out_dir, 0755)
+    or die "$0: cannot mkdir '$out_dir': $!\n";
 }
 open OUT, ">$stat_file" or die "ERROR: Could not open $stat_file: $!";
 my $oldfh = select OUT;
@@ -201,7 +191,7 @@ $need_header     = 1;
 $prev_header_cnt = 0;
 $prev_info_cnt   = 0;
 
-while ( $iterations-- > 0) {
+while ($iterations-- > 0) {
   $timestamp = $timestamp ? time() : $start_time;
   ($sec, $min, $hour, $mday, $mon, $year, $wday, $yday, $isdst) =
     localtime(time);
@@ -217,11 +207,11 @@ while ( $iterations-- > 0) {
   close IN;
   $load_header = "1runq\t5runq\t15runq";
 
-  if (scalar(split ' ', $load_header) != scalar(split ' ', $load_info)) {
+  unless (strings_have_same_number_words($load_header, $load_info)) {
     $load_header = '';
     $load_info   = '';
     $need_header = 1;
-    warn "WARNING: load header does not match load info.\n";
+    warn "$0: warning: load header does not match load info.\n";
   }
 
   ## Get number of system processes
@@ -234,19 +224,19 @@ while ( $iterations-- > 0) {
   $proc_info   = $num_proc;
   $proc_header = '#proc';
 
-  if (scalar(split ' ', $proc_header) != scalar(split ' ', $proc_info)) {
+  unless (strings_have_same_number_words($proc_header, $proc_info)) {
     $proc_header = '';
     $proc_info   = '';
     $need_header = 1;
-    warn "WARNING: #proc header does not match #proc info.\n";
+    warn "$0: warning: #proc header does not match #proc info.\n";
   }
 
   ## Get vmstat data
   open IN, "vmstat 1 2|";
   while (<IN>) {
     chomp;
-    if (/^[\s\d]+$/) {
 
+    if (/^[\s\d]+$/) {
       # overwrite first line on 2nd pass
       my ($vmstat_r,   $vmstat_b,  $vmstat_wa,  $vmstat_avm, $vmstat_fre,
           $vmstat_re,  $vmstat_at, $vmstat_pi, $vmstat_po,  $vmstat_fr,
@@ -263,8 +253,8 @@ while ( $iterations-- > 0) {
   $vmstat_header = "pagesactive\tpagesfree\tpagestotl\tPagesI/s\tPagesO/s\t" .
                    "PagesF/s\tscanrate\tusr%\tsys%\twio%\tidle%";
 
-  if (scalar(split ' ', $vmstat_header) != scalar(split ' ', $vmstat_info)) {
-    warn "WARNING: vmstat header does not match vmstat info.\n";
+  unless (strings_have_same_number_words($vmstat_header, $vmstat_info)) {
+    warn "$0: warning: vmstat header does not match vmstat info.\n";
     $vmstat_header = '';
     $vmstat_info   = '';
     $need_header   = 1;
@@ -291,7 +281,7 @@ while ( $iterations-- > 0) {
                          ($iused + $ifree),
                          $iused,
                          $ifree,
-                         100*($iused/($iused + $ifree)));
+                         100*$iused/($iused + $ifree));
       $fs_header .= "\t" . join("\t",
                                 "mntC_$mnt", "mntU_$mnt", "mntA_$mnt",
                                 "mntP_$mnt", "mntc_$mnt", "mntu_$mnt",
@@ -300,8 +290,8 @@ while ( $iterations-- > 0) {
   }
   close IN;
 
-  if (scalar(split ' ', $fs_header) != scalar(split ' ', $fs_info )) {
-    warn "WARNING: filesystem header does not match filesystem info.\n";
+  unless (strings_have_same_number_words($fs_header, $fs_info)) {
+    warn "$0: warning: filesystem header does not match filesystem info.\n";
     $fs_header   = '';
     $fs_info     = '';
     $need_header = 1;
@@ -333,8 +323,8 @@ while ( $iterations-- > 0) {
   $iostat_header = "disk_t/s\tdisk_rK/s\tdisk_wK/s\t";
   $iostat_info   = "${disk_t}\t${disk_rK}\t${disk_wK}";
 
-  if (scalar(split ' ', $iostat_header) != scalar(split ' ', $iostat_info)) {
-    warn "WARNING: iostat header does not match iostat info.\n";
+  unless (strings_have_same_number_words($iostat_header, $iostat_info)) {
+    warn "$0: warning: iostat header does not match iostat info.\n";
     $iostat_header = '';
     $iostat_info   = '';
     $need_header   = 1;
@@ -344,13 +334,13 @@ while ( $iterations-- > 0) {
   $packet_header = '';
   $packet_info   = '';
 
-  #foreach $interface ( split(/\s+/, $NET_INTERFACES)) {
+  #foreach $interface (split(/\s+/, $NET_INTERFACES)) {
   foreach $interface (@net_interfaces) {
     $packet_header .= "${interface}Ipkt/s\t${interface}IErr/s\t" .
                       "${interface}Opkt/s\t${interface}OErr/s\t" .
                       "${interface}Coll/s\t";
-    open IN, "netstat -I $interface 1|";
 
+    open IN, "netstat -I $interface 1|";
     while (<IN>) {
       if (/^\s*(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+/) {
         $packet_info .= "\t" . join("\t", $1, $2, $3, $4, $5);
@@ -360,8 +350,8 @@ while ( $iterations-- > 0) {
     close IN;
   }
 
-  if (scalar(split ' ', $packet_header) != scalar(split ' ', $packet_info)) {
-    warn "WARNING: packet header does not match packet info.\n";
+  unless (strings_have_same_number_words($packet_header, $packet_info)) {
+    warn "$0: warning: packet header does not match packet info.\n";
     $packet_header = '';
     $packet_info   = '';
     $need_header   = 1;
@@ -376,11 +366,12 @@ while ( $iterations-- > 0) {
     }
   }
   close IN;
+
   $tcp_info   = $tcp_estb;
   $tcp_header = 'tcp_estb';
 
-  if (scalar(split ' ', $tcp_estb_header) != scalar(split ' ', $tcp_estb_info)){
-    warn "WARNING: tcp_estb header does not match tcp_estb info.\n";
+  unless (strings_have_same_number_words($tcp_estb_header, $tcp_estb_info)) {
+    warn "$0: warning: tcp_estb header does not match tcp_estb info.\n";
     $tcp_estb_header = '';
     $tcp_estb_info   = '';
     $need_header     = 1;
@@ -399,8 +390,10 @@ while ( $iterations-- > 0) {
                    $tcp_info);
   $out_info =~ tr/ \t/\t/s;      # translate whitespace to single tabs
 
-  $header_cnt = split ' ', $out_header;
-  $info_cnt = split ' ', $out_info;
+  my @out_header = split ' ', $out_header;
+  my @out_info = split ' ', $out_info;
+  $header_cnt = @out_header;
+  $info_cnt = @out_info;
   if ($header_cnt != $info_cnt) {
     warn "ERROR: header columns do not equal data columns. Exiting.\n";
     &exit_nicely;
@@ -417,7 +410,7 @@ while ( $iterations-- > 0) {
   }
   print OUT $out_info, "\n";
 
-  sleep $INTERVAL - ( time() - $timestamp );
+  sleep $INTERVAL - (time() - $timestamp);
 }
 close OUT;
 
@@ -425,6 +418,14 @@ close OUT;
 system(@args);
 
 exit 0;
+
+# Subroutine to that tests if two strings have the same number of
+# whitespace separated words.
+sub strings_have_same_number_words {
+  my @words1 = split(' ', $_[0]);
+  my @words2 = split(' ', $_[1]);
+  scalar @words1 == scalar @words2;
+}
 
 # This subroutine is called by the signal handler.
 sub exit_nicely {

@@ -1,11 +1,6 @@
-#!/usr/bin/perl
-#
-# Version 1.7
-
-# Description:
-# Collect general performance statistics formatted for
+# Collect general AIX performance statistics formatted for
 # interpretation by Orca.
-
+#
 # Usage: 
 # The following variables may be set:
 # 
@@ -43,20 +38,18 @@
 
 my $COMPRESS = '@COMPRESSOR@';
 
-# Note: Execution speed is more important than cleanliness here.
-
 # Explicitly set PATH to prevent odd problems if run manually.
-$ENV{PATH} = '/usr/bin:/etc:/usr/sbin:/usr/ucb:/sbin';
+$ENV{PATH} = '/bin:/usr/bin:/etc:/usr/sbin:/usr/ucb:/sbin';
 
-$Usage_Message = '
-Usage: orca-aix-stat.pl [-r out_root] [-i interval] [-d duration] [-h]
+my $Usage_Message = "
+usage: $0 [-r out_root] [-i interval] [-d duration] [-h]
 
 -r out_root set root output directory, default: /opt/log/performance
 -i interval number of seconds between checks, default: 300
 -d duration number of hours to run, default: 24
 -h this message
+";
 
-';
 ############################
 # These are the packages you need to install
 # 1. perl
@@ -71,25 +64,24 @@ Usage: orca-aix-stat.pl [-r out_root] [-i interval] [-d duration] [-h]
 # http://www-1.ibm.com/servers/aix/products/aixos/linux/download.html
 # http://www.bullfreeware.com
 #
-#
-#  Good Luck, Rajesh Verma (rajeshverma@yahoo.com)
+# Good Luck, Rajesh Verma (rajeshverma@yahoo.com)
 ##############################
 
 # Parse the command line arguments
 while ($#ARGV >= 0) {
-  if ($ARGV[0] eq "-r" ) {
+  if ($ARGV[0] eq "-r") {
     shift @ARGV;
     $OUT_ROOT = shift @ARGV;
-  } elsif ($ARGV[0] eq "-i" ) {
+  } elsif ($ARGV[0] eq "-i") {
     shift @ARGV;
     $INTERVAL = shift @ARGV;
-  } elsif ($ARGV[0] eq "-d" ) {
+  } elsif ($ARGV[0] eq "-d") {
     shift @ARGV;
     $DURATION = shift @ARGV;
-  } elsif ($ARGV[0] eq "-h" ) {
+  } elsif ($ARGV[0] eq "-h") {
     print $Usage_Message;
     exit 0;
-  } elsif ($ARGV[0] =~ /^-/ ) {
+  } elsif ($ARGV[0] =~ /^-/) {
     die "Invalid flag: $ARGV[0]\n$Usage_Message";
   } else {
     die "Invalid argument: $ARGV[0]\n$Usage_Message";
@@ -123,11 +115,11 @@ $stat_file =
 $start_time = time();
 $timestamp  = 0;
 
-## Auto detect network interfaces
+# Auto detect network interfaces
 #open IN, "ifconfig -a|";
 open IN, "netstat -ni|";
 while (<IN>) {
-  # if (/^(\S+):/ ) {
+  # if (/^(\S+):/) {
   if (/^(\w+).*link/) {
     push @net_interfaces, $1;
   }
@@ -147,8 +139,9 @@ close IN;
 
 ## Make sure we can write output.
 umask 0022;    # make sure the file can be harvested
-unless ( -d $out_dir ) {
-  system( "mkdir", "-p", "$out_dir" );
+unless (-d $out_dir) {
+  mkdir($out_dir, 0755)
+    or die "$0: cannot mkdir '$out_dir': $!\n";
 }
 open OUT, ">$stat_file" or die "ERROR: Could not open $stat_file: $!";
 my $oldfh = select OUT;
@@ -167,11 +160,11 @@ $need_header     = 1;
 $prev_header_cnt = 0;
 $prev_info_cnt   = 0;
 
-while ( $iterations-- > 0 ) {
+while ($iterations-- > 0) {
   $timestamp = $timestamp ? time() : $start_time;
   ($sec, $min, $hour, $mday, $mon, $year, $wday, $yday, $isdst) =
     localtime(time);
-  $locltime = sprintf( "%.2d:%.2d:%.2d", $hour, $min, $sec );
+  $locltime = sprintf("%.2d:%.2d:%.2d", $hour, $min, $sec);
 
   ## Get runq data
   $uptime = 0;
@@ -195,18 +188,18 @@ while ( $iterations-- > 0 ) {
   $up_header = "uptime\tnusr";
   $up_info = "$uptime\t$nusr";
 
-  if (scalar(split ' ', $load_header) != scalar(split ' ', $load_info)) {
+  unless (strings_have_same_number_words($load_header, $load_info)) {
     $load_header = '';
     $load_info   = '';
     $need_header = 1;
-    warn "WARNING: load header does not match load info.\n";
+    warn "$0: warning: load header does not match load info.\n";
   }
 
-  if (scalar(split ' ', $up_header) != scalar(split ' ', $up_info)) {
+  unless (strings_have_same_number_words($up_header, $up_info)) {
     $up_header = '';
     $up_info   = '';
     $need_header = 1;
-    warn "WARNING: UP header does not match load info.\n";
+    warn "$0: warning: UP header does not match load info.\n";
   }
 
   ## Get number of system processes
@@ -219,11 +212,11 @@ while ( $iterations-- > 0 ) {
   $proc_info   = $num_proc;
   $proc_header = '#proc';
 
-  if (scalar(split ' ', $proc_header) != scalar(split ' ', $proc_info)) {
+  unless (strings_have_same_number_words($proc_header, $proc_info)) {
     $proc_header = '';
     $proc_info   = '';
     $need_header = 1;
-    warn "WARNING: #proc header does not match #proc info.\n";
+    warn "$0: warning: #proc header does not match #proc info.\n";
   }
 
   ## Get pstat data for pages
@@ -243,8 +236,8 @@ while ( $iterations-- > 0 ) {
   $swap_info = "$swap_used\t$swap_free";
   $swap_header = "\tswap_used\tswap_free";
 
-  if (scalar(split ' ', $swap_header) != scalar(split ' ', $swap_info)) {
-    warn "WARNING: pstat header does not match pstat info.\n";
+  unless (strings_have_same_number_words($swap_header, $swap_info)) {
+    warn "$0: warning: pstat header does not match pstat info.\n";
     $swap_header = '';
     $swap_info   = '';
     $need_header   = 1;
@@ -254,6 +247,7 @@ while ( $iterations-- > 0 ) {
   open IN, "vmstat 1 2|";
   while (<IN>) {
     chomp;
+
     if (/^[\s\d]+$/) {
       # overwrite first line on 2nd pass
       my ($vmstat_r,   $vmstat_b,  $vmstat_avm, $vmstat_fre,
@@ -274,8 +268,8 @@ while ( $iterations-- > 0 ) {
                    "PagesI/s\tPagesO/s\tPagesF/s\tscanrate\tusr%\tsys%\t" .
                    "wio%\tidle%";
 
-  if (scalar(split ' ', $vmstat_header) != scalar(split ' ', $vmstat_info)) {
-    warn "WARNING: vmstat header does not match vmstat info.\n";
+  unless (strings_have_same_number_words($vmstat_header, $vmstat_info)) {
+    warn "$0: warning: vmstat header does not match vmstat info.\n";
     $vmstat_header = '';
     $vmstat_info   = '';
     $need_header   = 1;
@@ -287,6 +281,7 @@ while ( $iterations-- > 0 ) {
   open IN, "df -k -v |";
   while (<IN>) {
     chomp;
+
     if (m%^/dev%) {
       my ($mnt_dev, $blocks, $used, $free, $pct_used, $iused, $ifree,
           $ipct_used, $mnt) = split;
@@ -310,8 +305,8 @@ while ( $iterations-- > 0 ) {
   }
   close IN;
 
-  if (scalar(split ' ', $fs_header) != scalar(split ' ', $fs_info)) {
-    warn "WARNING: filesystem header does not match filesystem info.\n";
+  unless (strings_have_same_number_words($fs_header, $fs_info)) {
+    warn "$0: warning: filesystem header does not match filesystem info.\n";
     $fs_header   = '';
     $fs_info     = '';
     $need_header = 1;
@@ -340,11 +335,11 @@ while ( $iterations-- > 0 ) {
     }
   }
   close IN;
-  $iostat_header = "disk_t/s\tdisk_rK/s\tdisk_wK/s";
+  $iostat_header = "disk_t/s\tdisk_rK/s\tdisk_wK/s\t";
   $iostat_info   = "${disk_t}\t${disk_rK}\t${disk_wK}";
 
-  if (scalar(split ' ', $iostat_header) != scalar(split ' ', $iostat_info)) {
-    warn "WARNING: iostat header does not match iostat info.\n";
+  unless (strings_have_same_number_words($iostat_header, $iostat_info)) {
+    warn "$0: warning: iostat header does not match iostat info.\n";
     $iostat_header = '';
     $iostat_info   = '';
     $need_header   = 1;
@@ -354,7 +349,7 @@ while ( $iterations-- > 0 ) {
   $packet_header = '';
   $packet_info   = '';
 
-  #foreach $interface ( split(/\s+/, $NET_INTERFACES) ) {
+  #foreach $interface (split(/\s+/, $NET_INTERFACES)) {
   foreach $interface (@net_interfaces) {
     $packet_header .= "\t${interface}Ipkt/s\t${interface}IErr/s\t" .
                       "${interface}Opkt/s\t${interface}OErr/s\t" .
@@ -369,190 +364,188 @@ while ( $iterations-- > 0 ) {
     }
     close IN;
   }
-}
 
-if (scalar(split ' ', $packet_header) != scalar(split ' ', $packet_info)) {
-  warn "WARNING: packet header does not match packet info.\n";
-  $packet_header = '';
-  $packet_info   = '';
-  $need_header   = 1;
-}
-
-## Get TCP Connection data
-$tcp_estb = 0;
-open IN, "netstat -an |";
-while (<IN>) {
-  if (/^tcp.+ESTABLISHED$/) {
-    $tcp_estb++;
+  unless (strings_have_same_number_words($packet_header, $packet_info)) {
+    warn "$0: warning: packet header does not match packet info.\n";
+    $packet_header = '';
+    $packet_info   = '';
+    $need_header   = 1;
   }
-}
-close IN;
 
-$tcp_info   = $tcp_estb;
-$tcp_header = 'tcp_estb';
-
-if (scalar(split ' ', $tcp_estb_header) != scalar(split ' ', $tcp_estb_info)) {
-  warn "WARNING: tcp_estb header does not match tcp_estb info.\n";
-  $tcp_estb_header = '';
-  $tcp_estb_info   = '';
-  $need_header     = 1;
-}
-
-## Get TSM Database space usage
-$tsmdb = 0;
-open IN, "dsmadmc -id=view -password=view 'query db' |tail -r -n 5 |";
-while (<IN>) {
-  @fld = split(/ +/,);
-  if (/\d/) {
-    $tsmdb = $fld[8];
-  }
-}
-close IN;
-$tsm_info = $tsmdb;
-$tsm_header = "tsmdb\t";
-
-if (scalar(split ' ', $tsm_header) != scalar(split ' ', $tsm_info)) {
-  warn "WARNING: tsmdb header does not match tsmdb info.\n";
-  $tsm_header = '';
-  $tsm_info   = '';
-  $need_header     = 1;
-}
-
-## Get Memory Usage breakup using SVMON
-$mem_work = 0;
-$mem_pres = 0;
-$mem_clnt = 0;
-open IN, "svmon -G |tail -2 |";
-while (<IN>) {
-  @memp = split(/ +/,);
-  if (/use\s+(\d+) /) {
-    $m_work = $memp[2];
-    $m_pres = $memp[3];
-    $m_clnt = $memp[4];
-    $mem_work = $m_work * 4096;
-    $mem_pres = $m_pres * 4096;
-    $mem_clnt = $m_clnt * 4096;
-  }
-}
-close IN;
-
-$mem_info = "$mem_work\t$mem_pres\t$mem_clnt\t$mem_totl";
-$mem_header = "mem_work\tmem_pres\tmem_clnt\tmem_totl";
-
-if (scalar(split ' ', $mem_header) != scalar(split ' ', $mem_info)) {
-  warn "WARNING: memory header does not match memory info.\n";
-  $mem_header = '';
-  $mem_info   = '';
-  $need_header     = 1;
-}
-
-## Get TSM Tape Drive usage
-$rmt = 0;
-$rmt5 = 5;
-open IN, "dsmadmc -id=view -password=view 'query mount' |grep matches |";
-while (<IN>) {
-  @fld = split(/ +/,);
-  if (/\d/) {
-    $rmt = $fld[1];
-  }
-}
-close IN;
-$tsm_rmt_header = "rmt5\trmt\t";
-$tsm_rmt_info = "$rmt5\t$rmt";
-
-if (scalar(split ' ', $tsm_rmt_header) != scalar(split ' ', $tsm_rmt_info)) {
-  warn "WARNING: TSM RMT header does not match TSM RMT info.\n";
-  $tsm_rmt_header = '';
-  $tsm_rmt_info   = '';
-  $need_header     = 1;
-}
-
-## Get TSM Recovery Log space usage
-$tsmdb = 0;
-open IN, "dsmadmc -id=view -password=view 'query log' |tail -r -n 4 |";
-while (<IN>) {
-  @fld = split(/ +/,);
-  if (/\d/) {
-    $tsmlog = $fld[8];
-  }
-}
-close IN;
-$tsm_log_info = $tsmlog;
-$tsm_log_header = 'tsmlog';
-
-if (scalar(split ' ', $tsm_log_header) != scalar(split ' ', $tsm_log_info)) {
-  warn "WARNING: TSM Log header does not match TSM Log info.\n";
-  $tsm_log_header = '';
-  $tsm_log_info   = '';
-  $need_header     = 1;
-}
-
-## Get TSM Tape usage
-$tsmpvt = 0;
-open IN, "dsmadmc -id=view -password=view 'query libvol' | grep 'Private' | wc -l |";
-while (<IN>) {
-  chomp;
-  @fld = split(/ +/,);
-  if (/\d/) {
-    $tsmpvt = $fld[1];
-  }
-}
-close IN;
-
-$tsmscr = 0;
-open IN, "dsmadmc -id=view -password=view 'query libvol' | grep 'Scratch' | wc -l |";
-while (<IN>) {
-  chomp;
-  @fld = split(/ +/,);
-  if (/\d/) {
-    $tsmscr = $fld[1];
-  }
-}
-close IN;
-
-$tsmvlt = 0;
-open IN, "dsmadmc -id=view -password=view 'query drmedia' | grep 'Vault' | wc -l |";
-while (<IN>) {
-  chomp;
-  @fld = split(/ +/,);
-  if (/\d/) {
-    $tsmvlt = $fld[1];
-  }
-}
-
-$tsm_tape_info = join "\t", $tsmpvt, $tsmscr, $tsmvlt;
-$tsm_tape_header = join "\t", tsmpvt, tsmscr, tsmvlt;
-
-if (scalar(split ' ', $tsm_tape_header) != scalar(split ' ', $tsm_tape_info)) {
-{
-  warn "WARNING: TSM Tape header does not match TSM Tape info.\n";
-  $tsm_tape_header = '';
-  $tsm_tape_info   = '';
-  $need_header     = 1;
-}
-
-## Get TSM Disk Storage Pool usage
-$tsmphcy = 0;
-$tsmphcn = 0;
-open IN, "dsmadmc -id=view -password=view 'query stgpool' |";
-while (<IN>) {
-  @fld = split(/ +/,);
-  if (/\d/) {
-    if ($fld[0] eq "PHCYDISKPO-" ) {
-      $tsmphcy = $fld[3];
-    } elsif ($fld[0] eq "PHCNDISKPO-" ) {
-      $tsmphcn = $fld[3];
+  ## Get TCP Connection data
+  $tcp_estb = 0;
+  open IN, "netstat -an |";
+  while (<IN>) {
+    if (/^tcp.+ESTABLISHED$/) {
+      $tcp_estb++;
     }
   }
-}
-close IN;
+  close IN;
 
-$tsm_stg_info = join "\t", $tsmphcy, $tsmphcn;
-$tsm_stg_header = join "\t", tsmphcy, tsmphcn;
+  $tcp_info   = $tcp_estb;
+  $tcp_header = 'tcp_estb';
 
-if (scalar(split ' ', $tsm_stg_header) != scalar(split ' ', $tsm_stg_info)) {
-  warn "WARNING: TSM Storage Pool header does not match ",
-       "TSM Storage Pool info.\n";
+  unless (strings_have_same_number_words($tcp_estb_header, $tcp_estb_info)) {
+    warn "$0: warning: tcp_estb header does not match tcp_estb info.\n";
+    $tcp_estb_header = '';
+    $tcp_estb_info   = '';
+    $need_header     = 1;
+  }
+
+  ## Get TSM Database space usage
+  $tsmdb = 0;
+  open IN, "dsmadmc -id=view -password=view 'query db' |tail -r -n 5 |";
+  while (<IN>) {
+    @fld = split(/ +/,);
+    if (/\d/) {
+      $tsmdb = $fld[8];
+    }
+  }
+  close IN;
+  $tsm_info = $tsmdb;
+  $tsm_header = "tsmdb\t";
+
+  unless (strings_have_same_number_words($tsm_header, $tsm_info)) {
+    warn "$0: warning: tsmdb header does not match tsmdb info.\n";
+    $tsm_header = '';
+    $tsm_info   = '';
+    $need_header     = 1;
+  }
+
+  ## Get Memory Usage breakup using SVMON
+  $mem_work = 0;
+  $mem_pres = 0;
+  $mem_clnt = 0;
+  open IN, "svmon -G |tail -2 |";
+  while (<IN>) {
+    @memp = split(/ +/,);
+    if (/use\s+(\d+) /) {
+      $m_work = $memp[2];
+      $m_pres = $memp[3];
+      $m_clnt = $memp[4];
+      $mem_work = $m_work * 4096;
+      $mem_pres = $m_pres * 4096;
+      $mem_clnt = $m_clnt * 4096;
+    }
+  }
+  close IN;
+
+  $mem_info = "$mem_work\t$mem_pres\t$mem_clnt\t$mem_totl";
+  $mem_header = "mem_work\tmem_pres\tmem_clnt\tmem_totl";
+
+  unless (strings_have_same_number_words($mem_header, $mem_info)) {
+    warn "$0: warning: memory header does not match memory info.\n";
+    $mem_header = '';
+    $mem_info   = '';
+    $need_header     = 1;
+  }
+
+  ## Get TSM Tape Drive usage
+  $rmt = 0;
+  $rmt5 = 5;
+  open IN, "dsmadmc -id=view -password=view 'query mount' |grep matches |";
+  while (<IN>) {
+    @fld = split(/ +/,);
+    if (/\d/) {
+      $rmt = $fld[1];
+    }
+  }
+  close IN;
+  $tsm_rmt_header = "rmt5\trmt\t";
+  $tsm_rmt_info = "$rmt5\t$rmt";
+
+  unless (strings_have_same_number_words($tsm_rmt_header, $tsm_rmt_info)) {
+    warn "$0: warning: TSM RMT header does not match TSM RMT info.\n";
+    $tsm_rmt_header = '';
+    $tsm_rmt_info   = '';
+    $need_header     = 1;
+  }
+
+  ## Get TSM Recovery Log space usage
+  $tsmdb = 0;
+  open IN, "dsmadmc -id=view -password=view 'query log' |tail -r -n 4 |";
+  while (<IN>) {
+    @fld = split(/ +/,);
+    if (/\d/) {
+      $tsmlog = $fld[8];
+    }
+  }
+  close IN;
+  $tsm_log_info = $tsmlog;
+  $tsm_log_header = 'tsmlog';
+
+  unless (strings_have_same_number_words($tsm_log_header, $tsm_log_info)) {
+    warn "$0: warning: TSM Log header does not match TSM Log info.\n";
+    $tsm_log_header = '';
+    $tsm_log_info   = '';
+    $need_header     = 1;
+  }
+
+  ## Get TSM Tape usage
+  $tsmpvt = 0;
+  open IN, "dsmadmc -id=view -password=view 'query libvol' | grep 'Private' | wc -l |";
+  while (<IN>) {
+    chomp;
+    @fld = split(/ +/,);
+    if (/\d/) {
+      $tsmpvt = $fld[1];
+    }
+  }
+  close IN;
+
+  $tsmscr = 0;
+  open IN, "dsmadmc -id=view -password=view 'query libvol' | grep 'Scratch' | wc -l |";
+  while (<IN>) {
+    chomp;
+    @fld = split(/ +/,);
+    if (/\d/) {
+      $tsmscr = $fld[1];
+    }
+  }
+  close IN;
+
+  $tsmvlt = 0;
+  open IN, "dsmadmc -id=view -password=view 'query drmedia' | grep 'Vault' | wc -l |";
+  while (<IN>) {
+    chomp;
+    @fld = split(/ +/,);
+    if (/\d/) {
+      $tsmvlt = $fld[1];
+    }
+  }
+
+  $tsm_tape_header = join("\t", 'tsmpvt', 'tsmscr', 'tsmvlt');
+  $tsm_tape_info = join("\t", $tsmpvt, $tsmscr, $tsmvlt);
+
+  unless (strings_have_same_number_words($tsm_tape_header, $tsm_tape_info)) {
+    warn "$0: warning: TSM Tape header does not match TSM Tape info.\n";
+    $tsm_tape_header = '';
+    $tsm_tape_info   = '';
+    $need_header     = 1;
+  }
+
+  ## Get TSM Disk Storage Pool usage
+  $tsmphcy = 0;
+  $tsmphcn = 0;
+  open IN, "dsmadmc -id=view -password=view 'query stgpool' |";
+  while (<IN>) {
+    @fld = split(/ +/,);
+    if (/\d/) {
+      if ($fld[0] eq "PHCYDISKPO-") {
+        $tsmphcy = $fld[3];
+      } elsif ($fld[0] eq "PHCNDISKPO-") {
+        $tsmphcn = $fld[3];
+      }
+    }
+  }
+  close IN;
+
+  $tsm_stg_header = join("\t", 'tsmphcy', 'tsmphcn');
+  $tsm_stg_info = join("\t", $tsmphcy, $tsmphcn);
+
+  unless (strings_have_same_number_words($tsm_stg_header, $tsm_stg_info)) {
+    warn "$0: warning: TSM Storage Pool header does not match ",
+         "TSM Storage Pool info.\n";
     $tsm_stg_header = '';
     $tsm_stg_info   = '';
     $need_header     = 1;
@@ -574,8 +567,10 @@ if (scalar(split ' ', $tsm_stg_header) != scalar(split ' ', $tsm_stg_info)) {
                    $tsm_log_info, $tsm_tape_info, $tsm_stg_info);
   $out_info =~ tr/ \t/\t/s;      # translate whitespace to single tabs
 
-  $header_cnt = split ' ', $out_header;
-  $info_cnt = split ' ', $out_info;
+  my @out_header = split ' ', $out_header;
+  my @out_info = split ' ', $out_info;
+  $header_cnt = @out_header;
+  $info_cnt = @out_info;
   if ($header_cnt != $info_cnt) {
     warn "ERROR: header columns do not equal data columns. Exiting.\n";
     &exit_nicely;
@@ -592,7 +587,7 @@ if (scalar(split ' ', $tsm_stg_header) != scalar(split ' ', $tsm_stg_info)) {
   }
   print OUT $out_info, "\n";
 
-  sleep $INTERVAL - ( time() - $timestamp );
+  sleep $INTERVAL - (time() - $timestamp);
 }
 close OUT;
 
@@ -600,6 +595,14 @@ close OUT;
 system(@args);
 
 exit 0;
+
+# Subroutine to that tests if two strings have the same number of
+# whitespace separated words.
+sub strings_have_same_number_words {
+  my @words1 = split(' ', $_[0]);
+  my @words2 = split(' ', $_[1]);
+  scalar @words1 == scalar @words2;
+}
 
 # This subroutine is called by the signal handler.
 sub exit_nicely {

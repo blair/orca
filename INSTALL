@@ -145,7 +145,7 @@ Outline:
     Digest::MD5			2.20 or greater		2.20
     Math::IntervalSearch	1.05 or greater		1.05
     RRDs			1.0.33 or greater	1.0.33
-    Storable			2.05 or greater		2.05
+    Storable			2.06 or greater		2.06
 
     All five of these modules are included with the Orca distribution
     in the packages directory.  When you configure Orca in step 3),
@@ -213,10 +213,10 @@ Outline:
 
     Storable
 
-      http://www.perl.com/CPAN/authors/id/A/AM/AMS/Storable-2.05.tar.gz
+      http://www.perl.com/CPAN/authors/id/A/AM/AMS/Storable-2.06.tar.gz
 
-      % gunzip -c Storable-2.05.tar.gz | tar xvf -
-      % cd Storable-2.05
+      % gunzip -c Storable-2.06.tar.gz | tar xvf -
+      % cd Storable-2.06
       % perl Makefile.PL
       % make
       % make test

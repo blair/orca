@@ -21,7 +21,7 @@ package Storable; @ISA = qw(Exporter DynaLoader);
 use AutoLoader;
 use vars qw($canonical $forgive_me $VERSION);
 
-$VERSION = '2.05';
+$VERSION = '2.06';
 *AUTOLOAD = \&AutoLoader::AUTOLOAD;		# Grrr...
 
 #
@@ -361,6 +361,9 @@ sub thaw {
 	return $self;
 }
 
+1;
+__END__
+
 =head1 NAME
 
 Storable - persistence for Perl data structures
@@ -520,6 +523,10 @@ Storable file contains malicious data. You can set C<$Storable::Eval>
 to a subroutine reference which would be used instead of C<eval>. See
 below for an example using a L<Safe> compartment for deserialization
 of CODE references.
+
+If C<$Storable::Deparse> and/or C<$Storable::Eval> are set to false
+values, then the value of C<$Storable::forgive_me> (see below) is
+respected while serializing and deserializing.
 
 =head1 FORWARD COMPATIBILITY
 
@@ -799,17 +806,24 @@ which prints (on my machine):
 Serialization of CODE references and deserialization in a safe
 compartment:
 
+=for example begin
+
 	use Storable qw(freeze thaw);
 	use Safe;
 	use strict;
 	my $safe = new Safe;
-	# permitting the "require" opcode is necessary when using "use strict"
+        # because of opcodes used in "use strict":
 	$safe->permit(qw(:default require));
 	local $Storable::Deparse = 1;
 	local $Storable::Eval = sub { $safe->reval($_[0]) };
-	my $serialized = freeze(sub { print "42\n" });
+	my $serialized = freeze(sub { 42 });
 	my $code = thaw($serialized);
-	$code->(); # prints 42
+	$code->() == 42;
+
+=for example end
+
+=for example_testing
+        is( $code->(), 42 );
 
 =head1 WARNING
 
@@ -839,9 +853,9 @@ your data.  There is no slowdown on retrieval.
 
 =head1 BUGS
 
-You can't store GLOB, CODE, FORMLINE, etc.... If you can define
-semantics for those operations, feel free to enhance Storable so that
-it can deal with them.
+You can't store GLOB, FORMLINE, etc.... If you can define semantics
+for those operations, feel free to enhance Storable so that it can
+deal with them.
 
 The store functions will C<croak> if they run into such references
 unless you set C<$Storable::forgive_me> to some C<TRUE> value. In that

@@ -38,6 +38,15 @@ FMRTG is written completely in Perl.  To install, configure and use
 FMRTG read the fmrtg.doc file.  Some sample configuration files for
 FMRTG can be found in the sample_configs directory.
 
+FMRTG is based on the RRD tool written by Tobias Oetiker.  To really
+understand FMRTG you should understand RRD.  Get RRD from
+
+http://ee-staff.ethz.ch/~oetiker/webtools/mrtg/3.0
+
+I recommend reading the documentation that comes with RRD.  It will
+explain how the data files FMRTG uses are created, maintained, and
+used to create the GIFs that FMRTG creates.
+
 percollator.se
 ==============
 

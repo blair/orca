@@ -6,6 +6,7 @@ fmrtg:
 	Better date loading support
 	Make plots from multiple files sets: delete source files_key and put
 		it into data
+	Update HTML files if a new file is found with a new group.
 
 percollator.se:
 	Better documentation

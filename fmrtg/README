@@ -695,6 +695,28 @@ INSTALLATION AND CONFIGURATION
     The legend option specifies for a single data source the comment
     that is placed below the GIF plot.
 
+ARCHITECTURE ISSUES
+    Because FMRTG is extremely IO intensive, I recommend that the
+    host that locally mounts the web server content be the same
+    machine that runs FMRTG. In addition, the RRD data files that
+    FMRTG uses also require a good amount of IO. The machine running
+    FMRTG should always have the data_dir directory locally mounted.
+    It is more important this data_dir be locally stored than
+    html_dir for performance concerns.
+
+IMPLEMENTATION NOTES
+    FMRTG makes very heavy use of references to hashes and arrays to
+    store all of the different data it uses.
+
+    The *Digest::MD5* module is used to cache the result of some
+    expensive calculations that commonly could be performed more
+    than once. In particular, this arrises when the same code is
+    used to pull data from many different input data files into the
+    same type of data structures. In this case, the code to be
+    evaluated is run through MD5, where the resulting binary code is
+    used as a key in a hash with the value being the anonymous
+    subroutine array. This saves in memory and in processing time.
+
     AUTHOR, COMMENTS, AND BUGS
 
     I welcome all comments and bug reports. Please email them to

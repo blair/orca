@@ -1,3 +1,23 @@
+Thu Dec 10 12:50:19 PST 1998
+
+	Found an extra loop in creating the HTML files.  They are now
+	created much faster.
+
+	Add HREFs to the top of the HTML files showing plots from
+	different groups and different data types to make jumping
+	around easier.
+
+	Add more documentation to &create_html_files.
+
+	Add some documentation describing why Digest::MD5 is used.
+
+	Version 0.13.
+
+Wed Dec  9 13:35:07 PST 1998
+
+	Add more documentation to fmrtg and percollator about setting
+	up FMRTG and percollator.se to work together.
+
 Wed Dec  9 09:55:01 PST 1998
 
 	Correct incorrect URL for Digest::MD5 in fmrtg.
@@ -6,8 +26,8 @@ Wed Dec  9 09:55:01 PST 1998
 
 Tue Dec  8 12:12:07 PST 1998
 
-	Update the sample FMRTG configuration files to work properly with
-	the configuration options in FMRTG.
+	Update the sample FMRTG configuration files to work properly
+	with the configuration options in FMRTG.
 
 	Switch from MD5 to Digest::MD5, since it is faster.
 
@@ -15,7 +35,8 @@ Tue Dec  8 12:12:07 PST 1998
 
 	Update the code documentation in fmrtg for date_source.
 
-	Add some more documentation to the percollator/start_percol script.
+	Add some more documentation to the percollator/start_percol
+	script.
 
 	Version 0.11.
 

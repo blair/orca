@@ -18,7 +18,7 @@ $Data::Dumper::Purity   = 1;
 $Data::Dumper::Deepcopy = 1;
 
 # This is the version of this code.
-my $VERSION = 0.12;
+my $VERSION = 0.13;
 
 # The number of seconds in one day.
 my $day_seconds = 24*60*60;
@@ -1117,7 +1117,9 @@ sub add_plots {
 
       # In this case we're creating a whole new plot that will have as
       # many data sources as their are columns that match the regular
-      # expression.  Start by making a deep copy of the plot.
+      # expression.  Start by making a deep copy of the plot.  Be careful
+      # not to make a deep copy of the creates reference, since it can
+      # cause recursion in the Data::Dump.
       my $creates = delete $plot->{creates};
       my $d = Data::Dumper->Dump([$plot], [qw(plot)]);
       $plot->{creates} = $creates;
@@ -1210,10 +1212,10 @@ sub add_plots {
       # expression that did the match in the first place.  Also, save a
       # copy of the creates array for this plot so it doesn't also get
       # dumped.
-      my $creates = delete $plot->{creates};
-      my $d = Data::Dumper->Dump([$plot], [qw(plot)]);
-      $plot->{creates} = $creates;
-      $d =~ s/$regexp/$matches[0]/mge;
+      my $creates      =  delete $plot->{creates};
+      my $d            =  Data::Dumper->Dump([$plot], [qw(plot)]);
+      $plot->{creates} =  $creates;
+      $d               =~ s/$regexp/$matches[0]/mge;
       my $count = 1;
       foreach my $match (@matches) {
         $d =~ s/\$$count/$match/mge;
@@ -1498,6 +1500,8 @@ while (@ARGV and $ARGV[0] =~ /^-\w/) {
 
 die "usage: $0 [-o] [-v] config_file\n" unless @ARGV;
 
+print "FMRTG Version $VERSION.\n" if $opt_verbose;
+
 &main(@ARGV);
 
 exit 0;
@@ -1757,6 +1761,8 @@ sub Capatialize {
   $string;
 }
 
+# Create all of the different HMTL files with all of the proper HREFs
+# to the GIFs.
 sub create_html_files {
   my ($config_options,
       $config_files,
@@ -1765,12 +1771,12 @@ sub create_html_files {
       $group_files_ref,
       $gif_files_ref) = @_;
 
-  # Create the main HTML index.html file.
   my $html_dir         = $config_options->{html_dir};
   my $index_filename   = "$html_dir/index.html";
 
   print "Creating HTML files in `$html_dir/'.\n" if $opt_verbose;
 
+  # Create the main HTML index.html file.
   my $index_html = MRTG::HTMLFile->new($index_filename,
                                        $config_options->{html_top_title},
                                        $config_options->{html_page_header},
@@ -1781,22 +1787,29 @@ sub create_html_files {
   }
   $index_html->print("<hr>\n<font size=\"-2\">");
 
+  # The first step is to create the HTML files for each different group.
+  # This is only done if there is more than one group gathered from the
+  # configuration and input data files.  If there is more than one group
+  # first list the different available groups and create for each group
+  # an HTML file that contains HREFs to the GIFs for that group.  Also
+  # create an HTML file for the daily, weekly, monthly, and yearly GIFs.
+
+  # This variable sets the number of groups to place into a single row.
   my $table_number_columns = 9;
   my @table_columns;
 
-  # If there is more than one group first list the different available
-  # groups and create for each group an HTML file that contains references
-  # to the GIFs for that group.  Also create an HTML file for the daily,
-  # weekly, monthly, and yearly gifs.
+  # Go through each group.
   if (keys %$group_files_ref > 1) {
     $index_html->print("<h2>Available Targets</h2>\n\n<table>\n");
     foreach my $group (sort keys %$group_files_ref) {
+
+      # Create the HTML code for the main index.html file.
       my $group_basename = strip_key_name($group);
       my $element = "<table border=2><tr><td><b>$group</b></td></tr>\n<tr><td>\n";
       foreach my $plot_type (@rra_plot_type) {
-        $element .= "<a href=\"$group_basename-$plot_type.html\">";
-        my $Plot_Type = Capatialize($plot_type);
-        $element .= "$Plot_Type</a><br>\n";
+        $element      .= "<a href=\"$group_basename-$plot_type.html\">";
+        my $Plot_Type  = Capatialize($plot_type);
+        $element      .= "$Plot_Type</a><br>\n";
       }
       $element .= "<a href=\"$group_basename-all.html\">All</a></td></tr>\n";
       $element .= "</table>\n\n";
@@ -1807,12 +1820,12 @@ sub create_html_files {
         @table_columns = ();
       }
 
-      # Create the daily, weekly, monthly, and yearly HTML files for this
-      # group.
+      # Create the daily, weekly, monthly, yearly, and all HTML files for
+      # this group.
       my @html_files;
       foreach my $plot_type (@rra_plot_type, 'all') {
-        my $link      = "$group_basename-$plot_type.html";
-        my $filename  = "$html_dir/$link";
+        my $href      = "$group_basename-$plot_type.html";
+        my $filename  = "$html_dir/$href";
         my $Plot_Type = Capatialize($plot_type);
         my $fd = MRTG::HTMLFile->new($filename,
                                      "$Plot_Type $group",
@@ -1823,41 +1836,58 @@ sub create_html_files {
           next;
         }
         push (@html_files, {fd        => $fd,
-                            link      => $link,
+                            href      => $href,
                             plot_type => $plot_type,
                             Plot_Type => $Plot_Type});
       }
 
+      # At the top of the daily, weekly, monthly, yearly, and all HTML files
+      # add HREFs to the other date span HTML files in the same group
+      my $href_html;
+      foreach my $plot_type (@html_files) {
+        $href_html .= "<a href=\"$plot_type->{href}\">" .
+                      "$plot_type->{Plot_Type} $group</a><br>\n";
+      }
       foreach my $html_file (@html_files) {
-        my $html;
-        foreach my $plot_type (@html_files) {
-          $html .= "<a href=\"$plot_type->{link}\">$plot_type->{Plot_Type} $group</a><br>\n";
-        }
-        $html_file->{fd}->print($html);
+        $html_file->{fd}->print($href_html);
       }
 
-      # Because there are many gifs each listing a same name, just make sure
-      # we watch one.
-      foreach my $gif (grep {$group eq $_->group} @{$gif_files_ref->{list}}) {
-        my $name = $gif->name;
+      # Use only those GIFs now that have the same group name as the HTML
+      # files that are being created.
+      my @gifs = grep {$group eq $_->group} @{$gif_files_ref->{list}};
+      if (@gifs > 1) {
+        my $href_html = "<hr>";
+        for (my $i=0; $i<@gifs; ++$i) {
+          $href_html .= "<a href=\"#$i\">[" .
+                        replace_group_name($gifs[$i]->plot_ref->{title}, '') .
+                        "]</a><spacer size=10>\n";
+        }
+        foreach my $html_file (@html_files) {
+          $html_file->{fd}->print($href_html);
+        }
+      }
 
-        my $title = replace_group_name($gif->plot_ref->{title}, $gif->group);
-
-        my $href = "<a href=\"" . strip_key_name($name) . ".html\">";
-
+      # Add the images to the HTML files.
+      for (my $i=0; $i<@gifs; ++$i) {
+        my $gif = $gifs[$i];
+        my $name    = $gif->name;
+        my $title   = replace_group_name($gif->plot_ref->{title}, $gif->group);
+        my $href    = "href=\"" . strip_key_name($name) . ".html\"";
         my $sub_dir = $config_files->{$gif->files_key}{sub_dir};
 
         foreach my $html_file (@html_files) {
-          $html_file->{fd}->print("<hr>\n<h2>${href}$html_file->{Plot_Type} $title</a></h2>\n");
+          $html_file->{fd}->print("<hr>\n<h2><a ${href} name=\"$i\">$html_file->{Plot_Type} " .
+                                  "$title</a></h2>\n");
         }
 
-        # Put the proper GIFs into each HTML file.
-        for (my $i=0; $i<@html_files-1; ++$i) {
-          my $gif_filename = "$name-$html_files[$i]{plot_type}.gif";
+        # Put the proper GIFs into each HTML file.  The all HTML file is
+        # listed last and requires special handling.
+        for (my $j=0; $j<@html_files-1; ++$j) {
+          my $gif_filename = "$name-$html_files[$j]{plot_type}.gif";
           $gif_filename = "$group/$gif_filename" if $sub_dir;
-          my $html = "$href<img src=\"$gif_filename\"" .
-                     "alt=\"$html_files[$i]{Plot_Type} $title\"></a>\n";
-          $html_files[$i]{fd}->print($html);
+          my $html = "<a $href><img src=\"$gif_filename\"" .
+                     "alt=\"$html_files[$j]{Plot_Type} $title\"></a>\n";
+          $html_files[$j]{fd}->print($html);
           $html_files[-1]{fd}->print($html);
         }
       }
@@ -1869,57 +1899,81 @@ sub create_html_files {
 
     # If there are any remaining groups to display, do it now.
     if (@table_columns) {
-      $index_html->print("<tr valign=top>" . join('', @table_columns) . "</tr>\n");
+      $index_html->print("<tr valign=top>" .
+                         join('', @table_columns) .
+                         "</tr>\n");
     }
-    $index_html->print("</table>\n\n\n<br>\n<hr>\n<h2>Available Data Sets</h2>\n\n");
+    $index_html->print("</table>\n\n\n<br>\n<hr>\n" .
+                       "<h2>Available Data Sets</h2>\n\n");
   }
 
-  # Now get a list of the different available plots.  For each different
-  # type of plot, create a list of gifs that show that plot.  First get a
-  # list of gifs for each different plot type.  Use @gifs_by_type to
-  # keep the ordering in the type of gifs and the %gifs_by_type to hold
-  # references to an array for each type of gif.
+  # Here the different available plots are listed and the HTML files created
+  # that contain the HREFs to the proper GIFs.  The HTML files created here
+  # HREF to the GIFs that are created for a single plot.  There are several
+  # steps to do here.  First, get a list of the different plots.  For each
+  # different type of plot, create a list GIFs that show that plot.  Use
+  # the @gifs_by_type array to keep the ordering in the type of GIFs and
+  # the %gifs_by_type to hold references to an array for each type of GIF.
   $index_html->print("<table>\n");
 
+  # This sets the number of plot types to place into a single row in the
+  # main index.html.
   $table_number_columns = 1;
   @table_columns = ();
 
+  # Go through all of the configured plots.
   for (my $i=0; $i<@$config_plots; ++$i) {
-
-    my %html_files;
 
     next unless @{$config_plots->[$i]{creates}};
 
-    # Sort the plots in this by legend name.
-    my %legend_no_group;
-    my %legends;
+    # Create an ordered list of GIFs sorted on the legend name for each
+    # GIF.  Remember, each GIF represented here actually represents the
+    # set of daily, weekly, monthly, and yearly GIF files.
+    # %gif_legend_no_group is a hash keyed by the GIF that contains the
+    # legend with no group substitution for the GIF.  The %legends hash
+    # is keyed by the legend name with no group substitution and contains
+    # a reference to an array of GIFs that have the same legend name.
+    my %gif_legend_no_group;
+    my %same_legends_gif_list;
     foreach my $gif (@{$config_plots->[$i]{creates}}) {
-      my $legend_no_group    = replace_group_name($gif->plot_ref->{title},'');
-      $legend_no_group{$gif} = $legend_no_group; 
+      my $legend_no_group = replace_group_name($gif->plot_ref->{title}, '');
+      $gif_legend_no_group{$gif} = $legend_no_group; 
       
-      unless (defined $legends{$legend_no_group}) {
-        $legends{$legend_no_group} = [];
+      unless (defined $same_legends_gif_list{$legend_no_group}) {
+        $same_legends_gif_list{$legend_no_group} = [];
       }
-      push(@{$legends{$legend_no_group}}, $gif);
-    }
-    my @gifs;
-    foreach my $legend_no_group (sort keys %legends) {
-      push(@gifs, @{$legends{$legend_no_group}});
+      push(@{$same_legends_gif_list{$legend_no_group}}, $gif);
     }
 
+    # Put together the correctly ordered list of GIFs using the array
+    # references in the legends hash.
+    my @gifs;
+    foreach my $legend_no_group (sort keys %same_legends_gif_list) {
+      push(@gifs, @{$same_legends_gif_list{$legend_no_group}});
+    }
+
+    # This hash keyed by legend name holds an array of references to a
+    # hash of file descriptor, HREF and plot type.
+    my %legend_html_files;
+
+    # Now for each set of daily, weekly, monthly and yearly GIFs, go
+    # through and create the correct HTML files.
     foreach my $gif (@gifs) {
 
       my $no_group_name   = strip_key_name($gif->no_group_name);
-      my $legend_no_group = $legend_no_group{$gif};
+      my $legend_no_group = $gif_legend_no_group{$gif};
 
-      # Create the HTML files for this legend.
-      unless (defined $html_files{$legend_no_group}) {
-        # Now create the HTML files for each different plot type.  Use the
-        # legend name to great this list.
-        $html_files{$legend_no_group} = [];
+      # If this is the first time that this legend has been seen in for
+      # creating the proper HTML files, then create the new HTML files
+      # and set up the top of them properly and place into the main
+      # index.html the proper HREFs to these files.
+      unless (defined $legend_html_files{$legend_no_group}) {
+        # Now create the HTML files for the daily, weekly, monthly, yearly,
+        # and all plots.  Use the legend name to create this list.
+        $legend_html_files{$legend_no_group} = [];
         foreach my $plot_type (@rra_plot_type, 'all') {
-          my $link      = "$no_group_name-$plot_type.html";
-          my $filename  = "$html_dir/$link";
+          my $href      = "$no_group_name-$plot_type.html";
+          my $filename  = "$html_dir/$href";
           my $Plot_Type = Capatialize($plot_type);
           my $fd = MRTG::HTMLFile->new($filename,
                                        "$Plot_Type $legend_no_group",
@@ -1929,21 +1983,40 @@ sub create_html_files {
             warn "$0: warning: cannot open `$filename' for writing: $!\n";
             next;
           }
-          push(@{$html_files{$legend_no_group}}, {fd        => $fd,
-                                                  link      => $link,
-                                                  plot_type => $plot_type,
-                                                  Plot_Type => $Plot_Type});
+          push(@{$legend_html_files{$legend_no_group}},
+               {fd        => $fd,
+                href      => $href,
+                plot_type => $plot_type,
+                Plot_Type => $Plot_Type});
         }
 
-        my @html_files = @{$html_files{$legend_no_group}};
-        foreach my $html_file (@html_files) {
-          my $html;
-          foreach my $plot_type (@html_files) {
-            $html .= "<a href=\"$plot_type->{link}\">$plot_type->{Plot_Type} $legend_no_group</a><br>\n";
+        # For each of the daily, weekly, monthy, yearly and all HTML files
+        # add at the top of the file HREFs to all of the daily, weekly,
+        # monthly, yearly and all HTML files.  Also add HREFs to the
+        # different groups later on in the same HTML file.
+        my @legend_html_files = @{$legend_html_files{$legend_no_group}};
+        my $href_html;
+        foreach my $plot_type (@legend_html_files) {
+          $href_html .= "<a href=\"$plot_type->{href}\">" .
+                        "$plot_type->{Plot_Type} $legend_no_group</a><br>\n";
+        }
+
+        # Add to the top of the file HREFs to all of the different groups in
+        # the HTML file.  This makes traversing the HTML page easier.  Do
+        # this if there are two or more groups in this HTML page.
+        if (@{$same_legends_gif_list{$legend_no_group}} > 1) {
+          $href_html .= "<hr>\n";
+          foreach my $legend_gif (@{$same_legends_gif_list{$legend_no_group}}) {
+            my $group = $legend_gif->group;
+            $href_html .= "<a href=\"#$group\">[$group]</a><spacer size=10>\n";
           }
-          $html_file->{fd}->print($html);
+        }
+        foreach my $html_file (@legend_html_files) {
+          $html_file->{fd}->print($href_html);
         }
 
+        # Create the HTML code that goes into the main index.html that
+        # links to these other HTML files.
         my $element = "<td><b>$legend_no_group</b></td>\n";
         foreach my $plot_type (@rra_plot_type, 'all') {
           $element .= "<td><a href=\"$no_group_name-$plot_type.html\">";
@@ -1956,8 +2029,10 @@ sub create_html_files {
         }
       }
 
-      # Create an HTML file that contains the daily, weekly, monthly, and
-      # yearly GIFs for each plot.
+      # At this point the HTML files for this set of daily, weekly, monthly,
+      # and yearly GIFs have been opened.  Now create the summary HTML
+      # file that contains only four GIF images, the daily, weekly, monthly,
+      # and yearly GIFs for a particular plot for a particular group.
       my $with_group_name   = strip_key_name($gif->name);
       my $legend_with_group = replace_group_name($gif->plot_ref->{title},
                                                  $gif->group);
@@ -1970,9 +2045,9 @@ sub create_html_files {
         warn "$0: warning: cannot open `$summarize_name' for writing: $!\n";
         next;
       }
-      my $sub_dir = $config_files->{$gif->files_key}{sub_dir};
+      my $sub_dir      = $config_files->{$gif->files_key}{sub_dir};
       my $gif_filename = $with_group_name;
-      $gif_filename = $gif->group . "/$gif_filename" if $sub_dir;
+      $gif_filename    = $gif->group . "/$gif_filename" if $sub_dir;
       foreach my $plot_type (@rra_plot_type) {
         my $Plot_Type = Capatialize($plot_type);
         $summarize_html->print("<hr>\n<h2>$Plot_Type $legend_with_group</h2>\n",
@@ -1980,22 +2055,23 @@ sub create_html_files {
                                "alt=\"$Plot_Type $legend_with_group\">\n");
       }
 
+      # Now add the images into each HTML file.
       my $name  = $gif->name;
       my $group = $gif->group;
 
-      my $href = "<a href=\"$with_group_name.html\">";
+      my $href = "href=\"$with_group_name.html\"";
 
-      my @html_files = @{$html_files{$legend_no_group}};
-      $html_files[-1]{fd}->print("<hr>\n<h2>${href}$group $legend_no_group</a></h2>\n");
-      for (my $i=0; $i<@html_files-1; ++$i) {
-        my $Plot_Type = $html_files[$i]{Plot_Type};
-        my $gif_filename = "$name-$html_files[$i]{plot_type}.gif";
-        $gif_filename = "$group/$gif_filename" if $sub_dir;
-        my $html = "$href<img src=\"$gif_filename\"" .
+      my @legend_html_files = @{$legend_html_files{$legend_no_group}};
+      $legend_html_files[-1]{fd}->print("<hr>\n<h2><a ${href} name=\"$group\">$group $legend_no_group</a></h2>\n");
+      for (my $i=0; $i<@legend_html_files-1; ++$i) {
+        my $Plot_Type    = $legend_html_files[$i]{Plot_Type};
+        my $gif_filename = "$name-$legend_html_files[$i]{plot_type}.gif";
+        $gif_filename    = "$group/$gif_filename" if $sub_dir;
+        my $html = "<a $href><img src=\"$gif_filename\"" .
                    "alt=\"$Plot_Type $group $legend_no_group\"></a>\n";
-        $html_files[$i]{fd}->print("<hr>\n<h2>${href}$Plot_Type $group $legend_no_group</a></h2>\n");
-        $html_files[$i]{fd}->print($html);
-        $html_files[-1]{fd}->print($html);
+        $legend_html_files[$i]{fd}->print("<hr>\n<h2><a ${href} name=\"$group\">$Plot_Type $group $legend_no_group</a></h2>\n");
+        $legend_html_files[$i]{fd}->print($html);
+        $legend_html_files[-1]{fd}->print($html);
       }
     }
   }
@@ -3574,6 +3650,28 @@ previous graph, the STACK will either be a LINE? or an AREA.
 
 The B<legend> option specifies for a single data source the comment that
 is placed below the GIF plot.
+
+=head1 ARCHITECTURE ISSUES
+
+Because FMRTG is extremely IO intensive, I recommend that the host that
+locally mounts the web server content be the same machine that runs FMRTG.
+In addition, the RRD data files that FMRTG uses also require a good amount
+of IO.  The machine running FMRTG should always have the B<data_dir>
+directory locally mounted.  It is more important this B<data_dir> be
+locally stored than B<html_dir> for performance concerns.
+
+=head1 IMPLEMENTATION NOTES
+
+FMRTG makes very heavy use of references to hashes and arrays to store
+all of the different data it uses.
+
+The I<Digest::MD5> module is used to cache the result of some
+expensive calculations that commonly could be performed more than once.
+In particular, this arrises when the same code is used to pull data from
+many different input data files into the same type of data structures.
+In this case, the code to be evaluated is run through MD5, where the
+resulting binary code is used as a key in a hash with the value being the
+anonymous subroutine array.  This saves in memory and in processing time.
 
 AUTHOR, COMMENTS, AND BUGS
 

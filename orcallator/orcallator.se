@@ -8,6 +8,14 @@
 //
 // Portions copied from percollator.se written by Adrian Cockroft.
 //
+// Version 1.31:   Oct 21, 2001	Instead of naming the output files percol-*,
+//				name them orcallator-*.  Always define
+//				USE_RAWDISK to use the new raw disk code.
+//				Previously, USE_RAWDISK was defined only if
+//				WATCH_OS was defined, but if WATCH_DISK was
+//				defined and WATCH_OS was not, then the new raw
+//				disk code was not being used.  This change
+//				makes the behavior consistent.
 // Version 1.30:   Oct 19, 2001	Rename the new State_* columns to state_*.
 // Version 1.30b2: Oct 12, 2001	Output eleven new columns named State_* where
 //				each column represents numerically the state
@@ -222,10 +230,16 @@
 
 // The default sampling interval in seconds.
 #define SAMPLE_INTERVAL		300
+
 // The maximum number of columns of data.
 #define MAX_COLUMNS		2048
 
-// Define the different parts of the system you want to examine.
+// Use the new raw disk code all the time because it has been very
+// well tested and there are no major bug reports in it.
+#define USE_RAWDISK		1
+
+// If WATCH_OS is defined, then measure every part of the operating
+// system.
 #ifdef WATCH_OS
 #define WATCH_CPU		1
 #define WATCH_MUTEX		1
@@ -234,7 +248,6 @@
 #define WATCH_NFS_CLIENT	1
 #define WATCH_NFS_SERVER	1
 #define WATCH_MOUNTS		1
-#define USE_RAWDISK		1
 #define WATCH_DISK		1
 #define WATCH_DNLC		1
 #define WATCH_INODE		1
@@ -880,9 +893,9 @@ check_output_log_filename(tm_t now) {
     strftime(tm_buf, sizeof(tm_buf), "%Y-%m-%d", now);
     while (1 == 1) {
       exists          = 0;
-      output_filename = sprintf("%s/percol-%s-%03d", output_directory,
-                                                     tm_buf,
-                                                     file_number);
+      output_filename = sprintf("%s/orcallator-%s-%03d", output_directory,
+                                                         tm_buf,
+                                                         file_number);
       result          = stat(output_filename, log_file_stat);
       if (result != -1) {
         exists = 1;

@@ -1,4 +1,19 @@
 ------------------------------------------------------------------------
+r372 | jpeacock | 2004-08-18 07:04:02 -0400 (Wed, 18 Aug 2004) | 12 lines
+
+*    Makefile.PL
+     swap () for {} in macro expansion to make Win32 happy again
+
+*    t/01base.t
+*    lib/version.pm
+*    README
+*    version.xs
+*    util.c
+     Change default stringification of alpha versions to be more like
+     their floating point counterparts (since that is normally how they
+     are used in practice).
+
+------------------------------------------------------------------------
 r319 | jpeacock | 2004-07-12 23:07:10 -0400 (Mon, 12 Jul 2004) | 13 lines
 
 *    util.c

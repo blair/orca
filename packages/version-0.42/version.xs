@@ -26,7 +26,7 @@ BOOT:
 	newXS("version::(nomethod", XS_version_noop, file);
 	newXS("UNIVERSAL::VERSION", XS_version_VERSION, file);
 
-version
+void
 new(class,...)
     char *class
 PPCODE:
@@ -69,7 +69,6 @@ vcmp (lobj,...)
 PPCODE:
 {
     SV	*rs;
-    SV	*rvs;
     SV * robj = ST(1);
     IV	 swap = (IV)SvIV(ST(2));
 

@@ -178,7 +178,7 @@ Outline:
     RRDs                    >= 1.000491    >= 1.0.49    1.0.49
     Storable                >= 2.13        >= 2.13      2.13
     Time::HiRes             Not required by Orca        1.59
-    version                 >= 0.41        >= 0.41      0.41
+    version                 >= 0.42        >= 0.42      0.42
 
     All seven of these modules are included with the Orca distribution
     in the packages directory.  When you configure Orca in step 3),
@@ -290,10 +290,10 @@ Outline:
 
     version
 
-      http://www.perl.com/CPAN/authors/id/J/JP/JPEACOCK/version-0.41.tar.gz
+      http://www.perl.com/CPAN/authors/id/J/JP/JPEACOCK/version-0.42.tar.gz
 
-      % gunzip -c version-0.41.tar.gz | tar xvf -
-      % cd version-0.41
+      % gunzip -c version-0.42.tar.gz | tar xvf -
+      % cd version-0.42
       % perl Makefile.PL
       % make
       % make test

@@ -31,6 +31,7 @@ Perl_scan_version(pTHX_ char *s, SV *rv, bool qv)
     bool saw_under = 0;
     SV* sv = newSVrv(rv, "version"); /* create an SV and upgrade the RV */
     (void)sv_upgrade(sv, SVt_PVAV); /* needs to be an AV type */
+    AvREAL_on((AV*)sv);
 
     /* pre-scan the imput string to check for decimals */
     while ( *pos == '.' || *pos == '_' || isDIGIT(*pos) )
@@ -117,7 +118,15 @@ Perl_scan_version(pTHX_ char *s, SV *rv, bool qv)
     }
     if ( qv ) { /* quoted versions always become full version objects */
 	I32 len = av_len((AV *)sv);
-	for ( len = 2 - len; len > 0; len-- )
+	/* This for loop appears to trigger a compiler bug on OS X, as it
+	   loops infinitely. Yes, len is negative. No, it makes no sense.
+	   Compiler in question is:
+	   gcc version 3.3 20030304 (Apple Computer, Inc. build 1640)
+	   for ( len = 2 - len; len > 0; len-- )
+	   av_push((AV *)sv, newSViv(0));
+	*/
+	len = 2 - len;
+	while (len-- > 0)
 	    av_push((AV *)sv, newSViv(0));
     }
     return s;
@@ -146,6 +155,7 @@ Perl_new_version(pTHX_ SV *ver)
 	AV *av = (AV *)SvRV(ver);
 	SV* sv = newSVrv(rv, "version"); /* create an SV and upgrade the RV */
 	(void)sv_upgrade(sv, SVt_PVAV); /* needs to be an AV type */
+	AvREAL_on((AV*)sv);
 	for ( key = 0; key <= av_len(av); key++ )
 	{
 	    I32 rev = SvIV(*av_fetch(av, key, FALSE));
@@ -247,11 +257,14 @@ Perl_vnumify(pTHX_ SV *vs)
 	digit = SvIVX(*av_fetch((AV *)vs, i, 0));
 	Perl_sv_catpvf(aTHX_ sv,"%03d", (int)PERL_ABS(digit));
     }
+
     if ( len > 0 )
     {
 	digit = SvIVX(*av_fetch((AV *)vs, len, 0));
 	if ( (int)PERL_ABS(digit) != 0 || len == 1 )
 	{
+	    if ( digit < 0 ) /* alpha version */
+		Perl_sv_catpv(aTHX_ sv,"_");
 	    /* Don't display additional trailing zeros */
 	    Perl_sv_catpvf(aTHX_ sv,"%03d", (int)PERL_ABS(digit));
 	}
@@ -323,12 +336,13 @@ the original version contained 1 or more dots, respectively
 SV *
 Perl_vstringify(pTHX_ SV *vs)
 {
-    I32 i, len, digit;
+    I32 len, digit;
     if ( SvROK(vs) )
 	vs = SvRV(vs);
     len = av_len((AV *)vs);
+    digit = SvIVX(*av_fetch((AV *)vs, len, 0));
     
-    if ( len < 2 )
+    if ( len < 2 || ( len == 2 && digit < 0 ) )
 	return vnumify(vs);
     else
 	return vnormal(vs);

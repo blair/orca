@@ -1,7 +1,7 @@
 # http://module-build.sourceforge.net/META-spec.html
 #XXXXXXX This is a prototype!!!  It will change in the future!!! XXXXX#
 name:         version
-version:      0.41
+version:      0.42
 version_from: lib/version.pm
 installdirs:  site
 requires:

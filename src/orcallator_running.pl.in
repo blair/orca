@@ -7,7 +7,7 @@ use POSIX qw(strftime);
 
 # Set this to the list of directories that contain the output from
 # percollator.se.
-my @stats_dirs = ('@PERCOLLATOR_DIR@');
+my @stats_dirs = ('@ORCALLATOR_DIR@');
 
 foreach my $stats_dir (@stats_dirs) {
 

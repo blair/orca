@@ -1,3 +1,8 @@
+New in version 0.23.
+ 1) Fix two important bugs in orcallator_running and start_orcallator
+    which where using old PERCOLLATOR_DIR variables instead of the new
+    ORCALLATOR_DIR.
+
 New in version 0.22.
  1) Add a new command line option (-r) that tells Orca to only update
     the RRD data files and not to generate any HTML or GIF files.

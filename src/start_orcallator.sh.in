@@ -10,7 +10,7 @@ AWK=@AWK@
 CUT=@CUT@
 EXPR=@EXPR@
 UNAME=@UNAME@
-PERCOLLATOR_DIR=@PERCOLLATOR_DIR@
+ORCALLATOR_DIR=@ORCALLATOR_DIR@
 SE=@SE@
 WATCH_HTTPD="@WATCH_HTTPD@"
 WEB_LOG=@WEB_LOG@
@@ -19,8 +19,8 @@ WEB_LOG=@WEB_LOG@
 # anything past the first `.'.
 uname=`$UNAME -n | $CUT -d. -f1`
 
-# The directory these files go into is $PERCOLLATOR_DIR/HOSTNAME
-OUTDIR=$PERCOLLATOR_DIR/$uname
+# The directory these files go into is $ORCALLATOR_DIR/HOSTNAME
+OUTDIR=$ORCALLATOR_DIR/$uname
 
 # Export the environmental variables.
 export OUTDIR WEB_LOG

@@ -1,3 +1,16 @@
+Thu May 27 10:53:02 PDT 1999
+
+	Release version 0.23.
+
+Thu May 27 09:24:20 PDT 1999
+
+	Add another optimization that saves the result of computing how
+	old each GIF must be before it is recreated.
+
+	Fix a bug noted by Peter Radcliffe <pir@pir.net> where I missed
+	changing some PERCOLLATOR_DIR variables to ORCALLATOR_DIR in
+	src/start_orcallator.sh.in and src/orcallator_running.pl.in.
+
 Wed May 26 17:54:26 PDT 1999
 
 	Release version 0.22.

@@ -1,0 +1,970 @@
+/*
+ * Percollator.se, a log generating performance monitor.
+ *
+ * This program logs many different system quantities to a log file
+ * for later processing.
+ */
+ 
+/*
+ * Author: Blair Zajac <bzajac@geostaff.com>
+ *
+ * Portions copied from percollator.se written by Adrian Cockroft.
+ */
+
+// The default sampling interval in seconds.
+#define SAMPLE_INTERVAL		300
+// The maximum number of colums of data.
+#define MAX_COLUMNS		512
+
+// Define the different parts of the system you want to examine.
+#ifdef WATCH_OS
+#define WATCH_CPU
+#define WATCH_MUTEX
+#define WATCH_NET
+#define WATCH_TCP
+#define WATCH_NFS
+#define WATCH_DISK
+#define WATCH_DNLC
+#define WATCH_INODE
+#define WATCH_RAM
+#define WATCH_PAGES
+#endif
+
+// The ioctl version of the psinfo structure is needed.
+#define PSINFO_IOCTL
+
+#include <stdio.se>
+#include <stdlib.se>
+#include <unistd.se>
+#include <string.se>
+#include <time.se>
+#include <kstat.se>
+#include <utsname.se>
+
+#include <p_iostat_class.se>
+#include <p_netstat_class.se>
+#include <p_vmstat_class.se>
+#include <pure_rules.se>
+#include <live_rules.se>
+#include <mib.se>
+#include <tcp_class.se>
+#include <tcp_rules.se>
+
+#ifdef WATCH_HTTPD
+#include <fcntl.se>
+#include <proc.se>
+#include <stat.se>
+#endif
+
+// Put all rules here so they can be accessed by the handle functions.
+lr_cpu_t	lr_cpu$cpu;
+lr_cpu_t	tmp_lrcpu;
+lr_mutex_t	lr_mutex$m;
+lr_mutex_t	tmp_mutex;
+lr_net_t	lr_net$nr;
+lr_net_t	tmp_nr;
+lr_tcp_t	lr_tcp$tcp;
+lr_tcp_t	tmp_lrtcp;
+#ifdef WATCH_TCP
+tcp		tcp$tcp;
+tcp		tmp_tcp;
+#endif
+lr_rpcclient_t	lr_rpcclient$r;
+lr_rpcclient_t	tmp_lrpcc;
+lr_disk_t	lr_disk$dr;
+lr_disk_t	tmp_dr;
+lr_dnlc_t	lr_dnlc$dnlc;
+lr_dnlc_t	tmp_lrdnlc;
+lr_inode_t	lr_inode$inode;
+lr_inode_t	tmp_lrinode;
+lr_ram_t	lr_ram$ram;
+lr_ram_t	tmp_lrram;
+#ifdef WATCH_PAGES
+ks_system_pages kstat$pages;
+ks_system_pages tmp_kstat_pages;
+#endif
+lr_swapspace_t	lr_swapspace$s;
+lr_swapspace_t	tmp_lrswap;
+lr_kmem_t	lr_kmem$kmem;
+lr_kmem_t	tmp_lrkmem;
+ks_system_misc	kstat$misc;
+ks_system_misc	tmp_kstat_misc;
+
+// Put application globals here.
+string nodename;			// Name of machine running the script.
+string program_name;			// Name of this program.
+int    hz;				// Clock tick rate.
+int    page_size;			// Page size in bytes.
+long   boot_time;			// Boot time of the system.
+ulong  interval = SAMPLE_INTERVAL;	// Sampling interval. 
+
+// Variables for handling the httpd access log.
+#ifdef WATCH_HTTPD
+ulong  log_file;
+string log_name    = getenv("NCSAHTTPLOG");
+string log_gateway = getenv("GATEWAY");
+uint   log_gatelen;
+stat_t log_stat[1];
+ulong  log_ino;
+long   log_size;
+double log_interval;			// Hi-res interval time.
+ulong  interval5;			// Sampling interval divided by 5.
+
+double httpops;
+double httpops5;
+double gateops;
+double lastops;
+double dtmp;
+
+long   httpop_gets;
+long   httpop_condgets; /* HEAD or code = 304 conditional get no data */
+long   httpop_posts;
+long   httpop_cgi_bins;
+long   httpop_searches;
+long   httpop_errors;
+string search_url;
+long   dwnld_size[5]; /* [0] < 1K, [1] < 10K, [2] < 100K, [3] < 1M, [4] >= 1M */
+long   dwnld_totalz;  /* total size counted from log */
+
+ulonglong log_then;
+ulonglong log_now;
+
+#ifdef WATCH_PROXY
+double    prxy_xfer_sum;     /* transfer time */
+double    prxy_xfer_by_size[5];      /* mean transfer time by size bin */
+long      prxy_indirect;     /* number of hits that go via PROXY or SOCKS */
+long      prxy_cache_hits;   /* number of hits returned from cache */
+long      prxy_cache_writes; /* number of writes and updates to cache */
+long      prxy_uncacheable;  /* number of explicitly uncacheable httpops */
+                            /* any extra is errors or incomplete ops */
+#endif
+#endif
+
+// Variables for handling output.
+string col_comment[MAX_COLUMNS];	// Comments for each column.
+string col_data[MAX_COLUMNS];		// Data for each column.
+int    current_column;			// The current column.
+
+// Reset the output data.
+reset_output()
+{
+  current_column = 0;
+}
+
+// Add one column of comments and data to the buffers.
+put_output(string comment, string data)
+{
+  int comment_length;
+  int data_length;
+
+  if (current_column >= MAX_COLUMNS) {
+    fprintf(stderr, "%s: too many columns (%d).  Increase MAX_COLUMNS.\n",
+    	    program_name, current_column);
+    exit(1);
+  }
+
+  comment_length = strlen(comment);
+  data_length    = strlen(data);
+  col_comment[current_column] = comment;
+  col_data[current_column]    = data;
+  ++current_column;
+}
+
+print_columns(ulong fd, string data[])
+{
+  int i;
+  for (i=0; i<current_column; ++i) {
+    fprintf(fd, "%s", data[i]);
+    if (i != current_column-1) {
+      fputc(' ', fd);
+    }
+  }
+  fputc('\n', fd);
+  fflush(fd);
+}
+
+/* returns output file - creates or appends to logfile if OUTDIR is set
+   returns stdout and writes header if no OUTDIR
+   starts new logfile each day
+*/
+ulong checkoutput(tm_t now) {
+  int    exists;
+  string outdir = getenv("OUTDIR");
+  string outname;
+  ulong  ofile;
+  tm_t   then;
+  char   tm_buf[32];
+
+  if (outdir == nil) {
+    /* no output dir so use stdout */
+    if (ofile == 0) {
+      /* first time, so print header and set ofile */
+      ofile = stdout;
+      print_columns(ofile, col_comment);
+    }
+    return ofile;
+  }
+  /* maintain daily output logfiles in OUTDIR */
+  if (now.tm_yday != then.tm_yday) {
+    /* first time or day has changed, start new logfile */
+    if (ofile != 0) {
+      /* close existing output file */
+      fclose(ofile);
+    }
+    strftime(tm_buf, sizeof(tm_buf), "%Y-%m-%d", now);
+    outname = sprintf("%s/percol-%s", outdir, tm_buf);
+    exists = access(outname, F_OK); /* see if file already exists */
+    ofile = fopen(outname, "a"); /* open for append either way */
+    if (ofile == 0) {
+      perror("can't open output logfile");
+      exit(1);
+    }
+    /* if didn't exist write header */
+    if (exists == -1) {
+      print_columns(ofile, col_comment);
+    }
+    then = now;
+  }
+  return ofile;
+}
+
+int main(int argc, string argv[])
+{
+  utsname_t u[1];
+  ulong     ofile;	// File pointer to the logging file.
+  long      now;
+  tm_t      tm_now;
+
+  // Get the nodename of the machine.
+  uname(u);
+  nodename = u[0].nodename;
+
+  program_name = argv[0];
+
+  // Handle the command line arguments.
+  switch (argc) {
+    case 1:
+      break;
+    case 2:
+      interval = atoi(argv[1]);
+      break;
+    default:
+      fprintf(stderr, "usage: se [Defines] %s [interval]\n", program_name);
+      fprintf(stderr, "%s can use the following environmental variables:\n", program_name);
+      fprintf(stderr, "   setenv NCSAHTTPLOG /ns-home/httpd-80/logs/access - location of access log\n");
+      fprintf(stderr, "   setenv GATEWAY     some.where.com - special address to monitor\n");
+      fprintf(stderr, "   setenv OUTDIR      /ns-home/docs/percollator/logs - default stdout\n");
+      fprintf(stderr, "   setenv SEARCHURL   srch.cgi - match for search scripts, default is search.cgi\n");
+      fprintf(stderr, "Defines:\n");
+      fprintf(stderr, "   -DWATCH_HTTPD watch httpd access log\n");
+      fprintf(stderr, "   -DWATCH_OS    includes all of the below:\n");
+      fprintf(stderr, "   -DWATCH_CPU   watch the cpu load, run queue, etc\n");
+      fprintf(stderr, "   -DWATCH_MUTEX watch the number of mutex spins\n");
+      fprintf(stderr, "   -DWATCH_NET   watch all Ethernet interfaces\n");
+      fprintf(stderr, "   -DWATCH_TCP   watch all the TCP/IP stack\n");
+      fprintf(stderr, "   -DWATCH_NFS   watch NFS requests\n");
+      fprintf(stderr, "   -DWATCH_DNLC  watch the directory name lookup cache\n");
+      fprintf(stderr, "   -DWATCH_INODE watch the inode cache\n");
+      fprintf(stderr, "   -DWATCH_RAM   watch memory usage\n");
+      fprintf(stderr, "   -DWATCH_PAGES watch where pages are allocated\n");
+      exit(1);
+      break;
+  }
+
+#ifdef WATCH_HTTPD
+  // Calculate the interval time divided by 5.  Make sure it is not less
+  // than 1.
+  interval5 = interval/5;
+  if (interval5 < 1) {
+    interval5 = 1;
+  }
+#endif
+
+  // Initialize the various structures.
+  initialize();
+
+  // Run forever.  If WATCH_HTTPD is defined, then have the measure_httpd()
+  // function do the sleeping while it is watching the access log file.  Also,
+  // collect the data from the access log file before printing any output.
+  // If WATCH_HTTPD is not defined, then collect the data immediately and then
+  // do the sleep.
+  for (;;) {
+#ifdef WATCH_HTTPD
+    measure_httpd();
+#endif
+
+    // Reset the output.
+    reset_output();
+
+    // Get the current time.
+    now    = time(0);
+    tm_now = localtime(&now);
+
+    handle_os(now, tm_now);
+
+#ifdef WATCH_HTTPD
+    put_httpd();
+#endif
+
+    // Get a filedescriptor to write to.  Maintains daily output files.
+    ofile = checkoutput(tm_now);
+
+    // Print the output.
+    print_columns(ofile, col_data);
+
+#ifndef WATCH_HTTPD
+    sleep(interval);
+#endif
+  }
+  return 0;
+}
+
+initialize()
+{
+  // Sleep to give the disks a chance to update.  Only do this if we are
+  // not reading the httpd access log file, because that does at least 5
+  // seconds worth of sleeping.
+#ifndef WATCH_HTTPD
+  sleep(DISK_UPDATE_RATE);
+#endif
+
+  // Get the clock tick rate.
+  hz = sysconf(_SC_CLK_TCK);
+
+  // Get the page size.
+  page_size = sysconf(_SC_PAGESIZE);
+
+  // Calculate the system boot time.
+  boot_time = time(0) - (kstat$misc.clk_intr / hz);
+
+#ifdef WATCH_HTTPD
+  search_url = getenv("SEARCHURL");
+  if (search_url == nil) {
+    search_url = "search.cgi";
+  }
+
+  if (log_gateway == nil) {
+    log_gateway = "NoGatway";
+    log_gatelen = 0;
+  }
+  else {
+    log_gatelen = strlen(log_gateway);
+  }
+
+  log_file = fopen(log_name, "r");
+  if (log_file != 0) {
+    stat(log_name, log_stat);
+    log_ino  = log_stat[0].st_ino;
+    log_size = log_stat[0].st_size;
+    // Move to the end of the file.
+    fseek(log_file, 0, 2);
+  }
+
+  log_then = gethrtime();
+#endif
+
+  // Perform the first measurement of the system.
+  measure_os();
+}
+
+// Measure the system statistics all at once.
+measure_os()
+{
+  tmp_lrcpu       = lr_cpu$cpu;
+  tmp_mutex       = lr_mutex$m;
+  tmp_nr          = lr_net$nr;
+  tmp_lrtcp       = lr_tcp$tcp;
+#ifdef WATCH_TCP
+  tmp_tcp         = tcp$tcp;
+#endif
+  tmp_lrpcc       = lr_rpcclient$r;
+  tmp_dr          = lr_disk$dr;
+  tmp_lrdnlc      = lr_dnlc$dnlc;
+  tmp_lrinode     = lr_inode$inode;
+  tmp_lrram       = lr_ram$ram;
+#ifdef WATCH_PAGES
+  tmp_kstat_pages = kstat$pages;
+#endif
+  tmp_lrswap      = lr_swapspace$s;
+  tmp_lrkmem      = lr_kmem$kmem;
+  tmp_kstat_misc  = kstat$misc;
+}
+
+handle_os(long now, tm_t tm_now)
+{
+  // Measure the system now.
+  measure_os();
+
+  // Take care of miscellaneous measurements.
+  handle_misc(now, tm_now);
+
+  // Take care of cpu.
+#ifdef WATCH_CPU
+  handle_cpu();
+#endif
+
+  // Take care of mutexes.
+#ifdef WATCH_MUTEX
+  handle_mutex();
+#endif
+
+  // Take care of the network.
+#ifdef WATCH_NET
+  handle_net();
+#endif
+
+  // Take care of TCP/IP.
+#ifdef WATCH_TCP
+  handle_tcp();
+#endif
+
+  // Take care of NFS.
+#ifdef WATCH_NFS
+  handle_nfs();
+#endif
+
+  // Take care of the disks.
+#ifdef WATCH_DISK
+  handle_disk();
+#endif
+
+  // Take care of DNLC.
+#ifdef WATCH_DNLC
+  handle_dnlc();
+#endif
+
+  // Take care of the inode cache.
+#ifdef WATCH_INODE
+  handle_inode();
+#endif
+
+  // Take care of ram.
+#ifdef WATCH_RAM
+  handle_ram();
+#endif
+
+  // Take care of page allocations.
+#ifdef WATCH_PAGES
+  handle_pages();
+#endif
+}
+
+/* state as a character */
+char state_char(int state) {
+  switch(state) {
+    case ST_WHITE: return 'w'; /* OK states are lower case */
+    case ST_BLUE:  return 'b';
+    case ST_GREEN: return 'g';
+    case ST_AMBER: return 'A'; /* bad states are upper case to stand out */
+    case ST_RED:   return 'R';
+    case ST_BLACK: return 'B';
+    default: return 'I';	/* invalid state */
+  }
+}
+
+handle_misc(ulong now, tm_t tm_now)
+{
+  long   uptime;
+  char   states[12];
+  char   tm_buf[16];
+
+  uptime = now - boot_time;
+  states = "wwwwwwwwwww";
+  strftime(tm_buf, sizeof(tm_buf), "%T", tm_now);
+
+  states[0] = state_char(lr_disk$dr.state); 
+  states[1] = state_char(lr_net$nr.state);     
+  states[2] = state_char(lr_rpcclient$r.state); 
+  states[3] = state_char(lr_swapspace$s.state);     
+  states[4] = state_char(lr_ram$ram.state);    
+  states[5] = state_char(lr_kmem$kmem.state);   
+  states[6] = state_char(lr_cpu$cpu.state);    
+  states[7] = state_char(lr_mutex$m.state);     
+  states[8] = state_char(lr_dnlc$dnlc.state);   
+  states[9] = state_char(lr_inode$inode.state);   
+  states[10]= state_char(lr_tcp$tcp.state);
+
+  put_output(" timestamp",  sprintf("%10d", now));
+  put_output("locltime",    tm_buf);
+  put_output("  uptime",    sprintf("%8d", uptime));
+  put_output("DNnsrkcmdit", states);
+}
+
+#ifdef WATCH_CPU
+handle_cpu()
+{
+  p_vmstat pvm;
+
+  pvm = vmglobal_total();
+  put_output("usr%",   sprintf("%4d",   pvm.user_time));
+  put_output("sys%",   sprintf("%4d",   pvm.system_time));
+  put_output(" 1load", sprintf("%6.2f", tmp_kstat_misc.avenrun_1min/256.0));
+  put_output(" 5load", sprintf("%6.2f", tmp_kstat_misc.avenrun_5min/256.0));
+  put_output("15load", sprintf("%6.2f", tmp_kstat_misc.avenrun_15min/256.0));
+  put_output(" 1runq", sprintf("%6.2f", tmp_kstat_misc.avenrun_1min/256.0));
+  put_output(" 5runq", sprintf("%6.2f", tmp_kstat_misc.avenrun_5min/256.0));
+  put_output("15runq", sprintf("%6.2f", tmp_kstat_misc.avenrun_15min/256.0));
+  put_output("#proc",  sprintf("%5lu",  tmp_kstat_misc.nproc));
+}
+#endif
+
+#ifdef WATCH_MUTEX
+handle_mutex()
+{
+  put_output(" smtx",    sprintf("%5d", tmp_mutex.smtx));
+  put_output("smtx/cpu", sprintf("%8d", tmp_mutex.smtx/tmp_mutex.ncpus));
+}
+#endif
+
+#ifdef WATCH_NET
+handle_net()
+{
+  int   i;
+
+  for (i=0; i<tmp_nr.net_count; ++i) {
+    put_output(sprintf("%4sIpkt/s", tmp_nr.names[i]),
+	       sprintf("%10.3f", GLOBAL_net[i].ipackets));
+    put_output(sprintf("%4sOpkt/s", tmp_nr.names[i]),
+	       sprintf("%10.3f", GLOBAL_net[i].opackets));
+    put_output(sprintf("%4sInKB/s", tmp_nr.names[i]),
+	       sprintf("%10.3f", GLOBAL_net[i].ioctets/1024.0));
+    put_output(sprintf("%4sOuKB/s", tmp_nr.names[i]),
+	       sprintf("%10.3f", GLOBAL_net[i].ooctets/1024.0));
+    put_output(sprintf("%4sIErr/s", tmp_nr.names[i]),
+	       sprintf("%10.3f", GLOBAL_net[i].ierrors));
+    put_output(sprintf("%4sOErr/s", tmp_nr.names[i]),
+	       sprintf("%10.3f", GLOBAL_net[i].oerrors));
+    put_output(sprintf("%4sColl%%", tmp_nr.names[i]),
+	       sprintf("%9.3f", GLOBAL_net[i].collpercent));
+    put_output(sprintf("%4sNoCP/s", tmp_nr.names[i]),
+	       sprintf("%10.3f", GLOBAL_net[i].nocanput));
+    put_output(sprintf("%4sDefr/s", tmp_nr.names[i]),
+	       sprintf("%10.3f", GLOBAL_net[i].defer));
+  }
+}
+#endif
+
+#ifdef WATCH_TCP
+handle_tcp()
+{
+  put_output("tcp_Iseg/s", sprintf("%10.3f", tmp_tcp.InDataSegs));
+  put_output("tcp_Oseg/s", sprintf("%10.3f", tmp_tcp.OutDataSegs));
+  put_output("tcp_InKB/s", sprintf("%10.3f", tmp_tcp.InDataBytes/1024.0));
+  put_output("tcp_OuKB/s", sprintf("%10.3f", tmp_tcp.OutDataBytes/1024.0));
+  put_output("tcp_Ret%",   sprintf("%8.3f",  tmp_tcp.RetransPercent));
+  put_output("tcp_Dup%",   sprintf("%8.3f",  tmp_tcp.InDupPercent));
+  put_output("tcp_Icn/s",  sprintf("%9.3f",  tmp_tcp.PassiveOpens));
+  put_output("tcp_Ocn/s",  sprintf("%9.3f",  tmp_tcp.ActiveOpens));
+  put_output("tcp_estb",   sprintf("%8lu",   tmp_tcp.last.tcpCurrEstab));
+  put_output("tcp_Rst/s",  sprintf("%9.3f",  tmp_tcp.OutRsts));
+  put_output("tcp_Atf/s",  sprintf("%9.3f",  tmp_tcp.AttemptFails));
+  put_output("tcp_Ldrp/s", sprintf("%10.3f", tmp_tcp.ListenDrop));
+  put_output("tcp_LdQ0/s", sprintf("%10.3f", tmp_tcp.ListenDropQ0));
+  put_output("tcp_HOdp/s", sprintf("%10.3f", tmp_tcp.HalfOpenDrop));
+}
+#endif
+
+#ifdef WATCH_NFS
+handle_nfs()
+{
+  put_output("nfs_call/s", sprintf("%10.3f", tmp_lrpcc.calls));
+  put_output("nfs_timo/s", sprintf("%10.3f", tmp_lrpcc.timeouts));
+  put_output("nfs_badx/s", sprintf("%10.3f", tmp_lrpcc.badxids));
+}
+#endif
+
+#ifdef WATCH_DISK
+handle_disk()
+{
+  double mean_disk_busy;
+  double peak_disk_busy;
+  int    i;
+
+  mean_disk_busy = 0.0;
+  peak_disk_busy = 0.0;
+  for (i=0; i < GLOBAL_disk[0].disk_count; i++) {
+    mean_disk_busy += GLOBAL_disk[i].run_percent;
+    if (GLOBAL_disk[i].run_percent > peak_disk_busy) {
+      peak_disk_busy = GLOBAL_disk[i].run_percent;
+    }
+  }
+  mean_disk_busy = mean_disk_busy/GLOBAL_disk[0].disk_count;
+
+  put_output("disk_peak", sprintf("%9.3f", peak_disk_busy));
+  put_output("disk_mean", sprintf("%9.3f", mean_disk_busy));
+}
+#endif
+
+#ifdef WATCH_DNLC
+handle_dnlc()
+{
+  put_output("dnlc_ref/s", sprintf("%10.3f", tmp_lrdnlc.refrate));
+  put_output("dnlc_hit%",  sprintf("%9.3f",  tmp_lrdnlc.hitrate));
+}
+#endif
+
+#ifdef WATCH_INODE
+handle_inode()
+{
+  put_output("inod_ref/s", sprintf("%10.3f", tmp_lrinode.refrate));
+  put_output("inod_hit%",  sprintf("%9.3f",  tmp_lrinode.hitrate));
+  put_output("inod_stl/s", sprintf("%10.3f", tmp_lrinode.iprate));
+}
+#endif
+
+#ifdef WATCH_RAM
+handle_ram()
+{
+  put_output("swap_avail", sprintf("%10ld", GLOBAL_pvm[0].swap_avail));
+  put_output("page_rstim", sprintf("%10d",  tmp_lrram.restime));
+  put_output("free_pages", sprintf("%10d",  (GLOBAL_pvm[0].freemem*1024)/page_size));
+}
+#endif
+
+#ifdef WATCH_PAGES
+handle_pages()
+{
+  put_output("pp_kernel", sprintf("%9lu", tmp_kstat_pages.pp_kernel));
+  put_output("pagesfree", sprintf("%9lu", tmp_kstat_pages.pagesfree));
+  put_output("pageslock", sprintf("%9lu", tmp_kstat_pages.pageslocked));
+  put_output("pagesio",   sprintf("%7lu", tmp_kstat_pages.pagesio));
+  put_output("pagestotl", sprintf("%9lu", tmp_kstat_pages.pagestotal));
+}
+#endif
+
+#ifdef WATCH_HTTPD
+/* breakdown access log format */
+accesslog(string buf) {
+	int	size_index;
+	string	word;
+	int	z;
+	int	ishead;
+#ifdef WATCH_PROXY
+	double	xf;
+#endif
+	ishead = 0;
+	word = strtok(buf," ");		/* address */
+	if (word == nil) {
+		return;
+		}
+	strtok(nil, " ");	/* - */
+	strtok(nil, " ");	/* - */
+	strtok(nil, " [");	/* date */
+	strtok(nil, " ");	/* zone] */
+	word = strtok(nil, " \"");	/* GET or POST */
+	switch (word) {
+		case "get":
+		case "GET":
+			httpop_gets++; 
+			break;
+		case "post":
+		case "POST":
+			httpop_posts++;
+			break;
+		case "head":
+		case "HEAD":
+			ishead = 1;
+			httpop_condgets++;
+			break;
+		default: break; 
+	}
+	word = strtok(nil, " ");	/* URL */
+	if (word != nil) {
+		if (strstr(word,"cgi-bin") != nil) {
+			httpop_cgi_bins++;
+		}
+		if (strstr(word, search_url) != nil) {
+			httpop_searches++;
+		}
+	}
+	strtok(nil, " ");	/* HTTP/1.x" */
+	word = strtok(nil, " ");	/* error/success code */
+	if (word != nil) {
+                if (strstr(word,"304") != nil) {
+                        httpop_condgets++;
+                }
+                if (strncmp(word, "4", 1) == 0 || strncmp(word, "5", 1) == 0) {
+                        httpop_errors++;
+                }
+	}
+        word = strtok(nil, " ");	/* bytes transferred */
+        if (word != nil) {
+		z = atoi(word);
+		if (ishead == 0) {	/* don't add size if its a HEAD */
+			dwnld_totalz += z;
+		}
+		if ((z % 1024) == z) {
+			size_index=0;		/* under 1K */
+		} else {
+			if ((z % 10240) == z) {
+				size_index=1; /* under 10K */
+			} else {
+				if ((z % 102400) == z) {
+					size_index=2; /* under 100K */
+				} else {
+					if ((z % 1048576) == z) {
+						size_index=3; /* < 1MB */
+					} else {
+						size_index=4; /* >= 1MB */
+					}
+				}
+			}
+		}
+		dwnld_size[size_index]++;
+	}
+#ifdef WATCH_PROXY
+	word = strtok(nil, " ");	/* status from server */
+	word = strtok(nil, " ");	/* length from server */
+	word = strtok(nil, " ");	/* length from client POST  */
+	word = strtok(nil, " ");	/* length POSTed to remote */
+	word = strtok(nil, " ");	/* client header req */
+	word = strtok(nil, " ");	/* proxy header resp */
+	word = strtok(nil, " ");	/* proxy header req */
+	word = strtok(nil, " ");	/* server header resp */
+	word = strtok(nil, " ");	/* transfer total secs */
+        word = strtok(nil, " ");        /* route */
+        if (word != nil) {	/* - DIRECT PROXY(host.domain:port) SOCKS */
+                if (strncmp(word, "PROXY", 5) == 0 ||
+                         strncmp(word, "SOCKS", 5) == 0) {
+                         prxy_indirect++;
+		}
+	}
+        word = strtok(nil, " ");        /* client finish status */
+        word = strtok(nil, " ");        /* server finish status */
+        word = strtok(nil, " ");        /* cache finish status */
+	/* - ERROR HOST-NOT-AVAILABLE = error or incomplete op
+	WRITTEN REFRESHED CL-MISMATCH(content length mismatch) = cache_writes
+	NO-CHECK UP-TO-DATE = cache_hits
+	DO-NOT-CACHE NON-CACHEABLE = uncacheable */
+        if (word != nil) { 
+		switch(word) {
+			case "WRITTEN":
+			case "REFRESHED":
+			case "CL-MISMATCH": prxy_cache_writes++;
+					break;
+			case "NO-CHECK":
+			case "UP-TO-DATE":  prxy_cache_hits++;
+					break;
+			case "DO-NOT-CACHE":
+			case "NON-CACHEABLE": prxy_uncacheable++;
+					break;
+			default: break;
+		}
+        }
+        word = strtok(nil, " [");       /* [transfer total time x.xxx */
+        if (word != nil) {
+                xf = atof(word);
+		prxy_xfer_by_size[size_index] += xf;
+		prxy_xfer_sum += xf;
+	}
+#endif
+}
+
+measure_httpd()
+{
+  char      buf[BUFSIZ];
+  int       i;
+
+  httpops         = 0.0;
+  httpops5        = 0.0;
+  lastops         = 0.0;
+  gateops         = 0.0;
+  httpop_gets     = 0;
+  httpop_condgets = 0;
+  httpop_posts    = 0;
+  httpop_cgi_bins = 0;
+  httpop_errors   = 0;
+  httpop_searches = 0;
+
+  for (i=0; i<5; i++) {
+    dwnld_size[i] = 0;
+#ifdef WATCH_PROXY
+    prxy_xfer_by_size[i] = 0.0;
+#endif
+  }
+  dwnld_totalz = 0;
+
+#ifdef WATCH_PROXY
+  prxy_xfer_sum     = 0.0;
+  prxy_indirect     = 0;
+  prxy_cache_hits   = 0;
+  prxy_cache_writes = 0;
+  prxy_uncacheable  = 0;
+#endif
+
+  if (log_name != nil) {
+    for (i=0; i<interval/5; ++i) {
+      sleep(5);
+      if (log_file != 0) {
+        while (fgets(buf, BUFSIZ, log_file) != nil) {
+          httpops += 1.0;
+          if (log_gatelen > 0) {
+            if (strncmp(buf, log_gateway, log_gatelen) == 0) {
+              gateops += 1.0;
+            }
+          }
+          accesslog(buf);
+        }
+      }
+
+      /* see if the file has been switched or truncated */
+      stat(log_name, log_stat);
+      if (log_ino != log_stat[0].st_ino || log_size > log_stat[0].st_size) {
+        if (log_file != 0) {
+          fclose(log_file); /* close the old log */
+        }
+        /* log file has changed, open the new one */
+        log_file = fopen(log_name, "r");
+        if (log_file != 0) {
+          log_ino = log_stat[0].st_ino;
+          while(fgets(buf, BUFSIZ, log_file) != nil) {
+            httpops += 1.0;
+            if (log_gatelen > 0) {
+              if (strncmp(buf, log_gateway, log_gatelen) == 0) {
+                gateops += 1.0;
+              }
+            }
+            accesslog(buf);
+          }
+        }
+      }
+
+      log_size = log_stat[0].st_size;    /* remember size for next time */
+      if (httpops - lastops > httpops5) {
+        httpops5 = httpops - lastops;
+      }
+      lastops = httpops;
+    }
+  }
+  else {
+    sleep(interval);
+  }
+
+  log_now      = gethrtime();
+  log_interval = (log_now - log_then) * 0.000000001;
+  log_then     = log_now;
+
+  if (httpops == 0.0) {
+    dtmp = 0.0;
+  }
+  else {
+    dtmp = 100.0 / httpops;
+  }
+
+#ifdef WATCH_PROXY
+  for (i=0; i<5; ++i) {
+    if (dwnld_size[i] == 0) {
+      prxy_xfer_by_size[i] = 0.0;
+    }
+    else {
+      prxy_xfer_by_size[i] = prxy_xfer_by_size[i]/dwnld_size[i];
+    }
+  }
+#endif
+}
+
+long count_proc(string name)
+{
+  ulong      directory_pointer;
+  ulong      directory_entry;
+  dirent_t   directory_data;
+  int        process_number;
+  char       process_name[64];
+  long       num_proc;
+  int        process_fd;
+  int        err;
+#if MINOR_VERSION < 60
+  prpsinfo_t ps[1];	// format for ioctl
+#else
+  psinfo_t   ps[1];	// format changes when read used
+  ulong      pps = 0;
+
+  if (pps == 0) {
+    pps = malloc(sizeof(ps));
+  }
+#endif
+
+  directory_pointer = opendir("/proc");
+  if (directory_pointer == 0) {
+    fprintf(stderr, "%s: cannot open /proc for reading.\n", program_name);
+    return 0;
+  }
+
+  rewinddir(directory_pointer);
+
+  num_proc = 0;
+
+  // Go through all processes.
+  directory_entry = readdir(directory_pointer);
+  for (; directory_entry != NULL; ) {
+    struct_fill(directory_data, directory_entry);
+    directory_entry = readdir(directory_pointer);
+
+    process_number = atoi(directory_data.d_name);
+#if MINOR_VERSION < 60
+    process_name = sprintf("/proc/%d", process_number);
+#else
+    process_name = sprintf("/proc/%d/psinfo", process_number);
+#endif
+    process_fd = open(process_name, O_RDONLY, 0);
+    if (process_fd == -1) {
+      continue;
+    }
+
+#if MINOR_VERSION < 60
+    // Read the process info and accumulate errors.
+    err += ioctl(process_fd, PIOCPSINFO, ps);
+    if (err != 0) {
+#else
+    err += read(process_fd, pps, sizeof(ps));
+    struct_fill(ps, pps);
+    if (err == 0) {
+#endif
+
+      // Process went away since the directory was opened.
+      close(process_fd);
+      continue;
+    }
+
+    close(process_fd);
+    if (ps[0].pr_fname =~ name) {
+      ++num_proc;
+    }
+  }
+
+  closedir(directory_pointer);
+
+  return num_proc;
+}
+
+put_httpd()
+{
+  put_output("#httpds",   sprintf("%7ld",  count_proc("httpd")));
+  put_output("httpop/s",  sprintf("%8.2f", httpops/log_interval));
+  put_output("http/p5s",  sprintf("%8.2f", httpops5/5.0));
+  put_output("cndget/s",  sprintf("%8.2f", httpop_condgets/log_interval));
+  put_output("search/s",  sprintf("%8.3f", httpop_searches/log_interval));
+  put_output("   cgi/s",  sprintf("%8.3f", httpop_cgi_bins/log_interval));
+  put_output(" htErr/s",  sprintf("%8.3f", httpop_errors/log_interval));
+  put_output(" httpb/s",  sprintf("%8.0f", dwnld_totalz/log_interval));
+  put_output("  %to1KB",  sprintf("%8.2f", dtmp*dwnld_size[0]));
+  put_output(" %to10KB",  sprintf("%8.2f", dtmp*dwnld_size[1]));
+  put_output("%to100KB",  sprintf("%8.2f", dtmp*dwnld_size[2]));
+  put_output("  %to1MB",  sprintf("%8.2f", dtmp*dwnld_size[3]));
+  put_output("%over1MB",  sprintf("%8.2f", dtmp*dwnld_size[4]));
+  put_output(log_gateway, sprintf("%8.2f", gateops/log_interval));
+
+#ifdef WATCH_PROXY
+  put_output("  %indir", sprintf("%8.2f", dtmp * prxy_indirect));
+  put_output("%cch_hit", sprintf("%8.2f", dtmp * prxy_cache_hits));
+  put_output("%cch_wrt", sprintf("%8.2f", dtmp * prxy_cache_writes));
+  put_output("%cch_unc", sprintf("%8.2f", dtmp * prxy_uncacheable));
+  put_output("   xfr_t", sprintf("%8.2f", 0.01 * dtmp * prxy_xfer_sum));
+  put_output("  xfr1_t", sprintf("%8.2f", prxy_xfer_by_size[0]));
+  put_output(" xfr10_t", sprintf("%8.2f", prxy_xfer_by_size[1]));
+  put_output("xfr100_t", sprintf("%8.2f", prxy_xfer_by_size[2]));
+  put_output(" xfr1M_t", sprintf("%8.2f", prxy_xfer_by_size[3]));
+  put_output("xfro1M_t", sprintf("%8.2f", prxy_xfer_by_size[4]));
+#endif
+}
+#endif

@@ -1,0 +1,63 @@
+*** include/p_netstat_class.se.0	Tue Aug 11 11:17:25 1998
+--- include/p_netstat_class.se	Thu Sep 17 16:47:56 1998
+***************
+*** 12,17 ****
+--- 12,20 ----
+  #include <kstat.se>
+  #include <sysdepend.se>
+  #include <netif.se>
++ #include <time.se>
++ #include <mib.se>
++ #include <tcp_class.se>
+  
+  #define NANODOUBLE 0.000000001	/* converts gethrtime to seconds */
+  
+***************
+*** 96,118 ****
+    
+        /* compute new values */
+        net_ipackets[i]   =
+!         (tmp_net.ipackets   - save_nets[i].ipackets) / et;
+        net_ierrors[i]    =
+!         (tmp_net.ierrors    - save_nets[i].ierrors)  / et;
+        net_opackets[i]   =
+!         (tmp_net.opackets   - save_nets[i].opackets) / et;
+        net_oerrors[i]    =
+!         (tmp_net.oerrors    - save_nets[i].oerrors)  / et;
+        net_collisions[i] =
+!         (tmp_net.collisions - save_nets[i].collisions) / et;
+        net_nocanput[i] =
+!         (tmp_net.nocanput   - save_nets[i].nocanput) / et;
+        net_defer[i] =
+!         (tmp_net.defer      - save_nets[i].defer)   / et;
+        net_ioctets[i] =
+!         (tmp_net.ioctets    - save_nets[i].ioctets) / et;
+        net_ooctets[i] =
+!         (tmp_net.ooctets    - save_nets[i].ooctets) / et;
+        /* save old */
+        save_nets[i] = tmp_net;
+      }
+--- 99,121 ----
+    
+        /* compute new values */
+        net_ipackets[i]   =
+!         ud_diff(tmp_net.ipackets,    save_nets[i].ipackets) / et;
+        net_ierrors[i]    =
+!         ud_diff(tmp_net.ierrors,     save_nets[i].ierrors)  / et;
+        net_opackets[i]   =
+!         ud_diff(tmp_net.opackets,    save_nets[i].opackets) / et;
+        net_oerrors[i]    =
+!         ud_diff(tmp_net.oerrors,     save_nets[i].oerrors)  / et;
+        net_collisions[i] =
+!         ud_diff(tmp_net.collisions,  save_nets[i].collisions) / et;
+        net_nocanput[i] =
+!         ud_diff(tmp_net.nocanput,    save_nets[i].nocanput) / et;
+        net_defer[i] =
+!         ud_diff(tmp_net.defer,       save_nets[i].defer)   / et;
+        net_ioctets[i] =
+!         ud_diff(tmp_net.ioctets,     save_nets[i].ioctets) / et;
+        net_ooctets[i] =
+!         ud_diff(tmp_net.ooctets,     save_nets[i].ooctets) / et;
+        /* save old */
+        save_nets[i] = tmp_net;
+      }

@@ -1,0 +1,12 @@
+fmrtg:
+	Lock file
+	Arbitrary date reading
+	Use SMRTG's configuration ConfigTree?????
+	More configuration file defaults
+	Better date loading support
+	Make plots from multiple files sets: delete source files_key and put
+		it into data
+
+percollator.se:
+	Better documentation
+	Autoconfigure support?????

@@ -1,0 +1,33 @@
+This directory contains several files for getting percollator.se running
+on your system.
+
+To install percollator.se, you need to perform the following steps:
+
+1) Perform the installation instructions as listed on the web page
+   http://www.sun.com/sun-on-net/performance/se3/
+
+2) Apply the patch file p_netstat_class.se.diff to the
+   /opt/RICHPse/include/p_netstat_class.se file using the following
+   command
+
+      cd /opt/RICHPse
+      patch -s < THIS_DIR/p_netstat_class.se.diff
+
+3) Choose the base directory that will contain the percollator data files.
+
+4) Update the start_percol, stop_percol, and restart_percol files
+   set the correct value for the following variables:
+
+   STATSDIR	The base directory for these scripts and data files.
+   NCSAHTTPLOG	The location of the web server access_log file.
+   AWK		The location of the best awk you have, ie gawk, nawk.
+
+   The start_percol will create a directory STATSDIR/stats_percollator
+   where the output data files will be listed.  If you want to change this,
+   edit start_percol.
+
+5) Run the start_percol script on each system as root.  It should create
+   the needed directories under STATSDIR/stats_percollator.
+
+6) Update the fmrtg/sample_configs/percollator.cfg file to look in the
+   new STATSDIR/stats_percollator directory.

@@ -1,0 +1,3572 @@
+#!/home/bzajac/opt-sparc-solaris/perl5/bin/perl -w
+
+# FMRTG: display arbitrary data from files onto web pages using RRD.
+#
+# Copyright (C) 1998 Blair Zajac and GeoCities, Inc.
+
+use strict;
+require 5.005;
+
+$| = 1;
+
+use Carp;
+use MD5 1.7;
+use Math::IntervalSearch 1.00 qw(interval_search);
+use Data::Dumper;
+$Data::Dumper::Indent   = 1;
+$Data::Dumper::Purity   = 1;
+$Data::Dumper::Deepcopy = 1;
+
+# This is the version of this code.
+my $VERSION = 0.10;
+
+# Create an MD5 context for use.
+my $md5 = MD5->new;
+
+# The number of seconds in one day.
+my $day_seconds = 24*60*60;
+
+# These define the different RRAs to create, how far back in time they
+# go, how many primary data points go into a consolidated data point,
+# and the default how to create RRAs.  The first array holds the names
+# of the different plot types to create.  The second array holds the number of
+# 300 intervals are used to create a consolidated data point.  The third
+# array is the number of consolidated data points held in the RRA. The
+# first one is every 5 minutes for 200 hours, the second is every 30 minutes
+# for 31 days, the third is every 2 hours for 100 days, and the last is
+# every day for 3 years.  The last array holds the number of days back in
+# time to plot in the GIF.  Be careful to not increase this so much that the
+# number of data points to plot are greater than the number of pixels
+# available for the GIF, otherwise there will be a 30% slowdown due to
+# a reduction calculation to resample the data to the lower resolution for
+# the plot.  For example, with 40 days of 2 hour data, there are 480 data
+# points.  For no slowdown to occur, the GIF should be atleast 480 pixels
+# wide.
+my @rra_plot_type = qw(daily weekly monthly yearly);
+my @rra_pdp_count =   (    1,     6,     24,   288);
+my @rra_row_count =   ( 2400,  1488,   1200,  1098);
+my @rra_days_back =   (  1.5,  10.0,   40.0, 500.0);
+
+# These are command line options.
+my $opt_verbose   = 0;
+my $opt_once_only = 0;
+
+# Set up a signal handler to force looking for new files.
+my $force_find_files = 0;
+sub handle_hup {
+  $force_find_files = 1;
+}
+$SIG{HUP} = \&handle_hup;
+
+package MRTG::HTMLFile;
+
+use Carp;
+
+sub new {
+  unless (@_ >= 4) {
+    confess "$0: MRTG::HTMLFile::new passed wrong number of arguments.\n";
+  }
+  my ($class, $filename, $title, $top, $bottom) = @_;
+  $bottom = '' unless defined $bottom;
+
+  local *FD;
+  open(FD, "> $filename") or return;
+
+  print FD <<END;
+<html>
+<head>
+<title>$title</title>
+</head>
+<body bgcolor="#ffffff">
+
+$top
+<h1>$title</h1>
+END
+
+  bless {_filename => $filename,
+         _handle   => *FD,
+         _bottom   => $bottom,
+  }, $class;
+}
+
+sub print {
+  my $self = shift;
+  print { $self->{_handle} } "@_";
+}
+
+sub DESTROY {
+  my $self = shift;
+
+  print { $self->{_handle} } <<END;
+$self->{_bottom}
+</body>
+</html>
+END
+
+  close($self->{_handle}) or
+    warn "$0: warning: cannot close `$self->{_filename}': $!\n";
+}
+
+package OpenFileHash;
+
+use Carp;
+
+sub new {
+  unless (@_ == 2) {
+    confess "$0: OpenFileHash::new passed wrong number of arguments.\n";
+  }
+
+  my $class        = shift;
+
+  bless {_max_elements => shift,
+         _hash         => {},
+         _weights      => {},
+         _filenos      => {},
+         _buffer       => {},
+         _vec          => ''
+  }, $class;
+}
+
+sub open {
+  unless (@_ == 3) {
+    confess "$0: OpenFileHash::open passed wrong number of arguments.\n";
+  }
+
+  my ($self, $filename, $weight) = @_;
+
+  local *FD;
+
+  unless (open(FD, $filename)) {
+    warn "$0: warning: cannot open `$filename' for reading: $!\n";
+    return;
+  }
+
+  $self->add($filename, $weight, *FD);
+
+  *FD;
+}
+
+sub add {
+  my ($self, $filename, $weight, $fd) = @_;
+
+  # If there is an open file descriptor for this filename, then force it to
+  # close.  Then make space for the new file descriptor in the cache.
+  $self->close($filename);
+  $self->_close_extra($self->{_max_elements} - 1);
+
+  my $fileno = fileno($fd);
+
+  $self->{_hash}{$filename}{weight} = $weight;
+  $self->{_hash}{$filename}{fd}     = $fd;
+  $self->{_filenos}{$filename}      = $fileno;
+  $self->{_buffer}{$filename}       = '';
+  vec($self->{_vec}, $fileno, 1)    = 1;
+
+  unless (defined $self->{_weights}{$weight}) {
+    $self->{_weights}{$weight} = [];
+  }
+  push(@{$self->{_weights}{$weight}}, $filename);
+
+}
+
+sub close {
+  my ($self, $filename) = @_;
+
+  return $self unless defined $self->{_hash}{$filename};
+
+  my $close_value = close($self->{_hash}{$filename}{fd});
+  $close_value or warn "$0: warning: cannot close `$filename': $!\n";
+
+  my $weight = $self->{_hash}{$filename}{weight};
+  delete $self->{_hash}{$filename};
+
+  my $fileno = delete $self->{_filenos}{$filename};
+  vec($self->{_vec}, $fileno, 1) = 0;
+
+  my @filenames = @{$self->{_weights}{$weight}};
+  @filenames = grep { $_ ne $filename } @filenames;
+  if (@filenames) {
+    $self->{_weights}{$weight} = \@filenames;
+  }
+  else {
+    delete $self->{_weights}{$weight};
+  }
+
+  $close_value;
+}
+
+sub _close_extra {
+  my ($self, $max_elements) = @_;
+
+  # Remove this number of elements from the structure.
+  my $close_number = (keys %{$self->{_hash}}) - $max_elements;
+
+  return $self unless $close_number > 0;
+
+  my @weights = sort { $a <=> $b } keys %{$self->{_weights}};
+
+  while ($close_number > 0) {
+    my $weight = shift(@weights);
+    foreach my $filename (@{$self->{_weights}{$weight}}) {
+      $self->close($filename);
+      --$close_number;
+    }
+  }
+
+  $self;
+}
+
+sub change_weight {
+  my ($self, $filename, $new_weight) = @_;
+
+  return unless defined $self->{_hash}{$filename};
+
+  my $old_weight = $self->{_hash}{$filename}{weight};
+  return if $old_weight == $new_weight;
+
+  # Save the new weight.
+  $self->{_hash}{$filename}{weight} = $new_weight;
+
+  unless (defined $self->{_weights}{$new_weight}) {
+    $self->{_weights}{$new_weight} = [];
+  }
+  push(@{$self->{_weights}{$new_weight}}, $filename);
+
+  # Remove the old weight.
+  my @filenames = @{$self->{_weights}{$old_weight}};
+  @filenames = grep { $_ ne $filename } @filenames;
+  if (@filenames) {
+    $self->{_weights}{$old_weight} = \@filenames;
+  }
+  else {
+    delete $self->{_weights}{$old_weight};
+  }
+
+  1;
+}
+
+sub list {
+  keys %{$_[0]->{_hash}};
+}
+
+sub select {
+  my ($self, $timeout) = @_;
+
+  my $read_in = $self->{_vec};
+  my $read_out;
+
+  my $found = select($read_out=$read_in, undef, undef, $timeout);
+
+  return () unless $found;
+
+  my @found;
+  while (my ($filename, $fileno) = each %{$self->{_filenos}}) {
+    push(@found, $filename) if vec($read_out, $fileno, 1);
+  }
+
+  @found;
+}
+
+sub get_fd {
+  my ($self, $filename) = @_;
+
+  if (defined $self->{_hash}{$filename}) {
+    return $self->{_hash}{$filename}{fd};
+  }
+  else {
+    return;
+  }
+}
+
+sub sysread_readline {
+  my ($self, $filename) = @_;
+
+  return unless defined $self->{_hash}{$filename};
+
+  # If there is no \n in the buffer, then attempt load more data from
+  # the file.
+  my $pos = index($self->{_buffer}{$filename}, "\n");
+  if ($pos == -1) {
+    my $buffer;
+    my $bytes = sysread($self->{_hash}{$filename}{fd},
+                        $buffer,
+                        1 << 14,
+                        0);
+    $self->{_buffer}{$filename} .= $buffer;
+  }
+
+  # Find the first \n and return all the characters up to and including
+  # that point.
+  $pos = index($self->{_buffer}{$filename}, "\n");
+  my $line = '';
+  if ($pos != -1) {
+    $pos++;
+    $line = substr($self->{_buffer}{$filename}, 0, $pos);
+    $self->{_buffer}{$filename} = substr($self->{_buffer}{$filename},
+                                         $pos,
+                                         length($self->{_buffer}{$filename})-$pos);
+  }
+
+  $line;
+}
+
+sub is_open {
+  defined $_[0]->{_hash}{$_[1]};
+}
+
+package main;
+
+# Set up a cache of 150 open file descriptors.  This leaves 255-150-3 = 102
+# file descriptors for other use in the program.
+use vars qw($open_file_cache);
+$open_file_cache = OpenFileHash->new(150) unless $open_file_cache;
+
+package MRTG::DataFile;
+
+use Carp;
+
+sub new {
+  unless (@_ == 2) {
+    confess "$0: MRTG::DataFile::new passed wrong number of arguments.\n";
+  }
+
+  my $class    = shift;
+  my $filename = shift;
+  confess "$0: filename not passed to $class.\n" unless $filename;
+  my $self = bless {_filename       => $filename,
+                    _last_stat_time => -1,
+                    _file_dev       => -1,
+                    _file_ino       => -1,
+                    _file_mtime     => -1},
+             $class;
+  $self->update_stat;
+  $self;
+}
+
+sub filename {
+  $_[0]->{_filename};
+}
+
+sub file_dev {
+  $_[0]->{_file_dev};
+}
+
+sub file_ino {
+  $_[0]->{_file_ino};
+}
+
+sub file_mtime {
+  $_[0]->{_file_mtime};
+}
+
+sub last_stat_time {
+  $_[0]->{_last_stat_time};
+}
+
+# Return 1 if the file exists, 0 otherwise.
+sub update_stat {
+  my $self = shift;
+
+  # Only update the stat if the previous stat occured more than one second
+  # ago.  This is used when this function is called immediately after the
+  # object has been constructed and when we don't want to call two stat's
+  # immediately.  The tradeoff is to call time() instead.
+  my $time = time;
+  if ($time > $self->{_last_stat_time} + 1) {
+    my @stat = stat($self->{_filename});
+    if (@stat) {
+      $self->{_file_dev}   = $stat[0];
+      $self->{_file_ino}   = $stat[1];
+      $self->{_file_mtime} = $stat[9];
+    }
+    else {
+      $self->{_file_dev}   = -1;
+      $self->{_file_ino}   = -1;
+      $self->{_file_mtime} = -1;
+    }
+    $self->{_last_stat_time} = $time;
+  }
+
+  $self->{_file_mtime} != -1;
+}
+
+# Return a status depending upon the file:
+#   -1 if the file does not exist.
+#    0 if the file has not been updated since the last status check.
+#    1 if the file has been updated since the last status check.
+#    2 if the file has a new device or inode since the last status check.
+sub status {
+  my $self = shift;
+
+  my $filename   = $self->{_filename};
+  my $file_dev   = $self->{_file_dev};
+  my $file_ino   = $self->{_file_ino};
+  my $file_mtime = $self->{_file_mtime};
+
+  my $result = 0;
+  if ($self->update_stat) {
+    if ($self->{_file_dev} != $file_dev or $self->{_file_ino} != $file_ino) {
+      $result = 2;
+    }
+    elsif ($self->{_file_mtime} != $file_mtime) {
+      $result = 1;
+    }
+  }
+  else {
+    $result = -1;
+  }
+
+  $result;
+}
+
+package MRTG::GIFFile;
+
+use RRD;
+use Carp;
+
+sub new {
+  unless (@_ == 11) {
+    confess "$0: MRTG::GIFFile::new passed incorrect number of arguments.\n";
+  }
+
+  my ($class,
+      $config_options,
+      $config_files,
+      $config_plots,
+      $files_key,
+      $group,
+      $name,
+      $no_group_name,
+      $plot_ref,
+      $rrd_data_files_ref,
+      $my_rrds_ref) = @_;
+
+  unless (@$my_rrds_ref) {
+    confess "$0: MRTG::GIFFile::new passed empty \@rrds_ref reference.\n";
+  }
+  unless ($name) {
+    confess "$0: MRTG::GIFFile::new passed empty \$name.\n";
+  }
+
+  # Remove any special characters from the unique name and do some
+  # replacements.
+  $name = &::strip_key_name($name);
+
+  # Create the paths to the html directory.
+  my $html_dir     = $config_options->{html_dir};
+  if ($config_files->{$files_key}{sub_dir}) {
+    $html_dir .= "/$group";
+    # Create the html_dir directories if necessary.
+    unless (-d $html_dir) {
+      warn "$0: making directory `$html_dir'.\n";
+      ::recursive_mkdir($html_dir);
+    }
+  }
+  my $gif_basename = "$html_dir/$name";
+
+  # Create the new object.
+  my $self = bless {
+    _files_key		=> $files_key,
+    _group		=> $group,
+    _name		=> $name,
+    _no_group_name	=> $no_group_name,
+    _gif_basename	=> $gif_basename,
+    _all_rrd_ref	=> $rrd_data_files_ref,
+    _my_rrd_list	=> [ &::unique(@$my_rrds_ref) ],
+    _plot_ref           => $plot_ref,
+    _interval           => int($config_files->{$files_key}{interval}+0.5),
+    _expire             => $config_options->{expire_gifs}
+  }, $class;
+
+  # If the GIF already exists, then use its last modification time to
+  # calculate when it was last updated.  If the file modification time
+  # is newer than the timestamp of the last data point entered, then
+  # assume that the GIF needs to be recreated.  This data will cause the
+  # GIF to be created if the GIF does not exist.
+  my $plot_end_time = $self->plot_end_time;
+  foreach my $plot_type (@rra_plot_type) {
+    $self->{"_${plot_type}_update_time"} = -1;
+    my @stat = stat("$gif_basename-$plot_type.gif");
+    if (@stat and $stat[9] <= $plot_end_time) {
+      $self->{"_${plot_type}_update_time"} = $stat[9];
+    }
+  }
+
+  $self;
+}
+
+sub add_rrds {
+  my $self = shift;
+
+  $self->{_my_rrd_list} = [ &::unique(@{$self->{_my_rrd_list}}, @_) ];
+
+  $self;
+}
+
+sub rrds {
+  @{$_[0]->{_my_rrd_list}};
+}
+
+sub plot_ref {
+  $_[0]->{_plot_ref};
+}
+
+sub group {
+  $_[0]->{_group};
+}
+
+sub files_key {
+  $_[0]->{_files_key};
+}
+
+sub name {
+  $_[0]->{_name};
+}
+
+sub no_group_name {
+  $_[0]->{_no_group_name};
+}
+
+# Calculate the time of the last data point entered into the RRD that
+# this gif will use.
+sub plot_end_time {
+  my $self = shift;
+
+  my $plot_end_time = -1;
+  foreach my $rrd_key (@{$self->{_my_rrd_list}}) {
+    my $update_time = $self->{_all_rrd_ref}{$rrd_key}->rrd_update_time;
+    $plot_end_time  = $update_time if $update_time > $plot_end_time;
+  }
+
+  $plot_end_time;
+}
+
+sub plot {
+  my $self = shift;
+
+  # Make the plots and specify how far back in time to plot.
+  my $plot_made = 0;
+  for (my $i=0; $i<@rra_plot_type; ++$i) {
+    if ($self->_plot($rra_plot_type[$i],
+                     $rra_days_back[$i],
+                     $rra_pdp_count[$i])) {
+      $plot_made = 1;
+    }
+  }
+
+  $plot_made;
+}
+
+sub _plot {
+  my ($self, $plot_type, $days_back, $rra_pdp_count) = @_;
+
+  # Get the time stamp of the last data point entered into the RRDs that
+  # are used to generate this GIF.
+  my $plot_end_time = $self->plot_end_time;
+
+  # Determine if the plot needs to be generated.  First see if there has
+  # been data flushed to the RRD that needs to be plotted.  Otherwise,
+  # see if the does not file exists or if the time corresponding to the
+  # last data point is newer than the GIF.  Take into account that a new
+  # plot does not need to be generated until a primary data point has been
+  # added.  Primary data points are added after a data point falls into a
+  # new bin, where the bin ends on multiples of the sampling iterval.
+  my $interval        = $self->{_interval};
+  $rra_pdp_count      = int($rra_pdp_count*300.0/$interval + 0.5);
+  $rra_pdp_count      = 1 if $rra_pdp_count < 1;
+  my $plot_age        = $rra_pdp_count*$interval;
+  my $time_update_key = "_${plot_type}_update_time";
+  if (int($self->{$time_update_key}/$plot_age) == int($plot_end_time/$plot_age)) {
+    return;
+  }
+
+  # Generate the options that will be the same for each plot type.
+  my $plot_ref  = $self->{_plot_ref};
+  my $group     = $self->{_group};
+  my @options = (
+    '-e', $plot_end_time,
+    '-v', $plot_ref->{y_legend},
+    '-t', ::replace_group_name($plot_ref->{title}, $group),
+    '-w', $plot_ref->{plot_width},
+    '-h', $plot_ref->{plot_height}
+    );
+  # Add the lower-limit and upper-limit flags if defined.
+  if (defined $plot_ref->{plot_min}) {
+    push(@options, '-l', $plot_ref->{plot_min});
+  }
+  if (defined $plot_ref->{plot_max}) {
+    push(@options, '-u', $plot_ref->{plot_max});
+  }
+  if (defined $plot_ref->{rigid_min_max}) {
+    push(@options, '-r');
+  }
+  my $data_sources = @{$self->{_my_rrd_list}};
+  for (my $i=0; $i<$data_sources; ++$i) {
+    my $rrd_key      = $self->{_my_rrd_list}[$i];
+    my $rrd_filename = $self->{_all_rrd_ref}{$rrd_key}->filename;
+    push(@options, "DEF:source$i=$rrd_filename:0:AVERAGE");
+  }
+  for (my $i=0; $i<$data_sources; ++$i) {
+    my $legend    = ::replace_group_name($plot_ref->{legend}[$i], $group);
+    my $line_type = $plot_ref->{line_type}[$i];
+    my $color     = $plot_ref->{color}[$i];
+    push(@options, "$line_type:source$i#$color:$legend");
+  }
+  for (my $i=0; $i<$data_sources; ++$i) {
+    my $legend = ::replace_group_name($plot_ref->{legend}[$i], $group);
+    $legend    =~ s:%:\200:g;
+    $legend    =~ s:\200:%%:g;
+    push(@options, "GPRINT:source$i:AVERAGE:Average $legend is %f");
+  }
+
+  my $gif_filename = "$self->{_gif_basename}-$plot_type.gif";
+  print "  Creating `$gif_filename'.\n" if $opt_verbose > 1;
+
+  my $graph_return = RRD::graph $gif_filename,
+                                '-s', ($plot_end_time-$days_back*$day_seconds),
+                                @options;
+  if (my $error = RRD::error) {
+    warn "$0: warning: cannot create `$gif_filename': $error\n";
+  }
+  else {
+    $self->{$time_update_key} = $plot_end_time;
+    utime $plot_end_time, $plot_end_time, $gif_filename or
+      warn "$0: warning: cannot change mtime for `$gif_filename': $!\n";
+
+    # Expire the GIF at the correct time using a META file if requested.
+    if ($self->{_expire}) {
+      if (open(META, "> $gif_filename.meta")) {
+        my $time = 
+        print META "Expires: ",
+                   expire_string($plot_end_time + $plot_age + 30),
+                   "\n";
+        close(META) or
+          warn "$0: warning: cannot close `$gif_filename.meta': $!\n";
+      }
+      else {
+        warn "$0: warning: cannot open `$gif_filename.meta' for writing: $!\n";
+      }
+    }
+  }
+
+  1;
+}
+
+sub expire_string {
+  my @gmtime = gmtime(shift);
+  my ($wday) = ('Sun','Mon','Tue','Wed','Thu','Fri','Sat')[$gmtime[6]];
+  my ($month) = ('Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep', 
+                 'Oct','Nov','Dec')[$gmtime[4]];
+  my ($mday,$year,$hour,$min,$sec) = @gmtime[3,5,2,1,0];
+  if ($mday<10) {$mday = "0$mday";}
+  if ($hour<10) {$hour = "0$hour";}
+  if ($min<10)  {$min  = "0$min";}
+  if ($sec<10)  {$sec  = "0$sec";}
+  return "$wday, $mday $month ".($year+1900)." $hour:$min:$sec GMT";
+}
+
+package MRTG::RRDFile;
+
+use RRD;
+use Carp;
+use vars qw(@ISA);
+
+@ISA = qw(MRTG::DataFile);
+
+sub new {
+  unless (@_ == 8) {
+    confess "$0: MRTG::RRDFile::new passed incorrect number of arguments.\n";
+  }
+
+  my ($class,
+      $config_options,
+      $config_files,
+      $files_key,
+      $group,
+      $name,
+      $plot_ref,
+      $choose_data_sub) = @_;
+
+  # Remove any special characters from the unique name and do some
+  # replacements.
+  $name = &::strip_key_name($name);
+
+  # Create the paths to the data directory.
+  my $data_dir = $config_options->{data_dir};
+  if ($config_files->{$files_key}{sub_dir}) {
+    $data_dir .= "/$group";
+    unless (-d $data_dir) {
+      warn "$0: making directory `$data_dir'.\n";
+      ::recursive_mkdir($data_dir);
+    }
+  }
+  my $rrd_filename = "$data_dir/$name.rrd";
+
+  # Create the new object.
+  my $self = $class->SUPER::new($rrd_filename);
+  return unless $self;
+  $self->{_name}             = $name;
+  $self->{_new_data}         = {};
+  $self->{_choose_data_sub}  = $choose_data_sub;
+  $self->{_created_gifs}     = {};
+  $self->{_plot_ref}         = $plot_ref;
+  $self->{_interval}         = int($config_files->{$files_key}{interval}+0.5);
+
+  # If the file exists, then get the time of the last data point entered,
+  # otherwise set the last update time to -2.  If the file doesn't exist,
+  # it is created later when the data is first flushed to it.
+  $self->{_rrd_update_time} = -2;
+  if ($self->status >= 0) {
+    my $update_time = RRD::last $rrd_filename;
+    if (my $error = RRD::error) {
+      warn "$0: RRD::last error: $error\n";
+    }
+    else {
+      $self->{_rrd_update_time} = $update_time;
+    }
+  }
+
+  $self;
+}
+
+sub rrd_update_time {
+  $_[0]->{_rrd_update_time};
+}
+
+sub add_gif {
+  my ($self, $gif) = @_;
+  $self->{_created_gifs}{$gif->name} = $gif;
+  $self;
+}
+
+sub created_gifs {
+  my $self = shift;
+  values %{$self->{_created_gifs}};
+}
+
+# Given a row of data from a source data file, take the required data
+# from it.
+# Call:   $self->(unix_epoch_time, element1, element2, element3, ...);
+# Return: 0 timestamp older than latest data point in RRD
+#         1 data added to queue
+#        -1 undefined value returned from data choosing subroutine
+sub queue_data {
+  unless (@_ > 2) {
+    confess "$0: internal error: queue_data passed too few arguments.\n";
+  }
+  my ($self, $time) = splice(@_, 0, 2);
+
+  return 0 if $time <= $self->{_rrd_update_time};
+
+  my $value = &{$self->{_choose_data_sub}}(@_);
+  my $saw_undefined = 0;
+  if (defined $value) {
+    $self->{_new_data}{$time} = $value;
+  }
+  else {
+    $saw_undefined = 1;
+    my $filename = $self->filename;
+    warn "$0: undefined value not sent to `$filename' at time ",
+         scalar localtime($time), " ($time).\n";
+  }
+
+  $saw_undefined ? -1 : 1;
+}
+
+sub flush_data {
+  my $self = shift;
+
+  # Get the times of the new data to put into the RRD file.
+  my @times = sort { $a <=> $b } keys %{$self->{_new_data}};
+
+  return unless @times;
+
+  my $rrd_filename = $self->filename;
+
+  # Create the MRTG data file if it needs to be created.
+  if ($self->{_rrd_update_time} == -2) {
+
+    # Assume that a maximum of two time intervals are needed before a
+    # data source value is set to unknown.
+    my $interval = $self->{_interval};
+   
+    my $data_source = "DS:$self->{_plot_ref}{data_type}";
+    $data_source   .= sprintf ":%d:", 2*$interval;
+    $data_source   .= "$self->{_plot_ref}{data_min}:";
+    $data_source   .= "$self->{_plot_ref}{data_max}";
+    my @options = ($rrd_filename,
+                   '-b', $times[0]-1,
+                   '-s', $interval,
+                   $data_source);
+
+    # Create the round robin archives.  Take special care to not create two
+    # RRA's with the same number of primary data points.  This can happen
+    # if the interval is equal to one of the consoldated intervals.
+    my $count = int($rra_row_count[0]*300.0/$interval + 0.5);
+    my $one_pdp_option = "RRA:AVERAGE:1:$count";
+
+    for (my $i=1; $i<@rra_pdp_count; ++$i) {
+      next if $interval > 300*$rra_pdp_count[$i];
+      my $rra_pdp_count = int($rra_pdp_count[$i]*300.0/$interval + 0.5);
+      if ($one_pdp_option and $rra_pdp_count != 1) {
+        push(@options, $one_pdp_option);
+      }
+      $one_pdp_option = '';
+      push(@options, "RRA:AVERAGE:$rra_pdp_count:$rra_row_count[$i]");
+    }
+
+    # Now do the actual creation.
+    if ($opt_verbose) {
+      print "  Creating RRD `$rrd_filename'";
+      if ($opt_verbose > 2) {
+        print " with options ", join(' ', @options[1..$#options]);
+      }
+      print ".\n";
+    }
+    RRD::create @options;
+
+    if (my $error = RRD::error) {
+      warn "$0: RRD::create error: $error\n";
+      return;
+    }
+  }
+
+  # Flush all of the stored data into the RRD file.
+  my @options;
+  my $old_rrd_update_time = $self->{_rrd_update_time};
+  foreach my $time (@times) {
+    push(@options, $time, "DATA:$self->{_new_data}{$time}");
+  }
+  RRD::update $rrd_filename, '-t', @options;
+  my $ok = 1;
+  if (my $error = RRD::error) {
+    warn "$0: warning: cannot put data starting at ",
+         scalar localtime($times[0]),
+         " ($times[0]) into `$rrd_filename': $error\n";
+    return 0;
+  }
+
+  # If there were no errors, then totally clear the hash to save memory.
+  delete $self->{_new_data};
+  $self->{_new_data} = {};
+
+  $self->{_rrd_update_time} = $times[-1];
+
+  return 1;
+}
+
+package MRTG::SourceDataFile;
+
+use Carp;
+use MD5;
+use vars qw(@ISA);
+
+@ISA = qw(MRTG::DataFile);
+
+# This is a static variable that caches the anonymous subroutines that
+# return the correct data from the input file.
+my %read_value_subs;
+
+sub new {
+  unless (@_ == 10) {
+    confess "$0: MRTG::SourceDataFile::new passed incorrect number of arguments.\n";
+  }
+
+  my ($class,
+      $filename,
+      $interval,
+      $late_interval,
+      $reopen,
+      $column_description,
+      $date_source,
+      $date_format,
+      $warn_email,
+      $source_file_state) = @_;
+
+  my $self = $class->SUPER::new($filename);
+  $self->{_interval}           = $interval;
+  $self->{_late_interval}      = int(&$late_interval($interval) + 0.5);
+  $self->{_reopen}             = $reopen;
+  $self->{_column_description} = $column_description;
+  $self->{_date_source}        = $date_source;
+  $self->{_date_format}        = $date_format;
+  $self->{_warn_email}         = $warn_email;
+  $self->{_last_data_time}     =    -1;
+  $self->{_last_read_time}     =    -1;
+  $self->{_my_rrd_hash}        =    {};
+  $self->{_all_rrd_ref}        = undef;
+  $self->{_first_line}         =     0;
+  $self->{_date_column_index}  = undef;
+
+  # There are three intervals associated with each file.  The first is the
+  # data update interval.  This is the same interval used to generate the
+  # RRDs.  The second interval is the interval before the file is considered
+  # late and is larger than the data update interval.  This interval is
+  # calculated by using the mathematical expression given in the
+  # `late_interval' configuration option.  If `late_interval' is not defined,
+  # then it gets defaulted to the data update interval.  The last interval is
+  # the interval to use to tell the program when to attempt to read the file
+  # next.  Because it can take some time for the source files to be updated,
+  # we don't want to read the file immediately after the data update interval
+  # is done.  For this reason, choose a read interval that is somewhere in
+  # between the data source interval and the late interval.  Use the
+  # multiplicative average of the data update interval and the late interval
+  # since the resulting value is closer to the data update interval.  Ie:
+  # (20 + 5)/2 = 12.5.  Sqrt(20*5) = 10.
+  #
+  my $read_interval = sqrt($self->{_interval}*$self->{_late_interval});
+  $self->{_read_interval} = int($read_interval + 0.5);
+
+  # Load in any state information for this file.
+  if (defined $source_file_state->{$filename}) {
+    while (my ($key, $value) = each %{$source_file_state->{$filename}}) {
+      $self->{$key} = $value;
+    }
+  }
+
+  # Test if the file has been updated in the last _invterval number of
+  # seconds.  If so, then note it so we can see when the file is no longer
+  # being updated.
+  $self->{_is_current} = $self->is_current;
+
+  return unless $self->get_column_names;
+  return unless $self->get_date_column;
+
+  $self;
+}
+
+# Return 1 if the source data file is current or not.  Alsot note the
+# day that this test was performed.  This lets the code ignore files
+# that are not current because a new file was generated for the next
+# day.
+sub is_current {
+  my $self = shift;
+
+  $self->{_is_current_day} = (localtime)[3];
+
+  $self->last_stat_time <= $self->file_mtime + $self->{_late_interval};
+}
+
+# This returns the time when the file should be next read.  To calculate
+# the next read time, take into the account the time that it takes for
+# the file to be updated.  In some sense, this is measured by the late
+# interval.  Because we won't want to use the complete late interval,
+# take the multiplicative average instead of the summation average, since
+# the multiplicative average will result in an average closer to the smaller
+# of the two values.  If the source file is current, then just add the
+# modified late interval to the last file modification time, otherwise
+# add the late interval to the last file stat time.  Use the late interval
+# to watch old files so we don't spend as much time on them.
+sub next_load_time {
+  my $self = shift;
+
+  my $last_stat_time = $self->last_stat_time;
+  my $file_mtime     = $self->file_mtime;
+
+  if ($last_stat_time <= $file_mtime + $self->{_late_interval}) {
+    return $file_mtime + $self->{_read_interval};
+  }
+  else {
+    return $last_stat_time + $self->{_late_interval};
+  }
+}
+
+
+# This caches the reference to the array holding the column descriptions
+# for files that have their column descriptions in the first line of the
+# file.
+my %first_line_cache;
+
+sub get_column_names {
+  my $self = shift;
+
+  return $self unless $self->{_column_description}[0] eq 'first_line';
+
+  my $filename = $self->filename;
+  $self->update_stat;
+  my $fd = $::open_file_cache->open($filename, $self->file_mtime);
+  return unless $fd;
+
+  my $line = <$fd>;
+
+  chomp($line);
+  if ($line) {
+    $self->{_first_line} = 1;
+    my @line = split(' ', $line);
+    my $cache_key = $md5->hexhash(join("\200", @line));
+    unless (defined $first_line_cache{$cache_key}) {
+      $first_line_cache{$cache_key} = \@line;
+    }
+    $self->{_column_description} = $first_line_cache{$cache_key};
+  }
+  else {
+    warn "$0: warning: no first_line for `$filename' yet.\n";
+    $::open_file_cache->close($filename) or
+      warn "$0: warning: cannot close `$filename' for reading: $!\n";
+    return;
+  }
+
+  $self;
+}
+
+sub get_date_column {
+  my $self = shift;
+
+  return $self if $self->{_date_source}[0] eq 'file_mtime';
+
+  my $filename         = $self->filename;
+  my $date_column_name = $self->{_date_source}[1];
+
+  my $found = -1;
+  for (my $i=0; $i<@{$self->{_column_description}}; ++$i) {
+    if ($self->{_column_description}[$i] eq $date_column_name) {
+      $found = $i;
+      last;
+    }
+  }
+
+  unless ($found > -1) {
+    warn "$0: warning: cannot find date `$date_column_name' in `$filename'.\n";
+    return;
+  }
+  $self->{_date_column_index} = $found;
+
+  $self;
+}
+
+# These are caches for the different objects that are used to add a plot.
+my %all_rrds_cache;
+my %my_rrds_cache;
+
+sub add_plots {
+  unless (@_ == 8) {
+    confess "$0: MRTG::SourceDataFile::add_plots passed wrong number of arguments.\n";
+  }
+
+  my ($self,
+      $config_options,
+      $config_files,
+      $config_plots,
+      $files_key,
+      $group,
+      $rrd_data_files_ref,
+      $gif_files_ref) = @_;
+
+  # See if we have already done all the work for a plot with this files_key,
+  # group, and column description.  Use an MD5 hash instead of a very long
+  # key.
+  my @column_description = @{$self->{_column_description}};
+  my $plot_key = join("\200", $files_key, $group, @column_description);
+  my $cache_key = $md5->hexhash($plot_key);
+  if (defined $all_rrds_cache{$cache_key}) {
+    $self->{_all_rrd_ref} = $all_rrds_cache{$cache_key};
+    $self->{_my_rrd_hash} = $my_rrds_cache{$cache_key};
+    return 1;
+  }
+
+  # Go through each plot to create and process it for this file.
+  my @regexp_pos          = map { 0 } (1..@$config_plots);
+  my $oldest_regexp_index = 0;
+  my $handle_regexps      = 0;
+  my $i                   = 0;
+  my $old_i               = 0;
+
+  # This is the main loop where we keep looking for plots to create until
+  # all of the column descriptions have been compared against.
+  while ($handle_regexps or $i < @$config_plots) {
+    # If we've reached an index value greater than the largest index in
+    # the plots, then reset the index to the oldest regexp that still needs
+    # to be completed.
+    if ($handle_regexps and $i >= @$config_plots) {
+      $i = $oldest_regexp_index;
+    }
+
+    my $plot = $config_plots->[$i];
+
+    # Skip this plot if the files_key do not match.  Increment the index
+    # of the next plot to handle.
+    if ($plot->{source} ne $files_key) {
+      if ($oldest_regexp_index == $i) {
+        $handle_regexps = 0;
+        ++$oldest_regexp_index;
+      }
+      ++$i;
+      next;
+    }
+
+    # There are three cases to handle.  The first is a single data source
+    # with a single element that has a regular expression.  In this case,
+    # all of the columns are searched to match the regular expression.  The
+    # second case is two or more data sources and with one element in the
+    # first data source that has a regular expression match.  This may
+    # generate more than one plot, while the first one will only generate
+    # one plot.  The final case to handle is when the previous two cases
+    # are not true.  The last column matched on is stored in @regexp_pos.
+    my $number_datas    = @{$plot->{data}};
+    my $number_elements = @{$plot->{data}[0]};
+    my $has_regexp      = $plot->{data}[0][0] =~ m:\(.+\):;
+    if ($number_datas == 1 and $number_elements == 1 and $has_regexp) {
+
+      # If we've gone up to the last column to match, then go on.
+      if ($regexp_pos[$i] >= @column_description) {
+        if ($oldest_regexp_index == $i) {
+          $handle_regexps = 0;
+          ++$oldest_regexp_index;
+        }
+        $i = $plot->{flush_regexps} ? $oldest_regexp_index : $i + 1;
+        next;
+      }
+      $regexp_pos[$i] = @column_description;
+
+      # In this case we're creating a whole new plot that will have as
+      # many data sources as their are columns that match the regular
+      # expression.  Start by making a deep copy of the plot.
+      my $creates = delete $plot->{creates};
+      my $d = Data::Dumper->Dump([$plot], [qw(plot)]);
+      $plot->{creates} = $creates;
+      {
+        local $SIG{__WARN__} = sub { die $_[0] };
+        eval $d;
+      }
+      die "$0: internal error: eval on\n   $d\nOutput: $@\n" if $@;
+
+      # At this point we have a copy of plot.  Now go through looking
+      # for all the columns that match and create an additional data source
+      # for each match.
+      my $regexp = $plot->{data}[0][0];
+      my $new_data_index = 0;
+      my $original_legend = $plot->{legend}[0];
+      for (my $j=0; $j<@column_description; ++$j) {
+        my $column_name = $column_description[$j];
+        my @matches = $column_name =~ /$regexp/;
+        next unless @matches;
+
+        $plot->{data}[$new_data_index] = [ $column_name ];
+        # Copy any items over that haven't been created for this new
+        # data source.  Make sure that any new elements added to
+        # pcl_plot_append_elements show up here.
+        unless (defined $plot->{color}[$new_data_index]) {
+          $plot->{color}[$new_data_index] = $::cc_default_colors[$new_data_index];
+        }
+        unless (defined $plot->{legend}[$new_data_index]) {
+          $plot->{legend}[$new_data_index] = $original_legend;
+        }
+        unless (defined $plot->{line_type}[$new_data_index]) {
+          $plot->{line_type}[$new_data_index] = $plot->{line_type}[0];
+        }
+
+        # Replace the regular expression in any legend elements.
+        my $legend = $plot->{legend}[$new_data_index];
+        my $count = 1;
+        foreach my $match (@matches) {
+          $legend =~ s/\$$count/$match/ge;
+          $legend =~ s/\(.+\)/$match/ge;
+          ++$count;
+        }
+        $plot->{legend}[$new_data_index] = $legend;
+
+        ++$new_data_index;
+      }
+
+      if ($oldest_regexp_index == $i) {
+        $handle_regexps = 0;
+        ++$oldest_regexp_index;
+      }
+      $old_i = $i;
+      $i = $plot->{flush_regexps} ? $oldest_regexp_index : $i + 1;
+      next unless $new_data_index;
+    }
+    elsif ($number_datas > 1 and $number_elements == 1 and $has_regexp) {
+      $handle_regexps = 1;
+
+      # If we've gone up to the last column to match, then go on.  If
+      # this is the oldest regexp, then increment oldest_regexp_index.
+      if ($regexp_pos[$i] >= @column_description) {
+        if ($oldest_regexp_index == $i) {
+          $handle_regexps = 0;
+          ++$oldest_regexp_index;
+        }
+        $i = $plot->{flush_regexps} ? $oldest_regexp_index : $i + 1;
+        next;
+      }
+
+      # Go through all of the columns and stop at the first match.
+      my $regexp = $plot->{data}[0][0];
+      my @matches;
+      for (;$regexp_pos[$i]<@column_description; ++$regexp_pos[$i]) {
+        @matches = $column_description[$regexp_pos[$i]] =~ /$regexp/;
+        last if @matches;
+      }
+      unless (@matches) {
+        if ($oldest_regexp_index == $i) {
+          ++$oldest_regexp_index;
+          $handle_regexps = 0;
+        }
+        ++$i;
+        next;
+      }
+      ++$regexp_pos[$i];
+
+      # Make a deep copy of the plot.  In the string form of the plot
+      # replace all of the $1, $2, ... with what was matched in the
+      # first data source.  The tricky one is to replace the regular
+      # expression that did the match in the first place.  Also, save a
+      # copy of the creates array for this plot so it doesn't also get
+      # dumped.
+      my $creates = delete $plot->{creates};
+      my $d = Data::Dumper->Dump([$plot], [qw(plot)]);
+      $plot->{creates} = $creates;
+      $d =~ s/$regexp/$matches[0]/mge;
+      my $count = 1;
+      foreach my $match (@matches) {
+        $d =~ s/\$$count/$match/mge;
+        $d =~ s/\(.+\)/$match/mge;
+        ++$count;
+      }
+      {
+        local $SIG{__WARN__} = sub { die $_[0] };
+        eval $d;
+      }
+      die "$0: internal error: eval on\n   $d\nOutput: $@\n" if $@;
+
+      # Either increment the index or reset it to the oldest regexp index.
+      $old_i = $i;
+      $i = $plot->{flush_regexps} ? $oldest_regexp_index : $i + 1;
+    }
+    else {
+      $old_i = $i++;
+      ++$oldest_regexp_index unless $handle_regexps;
+    }
+
+    # Convert the column names to an index into the @_ array.  Make a copy
+    # of the commands so that if we change anything, we're not changing the
+    # original plot structure.
+    my @column_commands;
+    foreach my $command (@{$plot->{data}}) {
+      push(@column_commands, [@$command]);
+    }
+    my $match_any = 0;
+    for (my $j=0; $j<@column_commands; $j++) {
+      my $match_command = 0;
+      for (my $k=0; $k<@{$column_commands[$j]}; ++$k) {
+        my $element = $column_commands[$j][$k];
+        for (my $l=0; $l<@column_description; ++$l) {
+          if ($element eq $column_description[$l]) {
+            $column_commands[$j][$k] = "\$_[$l]";
+            $match_command = 1;
+          }
+        }
+      }
+      # If there were no substitutions, then warn about it.
+      if (!$match_command and !$plot->{optional}) {
+        my $m = $old_i + 1;
+        warn "$0: warning: no substitutions performed for `@{$column_commands[$j]}' in plot #$m.\n";
+      }
+      $match_any = $match_any || $match_command;
+    }
+
+    # Skip this plot if no matches were found and the the plot
+    # is optional.
+    next if (!$match_any and $plot->{optional});
+
+    # At this point we have a plot to create.
+
+    # For each data source, create an executable subroutine that takes a
+    # row of elements and returns the requested value.  Also create an
+    # unique MRTG data file name for this plot and a name for this plot
+    # that does not include the group.
+    my @my_rrds;
+    my @no_group_name;
+    my @group_name;
+    for (my $j=0; $j<@column_commands; ++$j) {
+
+      my $expr      = "sub {\n  return @{$column_commands[$j]};\n}\n";
+      my $expr_hash = $md5->hexhash($expr);
+
+      my $choose_data_sub;
+      my $data_name = join('_', @{$plot->{data}[$j]});
+      if (defined $read_value_subs{$expr_hash}) {
+        $choose_data_sub = $read_value_subs{$expr_hash};
+      }
+      else {
+        {
+          local $SIG{__WARN__} = sub { die $_[0] };
+          $choose_data_sub     = eval $expr;
+        }
+        if ($@) {
+          unless ($plot->{optional}) {
+            my $m = $old_i + 1;
+            warn "$0: warning: bad evaluation of commands for plot #$m.\nOutput: $@\n";
+          }
+          $choose_data_sub = sub { 0; };
+          $data_name       = 'ALL_ZEROS';
+        }
+        $read_value_subs{$expr_hash} = $choose_data_sub;
+      }
+
+      my $name = "${files_key}_${group}_${data_name}";
+      push(@no_group_name, "${files_key}_${data_name}");
+      push(@group_name, $name);
+
+      # Create a new RRD only if it doesn't already exist.
+      unless (defined $rrd_data_files_ref->{$name}) {
+        my $rrd_file = MRTG::RRDFile->new($config_options,
+                                          $config_files,
+                                          $files_key,
+                                          $group,
+                                          $name,
+                                          $plot,
+                                          $choose_data_sub);
+        $rrd_data_files_ref->{$name} = $rrd_file;
+      }
+      $self->{_all_rrd_ref} = $rrd_data_files_ref;
+      $self->{_my_rrd_hash}{$name}++;
+      push(@my_rrds, $name);
+    }
+
+    # Generate a new plot for these data.
+    my $gif;
+    my $group_name = join(',', @group_name);
+    if (defined $gif_files_ref->{hash}{$group_name}) {
+      $gif = $gif_files_ref->{hash}{$group_name};
+      $gif->add_rrds(@my_rrds);
+    }
+    else {
+      $gif = MRTG::GIFFile->new($config_options,
+                                $config_files,
+                                $config_plots,
+                                $files_key,
+                                $group,
+                                join(',', @my_rrds),
+                                join(',', @no_group_name),
+                                $plot,
+                                $rrd_data_files_ref,
+                                \@my_rrds);
+      $gif_files_ref->{hash}{$group_name} = $gif;
+      push(@{$gif_files_ref->{list}}, $gif);
+      push(@{$config_plots->[$old_i]{creates}}, $gif);
+    }
+
+    # Put into each RRD the GIFS that are generated from it.
+    foreach my $rrd_key (@my_rrds) {
+      $rrd_data_files_ref->{$rrd_key}->add_gif($gif);
+    }
+  }
+
+  $all_rrds_cache{$cache_key} = $self->{_all_rrd_ref};
+  $my_rrds_cache{$cache_key}  = $self->{_my_rrd_hash};
+
+  1;
+}
+
+sub load_new_data {
+  my $self = shift;
+
+  my $filename = $self->filename;
+
+  # Test to see if we should read the file.  If the file has changed in
+  # any way, then read it.  If the file is now gone and we have an open
+  # file descriptor for it, then read to the end of it and then close it.
+  my $file_status = $self->status;
+  my $fd          = $::open_file_cache->get_fd($filename);
+  my $load_data   = $file_status != 0;
+  if ($file_status == -1) {
+    my $message = "file `$filename' did exist and is now gone.";
+    ::email_message($self->{_warn_email}, $message);
+    warn "$0: warning: $message\n";
+    unless ($fd) {
+      $self->{_last_read_time} = -1;
+      return 0;
+    }
+  }
+
+  # Test if the file was up to date and now is not.  If so, then send a
+  # message.  Do not send a message if the file was current in the previous
+  # day is now is not current today.
+  my $old_is_current     = $self->{_is_current};
+  my $old_is_current_day = $self->{_is_current_day};
+  my $current_day        = (localtime($self->last_stat_time))[3];
+  $self->{_is_current} = $self->is_current;
+  if ($old_is_current and
+      !$self->{_is_current} and
+      ($old_is_current_day == $current_day)) {
+    my $message = "file `$filename' was current and now is not.";
+    warn "$0: warning: $message\n";
+    ::email_message($self->{_warn_email}, $message);
+  }
+
+  # If we don't have to load the data from this file yet, then test to
+  # see if the data needs to be loaded if the file modification time
+  # is greater than the time at which it was last read.
+  my $file_mtime = $self->file_mtime;
+  unless ($load_data) {
+    $load_data = $file_mtime > $self->{_last_read_time};
+  }
+
+  # If the file still does not have to be loaded, now test to see if
+  # the timestamp of the last data point is larger than the last time
+  # of any RRD files that depend on this source file.
+  my $last_data_time = $self->{_last_data_time};
+  unless ($load_data) {
+    foreach my $rrd_key (keys %{$self->{_my_rrd_hash}}) {
+      if ($self->{_all_rrd_ref}{$rrd_key}->rrd_update_time < $last_data_time) {
+        $load_data = 1;
+        last;
+      }
+    }
+  }
+
+  return 0 unless $load_data;
+
+  # Try to get a file descriptor to open the file.  Skip the first line
+  # if the first line is used for column descriptions.
+  my $opened_new_fd = !$fd;
+  unless ($fd) {
+    unless ($fd = $::open_file_cache->open($filename, $file_mtime)) {
+      warn "$0: warning: cannot open `$filename' for reading: $!\n";
+      return 0;
+    }
+    <$fd> if $self->{_first_line};
+  }
+
+  # Load in all of the data possible and send it to each plot.
+  my $date_column_index = $self->{_date_column_index};
+  my $use_file_mtime    = $self->{_date_source}[0] eq 'file_mtime';
+  my $number_added      = 0;
+  my $close_once_done   = 0;
+  while (my $line = <$fd>) {
+    my @line = split(' ', $line);
+    my $time = $use_file_mtime ? $self->file_mtime : $line[$date_column_index];
+    $last_data_time = $time if $time > $last_data_time;
+    # If the file status from the source data file is greater than zero, then
+    # it means the file has changed in some way, so we need to do updates for
+    # all plots.  Load the available data and push it to the plots.
+    my $add = 0;
+    foreach my $rrd_key (keys %{$self->{_my_rrd_hash}}) {
+      my $result = $self->{_all_rrd_ref}{$rrd_key}->queue_data($time, @line);
+      if ($result == 1) {
+        if ($opt_verbose > 2 and !$add) {
+          print "  Loaded `@line' at ", scalar localtime($time), " ($time).\n";
+        }
+        $add = 1;
+      }
+      elsif ($result == -1) {
+        $close_once_done = 1;
+      }
+    }
+    ++$number_added if $add;
+  }
+
+  # Update the time when the file was last read.
+  $self->{_last_data_time} = $last_data_time;
+  $self->{_last_read_time} = time;
+
+  $::open_file_cache->change_weight($filename, $file_mtime);
+
+  # Now two special cases to handle.  First, if the file was removed and
+  # we had an open file descriptor to it, then close the file descriptor.
+  # Second, if the file has a new device number or inode and we had a
+  # already opened file descriptor to the file, then close the descriptor,
+  # reopen it and read all the rest of the data.  If neither of these
+  # cases is true, then close the file if the file should be reopened
+  # next time.
+  if ($file_status == -1 or ($file_status == 2 and !$opened_new_fd)) {
+    $::open_file_cache->close($filename) or
+      warn "$0: warning: cannot close `$filename' for reading: $!\n";
+    if ($file_status != -1) {
+      # Setting the last_read_time to -1 will force load_new_data to read it.
+      $self->{_last_read_time} = -1;
+      $number_added += $self->load_new_data;
+    }
+  }
+  elsif ($close_once_done or $self->{_reopen}) {
+    $::open_file_cache->close($filename) or
+      warn "$0: warning: cannot close `$filename' for reading: $!\n";
+  }
+
+  $number_added;
+}
+
+sub rrds {
+  keys %{$_[0]->{_my_rrd_hash}};
+}
+
+package main;
+
+while (@ARGV and $ARGV[0] =~ /^-\w/) {
+  my $arg = shift;
+  ++$opt_verbose   if $arg eq '-v';
+  ++$opt_once_only if $arg eq '-o';
+}
+
+die "usage: $0 [-o] [-v] config_file\n" unless @ARGV;
+
+&main(@ARGV);
+
+exit 0;
+
+sub main {
+  my $config_filename = shift;
+
+  my $start_time = time;
+
+  # Load the configuration file.
+  my ($config_options,
+      $config_files,
+      $config_plots) = &load_config($config_filename);
+
+  # Check and do any work on the configuration information.
+  &check_config($config_filename,
+                $config_options,
+                $config_files,
+                $config_plots);
+
+  # Load in any new data and update necessary plots.
+  &watch_data_sources($config_filename,
+                      $config_options,
+                      $config_files,
+                      $config_plots);
+
+  my $time_span = time - $start_time;
+  my $minutes   = int($time_span/60);
+  my $seconds   = $time_span - 60*$minutes;
+
+  if ($opt_verbose) {
+    printf "Running time is %d:%02d minutes.\n", $minutes, $seconds;
+  }
+}
+
+# Given a directory name, attempt to make all necessary directories.
+sub recursive_mkdir {
+  my $dir = shift;
+
+  # Remove extra /'s.
+  $dir =~ s:/{2,}:/:g;
+
+  my $path;
+  if ($dir =~ m:^/:) {
+    $path = '/';
+  }
+  else {
+    $path = './';
+  }
+
+  my @elements = split(/\//, $dir);
+  foreach my $element (@elements) {
+    $path = "$path/$element";
+    next if -d $path;
+    unless (mkdir($path, 0755)) {
+      die "$0: error: unable to create `$path': $!\n";
+    }
+  }
+}
+
+sub get_time_interval {
+  my $find_times_ref = shift;
+
+  my @time = localtime;
+
+  interval_search($time[2] + $time[1]/60.0, $find_times_ref);
+}
+
+sub watch_data_sources {
+  unless (@_ == 4) {
+    confess "$0: watch_data_sources: passed wrong number of arguments.\n";
+  }
+
+  my ($config_filename,
+      $config_options,
+      $config_files,
+      $config_plots) = @_;
+
+  my $rrd_data_files_ref  = {};
+  my $old_found_files_ref = {};
+  my $new_found_files_ref;
+  my $group_files_ref;
+  my $gif_files_ref = {list => [], hash => {}};
+
+  # Load the current state of the source data files.
+  my $source_file_state = &load_state($config_options->{state_file});
+
+  # The first time through we always find new files.  Calculate the time
+  # interval the current time is in.
+  my $find_new_files = 1;
+  my $time_interval  = get_time_interval($config_options->{find_times});
+
+  # This hash holds the next time to load the data from all the files in
+  # a particular group.
+  my %group_load_time;
+
+  for (;;) {
+    # Get the list of files to watch and the plots that will be created.
+    # Use the previous time through new_found_files_ref if it is defined,
+    # otherwise use the old one.
+    if ($force_find_files) {
+      $force_find_files = 0;
+      $find_new_files   = 1;
+      $time_interval    = get_time_interval($config_options->{find_times});
+    }
+
+    my $found_new_files = 0;
+    if ($find_new_files) {
+      if ($opt_verbose) {
+        print "Finding files and setting up data structures at ",
+              scalar localtime, ".\n";
+      }
+      $old_found_files_ref = $new_found_files_ref if $new_found_files_ref;
+      ($found_new_files,
+       $new_found_files_ref,
+       $group_files_ref) =
+         &find_files($config_filename,
+                     $config_options,
+                     $config_files,
+                     $config_plots,
+                     $source_file_state,
+                     $old_found_files_ref,
+                     $rrd_data_files_ref,
+                     $gif_files_ref);
+      $find_new_files = 0;
+
+      # Go through all of the groups and find the maximum load time.
+      undef %group_load_time;
+      foreach my $group (sort keys %$group_files_ref) {
+        my $group_load_time = 1e20;
+        foreach my $filename (@{$group_files_ref->{$group}}) {
+          my $load_time    = $new_found_files_ref->{$filename}->next_load_time;
+          $group_load_time = $load_time if $load_time < $group_load_time;
+        }
+        $group_load_time{$group} = $group_load_time;
+      }
+    }
+
+#    system("/bin/ps -p $$ -o\"rss vsz pmem time user pid comm\"");
+
+    # Because the amount of data load from the source data files can be
+    # large, go through each group of source files, load all of the data
+    # for that group, flush the data, and then go on to the next group.
+    # For each source file that had new data, note the RRDs that get
+    # updated from that source file.  To decide if the data from the 
+    my $updated_source_files = 0;
+    my $sleep_till_time;
+    foreach my $group (sort keys %group_load_time) {
+      my $group_load_time = $group_load_time{$group};
+      $sleep_till_time    = $group_load_time unless $sleep_till_time;
+      if ($group_load_time > time) {
+        if ($group_load_time < $sleep_till_time) {
+          $sleep_till_time = $group_load_time;
+        }
+        # Skip this group unless new files were found, then we need to
+        # load the data from them.
+        next unless $found_new_files;
+      }
+
+      if ($opt_verbose) {
+        print "Loading new data", $group ? " from $group" : "", ".\n";
+      }
+      my $number_new_data_points = 0;
+      my %this_group_rrds;
+      $group_load_time = 1e20;
+      foreach my $filename (@{$group_files_ref->{$group}}) {
+        my $source_file = $new_found_files_ref->{$filename};
+        my $number      = $source_file->load_new_data;
+        $number_new_data_points += $number;
+        if ($number) {
+          foreach my $rrd ($source_file->rrds) {
+            $this_group_rrds{$rrd} = $rrd_data_files_ref->{$rrd};
+          }
+          if ($opt_verbose) {
+            printf "  Read %5d data point%s from `$filename'.\n",
+              $number, $number > 1 ? 's' : '';
+          }
+        }
+        my $load_time    = $source_file->next_load_time;
+        $group_load_time = $load_time if $load_time < $group_load_time;
+      }
+      # Update the load time for this group.
+      $group_load_time{$group} = $group_load_time;
+
+      next unless $number_new_data_points;
+      $updated_source_files = 1;
+
+      # Flush the data that has been loaded for each plot.  To keep the
+      # RRD that was just created in the systems cache, plot GIFs that
+      # only depend on this RRD, since GIFs that depend upon two or more
+      # RRDs will most likely be generated more than once and the other
+      # required RRDs may not exist yet.
+      if ($opt_verbose) {
+        print "Flushing new data", $group ? " from $group" : "", ".\n";
+      }
+      foreach my $rrd (values %this_group_rrds) {
+        $rrd->flush_data;
+        foreach my $gif ($rrd->created_gifs) {
+          next if $gif->rrds > 1;
+          $gif->plot;
+        }
+      }
+    }
+
+    # Save the current state of the source data files.
+    if ($found_new_files or $updated_source_files) {
+      &save_state($config_options->{state_file}, $new_found_files_ref);
+    }
+
+    # Plot the data in each gif.
+    print "Updating GIFs.\n" if $opt_verbose;;
+    foreach my $gif (@{$gif_files_ref->{list}}) {
+      $gif->plot;
+    }
+
+    # Make the HTML files.
+    if ($found_new_files) {
+      &create_html_files($config_options,
+                         $config_files,
+                         $config_plots,
+                         $new_found_files_ref,
+                         $group_files_ref,
+                         $gif_files_ref);
+      $found_new_files = 0;
+    }
+
+    # Return now if this loop is being run only once.
+    last if $opt_once_only;
+
+    # Now decide if we need to find new files.  If the time interval does
+    # change, then find new files only if the new time interval is not -1,
+    # which signifies that the time is before the first find_times.
+    my $new_time_interval = get_time_interval($config_options->{find_times});
+    if ($time_interval != $new_time_interval) {
+      $find_new_files = 1 if $new_time_interval != -1;
+      $time_interval  = $new_time_interval;
+    }
+
+    # Sleep if the sleep_till_time has not passed.
+    my $now = time;
+    if ($sleep_till_time > $now) {
+      if ($opt_verbose) {
+        print "Sleeping at ",
+              scalar localtime($now),
+              " until ",
+              scalar localtime($sleep_till_time),
+              ".\n";
+      }
+      sleep($sleep_till_time - $now + 1);
+    }
+  }
+}
+
+sub Capatialize {
+  my $string = shift;
+  substr($string, 0, 1) = uc(substr($string, 0, 1));
+  $string;
+}
+
+sub create_html_files {
+  my ($config_options,
+      $config_files,
+      $config_plots,
+      $found_files_ref,
+      $group_files_ref,
+      $gif_files_ref) = @_;
+
+  # Create the main HTML index.html file.
+  my $html_dir         = $config_options->{html_dir};
+  my $index_filename   = "$html_dir/index.html";
+
+  print "Creating HTML files in `$html_dir/'.\n" if $opt_verbose;
+
+  my $index_html = MRTG::HTMLFile->new($index_filename,
+                                       $config_options->{html_top_title},
+                                       $config_options->{html_page_header},
+                                       $config_options->{html_page_footer});
+  unless ($index_html) {
+    warn "$0: warning: cannot open `$index_filename' for writing: $!\n";
+    return;
+  }
+  $index_html->print("<hr>\n<font size=\"-2\">");
+
+  my $table_number_columns = 9;
+  my @table_columns;
+
+  # If there is more than one group first list the different available
+  # groups and create for each group an HTML file that contains references
+  # to the GIFs for that group.  Also create an HTML file for the daily,
+  # weekly, monthly, and yearly gifs.
+  if (keys %$group_files_ref > 1) {
+    $index_html->print("<h2>Available Targets</h2>\n\n<table>\n");
+    foreach my $group (sort keys %$group_files_ref) {
+      my $group_basename = strip_key_name($group);
+      my $element = "<table border=2><tr><td><b>$group</b></td></tr>\n<tr><td>\n";
+      foreach my $plot_type (@rra_plot_type) {
+        $element .= "<a href=\"$group_basename-$plot_type.html\">";
+        my $Plot_Type = Capatialize($plot_type);
+        $element .= "$Plot_Type</a><br>\n";
+      }
+      $element .= "<a href=\"$group_basename-all.html\">All</a></td></tr>\n";
+      $element .= "</table>\n\n";
+
+      push(@table_columns, "<td>$element</td>");
+      if (@table_columns == $table_number_columns) {
+        $index_html->print("<tr valign=top>" . join('', @table_columns) . "</tr>\n");
+        @table_columns = ();
+      }
+
+      # Create the daily, weekly, monthly, and yearly HTML files for this
+      # group.
+      my @html_files;
+      foreach my $plot_type (@rra_plot_type, 'all') {
+        my $link      = "$group_basename-$plot_type.html";
+        my $filename  = "$html_dir/$link";
+        my $Plot_Type = Capatialize($plot_type);
+        my $fd = MRTG::HTMLFile->new($filename,
+                                     "$Plot_Type $group",
+                                     $config_options->{html_page_header},
+                                     $config_options->{html_page_footer});
+        unless ($fd) {
+          warn "$0: warning: cannot open `$filename' for writing: $!\n";
+          next;
+        }
+        push (@html_files, {fd        => $fd,
+                            link      => $link,
+                            plot_type => $plot_type,
+                            Plot_Type => $Plot_Type});
+      }
+
+      foreach my $html_file (@html_files) {
+        my $html;
+        foreach my $plot_type (@html_files) {
+          $html .= "<a href=\"$plot_type->{link}\">$plot_type->{Plot_Type} $group</a><br>\n";
+        }
+        $html_file->{fd}->print($html);
+      }
+
+      # Because there are many gifs each listing a same name, just make sure
+      # we watch one.
+      foreach my $gif (grep {$group eq $_->group} @{$gif_files_ref->{list}}) {
+        my $name = $gif->name;
+
+        my $title = replace_group_name($gif->plot_ref->{title}, $gif->group);
+
+        my $href = "<a href=\"" . strip_key_name($name) . ".html\">";
+
+        my $sub_dir = $config_files->{$gif->files_key}{sub_dir};
+
+        foreach my $html_file (@html_files) {
+          $html_file->{fd}->print("<hr>\n<h2>${href}$html_file->{Plot_Type} $title</a></h2>\n");
+        }
+
+        # Put the proper GIFs into each HTML file.
+        for (my $i=0; $i<@html_files-1; ++$i) {
+          my $gif_filename = "$name-$html_files[$i]{plot_type}.gif";
+          $gif_filename = "$group/$gif_filename" if $sub_dir;
+          my $html = "$href<img src=\"$gif_filename\"" .
+                     "alt=\"$html_files[$i]{Plot_Type} $title\"></a>\n";
+          $html_files[$i]{fd}->print($html);
+          $html_files[-1]{fd}->print($html);
+        }
+      }
+
+      foreach my $html_file (@html_files) {
+        $html_file->{fd}->print("<hr>\n");
+      }
+    }
+
+    # If there are any remaining groups to display, do it now.
+    if (@table_columns) {
+      $index_html->print("<tr valign=top>" . join('', @table_columns) . "</tr>\n");
+    }
+    $index_html->print("</table>\n\n\n<br>\n<hr>\n<h2>Available Data Sets</h2>\n\n");
+  }
+
+  # Now get a list of the different available plots.  For each different
+  # type of plot, create a list of gifs that show that plot.  First get a
+  # list of gifs for each different plot type.  Use @gifs_by_type to
+  # keep the ordering in the type of gifs and the %gifs_by_type to hold
+  # references to an array for each type of gif.
+  $index_html->print("<table>\n");
+
+  $table_number_columns = 1;
+  @table_columns = ();
+
+  for (my $i=0; $i<@$config_plots; ++$i) {
+
+    my %html_files;
+
+    next unless @{$config_plots->[$i]{creates}};
+
+    # Sort the plots in this by legend name.
+    my %legend_no_group;
+    my %legends;
+    foreach my $gif (@{$config_plots->[$i]{creates}}) {
+      my $legend_no_group    = replace_group_name($gif->plot_ref->{title},'');
+      $legend_no_group{$gif} = $legend_no_group; 
+      
+      unless (defined $legends{$legend_no_group}) {
+        $legends{$legend_no_group} = [];
+      }
+      push(@{$legends{$legend_no_group}}, $gif);
+    }
+    my @gifs;
+    foreach my $legend_no_group (sort keys %legends) {
+      push(@gifs, @{$legends{$legend_no_group}});
+    }
+
+    foreach my $gif (@gifs) {
+
+      my $no_group_name   = strip_key_name($gif->no_group_name);
+      my $legend_no_group = $legend_no_group{$gif};
+
+      # Create the HTML files for this legend.
+      unless (defined $html_files{$legend_no_group}) {
+        # Now create the HTML files for each different plot type.  Use the
+        # legend name to great this list.
+        $html_files{$legend_no_group} = [];
+        foreach my $plot_type (@rra_plot_type, 'all') {
+          my $link      = "$no_group_name-$plot_type.html";
+          my $filename  = "$html_dir/$link";
+          my $Plot_Type = Capatialize($plot_type);
+          my $fd = MRTG::HTMLFile->new($filename,
+                                       "$Plot_Type $legend_no_group",
+                                       $config_options->{html_page_header},
+                                       "<hr>\n$config_options->{html_page_footer}");
+          unless ($fd) {
+            warn "$0: warning: cannot open `$filename' for writing: $!\n";
+            next;
+          }
+          push(@{$html_files{$legend_no_group}}, {fd        => $fd,
+                                                  link      => $link,
+                                                  plot_type => $plot_type,
+                                                  Plot_Type => $Plot_Type});
+        }
+
+        my @html_files = @{$html_files{$legend_no_group}};
+        foreach my $html_file (@html_files) {
+          my $html;
+          foreach my $plot_type (@html_files) {
+            $html .= "<a href=\"$plot_type->{link}\">$plot_type->{Plot_Type} $legend_no_group</a><br>\n";
+          }
+          $html_file->{fd}->print($html);
+        }
+
+        my $element = "<td><b>$legend_no_group</b></td>\n";
+        foreach my $plot_type (@rra_plot_type, 'all') {
+          $element .= "<td><a href=\"$no_group_name-$plot_type.html\">";
+          $element .= Capatialize($plot_type) . "</a></td>\n";
+        }
+        push(@table_columns, $element);
+        if (@table_columns == $table_number_columns) {
+          $index_html->print("<tr>" . join('', @table_columns) . "</tr>\n");
+          @table_columns = ();
+        }
+      }
+
+      # Create an HTML file that contains the daily, weekly, monthly, and
+      # yearly GIFs for each plot.
+      my $with_group_name   = strip_key_name($gif->name);
+      my $legend_with_group = replace_group_name($gif->plot_ref->{title},
+                                                 $gif->group);
+      my $summarize_name = "$html_dir/$with_group_name.html";
+      my $summarize_html = MRTG::HTMLFile->new($summarize_name,
+                                               $legend_with_group,
+                                               $config_options->{html_page_header},
+                                               $config_options->{html_page_footer});
+      unless ($summarize_html) {
+        warn "$0: warning: cannot open `$summarize_name' for writing: $!\n";
+        next;
+      }
+      my $sub_dir = $config_files->{$gif->files_key}{sub_dir};
+      my $gif_filename = $with_group_name;
+      $gif_filename = $gif->group . "/$gif_filename" if $sub_dir;
+      foreach my $plot_type (@rra_plot_type) {
+        my $Plot_Type = Capatialize($plot_type);
+        $summarize_html->print("<hr>\n<h2>$Plot_Type $legend_with_group</h2>\n",
+                               "<img src=\"$gif_filename-$plot_type.gif\"",
+                               "alt=\"$Plot_Type $legend_with_group\">\n");
+      }
+
+      my $name  = $gif->name;
+      my $group = $gif->group;
+
+      my $href = "<a href=\"$with_group_name.html\">";
+
+      my @html_files = @{$html_files{$legend_no_group}};
+      $html_files[-1]{fd}->print("<hr>\n<h2>${href}$group $legend_no_group</a></h2>\n");
+      for (my $i=0; $i<@html_files-1; ++$i) {
+        my $Plot_Type = $html_files[$i]{Plot_Type};
+        my $gif_filename = "$name-$html_files[$i]{plot_type}.gif";
+        $gif_filename = "$group/$gif_filename" if $sub_dir;
+        my $html = "$href<img src=\"$gif_filename\"" .
+                   "alt=\"$Plot_Type $group $legend_no_group\"></a>\n";
+        $html_files[$i]{fd}->print("<hr>\n<h2>${href}$Plot_Type $group $legend_no_group</a></h2>\n");
+        $html_files[$i]{fd}->print($html);
+        $html_files[-1]{fd}->print($html);
+      }
+    }
+  }
+
+  if (@table_columns) {
+    $index_html->print("<tr>" . join('', @table_columns) . "</tr>\n");
+  }
+  $index_html->print("\n</table>\n\n</font>\n<hr>\n");
+}
+
+sub perl_glob {
+  my $regexp = shift;
+
+  # The current directory tells where to open the directory for matching.
+  my $current_dir = @_ ? shift : '.';
+
+  # Remove all multiple /'s, since they will confuse perl_glob.
+  $regexp =~ s:/{2,}:/:g;
+
+  # If the regular expression begins with a /, then remove it from the
+  # regular expression and set the current directory to /.
+  $current_dir = '/' if $regexp =~ s:^/::;
+
+  # Get the first file path element from the regular expression to match.
+  my @regexp_elements = split(m:/:, $regexp);
+  my $first_regexp = shift(@regexp_elements);
+
+  # Find all of the files in the current directory that match the first
+  # regular expression.
+  opendir(GLOB_DIR, "$current_dir") or
+    die "$0: error: cannot opendir `$current_dir': $!\n";
+
+  my @matches = grep { /^$first_regexp$/ } readdir(GLOB_DIR);
+
+  closedir(GLOB_DIR) or
+    warn "$0: warning: cannot closedir `$current_dir': $!\n";
+
+  # If we're in the last regular expression match, then just return the
+  # matches with the current directory prepended.
+  unless (@regexp_elements) {
+    return map { "$current_dir/$_" } @matches;
+  }
+
+  # Otherwise we need to look into the directories below the current
+  # directory.  Also create the next regular expression to use that
+  # is made up of the remaining file path elements.
+  my @results;
+  my $new_regexp = join('/', @regexp_elements);
+  foreach my $new_dir (grep { -d "$current_dir/$_" } @matches) {
+    my $new_current = "$current_dir/$new_dir";
+    $new_current =~ s:/{2,}:/:g;
+    push(@results, perl_glob($new_regexp, $new_current));
+  }
+
+  return @results;
+}
+
+# Email the list of people a message.
+sub email_message {
+  my ($people, $subject) = @_;
+
+  return unless $people;
+
+  if (open(SENDMAIL, "|/usr/lib/sendmail -oi -t")) {
+    print SENDMAIL <<"EOF";
+To: $people
+Subject: MRTG: $subject
+ 
+MRTG: $subject
+EOF
+    close(SENDMAIL) or
+      warn "$0: warning: sendmail did not close: $!\n";
+  }
+  else {
+    warn "$0: warning: cannot fork for sendmail: $!\n";
+  }
+}
+
+# Replace any %g with the group and any %G's with a capitalized version of
+# the group in the title string with the group name.
+sub replace_group_name {
+  my ($title, $group) = @_;
+
+  my $Group = $group;
+  substr($Group, 0, 1) = uc(substr($Group, 0, 1));
+
+  $title =~ s/%g/$group/ge;
+  $title =~ s/%G/$Group/ge;
+  $title =~ s/^\s+//;
+  $title =~ s/\s+$//;
+  $title;
+}
+
+# Strip special characters from key names.
+sub strip_key_name {
+  my $name = shift;
+  $name =~ s/:/_/g;
+  $name =~ s:/:_per_:g;
+  $name =~ s:\s+:_:g;
+  $name =~ s:%:_percent_:g;
+  $name =~ s:#:_number_:g;
+  $name =~ s:_{2,}:_:g;
+
+  # Remove trailing _'s.
+  $name =~ s:_+$::;
+  $name =~ s:_+,:,:g;
+  $name;
+}
+
+# Return an list of the unique elements of a list.
+sub unique {
+  my %a;
+  my @unique;
+  foreach my $element (@_) {
+    unless (defined $a{$element}) {
+      push(@unique, $element);
+      $a{$element}++;
+    }
+  }
+  @unique;
+}
+
+sub find_files {
+  unless (@_ == 8) {
+    confess "$0: find_files passed wrong number of arguments.\n";
+  }
+
+  my ($config_filename,
+      $config_options,
+      $config_files,
+      $config_plots,
+      $source_file_state,
+      $old_found_files_ref,
+      $rrd_data_files_ref,
+      $gif_files_ref) = @_;
+
+  my $new_found_files_ref = {};
+  my $group_files         = {};
+  my $found_new_files     = 0;
+
+  foreach my $files_key (sort keys %$config_files) {
+    # Find all the files matching the regular expression.
+    my @filenames;
+    foreach my $regexp (@{$config_files->{$files_key}{find_files}}) {
+      push(@filenames, grep {-r $_} perl_glob($regexp));
+    }
+    unless (@filenames) {
+      warn "$0: warning: no files found for `find_files' for `files $files_key' in `$config_filename'.\n";
+      next;
+    }
+
+    # Calculate which group the file belongs in and create a hash listing
+    # the filenames for each group.
+    my %tmp_files_by_group;
+    my %tmp_group_by_file;
+    foreach my $filename (unique(@filenames)) {
+      # Find the group that the files belong in.
+      my $group = undef;
+      foreach my $regexp (@{$config_files->{$files_key}{find_files}}) {
+        my @result = ($filename =~ $regexp);
+        if (@result) {
+          # There there are no ()'s in the regexp, then change (1) to ().
+          @result = () if (@result == 1 and $result[0] eq '1');
+          # Remove any empty matches from @result.
+          $group = join('_', grep {length($_)} @result);
+          last;
+        }
+      }
+      unless (defined $group) {
+        warn "$0: warning: internal error: found `$filename' but no regexp match for it.\n";
+        next;
+      }
+      unless (defined $tmp_files_by_group{$group}) {
+        $tmp_files_by_group{$group} = [];
+      }
+      push(@{$tmp_files_by_group{$group}}, $filename);
+      $tmp_group_by_file{$filename} = $group;
+    }
+
+    # Create a new list of filenames sorted by group name and inside each
+    # group sorted by filename.  This will cause the creates plots to
+    # appear in group order.
+    @filenames = ();
+    foreach my $key (sort keys %tmp_files_by_group) {
+      push(@filenames, sort @{$tmp_files_by_group{$key}});
+    }
+
+    foreach my $filename (@filenames) {
+      # Create the object that contains this file.  Take care if the same
+      # file is being used in another files group.
+      unless (defined $new_found_files_ref->{$filename}) {
+        if (defined $old_found_files_ref->{$filename}) {
+          $new_found_files_ref->{$filename} = $old_found_files_ref->{$filename};
+        }
+        else {
+          print "  $filename\n" if $opt_verbose;
+          my $data_file = 
+            MRTG::SourceDataFile->new($filename,
+                                      $config_files->{$files_key}{interval},
+                                      $config_options->{late_interval},
+                                      $config_files->{$files_key}{reopen},
+                                      $config_files->{$files_key}{column_description},
+                                      $config_files->{$files_key}{date_source},
+                                      $config_files->{$files_key}{date_format},
+                                      $config_options->{warn_email},
+                                      $source_file_state);
+          unless ($data_file) {
+            warn "$0: warning: cannot process `$filename'.\n";
+            next;
+          }
+          $new_found_files_ref->{$filename} = $data_file;
+          $found_new_files = 1;
+        }
+      }
+      my $group = $tmp_group_by_file{$filename};
+      $new_found_files_ref->{$filename}->add_plots($config_options,
+                                                   $config_files,
+                                                   $config_plots,
+                                                   $files_key,
+                                                   $group,
+                                                   $rrd_data_files_ref,
+                                                   $gif_files_ref);
+      unless (defined $group_files->{$group}) {
+        $group_files->{$group} = [];
+      }
+      push(@{$group_files->{$group}}, $filename);
+    }
+  }
+  my @found_files = keys %$new_found_files_ref;
+
+  die "$0: no data source files found.\n" unless @found_files;
+
+  return ($found_new_files,
+          $new_found_files_ref,
+          $group_files);
+}
+
+# This loads the old source file state information.
+my @save_state_keys;
+sub load_state {
+  my $state_file = shift;
+
+  my %state;
+
+  unless (@save_state_keys) {
+    @save_state_keys = qw(_filename _last_data_time _last_read_time);
+  }
+
+  unless (open(STATE, $state_file)) {
+    warn "$0: warning: cannot open state file `$state_file' for reading: $!\n";
+    return \%state;
+  }
+
+  print "Loading state from `$state_file'.\n" if $opt_verbose;
+
+  # Get the first line which contains the hash key name.  Check that the
+  # first field is _filename.
+  # key names match what is stored in this script.
+  my $line = <STATE>;
+  chomp($line);
+  my @keys = split(' ', $line);
+  unless ($keys[0] eq '_filename') {
+    warn "$0: warning: ignoring state file `$state_file': incorrect first field.\n";
+  }
+
+  while (<STATE>) {
+    my @line = split;
+    if (@line != @keys) {
+      warn "$0: inconsistent number of elements on line $. of `$state_file'.\n";
+      next;
+    }
+
+    my $filename = $line[0];
+    for (my $i=1; $i<@keys; ++$i) {
+      $state{$filename}{$keys[$i]} = $line[$i];
+    }
+  }
+
+  close(STATE) or
+    warn "$0: warning: cannot close `$state_file' for reading: $!\n";
+
+  \%state;
+}
+
+# Write the state information for the source data files.
+sub save_state {
+  my ($state_file, $state_ref) = @_;
+
+  print "Saving state into `$state_file'.\n" if $opt_verbose;
+
+  if (open(STATE, "> $state_file.tmp")) {
+
+    print STATE "@save_state_keys\n";
+
+    foreach my $filename (sort keys %$state_ref) {
+      foreach my $key (@save_state_keys) {
+        print STATE $state_ref->{$filename}{$key}, ' ';
+      }
+      print STATE "\n";
+    }
+
+    close(STATE) or
+      warn "$0: warning: cannot close `$state_file' for writing: $!\n";
+
+    rename("$state_file.tmp", $state_file) or
+      warn "$0: warning: cannot rename `$state_file.tmp' to `$state_file': $!\n";
+  }
+  else {
+    warn "$0: warning: cannot open state file `$state_file.tmp' for writing: $!\n";
+  }
+}
+
+my @cc_required_options;
+my @cc_required_files;
+my @cc_required_plots;
+my @cc_optional_options;
+my @cc_optional_files;
+my @cc_optional_plots;
+
+sub check_config {
+  my ($config_filename, $config_options, $config_files, $config_plots) = @_;
+
+  unless (@cc_required_options) {
+    @cc_required_options   = qw(state_file
+                                data_dir
+                                html_dir);
+    @cc_required_files     = qw(column_description
+                                date_source
+                                find_files
+                                interval);
+    @cc_required_plots     = qw(data
+                                source);
+    @cc_optional_options   = qw(expire_gifs
+                                html_page_footer
+                                html_page_header
+                                html_top_title
+                                late_interval
+                                sub_dir
+                                warn_email);
+    @cc_optional_files     = qw(date_format
+                                reopen);
+    @cc_optional_plots     = qw(flush_regexps
+                                plot_width
+                                plot_height
+                                rigid_min_max);
+    # This is a special variable that gets used in add_plots.
+    @::cc_default_colors   =   ('00ff00',	# Green
+                                '0000ff',	# Blue
+                                'ff0000',	# Red
+                                'a020f0',	# Magenta
+                                'ffa500',	# Orange
+                                'a52a2a',	#
+                                '00ffff');	#
+  }
+
+  # Check that we the required options are satisfied.
+  foreach my $option (@cc_required_options) {
+    unless (defined $config_options->{$option}) {
+      die "$0: error: must define `$option' in `$config_filename'.\n";
+    }
+  }
+
+  # Check if the data_dir and html_dir directories exist.
+  foreach my $dir_key ('html_dir', 'data_dir') {
+    my $dir = $config_options->{$dir_key};
+    die "$0: error: please create $dir_key `$dir'.\n" unless -d $dir;
+  }
+
+  # Set any optional options to '' if it isn't defined.
+  foreach my $option (@cc_optional_options) {
+    unless (defined $config_options->{$option}) {
+      $config_options->{$option} = '';
+    }
+  }
+
+  # Late_interval is a valid mathematical expression. Replace the word
+  # interval with $_[0].  Try the subroutine to make sure it works.
+  unless ($config_options->{late_interval}) {
+    $config_options->{late_interval} = 'interval';
+  }
+  my $expr = "sub { $config_options->{late_interval}; }";
+  $expr =~ s/interval/\$_[0]/g;
+  my $sub;
+  {
+    local $SIG{__WARN__} = sub { die $_[0] };
+    $sub = eval $expr;
+  }
+  die "$0: cannot evaluate command for `late_interval' on\n   $expr\nOutput: $@\n" if $@;
+  {
+    local $SIG{__WARN__} = sub { die $_[0] };
+    eval '&$sub(3.1415926) + 0;';
+  }
+  die "$0: cannot execute command for `late_interval' on\n$expr\nOutput: $@\n" if $@;
+  $config_options->{late_interval} = $sub;
+
+  # Convert the list of find_times into an array of fractional hours.
+  my @find_times;
+  unless (defined $config_options->{find_times}) {
+    $config_options->{find_times} = '';
+  }
+  foreach my $find_time (split(' ', $config_options->{find_times})) {
+    if (my ($hours, $minutes) = $find_time =~ /^(\d{1,2}):(\d{2})/) {
+      # Because of the regular expression match we're doing, the hours
+      # and minutes will only be positive, so check for hours > 23 and
+      # minutes > 59.
+      unless ($hours < 24) {
+        warn "$0: warning: ignoring find_times `$find_time': hours must be less than 24.\n";
+        next;
+      }
+      unless ($minutes < 60) {
+        warn "$0: warning: ignoring find_times `$find_time': minutes must be less than 60.\n";
+        next;
+      }
+      push(@find_times, $hours + $minutes/60.0);
+    }
+    else {
+      warn "$0: warning: ignoring find_times `$find_time': illegal format.\n";
+    }
+  }
+  $config_options->{find_times} = [ sort { $a <=> $b } @find_times ];
+
+  # There must be at least one list of files.
+  unless (keys %$config_files) {
+    die "$0: error: must define at least one `files' in `$config_filename'.\n";
+  }
+
+  # For each files parameter there are required options.
+  foreach my $files_key (keys %$config_files) {
+    foreach my $option (@cc_required_files) {
+      unless (defined $config_files->{$files_key}{$option}) {
+        die "$0: error: must define `$option' for `files $files_key' in `$config_filename'.\n";
+      }
+    }
+
+    # Optional files options will be set to '' here if they haven't been set
+    # by the user.
+    foreach my $option (@cc_optional_files) {
+      unless (defined $config_files->{$files_key}{$option}) {
+        $config_files->{$files_key}{$option} = '';
+      }
+    }
+
+    # Check that the date_source is either column followed by a column name
+    # or file_mtime for the file modification time.  If a column_name is used,
+    # then the date_format is required.
+    my $date_source = $config_files->{$files_key}{date_source}[0];
+    if ($date_source eq 'column_name') {
+      unless (@{$config_files->{$files_key}{date_source}} == 2) {
+        die "$0: error: incorrect number of arguments for `date_source' for `files $files_key'.\n";
+      }
+      unless (defined $config_files->{$files_key}{date_format}) {
+        die "$0: error: must define `date_format' with `date_source columns ...' for `files $files_key'.\n";
+      }
+    }
+    else {
+      unless ($date_source eq 'file_mtime') {
+        die "$0: error: illegal argument for `date_source' for `files $files_key'.\n";
+      }
+    }
+    $config_files->{$files_key}{date_source}[0] = $date_source;
+
+    # Check that we have a valid regular expression for find_files and
+    # get a unique list of them.  Also to see if the find_files match
+    # contains any ()'s that will split the files into groups.  If so,
+    # then we will use subdirectories to create our structure.
+    my $sub_dir = 0;
+    my %find_files;
+    foreach my $watch (@{$config_files->{$files_key}{find_files}}) {
+      my $test_string = 'abcdefg';
+      local $SIG{__WARN__} = sub { die $_[0] };
+      eval { $test_string =~ /$watch/ };
+      die "$0: error: illegal regular expression in `find_files $watch' for `files $files_key' in `$config_filename':\n$@\n" if $@;
+      $find_files{$watch}++;
+      $sub_dir = 1 if $watch =~ m:\(.+\):;
+    }
+    $config_files->{$files_key}{find_files} = [sort keys %find_files];
+    $config_files->{$files_key}{sub_dir}    = $sub_dir || $config_options->{sub_dir};
+  }
+
+  # There must be at least one plot.
+  unless (@$config_plots) {
+    die "$0: error: must define at least one `plot' in `$config_filename'.\n";
+  }
+
+  # Foreach plot there are required options.  Create default options
+  # if the user has not done so.
+  for (my $i=0; $i<@$config_plots; ++$i) {
+    my $j = $i + 1;
+    foreach my $option (@cc_required_plots) {
+      unless (defined $config_plots->[$i]{$option}) {
+        die "$0: error: must define `$option' for `plot' #$j in `$config_filename'.\n";
+      }
+    }
+
+    # Create an array for each plot that will have a list of GIFs that were
+    # generated from this plot.
+    $config_plots->[$i]{creates} = [];
+
+    # Optional options will be set to '' here if they haven't been set by the
+    # user.
+    foreach my $option (@cc_optional_plots) {
+      unless (defined $config_plots->[$i]{$option}) {
+        $config_plots->[$i]{$option} = '';
+      }
+    }
+
+    # Set the default plot width and height.
+    $config_plots->[$i]{plot_width}  = 500 unless $config_plots->[$i]{plot_width};
+    $config_plots->[$i]{plot_height} = 125 unless $config_plots->[$i]{plot_height};
+
+    # Set the plot minimum and maximum values to U unless they are set.
+    unless (defined $config_plots->[$i]{data_min}) {
+      $config_plots->[$i]{data_min} = 'U';
+    }
+    unless (defined $config_plots->[$i]{data_max}) {
+      $config_plots->[$i]{data_max} = 'U';
+    }
+
+    # The data type must be either gauge, absolute, or counter.
+    if (defined $config_plots->[$i]{data_type}) {
+      my $type = substr($config_plots->[$i]{data_type}, 0, 1);
+      if ($type eq 'g' or $type eq 'G') {
+        $config_plots->[$i]{data_type} = 'GAUGE';
+      }
+      elsif ($type eq 'c' or $type eq 'C') {
+        $config_plots->[$i]{data_type} = 'COUNTER';
+      }
+      elsif ($type eq 'a' or $type eq 'A') {
+        $config_plots->[$i]{data_type} = 'ABSOLUTE';
+      }
+      elsif ($type eq 'd' or $type eq 'D') {
+        $config_plots->[$i]{data_type} = 'DERIVE';
+      }
+      else {
+        die "$0: error: `data_type $config_plots->[$i]{data_type}' for `plot' #$j in `$config_filename' must be gauge, counter, or absolute.\n";
+      }
+    }
+    else {
+      $config_plots->[$i]{data_type} = 'GAUGE';
+    }
+
+    # The data source needs to be a valid files key.
+    my $source = $config_plots->[$i]{source};
+    unless (defined $config_files->{$source}) {
+      die "$0: error: plot #$j `source $source' references non-existant `files' in `$config_filename'.\n";
+    }
+    unless ($config_plots->[$i]{source}) {
+      die "$0: error: plot #$j `source $source' requires one files_key argument in `$config_filename'.\n";
+    }
+
+    # Set the legends of any columns not defined.
+    unless (defined $config_plots->[$i]{legend}) {
+      $config_plots->[$i]{legend} = [];
+    }
+    my $number_datas = @{$config_plots->[$i]{data}};
+    for (my $k=@{$config_plots->[$i]{legend}}; $k<$number_datas; ++$k) {
+      $config_plots->[$i]{legend}[$k] = "@{$config_plots->[$i]{data}[$k]}";
+    }
+
+    # Set the colors of any data not defined.
+    unless (defined $config_plots->[$i]{color}) {
+      $config_plots->[$i]{color} = [];
+    }
+    for (my $k=@{$config_plots->[$i]{color}}; $k<$number_datas; ++$k) {
+      $config_plots->[$i]{color}[$k] = $::cc_default_colors[$k];
+    }
+
+    # Check each line type setting.
+    for (my $k=0; $k<$number_datas; ++$k) {
+      if (defined $config_plots->[$i]{line_type}[$k]) {
+      my $line_type = $config_plots->[$i]{line_type}[$k];
+        if ($line_type =~ /^line([123])$/i) {
+          $line_type = "LINE$1";
+        }
+        elsif ($line_type =~ /^area$/i) {
+          $line_type = 'AREA';
+        }
+        elsif ($line_type =~ /^stack$/i) {
+          $line_type = 'STACK';
+        }
+        else {
+          die "$0: error: plot #$j illegal `line_type' `$line_type'.\n";
+        }
+        $config_plots->[$i]{line_type}[$k] = $line_type;
+      }
+      else {
+        $config_plots->[$i]{line_type}[$k] = 'LINE1';
+      }
+    }
+
+    # If the generic y_legend is not set, then set it equal to the first
+    # legend.
+    unless (defined $config_plots->[$i]{y_legend}) {
+      $config_plots->[$i]{y_legend} = $config_plots->[$i]{legend}[0];
+    }
+
+    # If the title is not set, then set it equal to all of the legends with
+    # the group name prepended.
+    unless (defined $config_plots->[$i]{title}) {
+      my $title = '%G ';
+      for (my $k=0; $k<$number_datas; ++$k) {
+        $title .= $config_plots->[$i]{legend}[$k];
+        $title .= " & " if $k < $number_datas-1;
+      }
+      $config_plots->[$i]{title} = $title;
+    }
+  }
+}
+
+# These are state variables for reading the config file.  The $files_key
+# variable holds the name of the file parameter when a file configuration
+# is being defined.  If $files_key is '', then the a file configuration is
+# not being read.  $plot_index is a string that represents a number that
+# is used as an index into @plots.  If the string is negative, including
+# -0, then the plot configuration is not being defined, otherwise it holds
+# the index into the @plots array the is being defined.
+my $pcl_files_key;
+my $pcl_plot_index;
+
+# The following options go into the options and files hashes.  If you
+# add any elements to pcl_plot_append_elements, make sure up update
+# MRTG::SourceDataFile::add_plots.
+my @pcl_option_elements;
+my @pcl_file_elements;
+my @pcl_plot_elements;
+my @pcl_plot_append_elements;
+my @pcl_filepath_elements;
+my @pcl_no_arg_elements;
+my @pcl_keep_as_array_options;
+my @pcl_keep_as_array_files;
+my @pcl_keep_as_array_plots;
+
+sub process_config_line {
+  my ($config_filename, $line_number, $line,
+      $config_options, $config_files, $config_plots) = @_;
+
+  unless (@pcl_option_elements) {
+    $pcl_files_key              = '';
+    $pcl_plot_index             = '-0';
+    @pcl_option_elements        = qw(base_dir
+                                     data_dir
+                                     expire_gifs
+                                     find_times
+                                     html_dir
+                                     html_page_footer
+                                     html_page_header
+                                     html_top_title
+                                     late_interval
+                                     state_file
+                                     sub_dir
+                                     warn_email);
+    @pcl_file_elements          = qw(column_description
+                                     date_format
+                                     date_source
+                                     find_files
+                                     interval
+                                     reopen);
+    @pcl_plot_elements          = qw(color
+                                     data
+                                     data_min
+                                     data_max
+                                     data_type
+                                     flush_regexps
+                                     legend
+                                     line_type
+                                     optional
+                                     plot_height
+                                     plot_min
+                                     plot_max
+                                     plot_width
+                                     rigid_min_max
+                                     source
+                                     title
+                                     y_legend);
+    @pcl_plot_append_elements   = qw(color
+                                     data
+                                     legend
+                                     line_type);
+    @pcl_filepath_elements      = qw(state_file
+                                     data_dir
+                                     find_files
+                                     html_dir);
+    @pcl_no_arg_elements        = qw(flush_regexps
+                                     optional
+                                     rigid_min_max);
+   @pcl_keep_as_array_options   = qw();
+   @pcl_keep_as_array_files     = qw(column_description
+                                     date_source
+                                     find_files);
+   @pcl_keep_as_array_plots     = qw(data);
+  }
+
+  # Take the line and split it and make the first element lowercase.
+  my @line  = split(' ', $line);
+  my $key   = lc(shift(@line));
+
+  # Warn if there is no option and it requires an option.  Turn on options
+  # that do not require an option argument and do not supply one.
+  if ($key ne '}') {
+    if (grep { $key eq $_} @pcl_no_arg_elements) {
+      push(@line, 1) unless @line;
+    }
+    else {
+      unless (@line) {
+        warn "$0: warning: option `$key' needs arguments in `$config_filename' line $line_number.\n";
+        return;
+      }
+    }
+  }
+
+  # Prepend the base_dir to paths that are not prepended by /.
+  my $base_dir = defined $config_options->{base_dir} ?
+    $config_options->{base_dir} : '';
+  if ( $base_dir and grep {$key eq $_} @pcl_filepath_elements) {
+    foreach my $path (@line) {
+      $path = "$base_dir/$path" unless $path =~ m:^/:;
+      $path =~ s:/{2,}:/:
+    }
+  }
+
+  my $value = "@line";
+
+  # Process the line differently if we're reading for a particular option.
+  # This one is for files.
+  if ($pcl_files_key) {
+    if ($key eq '}') {
+      $pcl_files_key = '';
+      return;
+    }
+    unless (grep {$key eq $_} @pcl_file_elements) {
+      warn "$0: warning: directive `$key' unknown for files at line $line_number in `$config_filename'.\n";
+      return;
+    }
+
+    if (defined $config_files->{$pcl_files_key}{$key}) {
+      warn "$0: warning: `$key' for files already defined at line $line_number in `$config_filename'.\n";
+    }
+    if (grep {$key eq $_} @pcl_keep_as_array_files) {
+      $config_files->{$pcl_files_key}{$key} = [ @line ];
+    }
+    else {
+      $config_files->{$pcl_files_key}{$key} = $value;
+    }
+    return;
+  }
+
+  # Handle options for plot.
+  if ($pcl_plot_index !~ /^-/) {
+    if ($key eq '}') {
+      $pcl_plot_index++;
+      $pcl_plot_index = "-$pcl_plot_index";
+      return;
+    }
+    unless (grep {$key eq $_} @pcl_plot_elements) {
+      warn "$0: warning: directive `$key' unknown for plot at line $line_number in `$config_filename'.\n";
+      return;
+    }
+
+    # Handle those elements that can just append.
+    if (grep { $key eq $_ } @pcl_plot_append_elements) {
+      unless (defined $config_plots->[$pcl_plot_index]{$key}) {
+        $config_plots->[$pcl_plot_index]{$key} = [];
+      }
+      if (grep {$key eq $_} @pcl_keep_as_array_plots) {
+        push(@{$config_plots->[$pcl_plot_index]{$key}}, [ @line ]);
+      }
+      else {
+        push(@{$config_plots->[$pcl_plot_index]{$key}}, $value);
+      }
+      return;
+    }
+
+    if (defined $config_plots->[$pcl_plot_index]{$key}) {
+      warn "$0: warning: `$key' for plot already defined at line $line_number in `$config_filename'.\n";
+      return;
+    }
+    if (grep {$key eq $_} @pcl_keep_as_array_plots) {
+      $config_plots->[$pcl_plot_index]{$key} = [ @line ];
+    }
+    else {
+      $config_plots->[$pcl_plot_index]{$key} = $value;
+    }
+    return;
+  }
+
+  # Take care of generic options.
+  if (grep {$key eq $_} @pcl_option_elements) {
+    if (grep {$key eq $_} @pcl_keep_as_array_options) {
+      $config_options->{$key} = [ @line ];
+    }
+    else {
+      $config_options->{$key} = $value;
+    }
+    return;
+  }
+
+  # Take care of files to watch.
+  if ($key eq 'files') {
+    unless (@line) {
+      die "$0: error: files needs a files name followed by { at line $line_number in `$config_filename'.\n"
+    }
+    $pcl_files_key = shift(@line);
+    unless (@line == 1 and $line[0] eq '{' ) {
+      warn "$0: warning: '{' required after 'files $pcl_files_key' at line $line_number in `$config_filename'.\n";
+    }
+    if (defined $config_files->{$pcl_files_key}) {
+      warn "$0: warning: files `$key' at line $line_number in `$config_filename' previously defined.\n";
+    }
+    return;
+  }
+
+  # Take care of plots to make.
+  if ($key eq 'plot') {
+    $pcl_plot_index =~ s:^-::;
+    unless (@line == 1 and $line[0] eq '{') {
+      warn "$0: warning: '{' required after 'plot' at line $line_number in `$config_filename'.\n";
+    }
+    return;
+  }
+
+  warn "$0: warning: unknown directive `$key' at line $line_number in `$config_filename'.\n";
+}
+
+sub load_config {
+  my $config_filename = shift;
+
+  open(CONFIG, $config_filename) or
+    die "$0: error: cannot open `$config_filename' for reading: $!\n";
+
+  # These values hold the information from the config file.
+  my %options;
+  my %files;
+  my @plots;
+
+  # Load in all lines in the file and then process them.  If a line begins
+  # with whitespace, then append it to the previously read line and do
+  # not process it.
+  my $complete_line = '';
+  my $line_number = 1;
+  while (<CONFIG>) {
+    chomp;
+    # Skip lines that begin with #.
+    next if /^#/;
+
+    # If the line begins with whitespace, then append it to the previous line.
+    if (/^\s+/) {
+      $complete_line .= " $_";
+      next;
+    }
+
+    # Process the previously read line.
+    if ($complete_line) {
+      process_config_line($config_filename, $line_number, $complete_line,
+                          \%options, \%files, \@plots);
+    }
+
+    # Now save this read line.
+    $complete_line = $_;
+    $line_number = $.;
+  }
+  process_config_line($config_filename, $line_number, $complete_line,
+                      \%options, \%files, \@plots) if $complete_line;
+
+  close(CONFIG) or
+    warn "$0: error in closing `$config_filename': $!\n";
+
+  (\%options, \%files, \@plots);
+}
+
+__END__
+
+=pod
+
+=head1 NAME
+
+fmrtg - Make HTML & GIF plots of daily, weekly, monthly & yearly data
+
+=head1 SYNOPSIS
+
+  fmrtg [-v [-v [-v]]] [-o] configuration_file
+
+=head1 DESCRIPTION
+
+FMRTG is a tool useful for plotting arbitrary data from text files onto
+a directory on Web server.  It has the following features:
+
+  * Configuration file based.
+  * Reads white space separated data files.
+  * Watches data files for updates and sleeps between reads.
+  * Finds new files at specified times.
+  * Remembers the last modification times for files so they do not have to
+    be reread continuously.
+  * Can plot the same type of data from different files into different
+    or the same GIFs.
+  * Different plots can be created based on the filename.
+  * Parses the date from the text files.
+  * Create arbitrary plots of data from different columns.
+  * Ignore columns or use the same column in many plots.
+  * Add or remove columns from plots without having to deleting RRDs.
+  * Plot the results of arbitrary Perl expressions, including mathematical
+    ones, using one or more columns.
+  * Group multiple columns into a single plot using regular expressions on
+    the column titles.
+  * Creates an HTML tree of HTML files and GIF plots.
+  * Creates an index of URL links listing all available targets.
+  * Creates an index of URL links listing all different plot types.
+  * No separate CGI set up required.
+  * Can be run under cron or it can sleep itself waiting for file updates
+    based on when the file was last updated.
+
+FMRTG is based the the RRD tool by Tobias Oetiker.  While it is similar to
+the other tools based on RRD, such as SMRTG and MRTG, it is significantly
+different.
+
+=head1 EXAMPLES
+
+A small static example of FMRTG is at
+
+http://www.geocities.com/ResearchTriangle/Thinktank/4996/fmrtg-example/
+
+Please inform me of any other sites using FMRTG and I will include them
+here.
+
+=head1 REQUIREMENTS
+
+I have used only version version 5.005_02 of Perl with FMRTG.  Because
+FMRTG makes very heavy use of references, it may or may not work
+with older versions of Perl.  I welcome feedback if FMRTG works with
+older Perls.  FMRTG also requires Math::IntervalSearch module which is
+included with the Math::Interpolate module.  Both modules are available
+for download from a CPAN (Comprehensive Perl Archive Network) site near
+your at
+
+ http://www.perl.com/CPAN/authors/id/B/BZ/BZAJAC/Math-Interpolate-1.00.tar.gz
+
+or from my FTP site:
+
+  ftp://ftp.gps.caltech.edu/pub/blair/Perl/Math-Interpolate-1.00.tar.gz
+
+Once you have downloaded the Math-Interpolate-1.00.tar.gz file, uncompress
+and install it using the following commands:
+
+  % gunzip -c Math-Interpolate-1.00.tar.gz | tar xvf -
+  % cd Math-Interpolate-1.00
+  % perl Makefile.PL
+  % make
+  % make test
+  % make install
+
+The final component required by FMRTG is the RRD Perl library that comes
+with RRD.  Here, get RRD from:
+
+  http://ee-staff.ethz.ch/~oetiker/webtools/mrtg/3.0
+
+Get the most recent distribution and following the following steps:
+
+  % gunzip -c mrtg-199?????.??.tar.gz | tar xvf -
+  % cd mrtg-199?????.??
+  % sh configure --verbose
+  % make				[ To optimize: make CFLAGS=-O3 ]
+  % cd perl
+  % perl Makefile.PL
+  % make				[ To optimize: make OPTIMIZE=-O3 ]
+  % make test
+  % make install
+
+For large installations, I recommend that RRD be compiled with
+optimization turned on.
+
+=head1 COMMAND LINE OPTIONS
+
+FMRTG has only two command line options.  They are:
+
+B<-v>: Verbose.  Have FMRTG spit out more verbose messages.  As you add
+more B<-v>'s to the command line, more messages are sent out.  Any more
+than three B<-v>'s are not used by FMRTG.
+
+B<-o>: Once.  This tells FMRTG to go through the steps of finding files,
+updating the RRDs, updating the GIFs, and creating the HTML files once.
+Normally, FMRTG loops continuously looking for new and updated files.
+
+After the command line options are listed, FMRTG takes one more argument
+which is the name of the configuration file to use.  Sample configuration
+files can be found in the sample_configs directory with the distribution
+of this tool.
+
+=head1 INSTALLATION AND CONFIGURATION
+
+The first step in using FMRTG is to set up a configuration file that
+instructs FMRTG on what to do.  The configuration file is based on a
+key/value pair structure.  The key name must start at the beginning of
+a line.  Lines that begin with whitespace are concatenated onto the the
+last key's value.  This is the same format as used by MRTG and SMRTG.
+
+There are three main groups of options in a FMRTG confg: general options,
+file specific options, and plot specific options.  General options may
+be used by the file and plot specific options.  If an option is required,
+then it is only placed one time into the configuration file.
+
+General options break down into two main groups, required and options.
+These are the required options:
+
+=head2 Required General Options
+
+=item B<state_file> I<filename>
+
+For FMRTG to work efficiently, it saves the last modification time of
+all input data files and the Unix epoch time when they were last read
+by FMRTG into a state file.  The value for B<state_file> must be a
+valid, writable filename.  If I<filename> does not begin with a / and
+the B<base_dir> option was set, then the B<base_dir> directory will be
+prepended to the I<filename>.
+
+Each entry for a data input file is roughly 100 bytes, so for small sites,
+this file will not be large.
+
+=item B<html_dir> I<directory>
+
+B<html_dir> specifies the root directory for the main index.html and
+all underlying HTML and GIF files that FMRTG generates.  This should
+not be a directory that normal users will edit.  Ideally this directory
+should be on a disk locally attached to the host running FMRTG, but is
+not necessary.
+
+If I<directory> does not begin with a / and the B<base_dir> option was
+set, then the B<base_dir> directory will be prepended to I<directory>.
+
+=item B<data_dir> I<directory>
+
+B<data_dir> specifies the root directory for the location of the RRD data
+files that FMRTG generates.  For best performance, this directory should
+be on a disk locally attached to the host running FMRTG.  Otherwise,
+the many IO operations that FMRTG performs will be greatly slowed down.
+It is more important this B<data_dir> be locally stored than B<html_dir>
+for performance concerns.
+
+If I<directory> does not begin with a / and the B<base_dir> option was
+set, then the B<base_dir> directory will be prepended to I<directory>.
+
+=item B<base_dir> I<directory>
+
+If B<base_dir> is set, then it is used to prepend to any file or directory
+based names that do not begin with /.  These are currently B<state_file>,
+B<html_dir>, B<data_dir>, and the B<find_files> option in the B<files>
+options.
+
+=head2 Optional General Options
+
+=item B<late_interval> I<Perl expression>
+
+B<late_interval> is used to calculate the time interval between a
+files last modification time and the time when that file is considered
+to be late for an update.  In this case, an email message may be sent
+out using the B<warn_email> addresses.  Because different input files
+may be updated at different rates, B<late_interval> takes an arbitrary
+Perl expression, including mathematical expressions, as its argument.
+If the word I<interval> occurs in the mathematical expression it is
+replaced with the sampling interval of the input data file in question.
+
+This is useful for allowing the data files to update somewhat later
+than they would in an ideal world.  For example, to add a 10% overhead
+to the sampling_interval before an input file is considered late, this
+would be used
+
+  late_interval 1.1 * interval
+
+By default, the input file's sampling interval is used as the
+late_interval.
+
+=item B<warn_email> I<email_address> [I<email_address> ...]
+
+B<warn_email> takes a list of email addresses of people to email
+when something goes wrong with either FMRTG or the input data files.
+Currently email messages are sent out the the following circumstances:
+
+  1) When a file did exist and now is gone.
+  2) When a file was being updated regularly and then no longer is updated.
+
+By default, nobody is emailed.
+
+=item B<expire_gifs> 1
+
+If B<expire_gifs> is set then .meta files will be created for all
+generated GIF files.  If the Apache web server 1.3.2 or greater is being
+used, then the following modifications must added to srm.conf:
+
+  < 
+  < #MetaDir .web
+  ---
+  >
+  > MetaFiles on
+  > MetaDir .
+
+  < #MetaSuffix .meta
+  ---
+  > MetaSuffix .meta
+
+By default, expiring the GIF files is not enabled.
+
+=item B<find_times> I<hours:minutes> [I<hours:minutes> ...]
+
+The B<find_times> option is used to tell FMRTG when to go and find new
+files.  This particularly useful when new input data files are created
+at midnight.  In this case, something like
+
+  find_times 0:10
+
+would work.
+
+By default, files are only searched for when FMRTG starts up.
+
+=item B<html_top_title> I<text> ...
+
+The I<text> is placed at the top of the main index.html that FMRTG
+creates.  By default, no addition text is placed at the top of the
+main index.html.
+
+=item B<html_page_header> I<text> ...
+
+The I<text> is placed at the top of each HTML file that FMRTG creates.
+By default, no additional text is placed at the top of each HTML file.
+
+=item B<html_page_footer> I<text> ...
+
+The I<text> is placed at the bottom of each HTML file that FMRTG creates.
+By default, no additional text is placed at the bottom of each HTML file.
+
+=item B<sub_dir> I<directory>
+
+In certain cases FMRTG will not create sub directories for the different
+groups of files that it processes.  If you wish to force FMRTG to create
+sub directories, then do this
+
+  sub_dir 1
+
+=head2 Files Options
+
+The next step in configuring FMRTG is telling where to find the files to
+use as input, a description of the columns of data comprising the file,
+the interval at which the file is updated, and where the measurement
+time is stored in the file.  This is stored into a files set.
+
+A generic example of the files set and its options are:
+
+  files FILES_KEY1 {
+  find_files		filename1 filename2 ...
+  column_description	column1_name column2_name ...
+  date_source		file_mtime
+  interval		300
+  .
+  .
+  .
+  }
+
+  files FILES_KEY2 {
+  .
+  .
+  }
+
+The key for a files set, in this example FILES_KEY1 and FILE_KEY2, is a
+descriptive name that is unique for all files and is used later when the
+plots to create are defined.  Files that share the same general format
+of column data may be grouped under the same files key.  The options
+for a particular files set must be enclosed in the curly brackets {}'s.
+An unlimited number of file sets may be listed.
+
+=head2 Required Files Options
+
+=item B<find_files> I<path|regexp> [I<path|regexp> ...]
+
+The B<find_files> option tells FMRTG what data files to use as
+its input.  The arguments to B<find_files> may be a simple filename,
+a complete path to a filename, or a regular expression to find files.
+The regular expression match is not the normal shell globbing that the
+Bourne shell, C shell or other shells use.  Rather, FMRTG uses the Perl
+regular expressions to find files.  For example:
+
+  find_files /data/source1 /data/source2
+
+will have FMRTG use /data/source1 and /data/source2 as the inputs
+to FMRTG.  This could have also been written as
+
+  find_files /data/source\d
+
+and both data files will be used.
+
+In the two above examples, FMRTG will assume that both data files
+represent data from the same source.  If this is not the case, such as
+source1 is data from one place and source2 is data from another place,
+then FMRTG needs to be told to treat the data from each file as distinct
+data sources.  This be accomplished in two ways.  The first is by creating
+another files { ... } option set.  However, this requires copying all
+of the text and makes maintenance of the configuration file complex.
+The second and recommend approach is to place ()'s around parts of the
+regular expression to tell FMRTG how to distinguish the two data files:
+
+  find_files /data/(source\d)
+
+This creates two "groups", one named source1 and the other named source2
+which will be plotted separately.  One more example:
+
+  find_files /data/solaris.*/(.*)/percol-\d{4}-\d{2}-\d{2}
+
+will use files of the form
+
+  /data/solaris-2.6/olympia/percol-1998-12-01
+  /data/solaris-2.6/olympia/percol-1998-12-02
+  /data/solaris-2.5.1/sunridge/percol-1998-12-01
+  /data/solaris-2.5.1/sunridge/percol-1998-12-02
+
+and treat the files in the olympia and sunridge directories as distinct,
+but the files within each directory as from the same data source.
+
+If any of the paths or regular expressions given to B<find_Files> do not
+begin with a / and the B<base_dir> option was set, then the B<base_dir>
+directory will be prepended to the path or regular expression.
+
+=item B<interval> I<seconds>
+
+The B<interval> options takes the number of seconds between updates for
+the input data files listed in this files set.
+
+=item B<column_description> I<column_name> [I<column_name> ...]
+
+=item B<column_description> first_line
+
+For FMRTG to plot the data, it needs to be told what each column of
+data holds.  This is accomplished by creating a text description for
+each column.  There are two ways this may be loaded into FMRTG.  If the
+input data files for a files set do not change, then the column names
+can be listed after B<column_description>:
+
+  column_description date in_packets/s out_packets/s
+
+Files that have a column description as the first line of the file may
+use the argument "first_line" to B<column_description>:
+
+  column_description first_line
+
+This informs FMRTG that it should read the first line of all the input
+data files for the column description.  FMRTG can handle different files
+in the same files set that have different number of columns and column
+descriptions.  The only limitation here is that column descriptions
+are white space separated and therefore, no spaces are allowed in the
+column descriptions.
+
+=item B<date_source> column_name I<column_name>
+
+=item B<date_source> file_mtime
+
+The B<date_source> option tells FMRTG where time and date of the
+measurement is located.  The first form of the B<date_source> options
+lists the column name as given to B<column_description> that contains
+the Unix epoch time.  The second form with the file_mtime argument tells
+FMRTG that the date and time for any new data in the file is the last
+modification time of the file.
+
+=item B<date_format> I<string>
+
+The B<date_format> option is only required if the column_name argument
+to B<date_source> is used.  Current, this argument is not used by FMRTG.
+
+=head2 Optional Files Options
+
+=item B<reopen> 1
+
+Using the B<reopen> option for a files set instructs FMRTG to close
+and reopen any input data files when there is new data to be read.
+This is of most use when an input data file is erased and rewritten by
+some other process.
+
+=head2 Plot Options
+
+The final step is to tell FMRTG what plots to create and how to create
+them.  The general format for creating a plot is:
+
+  plot {
+  title		Plot title
+  source	FILES_KEY1
+  data		column_name1
+  data		1024 * column_name2 + column_name3
+  legend	First column
+  legend	Some math
+  y_legend	Counts/sec
+  data_min	0
+  data_max	100
+  .
+  .
+  }
+
+Unlike the files set, there is no key for generating a plot.  An unlimited
+number of plots can be created.
+
+Some of the plot options if they have the two characters %g or %G
+will perform a substitution of this substring with the group name from
+the find_files ()'s matching.  %g gets replaced with the exact match
+from () and %G gets replaced with the first character capitalized.
+For example, if
+
+  find_files /(olympia)/data
+
+was used to locate a file, then %g will be replaced with olympia and %G
+replaced with Olympia.  This substitution is performed on the B<title>
+and B<legend> plot options.
+
+=head2 Required Plot Options
+
+=item B<source> I<files_key>
+
+The B<source> argument should be a single key name for a files set from
+which data will be plotted.  Currently, only data from a single files
+set may be put into a single plot.
+
+=item B<data> I<Perl expression>
+
+=item B<data> I<regular expression>
+
+The B<data> plot option tells FMRTG the data sources to use to place
+in a single GIF plot.  At least one B<data> option is required for a
+particular plot and as many as needed may be placed into a single plot.
+
+Two forms of arguments to B<data> are allowed.    The first form
+allows arbitrary Perl expressions, including mathematical expressions,
+that result in a number as a data source to plot.  The expression may
+contain the names of the columns as found in the files set given to the
+B<source> option.  The column names must be separated with white space
+from any other characters in the expression.  For example, if you have
+number of bytes per second input and output and you want to plot the
+total number of bits per second, you could do this:
+
+  plot {
+  source	bytes_per_second
+  data		8 * ( in_bytes_per_second + out_bytes_per_second )
+  }
+
+The second form allows for matching column names that match a regular
+expression and plotting all of those columns that match the regular
+expression in a single plot.  To tell FMRTG that a regular expression
+is being used, then only a single non whitespace separated argument to
+B<data> is allowed.  In addition, the argument must contain at least one
+set of parentheses ()'s.  When a regular expression matches a column name,
+the portion of the match in the ()'s is placed into the normal Perl $1,
+$2, etc variables.  Take the following configuration for example:
+
+  files throughput {
+  find_files /data/solaris.*/(.*)/percol-\d{4}-\d{2}-\d{2}
+  column_description hme0Ipkt/s hme0Opkt/s
+                     hme1Ipkt/s hme1Opkt/s
+                     hme0InKB/s hme0OuKB/s
+                     hme1InKB/s hme1OuKB/s
+                     hme0IErr/s hme0OErr/s
+                     hme1IErr/s hme1OErr/s
+  .
+  .  
+  }
+
+  plot {
+  source	throughput
+  data		(.*\d)Ipkt/s
+  data		$1Opkt/s
+  .
+  .
+  }
+
+  plot {
+  source	throughput
+  data		(.*\d)InKB/s
+  data		$1OuKB/s
+  .
+  .
+  }
+
+  plot {
+  source	throughput
+  data		(.*\d)IErr/s
+  data		$1OErr/s
+  .
+  .
+  }
+
+If the following data files are found by FMRTG
+
+  /data/solaris-2.6/olympia/percol-1998-12-01
+  /data/solaris-2.6/olympia/percol-1998-12-02
+  /data/solaris-2.5.1/sunridge/percol-1998-12-01
+  /data/solaris-2.5.1/sunridge/percol-1998-12-02
+
+then separate plots will be created for olympia and sunridge, with each
+plot containing the input and output number of packets per second.
+
+By default, when FMRTG finds a plot set with a regular expression
+match, it will only find one match, and then go on to the next plot set.
+After it reaches the last plot set, it will go back to the first plot set
+with a regular expression match and look for the next data that matches
+the regular expression.  The net result of this is that the generated
+HTML files using the above configuration will have links in this order:
+
+  hme0 Input & Output Packets per Second
+  hme0 Input & Output Kilobytes per Second
+  hme0 Input & Output Errors per Second
+  hme1 Input & Output Packets per Second
+  hme1 Input & Output Kilobytes per Second
+  hme1 Input & Output Errors per Second
+
+If you wanted to have the links listed in order of hme0 and hme1,
+then you would add the B<flush_regexps> option to tell FMRTG to find
+all regular expression matches for a particular plot set and all plot
+sets before the plot set containing B<flush_regexps> before continuing
+on to the next plot set.  For example, if
+
+  flush_regexps 1
+
+were added to the plot set for InKB/s and OuKB/s, then the order would be
+
+  hme0 Input & Output Packets per Second
+  hme0 Input & Output Kilobytes per Second
+  hme1 Input & Output Packets per Second
+  hme1 Input & Output Kilobytes per Second
+  hme0 Input & Output Errors per Second
+  hme1 Input & Output Errors per Second
+
+If you wanted to have all of the plots be listed in order of the type
+of data being plotted, then you would add "flush_regexps 1" to all the
+plot sets and the order would be
+
+  hme0 Input & Output Packets per Second
+  hme1 Input & Output Packets per Second
+  hme0 Input & Output Kilobytes per Second
+  hme1 Input & Output Kilobytes per Second
+  hme0 Input & Output Errors per Second
+  hme1 Input & Output Errors per Second
+
+=head2 Data Source Optional Plot Options
+
+The following options are plot optional.  Like the B<data> option,
+multiple copies of these may be specified.  The first option of a
+particular type sets the option for the first B<data> option, the second
+option refers to the second B<data> option, etc.
+
+=item B<data_type> I<type>
+
+When defining data types, FMRTG uses the same data types as provided
+by RRD.  These are (a direct quote from the RRDcreate manual page):
+
+I<type> can be one of the following: B<GAUGE> this is for things like
+temperatures or number of people in a room. B<COUNTER> is for continuous
+incrementing counters like the InOctets counter in a router. The
+B<COUNTER> data source assumes that the counter never decreases, except
+when a counter overflows.  The update function takes the overflow into
+account.  B<DERIVE> will store the the derivative of the line going from
+the last to the current value of the data source. This can be useful for
+counters which do raise and fall, for example, to measure the rate of
+people entering or leaving a room.  B<DERIVE> does not test for overflow.
+B<ABSOLUTE> is for counters which get reset upon reading.
+
+If the B<data_type> is not specified for a B<data> option, it defaults
+to GAUGE.
+
+=item B<data_min> I<number>
+
+=item B<data_max> I<number>
+
+B<data_min> and B<data_max> are optional entries defining the expected
+range of the supplied data.  If B<data_min> and/or B<data_max> are
+defined, any value outside the defined range will be regarded as
+I<*UNKNOWN*>.
+
+If you want to specify the second data sources minimum and maximum but do
+not want to limit the first data source, then set the I<number>'s to U.
+For example:
+
+  plot {
+  data		column1
+  data		column2
+  data_min	U
+  data_max	U
+  data_min	0
+  data_max	100
+  }
+
+=item B<color> I<rrggbb>
+
+The optional B<color> option specifies the color to use for a particular
+plot.  The color should be of the form I<rrggbb> in hexadecimal.
+
+=item B<flush_regexps> 1
+
+Using the B<flush_regexps> option tells FMRTG to make sure that the plot
+set including this option and all previous plot sets have matched all of
+the columns with their regular expressions.  See the above description
+of using regular expressions in the B<data> option for an example.
+
+=item B<optional> 1
+
+Because some of the input data files may not contain the column names
+that are listed in a particular plot, FMRTG provides two ways to handle
+missing data.  By default, FMRTG will generate a plot with I<*UNKNOWN*>
+data if the data is mission.  If you want FMRTG to not generate a plot
+if the data does not exist, then place
+
+  optional 1
+
+in the options for a particular plot.
+
+=head2 GIF Plot Plotting Options
+
+=item B<plot_width> I<number>
+
+Using the B<plot_width> option specifies how many pixels wide the drawing
+area inside the GIF is.
+
+=item B<plot_height> I<number>
+
+Using the B<plot_height> option specifies how many pixels high the
+drawing area inside the GIF is.
+
+=item B<plot_min> I<number>
+
+By setting the B<plot_min> option, the minimum value to be graphed is set.
+By default this will be auto-configured from the data you select with
+the graphing functions.
+
+=item B<plot_max> I<number>
+
+By setting the B<plot_max> option, the minimum value to be graphed is set.
+By default this will be auto-configured from the data you select with
+the graphing functions.
+
+=item B<rigid_min_max> 1
+
+Normally FMRTG will automatically expand the lower and upper limit if
+the graph contains a value outside the valid range.  By setting the
+B<rigid_min_max> option, this is disabled.
+
+=item B<title> <text>
+
+Setting the B<title> option sets the title of the plot.  If you place
+%g or %G in the title, it is replaced with the text matched by any
+()'s in the files set B<find_files> option.  %g gets replaced with the
+exact text matched by the ()'s and %G is replaced with the same text,
+except the first character is capitalized.
+
+=item B<y_legend> <text>
+
+Setting B<y_legend> sets the text to be displayed along the Y axis of
+the GIF plot.
+
+=head2 Multiple GIF Plot Ploting Options
+
+The following options should be specified multiple times for each data
+source in the plot.
+
+=item B<line_type> I<type>
+
+The B<line_type> option specifies the type of line to plot a particular
+data set with.  The available options are: LINE1, LINE2, and LINE3 which
+generate increasingly wide lines, AREA, which does the same as LINE? but
+fills the area between 0 and the graph with the specified color, and
+STACK, which does the same as LINE?, but the graph gets stacked on top
+of the previous LINE?, AREA, or STACK graph.  Depending on the type of
+previous graph, the STACK will either be a LINE? or an AREA.
+
+=item B<legend> I<text>
+
+The B<legend> option specifies for a single data source the comment that
+is placed below the GIF plot.
+
+AUTHOR, COMMENTS, AND BUGS
+
+I welcome all comments and bug reports.  Please email them to Blair
+Zajac <blair@geostaff.com>.

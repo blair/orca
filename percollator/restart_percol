@@ -1,0 +1,12 @@
+#!/bin/sh
+
+# This script runs percollator.se with the proper options for our site.
+
+# Set this variable.
+STATSDIR=/usr/public/geocities/performance
+
+# Kill any running percollators.
+$STATSDIR/bin/stop_percol
+
+# Start the percollator.
+$STATSDIR/bin/start_percol

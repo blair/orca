@@ -1,0 +1,41 @@
+#!/home/bzajac/opt-sparc-solaris/perl5/bin/perl -w
+
+use strict;
+use POSIX qw(strftime);
+
+# Set this to the list of directories that contain the output from
+# percollator.se.
+my @stats_dirs = (
+  '/net/admin1/raid/admin1/public-5.5.1/geocities/performance/stats_percollator',
+  '/net/admin1/raid/admin1/public-5.6/geocities/performance/stats_percollator'
+);
+
+foreach my $stats_dir (@stats_dirs) {
+
+  die "$0: unable to change to `$stats_dir'" unless chdir $stats_dir;
+
+  die "$0: unable to open `.' for reading: $!\n" unless opendir(DIR, '.');
+
+  my @hosts = sort grep { $_ !~ /^\./ } readdir(DIR);
+
+  closedir(DIR);
+
+  print "Now in $stats_dir\n";
+
+  my $percol = strftime("percol-%Y-%m-%d", localtime());
+
+  foreach my $host (@hosts) {
+    my $file = "$host/$percol";
+    unless (-f $file) {
+      warn "$0: $file does not exist.\n";
+      next;
+    }
+    my $age = (-M $file)*(24*60);
+    if ( $age > 8) {
+      $file= sprintf "%35s", $file;
+      $age = sprintf "%8.2f", $age;
+      warn "$0: $file is $age minutes old.\n";
+      next;
+    }
+  }
+}

@@ -1,0 +1,944 @@
+.rn '' }`
+''' $RCSfile$$Revision$$Date$
+'''
+''' $Log$
+'''
+.de Sh
+.br
+.if t .Sp
+.ne 5
+.PP
+\fB\\$1\fR
+.PP
+..
+.de Sp
+.if t .sp .5v
+.if n .sp
+..
+.de Ip
+.br
+.ie \\n(.$>=3 .ne \\$3
+.el .ne 3
+.IP "\\$1" \\$2
+..
+.de Vb
+.ft CW
+.nf
+.ne \\$1
+..
+.de Ve
+.ft R
+
+.fi
+..
+'''
+'''
+'''     Set up \*(-- to give an unbreakable dash;
+'''     string Tr holds user defined translation string.
+'''     Bell System Logo is used as a dummy character.
+'''
+.tr \(*W-|\(bv\*(Tr
+.ie n \{\
+.ds -- \(*W-
+.ds PI pi
+.if (\n(.H=4u)&(1m=24u) .ds -- \(*W\h'-12u'\(*W\h'-12u'-\" diablo 10 pitch
+.if (\n(.H=4u)&(1m=20u) .ds -- \(*W\h'-12u'\(*W\h'-8u'-\" diablo 12 pitch
+.ds L" ""
+.ds R" ""
+'''   \*(M", \*(S", \*(N" and \*(T" are the equivalent of
+'''   \*(L" and \*(R", except that they are used on ".xx" lines,
+'''   such as .IP and .SH, which do another additional levels of
+'''   double-quote interpretation
+.ds M" """
+.ds S" """
+.ds N" """""
+.ds T" """""
+.ds L' '
+.ds R' '
+.ds M' '
+.ds S' '
+.ds N' '
+.ds T' '
+'br\}
+.el\{\
+.ds -- \(em\|
+.tr \*(Tr
+.ds L" ``
+.ds R" ''
+.ds M" ``
+.ds S" ''
+.ds N" ``
+.ds T" ''
+.ds L' `
+.ds R' '
+.ds M' `
+.ds S' '
+.ds N' `
+.ds T' '
+.ds PI \(*p
+'br\}
+.\"	If the F register is turned on, we'll generate
+.\"	index entries out stderr for the following things:
+.\"		TH	Title 
+.\"		SH	Header
+.\"		Sh	Subsection 
+.\"		Ip	Item
+.\"		X<>	Xref  (embedded
+.\"	Of course, you have to process the output yourself
+.\"	in some meaninful fashion.
+.if \nF \{
+.de IX
+.tm Index:\\$1\t\\n%\t"\\$2"
+..
+.nr % 0
+.rr F
+.\}
+.TH FMRTG 1 "perl 5.005, patch 02" "7/Dec/98" "User Contributed Perl Documentation"
+.UC
+.if n .hy 0
+.if n .na
+.ds C+ C\v'-.1v'\h'-1p'\s-2+\h'-1p'+\s0\v'.1v'\h'-1p'
+.de CQ          \" put $1 in typewriter font
+.ft CW
+'if n "\c
+'if t \\&\\$1\c
+'if n \\&\\$1\c
+'if n \&"
+\\&\\$2 \\$3 \\$4 \\$5 \\$6 \\$7
+'.ft R
+..
+.\" @(#)ms.acc 1.5 88/02/08 SMI; from UCB 4.2
+.	\" AM - accent mark definitions
+.bd B 3
+.	\" fudge factors for nroff and troff
+.if n \{\
+.	ds #H 0
+.	ds #V .8m
+.	ds #F .3m
+.	ds #[ \f1
+.	ds #] \fP
+.\}
+.if t \{\
+.	ds #H ((1u-(\\\\n(.fu%2u))*.13m)
+.	ds #V .6m
+.	ds #F 0
+.	ds #[ \&
+.	ds #] \&
+.\}
+.	\" simple accents for nroff and troff
+.if n \{\
+.	ds ' \&
+.	ds ` \&
+.	ds ^ \&
+.	ds , \&
+.	ds ~ ~
+.	ds ? ?
+.	ds ! !
+.	ds /
+.	ds q
+.\}
+.if t \{\
+.	ds ' \\k:\h'-(\\n(.wu*8/10-\*(#H)'\'\h"|\\n:u"
+.	ds ` \\k:\h'-(\\n(.wu*8/10-\*(#H)'\`\h'|\\n:u'
+.	ds ^ \\k:\h'-(\\n(.wu*10/11-\*(#H)'^\h'|\\n:u'
+.	ds , \\k:\h'-(\\n(.wu*8/10)',\h'|\\n:u'
+.	ds ~ \\k:\h'-(\\n(.wu-\*(#H-.1m)'~\h'|\\n:u'
+.	ds ? \s-2c\h'-\w'c'u*7/10'\u\h'\*(#H'\zi\d\s+2\h'\w'c'u*8/10'
+.	ds ! \s-2\(or\s+2\h'-\w'\(or'u'\v'-.8m'.\v'.8m'
+.	ds / \\k:\h'-(\\n(.wu*8/10-\*(#H)'\z\(sl\h'|\\n:u'
+.	ds q o\h'-\w'o'u*8/10'\s-4\v'.4m'\z\(*i\v'-.4m'\s+4\h'\w'o'u*8/10'
+.\}
+.	\" troff and (daisy-wheel) nroff accents
+.ds : \\k:\h'-(\\n(.wu*8/10-\*(#H+.1m+\*(#F)'\v'-\*(#V'\z.\h'.2m+\*(#F'.\h'|\\n:u'\v'\*(#V'
+.ds 8 \h'\*(#H'\(*b\h'-\*(#H'
+.ds v \\k:\h'-(\\n(.wu*9/10-\*(#H)'\v'-\*(#V'\*(#[\s-4v\s0\v'\*(#V'\h'|\\n:u'\*(#]
+.ds _ \\k:\h'-(\\n(.wu*9/10-\*(#H+(\*(#F*2/3))'\v'-.4m'\z\(hy\v'.4m'\h'|\\n:u'
+.ds . \\k:\h'-(\\n(.wu*8/10)'\v'\*(#V*4/10'\z.\v'-\*(#V*4/10'\h'|\\n:u'
+.ds 3 \*(#[\v'.2m'\s-2\&3\s0\v'-.2m'\*(#]
+.ds o \\k:\h'-(\\n(.wu+\w'\(de'u-\*(#H)/2u'\v'-.3n'\*(#[\z\(de\v'.3n'\h'|\\n:u'\*(#]
+.ds d- \h'\*(#H'\(pd\h'-\w'~'u'\v'-.25m'\f2\(hy\fP\v'.25m'\h'-\*(#H'
+.ds D- D\\k:\h'-\w'D'u'\v'-.11m'\z\(hy\v'.11m'\h'|\\n:u'
+.ds th \*(#[\v'.3m'\s+1I\s-1\v'-.3m'\h'-(\w'I'u*2/3)'\s-1o\s+1\*(#]
+.ds Th \*(#[\s+2I\s-2\h'-\w'I'u*3/5'\v'-.3m'o\v'.3m'\*(#]
+.ds ae a\h'-(\w'a'u*4/10)'e
+.ds Ae A\h'-(\w'A'u*4/10)'E
+.ds oe o\h'-(\w'o'u*4/10)'e
+.ds Oe O\h'-(\w'O'u*4/10)'E
+.	\" corrections for vroff
+.if v .ds ~ \\k:\h'-(\\n(.wu*9/10-\*(#H)'\s-2\u~\d\s+2\h'|\\n:u'
+.if v .ds ^ \\k:\h'-(\\n(.wu*10/11-\*(#H)'\v'-.4m'^\v'.4m'\h'|\\n:u'
+.	\" for low resolution devices (crt and lpr)
+.if \n(.H>23 .if \n(.V>19 \
+\{\
+.	ds : e
+.	ds 8 ss
+.	ds v \h'-1'\o'\(aa\(ga'
+.	ds _ \h'-1'^
+.	ds . \h'-1'.
+.	ds 3 3
+.	ds o a
+.	ds d- d\h'-1'\(ga
+.	ds D- D\h'-1'\(hy
+.	ds th \o'bp'
+.	ds Th \o'LP'
+.	ds ae ae
+.	ds Ae AE
+.	ds oe oe
+.	ds Oe OE
+.\}
+.rm #[ #] #H #V #F C
+.SH "NAME"
+fmrtg \- Make HTML & GIF plots of daily, weekly, monthly & yearly data
+.SH "SYNOPSIS"
+.PP
+.Vb 1
+\&  fmrtg [-v [-v [-v]]] [-o] configuration_file
+.Ve
+.SH "DESCRIPTION"
+FMRTG is a tool useful for plotting arbitrary data from text files onto
+a directory on Web server.  It has the following features:
+.PP
+.Vb 23
+\&  * Configuration file based.
+\&  * Reads white space separated data files.
+\&  * Watches data files for updates and sleeps between reads.
+\&  * Finds new files at specified times.
+\&  * Remembers the last modification times for files so they do not have to
+\&    be reread continuously.
+\&  * Can plot the same type of data from different files into different
+\&    or the same GIFs.
+\&  * Different plots can be created based on the filename.
+\&  * Parses the date from the text files.
+\&  * Create arbitrary plots of data from different columns.
+\&  * Ignore columns or use the same column in many plots.
+\&  * Add or remove columns from plots without having to deleting RRDs.
+\&  * Plot the results of arbitrary Perl expressions, including mathematical
+\&    ones, using one or more columns.
+\&  * Group multiple columns into a single plot using regular expressions on
+\&    the column titles.
+\&  * Creates an HTML tree of HTML files and GIF plots.
+\&  * Creates an index of URL links listing all available targets.
+\&  * Creates an index of URL links listing all different plot types.
+\&  * No separate CGI set up required.
+\&  * Can be run under cron or it can sleep itself waiting for file updates
+\&    based on when the file was last updated.
+.Ve
+FMRTG is based the the RRD tool by Tobias Oetiker.  While it is similar to
+the other tools based on RRD, such as SMRTG and MRTG, it is significantly
+different.
+.SH "EXAMPLES"
+A small static example of FMRTG is at
+.PP
+http://www.geocities.com/ResearchTriangle/Thinktank/4996/fmrtg-example/
+.PP
+Please inform me of any other sites using FMRTG and I will include them
+here.
+.SH "REQUIREMENTS"
+I have used only version version 5.005_02 of Perl with FMRTG.  Because
+FMRTG makes very heavy use of references, it may or may not work
+with older versions of Perl.  I welcome feedback if FMRTG works with
+older Perls.  FMRTG also requires Math::IntervalSearch module which is
+included with the Math::Interpolate module.  Both modules are available
+for download from a CPAN (Comprehensive Perl Archive Network) site near
+your at
+.PP
+.Vb 1
+\& http://www.perl.com/CPAN/authors/id/B/BZ/BZAJAC/Math-Interpolate-1.00.tar.gz
+.Ve
+or from my FTP site:
+.PP
+.Vb 1
+\&  ftp://ftp.gps.caltech.edu/pub/blair/Perl/Math-Interpolate-1.00.tar.gz
+.Ve
+Once you have downloaded the Math-Interpolate-1.00.tar.gz file, uncompress
+and install it using the following commands:
+.PP
+.Vb 6
+\&  % gunzip -c Math-Interpolate-1.00.tar.gz | tar xvf -
+\&  % cd Math-Interpolate-1.00
+\&  % perl Makefile.PL
+\&  % make
+\&  % make test
+\&  % make install
+.Ve
+The final component required by FMRTG is the RRD Perl library that comes
+with RRD.  Here, get RRD from:
+.PP
+.Vb 1
+\&  http://ee-staff.ethz.ch/~oetiker/webtools/mrtg/3.0
+.Ve
+Get the most recent distribution and following the following steps:
+.PP
+.Vb 9
+\&  % gunzip -c mrtg-199?????.??.tar.gz | tar xvf -
+\&  % cd mrtg-199?????.??
+\&  % sh configure --verbose
+\&  % make                                [ To optimize: make CFLAGS=-O3 ]
+\&  % cd perl
+\&  % perl Makefile.PL
+\&  % make                                [ To optimize: make OPTIMIZE=-O3 ]
+\&  % make test
+\&  % make install
+.Ve
+For large installations, I recommend that RRD be compiled with
+optimization turned on.
+.SH "COMMAND LINE OPTIONS"
+FMRTG has only two command line options.  They are:
+.PP
+\fB\-v\fR: Verbose.  Have FMRTG spit out more verbose messages.  As you add
+more \fB\-v\fR's to the command line, more messages are sent out.  Any more
+than three \fB\-v\fR's are not used by FMRTG.
+.PP
+\fB\-o\fR: Once.  This tells FMRTG to go through the steps of finding files,
+updating the RRDs, updating the GIFs, and creating the HTML files once.
+Normally, FMRTG loops continuously looking for new and updated files.
+.PP
+After the command line options are listed, FMRTG takes one more argument
+which is the name of the configuration file to use.  Sample configuration
+files can be found in the sample_configs directory with the distribution
+of this tool.
+.SH "INSTALLATION AND CONFIGURATION"
+The first step in using FMRTG is to set up a configuration file that
+instructs FMRTG on what to do.  The configuration file is based on a
+key/value pair structure.  The key name must start at the beginning of
+a line.  Lines that begin with whitespace are concatenated onto the the
+last key's value.  This is the same format as used by MRTG and SMRTG.
+.PP
+There are three main groups of options in a FMRTG confg: general options,
+file specific options, and plot specific options.  General options may
+be used by the file and plot specific options.  If an option is required,
+then it is only placed one time into the configuration file.
+.PP
+General options break down into two main groups, required and options.
+These are the required options:
+.Sh "Required General Options"
+.Ip "\fBstate_file\fR \fIfilename\fR" 0
+For \s-1FMRTG\s0 to work efficiently, it saves the last modification time of
+all input data files and the Unix epoch time when they were last read
+by \s-1FMRTG\s0 into a state file.  The value for \fBstate_file\fR must be a
+valid, writable filename.  If \fIfilename\fR does not begin with a / and
+the \fBbase_dir\fR option was set, then the \fBbase_dir\fR directory will be
+prepended to the \fIfilename\fR.
+.PP
+Each entry for a data input file is roughly 100 bytes, so for small sites,
+this file will not be large.
+.Ip "\fBhtml_dir\fR \fIdirectory\fR" 0
+\fBhtml_dir\fR specifies the root directory for the main index.html and
+all underlying \s-1HTML\s0 and \s-1GIF\s0 files that \s-1FMRTG\s0 generates.  This should
+not be a directory that normal users will edit.  Ideally this directory
+should be on a disk locally attached to the host running \s-1FMRTG\s0, but is
+not necessary.
+.PP
+If \fIdirectory\fR does not begin with a / and the \fBbase_dir\fR option was
+set, then the \fBbase_dir\fR directory will be prepended to \fIdirectory\fR.
+.Ip "\fBdata_dir\fR \fIdirectory\fR" 0
+\fBdata_dir\fR specifies the root directory for the location of the \s-1RRD\s0 data
+files that \s-1FMRTG\s0 generates.  For best performance, this directory should
+be on a disk locally attached to the host running \s-1FMRTG\s0.  Otherwise,
+the many \s-1IO\s0 operations that \s-1FMRTG\s0 performs will be greatly slowed down.
+It is more important this \fBdata_dir\fR be locally stored than \fBhtml_dir\fR
+for performance concerns.
+.PP
+If \fIdirectory\fR does not begin with a / and the \fBbase_dir\fR option was
+set, then the \fBbase_dir\fR directory will be prepended to \fIdirectory\fR.
+.Ip "\fBbase_dir\fR \fIdirectory\fR" 0
+If \fBbase_dir\fR is set, then it is used to prepend to any file or directory
+based names that do not begin with /.  These are currently \fBstate_file\fR,
+\fBhtml_dir\fR, \fBdata_dir\fR, and the \fBfind_files\fR option in the \fBfiles\fR
+options.
+.Sh "Optional General Options"
+.Ip "\fBlate_interval\fR \fIPerl expression\fR" 0
+\fBlate_interval\fR is used to calculate the time interval between a
+files last modification time and the time when that file is considered
+to be late for an update.  In this case, an email message may be sent
+out using the \fBwarn_email\fR addresses.  Because different input files
+may be updated at different rates, \fBlate_interval\fR takes an arbitrary
+Perl expression, including mathematical expressions, as its argument.
+If the word \fIinterval\fR occurs in the mathematical expression it is
+replaced with the sampling interval of the input data file in question.
+.PP
+This is useful for allowing the data files to update somewhat later
+than they would in an ideal world.  For example, to add a 10% overhead
+to the sampling_interval before an input file is considered late, this
+would be used
+.PP
+.Vb 1
+\&  late_interval 1.1 * interval
+.Ve
+By default, the input file's sampling interval is used as the
+late_interval.
+.Ip "\fBwarn_email\fR \fIemail_address\fR [\fIemail_address\fR ...]" 0
+\fBwarn_email\fR takes a list of email addresses of people to email
+when something goes wrong with either \s-1FMRTG\s0 or the input data files.
+Currently email messages are sent out the the following circumstances:
+.PP
+.Vb 2
+\&  1) When a file did exist and now is gone.
+\&  2) When a file was being updated regularly and then no longer is updated.
+.Ve
+By default, nobody is emailed.
+.Ip "\fBexpire_gifs\fR 1" 0
+If \fBexpire_gifs\fR is set then .meta files will be created for all
+generated \s-1GIF\s0 files.  If the Apache web server 1.3.2 or greater is being
+used, then the following modifications must added to srm.conf:
+.PP
+.Vb 6
+\&  < 
+\&  < #MetaDir .web
+\&  ---
+\&  >
+\&  > MetaFiles on
+\&  > MetaDir .
+.Ve
+.Vb 3
+\&  < #MetaSuffix .meta
+\&  ---
+\&  > MetaSuffix .meta
+.Ve
+By default, expiring the \s-1GIF\s0 files is not enabled.
+.Ip "\fBfind_times\fR \fIhours:minutes\fR [\fIhours:minutes\fR ...]" 0
+The \fBfind_times\fR option is used to tell \s-1FMRTG\s0 when to go and find new
+files.  This particularly useful when new input data files are created
+at midnight.  In this case, something like
+.PP
+.Vb 1
+\&  find_times 0:10
+.Ve
+would work.
+.PP
+By default, files are only searched for when \s-1FMRTG\s0 starts up.
+.Ip "\fBhtml_top_title\fR \fItext\fR ..." 0
+The \fItext\fR is placed at the top of the main index.html that \s-1FMRTG\s0
+creates.  By default, no addition text is placed at the top of the
+main index.html.
+.Ip "\fBhtml_page_header\fR \fItext\fR ..." 0
+The \fItext\fR is placed at the top of each \s-1HTML\s0 file that \s-1FMRTG\s0 creates.
+By default, no additional text is placed at the top of each \s-1HTML\s0 file.
+.Ip "\fBhtml_page_footer\fR \fItext\fR ..." 0
+The \fItext\fR is placed at the bottom of each \s-1HTML\s0 file that \s-1FMRTG\s0 creates.
+By default, no additional text is placed at the bottom of each \s-1HTML\s0 file.
+.Ip "\fBsub_dir\fR \fIdirectory\fR" 0
+In certain cases \s-1FMRTG\s0 will not create sub directories for the different
+groups of files that it processes.  If you wish to force \s-1FMRTG\s0 to create
+sub directories, then do this
+.PP
+.Vb 1
+\&  sub_dir 1
+.Ve
+.Sh "Files Options"
+The next step in configuring \s-1FMRTG\s0 is telling where to find the files to
+use as input, a description of the columns of data comprising the file,
+the interval at which the file is updated, and where the measurement
+time is stored in the file.  This is stored into a files set.
+.PP
+A generic example of the files set and its options are:
+.PP
+.Vb 9
+\&  files FILES_KEY1 {
+\&  find_files            filename1 filename2 ...
+\&  column_description    column1_name column2_name ...
+\&  date_source           file_mtime
+\&  interval              300
+\&  .
+\&  .
+\&  .
+\&  }
+.Ve
+.Vb 4
+\&  files FILES_KEY2 {
+\&  .
+\&  .
+\&  }
+.Ve
+The key for a files set, in this example \s-1FILES_KEY1\s0 and \s-1FILE_KEY2\s0, is a
+descriptive name that is unique for all files and is used later when the
+plots to create are defined.  Files that share the same general format
+of column data may be grouped under the same files key.  The options
+for a particular files set must be enclosed in the curly brackets {}'s.
+An unlimited number of file sets may be listed.
+.Sh "Required Files Options"
+.Ip "\fBfind_files\fR \fIpath|regexp\fR [\fIpath|regexp\fR ...]" 0
+The \fBfind_files\fR option tells \s-1FMRTG\s0 what data files to use as
+its input.  The arguments to \fBfind_files\fR may be a simple filename,
+a complete path to a filename, or a regular expression to find files.
+The regular expression match is not the normal shell globbing that the
+Bourne shell, C shell or other shells use.  Rather, \s-1FMRTG\s0 uses the Perl
+regular expressions to find files.  For example:
+.PP
+.Vb 1
+\&  find_files /data/source1 /data/source2
+.Ve
+will have \s-1FMRTG\s0 use /data/source1 and /data/source2 as the inputs
+to \s-1FMRTG\s0.  This could have also been written as
+.PP
+.Vb 1
+\&  find_files /data/source\ed
+.Ve
+and both data files will be used.
+.PP
+In the two above examples, \s-1FMRTG\s0 will assume that both data files
+represent data from the same source.  If this is not the case, such as
+source1 is data from one place and source2 is data from another place,
+then \s-1FMRTG\s0 needs to be told to treat the data from each file as distinct
+data sources.  This be accomplished in two ways.  The first is by creating
+another files { ... } option set.  However, this requires copying all
+of the text and makes maintenance of the configuration file complex.
+The second and recommend approach is to place ()'s around parts of the
+regular expression to tell \s-1FMRTG\s0 how to distinguish the two data files:
+.PP
+.Vb 1
+\&  find_files /data/(source\ed)
+.Ve
+This creates two \*(L"groups\*(R", one named source1 and the other named source2
+which will be plotted separately.  One more example:
+.PP
+.Vb 1
+\&  find_files /data/solaris.*/(.*)/percol-\ed{4}-\ed{2}-\ed{2}
+.Ve
+will use files of the form
+.PP
+.Vb 4
+\&  /data/solaris-2.6/olympia/percol-1998-12-01
+\&  /data/solaris-2.6/olympia/percol-1998-12-02
+\&  /data/solaris-2.5.1/sunridge/percol-1998-12-01
+\&  /data/solaris-2.5.1/sunridge/percol-1998-12-02
+.Ve
+and treat the files in the olympia and sunridge directories as distinct,
+but the files within each directory as from the same data source.
+.PP
+If any of the paths or regular expressions given to \fBfind_Files\fR do not
+begin with a / and the \fBbase_dir\fR option was set, then the \fBbase_dir\fR
+directory will be prepended to the path or regular expression.
+.Ip "\fBinterval\fR \fIseconds\fR" 0
+The \fBinterval\fR options takes the number of seconds between updates for
+the input data files listed in this files set.
+.Ip "\fBcolumn_description\fR \fIcolumn_name\fR [\fIcolumn_name\fR ...]" 0
+.Ip "\fBcolumn_description\fR first_line" 0
+For \s-1FMRTG\s0 to plot the data, it needs to be told what each column of
+data holds.  This is accomplished by creating a text description for
+each column.  There are two ways this may be loaded into \s-1FMRTG\s0.  If the
+input data files for a files set do not change, then the column names
+can be listed after \fBcolumn_description\fR:
+.PP
+.Vb 1
+\&  column_description date in_packets/s out_packets/s
+.Ve
+Files that have a column description as the first line of the file may
+use the argument \*(L"first_line\*(R" to \fBcolumn_description\fR:
+.PP
+.Vb 1
+\&  column_description first_line
+.Ve
+This informs \s-1FMRTG\s0 that it should read the first line of all the input
+data files for the column description.  \s-1FMRTG\s0 can handle different files
+in the same files set that have different number of columns and column
+descriptions.  The only limitation here is that column descriptions
+are white space separated and therefore, no spaces are allowed in the
+column descriptions.
+.Ip "\fBdate_source\fR column_name \fIcolumn_name\fR" 0
+.Ip "\fBdate_source\fR file_mtime" 0
+The \fBdate_source\fR option tells \s-1FMRTG\s0 where time and date of the
+measurement is located.  The first form of the \fBdate_source\fR options
+lists the column name as given to \fBcolumn_description\fR that contains
+the Unix epoch time.  The second form with the file_mtime argument tells
+\s-1FMRTG\s0 that the date and time for any new data in the file is the last
+modification time of the file.
+.Ip "\fBdate_format\fR \fIstring\fR" 0
+The \fBdate_format\fR option is only required if the column_name argument
+to \fBdate_source\fR is used.  Current, this argument is not used by \s-1FMRTG\s0.
+.Sh "Optional Files Options"
+.Ip "\fBreopen\fR 1" 0
+Using the \fBreopen\fR option for a files set instructs \s-1FMRTG\s0 to close
+and reopen any input data files when there is new data to be read.
+This is of most use when an input data file is erased and rewritten by
+some other process.
+.Sh "Plot Options"
+The final step is to tell \s-1FMRTG\s0 what plots to create and how to create
+them.  The general format for creating a plot is:
+.PP
+.Vb 13
+\&  plot {
+\&  title         Plot title
+\&  source        FILES_KEY1
+\&  data          column_name1
+\&  data          1024 * column_name2 + column_name3
+\&  legend        First column
+\&  legend        Some math
+\&  y_legend      Counts/sec
+\&  data_min      0
+\&  data_max      100
+\&  .
+\&  .
+\&  }
+.Ve
+Unlike the files set, there is no key for generating a plot.  An unlimited
+number of plots can be created.
+.PP
+Some of the plot options if they have the two characters \f(CW%g\fR or \f(CW%G\fR
+will perform a substitution of this substring with the group name from
+the find_files ()'s matching.  \f(CW%g\fR gets replaced with the exact match
+from () and \f(CW%G\fR gets replaced with the first character capitalized.
+For example, if
+.PP
+.Vb 1
+\&  find_files /(olympia)/data
+.Ve
+was used to locate a file, then \f(CW%g\fR will be replaced with olympia and \f(CW%G\fR
+replaced with Olympia.  This substitution is performed on the \fBtitle\fR
+and \fBlegend\fR plot options.
+.Sh "Required Plot Options"
+.Ip "\fBsource\fR \fIfiles_key\fR" 0
+The \fBsource\fR argument should be a single key name for a files set from
+which data will be plotted.  Currently, only data from a single files
+set may be put into a single plot.
+.Ip "\fBdata\fR \fIPerl expression\fR" 0
+.Ip "\fBdata\fR \fIregular expression\fR" 0
+The \fBdata\fR plot option tells \s-1FMRTG\s0 the data sources to use to place
+in a single \s-1GIF\s0 plot.  At least one \fBdata\fR option is required for a
+particular plot and as many as needed may be placed into a single plot.
+.PP
+Two forms of arguments to \fBdata\fR are allowed.    The first form
+allows arbitrary Perl expressions, including mathematical expressions,
+that result in a number as a data source to plot.  The expression may
+contain the names of the columns as found in the files set given to the
+\fBsource\fR option.  The column names must be separated with white space
+from any other characters in the expression.  For example, if you have
+number of bytes per second input and output and you want to plot the
+total number of bits per second, you could do this:
+.PP
+.Vb 4
+\&  plot {
+\&  source        bytes_per_second
+\&  data          8 * ( in_bytes_per_second + out_bytes_per_second )
+\&  }
+.Ve
+The second form allows for matching column names that match a regular
+expression and plotting all of those columns that match the regular
+expression in a single plot.  To tell \s-1FMRTG\s0 that a regular expression
+is being used, then only a single non whitespace separated argument to
+\fBdata\fR is allowed.  In addition, the argument must contain at least one
+set of parentheses ()'s.  When a regular expression matches a column name,
+the portion of the match in the ()'s is placed into the normal Perl \f(CW$1\fR,
+\f(CW$2\fR, etc variables.  Take the following configuration for example:
+.PP
+.Vb 11
+\&  files throughput {
+\&  find_files /data/solaris.*/(.*)/percol-\ed{4}-\ed{2}-\ed{2}
+\&  column_description hme0Ipkt/s hme0Opkt/s
+\&                     hme1Ipkt/s hme1Opkt/s
+\&                     hme0InKB/s hme0OuKB/s
+\&                     hme1InKB/s hme1OuKB/s
+\&                     hme0IErr/s hme0OErr/s
+\&                     hme1IErr/s hme1OErr/s
+\&  .
+\&  .  
+\&  }
+.Ve
+.Vb 7
+\&  plot {
+\&  source        throughput
+\&  data          (.*\ed)Ipkt/s
+\&  data          $1Opkt/s
+\&  .
+\&  .
+\&  }
+.Ve
+.Vb 7
+\&  plot {
+\&  source        throughput
+\&  data          (.*\ed)InKB/s
+\&  data          $1OuKB/s
+\&  .
+\&  .
+\&  }
+.Ve
+.Vb 7
+\&  plot {
+\&  source        throughput
+\&  data          (.*\ed)IErr/s
+\&  data          $1OErr/s
+\&  .
+\&  .
+\&  }
+.Ve
+If the following data files are found by \s-1FMRTG\s0
+.PP
+.Vb 4
+\&  /data/solaris-2.6/olympia/percol-1998-12-01
+\&  /data/solaris-2.6/olympia/percol-1998-12-02
+\&  /data/solaris-2.5.1/sunridge/percol-1998-12-01
+\&  /data/solaris-2.5.1/sunridge/percol-1998-12-02
+.Ve
+then separate plots will be created for olympia and sunridge, with each
+plot containing the input and output number of packets per second.
+.PP
+By default, when \s-1FMRTG\s0 finds a plot set with a regular expression
+match, it will only find one match, and then go on to the next plot set.
+After it reaches the last plot set, it will go back to the first plot set
+with a regular expression match and look for the next data that matches
+the regular expression.  The net result of this is that the generated
+\s-1HTML\s0 files using the above configuration will have links in this order:
+.PP
+.Vb 6
+\&  hme0 Input & Output Packets per Second
+\&  hme0 Input & Output Kilobytes per Second
+\&  hme0 Input & Output Errors per Second
+\&  hme1 Input & Output Packets per Second
+\&  hme1 Input & Output Kilobytes per Second
+\&  hme1 Input & Output Errors per Second
+.Ve
+If you wanted to have the links listed in order of hme0 and hme1,
+then you would add the \fBflush_regexps\fR option to tell \s-1FMRTG\s0 to find
+all regular expression matches for a particular plot set and all plot
+sets before the plot set containing \fBflush_regexps\fR before continuing
+on to the next plot set.  For example, if
+.PP
+.Vb 1
+\&  flush_regexps 1
+.Ve
+were added to the plot set for InKB/s and OuKB/s, then the order would be
+.PP
+.Vb 6
+\&  hme0 Input & Output Packets per Second
+\&  hme0 Input & Output Kilobytes per Second
+\&  hme1 Input & Output Packets per Second
+\&  hme1 Input & Output Kilobytes per Second
+\&  hme0 Input & Output Errors per Second
+\&  hme1 Input & Output Errors per Second
+.Ve
+If you wanted to have all of the plots be listed in order of the type
+of data being plotted, then you would add \*(L"flush_regexps 1\*(R" to all the
+plot sets and the order would be
+.PP
+.Vb 6
+\&  hme0 Input & Output Packets per Second
+\&  hme1 Input & Output Packets per Second
+\&  hme0 Input & Output Kilobytes per Second
+\&  hme1 Input & Output Kilobytes per Second
+\&  hme0 Input & Output Errors per Second
+\&  hme1 Input & Output Errors per Second
+.Ve
+.Sh "Data Source Optional Plot Options"
+The following options are plot optional.  Like the \fBdata\fR option,
+multiple copies of these may be specified.  The first option of a
+particular type sets the option for the first \fBdata\fR option, the second
+option refers to the second \fBdata\fR option, etc.
+.Ip "\fBdata_type\fR \fItype\fR" 0
+When defining data types, \s-1FMRTG\s0 uses the same data types as provided
+by \s-1RRD\s0.  These are (a direct quote from the RRDcreate manual page):
+.PP
+\fItype\fR can be one of the following: \fB\s-1GAUGE\s0\fR this is for things like
+temperatures or number of people in a room. \fB\s-1COUNTER\s0\fR is for continuous
+incrementing counters like the InOctets counter in a router. The
+\fB\s-1COUNTER\s0\fR data source assumes that the counter never decreases, except
+when a counter overflows.  The update function takes the overflow into
+account.  \fB\s-1DERIVE\s0\fR will store the the derivative of the line going from
+the last to the current value of the data source. This can be useful for
+counters which do raise and fall, for example, to measure the rate of
+people entering or leaving a room.  \fB\s-1DERIVE\s0\fR does not test for overflow.
+\fB\s-1ABSOLUTE\s0\fR is for counters which get reset upon reading.
+.PP
+If the \fBdata_type\fR is not specified for a \fBdata\fR option, it defaults
+to \s-1GAUGE\s0.
+.Ip "\fBdata_min\fR \fInumber\fR" 0
+.Ip "\fBdata_max\fR \fInumber\fR" 0
+\fBdata_min\fR and \fBdata_max\fR are optional entries defining the expected
+range of the supplied data.  If \fBdata_min\fR and/or \fBdata_max\fR are
+defined, any value outside the defined range will be regarded as
+\fI*\s-1UNKNOWN\s0*\fR.
+.PP
+If you want to specify the second data sources minimum and maximum but do
+not want to limit the first data source, then set the \fInumber\fR's to U.
+For example:
+.PP
+.Vb 8
+\&  plot {
+\&  data          column1
+\&  data          column2
+\&  data_min      U
+\&  data_max      U
+\&  data_min      0
+\&  data_max      100
+\&  }
+.Ve
+.Ip "\fBcolor\fR \fIrrggbb\fR" 0
+The optional \fBcolor\fR option specifies the color to use for a particular
+plot.  The color should be of the form \fIrrggbb\fR in hexadecimal.
+.Ip "\fBflush_regexps\fR 1" 0
+Using the \fBflush_regexps\fR option tells \s-1FMRTG\s0 to make sure that the plot
+set including this option and all previous plot sets have matched all of
+the columns with their regular expressions.  See the above description
+of using regular expressions in the \fBdata\fR option for an example.
+.Ip "\fBoptional\fR 1" 0
+Because some of the input data files may not contain the column names
+that are listed in a particular plot, \s-1FMRTG\s0 provides two ways to handle
+missing data.  By default, \s-1FMRTG\s0 will generate a plot with \fI*\s-1UNKNOWN\s0*\fR
+data if the data is mission.  If you want \s-1FMRTG\s0 to not generate a plot
+if the data does not exist, then place
+.PP
+.Vb 1
+\&  optional 1
+.Ve
+in the options for a particular plot.
+.Sh "\s-1GIF\s0 Plot Plotting Options"
+.Ip "\fBplot_width\fR \fInumber\fR" 0
+Using the \fBplot_width\fR option specifies how many pixels wide the drawing
+area inside the \s-1GIF\s0 is.
+.Ip "\fBplot_height\fR \fInumber\fR" 0
+Using the \fBplot_height\fR option specifies how many pixels high the
+drawing area inside the \s-1GIF\s0 is.
+.Ip "\fBplot_min\fR \fInumber\fR" 0
+By setting the \fBplot_min\fR option, the minimum value to be graphed is set.
+By default this will be auto-configured from the data you select with
+the graphing functions.
+.Ip "\fBplot_max\fR \fInumber\fR" 0
+By setting the \fBplot_max\fR option, the minimum value to be graphed is set.
+By default this will be auto-configured from the data you select with
+the graphing functions.
+.Ip "\fBrigid_min_max\fR 1" 0
+Normally \s-1FMRTG\s0 will automatically expand the lower and upper limit if
+the graph contains a value outside the valid range.  By setting the
+\fBrigid_min_max\fR option, this is disabled.
+.Ip "\fBtitle\fR <text>" 0
+Setting the \fBtitle\fR option sets the title of the plot.  If you place
+\f(CW%g\fR or \f(CW%G\fR in the title, it is replaced with the text matched by any
+()'s in the files set \fBfind_files\fR option.  \f(CW%g\fR gets replaced with the
+exact text matched by the ()'s and \f(CW%G\fR is replaced with the same text,
+except the first character is capitalized.
+.Ip "\fBy_legend\fR <text>" 0
+Setting \fBy_legend\fR sets the text to be displayed along the Y axis of
+the \s-1GIF\s0 plot.
+.Sh "Multiple \s-1GIF\s0 Plot Ploting Options"
+The following options should be specified multiple times for each data
+source in the plot.
+.Ip "\fBline_type\fR \fItype\fR" 0
+The \fBline_type\fR option specifies the type of line to plot a particular
+data set with.  The available options are: \s-1LINE1\s0, \s-1LINE2\s0, and \s-1LINE3\s0 which
+generate increasingly wide lines, \s-1AREA\s0, which does the same as \s-1LINE\s0? but
+fills the area between 0 and the graph with the specified color, and
+\s-1STACK\s0, which does the same as \s-1LINE\s0?, but the graph gets stacked on top
+of the previous \s-1LINE\s0?, \s-1AREA\s0, or \s-1STACK\s0 graph.  Depending on the type of
+previous graph, the \s-1STACK\s0 will either be a \s-1LINE\s0? or an \s-1AREA\s0.
+.Ip "\fBlegend\fR \fItext\fR" 0
+The \fBlegend\fR option specifies for a single data source the comment that
+is placed below the \s-1GIF\s0 plot.
+.PP
+\s-1AUTHOR\s0, \s-1COMMENTS\s0, \s-1AND\s0 \s-1BUGS\s0
+.PP
+I welcome all comments and bug reports.  Please email them to Blair
+Zajac <blair@geostaff.com>.
+
+.rn }` ''
+.IX Title "FMRTG 1"
+.IX Name "fmrtg - Make HTML & GIF plots of daily, weekly, monthly & yearly data"
+
+.IX Header "NAME"
+
+.IX Header "SYNOPSIS"
+
+.IX Header "DESCRIPTION"
+
+.IX Header "EXAMPLES"
+
+.IX Header "REQUIREMENTS"
+
+.IX Header "COMMAND LINE OPTIONS"
+
+.IX Header "INSTALLATION AND CONFIGURATION"
+
+.IX Subsection "Required General Options"
+
+.IX Item "\fBstate_file\fR \fIfilename\fR"
+
+.IX Item "\fBhtml_dir\fR \fIdirectory\fR"
+
+.IX Item "\fBdata_dir\fR \fIdirectory\fR"
+
+.IX Item "\fBbase_dir\fR \fIdirectory\fR"
+
+.IX Subsection "Optional General Options"
+
+.IX Item "\fBlate_interval\fR \fIPerl expression\fR"
+
+.IX Item "\fBwarn_email\fR \fIemail_address\fR [\fIemail_address\fR ...]"
+
+.IX Item "\fBexpire_gifs\fR 1"
+
+.IX Item "\fBfind_times\fR \fIhours:minutes\fR [\fIhours:minutes\fR ...]"
+
+.IX Item "\fBhtml_top_title\fR \fItext\fR ..."
+
+.IX Item "\fBhtml_page_header\fR \fItext\fR ..."
+
+.IX Item "\fBhtml_page_footer\fR \fItext\fR ..."
+
+.IX Item "\fBsub_dir\fR \fIdirectory\fR"
+
+.IX Subsection "Files Options"
+
+.IX Subsection "Required Files Options"
+
+.IX Item "\fBfind_files\fR \fIpath|regexp\fR [\fIpath|regexp\fR ...]"
+
+.IX Item "\fBinterval\fR \fIseconds\fR"
+
+.IX Item "\fBcolumn_description\fR \fIcolumn_name\fR [\fIcolumn_name\fR ...]"
+
+.IX Item "\fBcolumn_description\fR first_line"
+
+.IX Item "\fBdate_source\fR column_name \fIcolumn_name\fR"
+
+.IX Item "\fBdate_source\fR file_mtime"
+
+.IX Item "\fBdate_format\fR \fIstring\fR"
+
+.IX Subsection "Optional Files Options"
+
+.IX Item "\fBreopen\fR 1"
+
+.IX Subsection "Plot Options"
+
+.IX Subsection "Required Plot Options"
+
+.IX Item "\fBsource\fR \fIfiles_key\fR"
+
+.IX Item "\fBdata\fR \fIPerl expression\fR"
+
+.IX Item "\fBdata\fR \fIregular expression\fR"
+
+.IX Subsection "Data Source Optional Plot Options"
+
+.IX Item "\fBdata_type\fR \fItype\fR"
+
+.IX Item "\fBdata_min\fR \fInumber\fR"
+
+.IX Item "\fBdata_max\fR \fInumber\fR"
+
+.IX Item "\fBcolor\fR \fIrrggbb\fR"
+
+.IX Item "\fBflush_regexps\fR 1"
+
+.IX Item "\fBoptional\fR 1"
+
+.IX Subsection "\s-1GIF\s0 Plot Plotting Options"
+
+.IX Item "\fBplot_width\fR \fInumber\fR"
+
+.IX Item "\fBplot_height\fR \fInumber\fR"
+
+.IX Item "\fBplot_min\fR \fInumber\fR"
+
+.IX Item "\fBplot_max\fR \fInumber\fR"
+
+.IX Item "\fBrigid_min_max\fR 1"
+
+.IX Item "\fBtitle\fR <text>"
+
+.IX Item "\fBy_legend\fR <text>"
+
+.IX Subsection "Multiple \s-1GIF\s0 Plot Ploting Options"
+
+.IX Item "\fBline_type\fR \fItype\fR"
+
+.IX Item "\fBlegend\fR \fItext\fR"
+

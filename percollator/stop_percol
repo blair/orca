@@ -1,0 +1,21 @@
+#!/bin/sh
+
+AWK=/usr/public/bin/gawk
+
+# Kill any running percollators.
+pids=`/usr/ucb/ps auxww | $AWK '/percollator.se/ && !/awk/ {print $2}'`
+if test "$pids" != ""; then
+  echo "Killing pids $pids"
+  kill -HUP $pids
+  sleep 1
+  pids=`/usr/ucb/ps auxww | $AWK '/percollator.se/ && !/awk/ {print $2}'`
+  if test "$pids" != ""; then
+    kill -TERM $pids
+    sleep 1
+    pids=`/usr/ucb/ps auxww | $AWK '/percollator.se/ && !/awk/ {print $2}'`
+    if test "$pids" != ""; then
+      kill -9 $pids
+      sleep 1
+    fi
+  fi
+fi

@@ -3,15 +3,33 @@
 # This script runs orca_services with the proper options for your
 # site.
 
-# Define program locations that will be needed.
 prefix=@prefix@
 exec_prefix=@exec_prefix@
 libexecdir=@libexecdir@
 sysconfdir=@sysconfdir@
+
+# Define program and directory locations that will be needed.
 AWK=@AWK@
 CUT=@CUT@
 UNAME=@UNAME@
 RAW_ORCA_SERVICES_DIR=@VAR_DIR@/orca_services
+
+# This utility function checks if the specified variable has non-zero
+# string length or exits the program otherwise.  This is used to make
+# sure that all required substitutions performed by 'configure' set
+# the variable.
+variable_is_set_or_exit()
+{
+  eval value="\$$1"
+  if test -z "$value"; then
+    echo "$0: configure did not set \$$1, please edit $0 and set it." 1>&2
+    exit 1
+  fi
+}
+
+variable_is_set_or_exit AWK
+variable_is_set_or_exit CUT
+variable_is_set_or_exit UNAME
 
 # Get the hostname without the fully qualified part; that is, trim off
 # anything past the first `.'.

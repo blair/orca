@@ -2,6 +2,21 @@
 
 AWK=@AWK@
 
+# This utility function checks if the specified variable has non-zero
+# string length or exits the program otherwise.  This is used to make
+# sure that all required substitutions performed by 'configure' set
+# the variable.
+variable_is_set_or_exit()
+{
+  eval value="\$$1"
+  if test -z "$value"; then
+    echo "$0: configure did not set \$$1, please edit $0 and set it." 1>&2
+    exit 1
+  fi
+}
+
+variable_is_set_or_exit AWK
+
 # Kill any running orcallators.
 pids=`/usr/ucb/ps auxww | $AWK '/orcallator.se/ && !/awk/ {print $2}'`
 if test "$pids" != ""; then

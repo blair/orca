@@ -2,10 +2,11 @@
 
 # This script runs orcallator.se with the proper options for your site.
 
-# Define program locations that will be needed.
 prefix=@prefix@
 exec_prefix=@exec_prefix@
 libdir=@libdir@
+
+# Define program and directory locations that will be needed.
 AWK=@AWK@
 COMPRESSOR="@COMPRESSOR@"
 CUT=@CUT@
@@ -40,7 +41,7 @@ SE_PATCHES=
 #SE_PATCHES="$SE_PATCHES -DHME_PATCH"
 #SE_PATCHES="$SE_PATCHES -DHME_PATCH_IFSPEED"
 
-# Check if the SE executable was found upon configure.
+# Check if the SE executable was found from configure.
 if test -z "$SE"; then
   cat <<END 1>&2
 When you configured Orca the se executable was not found.  If you
@@ -58,6 +59,25 @@ if test ! -x "$SE"; then
   echo "$0: the SE executable at $SE does not exist or is not executable." 1>&2
   exit 1
 fi
+
+# This utility function checks if the specified variable has non-zero
+# string length or exits the program otherwise.  This is used to make
+# sure that all required substitutions performed by 'configure' set
+# the variable.
+variable_is_set_or_exit()
+{
+  eval value="\$$1"
+  if test -z "$value"; then
+    echo "$0: configure did not set \$$1, please edit $0 and set it." 1>&2
+    exit 1
+  fi
+}
+
+variable_is_set_or_exit AWK
+variable_is_set_or_exit COMPRESSOR
+variable_is_set_or_exit CUT
+variable_is_set_or_exit EXPR
+variable_is_set_or_exit UNAME
 
 SE_VERSION=`$SE -version | $AWK '{print $4}'`
 case "$SE_VERSION" in

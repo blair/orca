@@ -43,7 +43,7 @@ distclean: clean
 	chmod 0755 $@
 
 Makefile: Makefile.in
-	cd .. && CONFIG_FILES=src/Makefile ./config.status
+	cd .. && CONFIG_FILES=orca/Makefile ./config.status
 
 orca.pl: orca.pl.in
-	cd .. && CONFIG_FILES=src/orca.pl ./config.status
+	cd .. && CONFIG_FILES=orca/orca.pl ./config.status

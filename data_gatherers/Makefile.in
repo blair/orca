@@ -1,6 +1,7 @@
 @SET_MAKE@
 
-SUBDIRS           = rotate_orca_graphs
+SUBDIRS           = orcallator \
+                    orca_services
 
 all:	Makefile $(TARGETS)
 	@for dir in $(SUBDIRS); do \
@@ -8,10 +9,7 @@ all:	Makefile $(TARGETS)
 	  (cd $$dir && $(MAKE) CFLAGS="$(CFLAGS)"); \
 	done
 
-# Users will need to install the contributed programs by hand.
 install:
-
-install_contrib:
 	@for dir in $(SUBDIRS); do \
 	  echo "cd $$dir && $(MAKE) CFLAGS=$(CFLAGS) install"; \
 	  (cd $$dir && $(MAKE) CFLAGS="$(CFLAGS)" install); \
@@ -31,4 +29,4 @@ distclean: clean
 	$(RM) Makefile
 
 Makefile: Makefile.in
-	cd .. && CONFIG_FILES=contrib/Makefile ./config.status
+	cd .. && CONFIG_FILES=data_gatherers/Makefile ./config.status

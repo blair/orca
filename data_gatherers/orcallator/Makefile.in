@@ -59,22 +59,22 @@ distclean: clean
 	chmod 0755 $@
 
 Makefile: Makefile.in
-	cd .. && CONFIG_FILES=orcallator/Makefile ./config.status
+	cd ../.. && CONFIG_FILES=data_gatherers/orcallator/Makefile ./config.status
 
 orcallator.cfg: orcallator.cfg.in
-	cd .. && CONFIG_FILES=orcallator/orcallator.cfg ./config.status
+	cd ../.. && CONFIG_FILES=data_gatherers/orcallator/orcallator.cfg ./config.status
 
 orcallator_running.pl: orcallator_running.pl.in
-	cd .. && CONFIG_FILES=orcallator/orcallator_running.pl ./config.status
+	cd ../.. && CONFIG_FILES=data_gatherers/orcallator/orcallator_running.pl ./config.status
 
 restart_orcallator.sh: restart_orcallator.sh.in
-	cd .. && CONFIG_FILES=orcallator/restart_orcallator.sh ./config.status
+	cd ../.. && CONFIG_FILES=data_gatherers/orcallator/restart_orcallator.sh ./config.status
 
 start_orcallator.sh: start_orcallator.sh.in
-	cd .. && CONFIG_FILES=orcallator/start_orcallator.sh ./config.status
+	cd ../.. && CONFIG_FILES=data_gatherers/orcallator/start_orcallator.sh ./config.status
 
 stop_orcallator.sh: stop_orcallator.sh.in
-	cd .. && CONFIG_FILES=orcallator/stop_orcallator.sh ./config.status
+	cd ../.. && CONFIG_FILES=data_gatherers/orcallator/stop_orcallator.sh ./config.status
 
 S99orcallator.sh: S99orcallator.sh.in
-	cd .. && CONFIG_FILES=orcallator/S99orcallator.sh ./config.status
+	cd ../.. && CONFIG_FILES=data_gatherers/orcallator/S99orcallator.sh ./config.status

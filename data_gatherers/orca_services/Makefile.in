@@ -60,29 +60,29 @@ distclean: clean
 	chmod 0755 $@
 
 Makefile: Makefile.in
-	cd ../.. && CONFIG_FILES=contrib/orca_services/Makefile ./config.status
+	cd ../.. && CONFIG_FILES=data_gatherers/orca_services/Makefile ./config.status
 	$(MAKE)
 
 orca_services.cfg: orca_services.cfg.in
-	cd ../.. && CONFIG_FILES=contrib/orca_services/orca_services.cfg ./config.status
+	cd ../.. && CONFIG_FILES=data_gatherers/orca_services/orca_services.cfg ./config.status
 
 orca_services.pl: orca_services.pl.in $(PERL_HEAD)
-	cd ../.. && CONFIG_FILES=contrib/orca_services/orca_services.pl ./config.status
+	cd ../.. && CONFIG_FILES=data_gatherers/orca_services/orca_services.pl ./config.status
 	cat $(PERL_HEAD) orca_services.pl > orca_services.perl
 	mv orca_services.perl orca_services.pl
 	chmod 0755 orca_services.pl
 
 orca_services_running.pl: orca_services_running.pl.in
-	cd ../.. && CONFIG_FILES=contrib/contrib/orca_services/orca_services_running.pl ./config.status
+	cd ../.. && CONFIG_FILES=data_gatherers/orca_services/orca_services_running.pl ./config.status
 
 restart_orca_services.sh: restart_orca_services.sh.in
-	cd ../.. && CONFIG_FILES=contrib/contrib/orca_services/restart_orca_services.sh ./config.status
+	cd ../.. && CONFIG_FILES=data_gatherers/orca_services/restart_orca_services.sh ./config.status
 
 start_orca_services.sh: start_orca_services.sh.in
-	cd ../.. && CONFIG_FILES=contrib/contrib/orca_services/start_orca_services.sh ./config.status
+	cd ../.. && CONFIG_FILES=data_gatherers/orca_services/start_orca_services.sh ./config.status
 
 stop_orca_services.sh: stop_orca_services.sh.in
-	cd ../.. && CONFIG_FILES=contrib/contrib/orca_services/stop_orca_services.sh ./config.status
+	cd ../.. && CONFIG_FILES=data_gatherers/orca_services/stop_orca_services.sh ./config.status
 
 S99orca_services.sh: S99orca_services.sh.in
-	cd ../.. && CONFIG_FILES=contrib/contrib/orca_services/S99orca_services.sh ./config.status
+	cd ../.. && CONFIG_FILES=data_gatherers/orca_services/S99orca_services.sh ./config.status

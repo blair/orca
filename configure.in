@@ -1,7 +1,7 @@
 # This file is an input file used by the GNU "autoconf" program to
 # generate the file "configure", which is run during Orca installation
 # to configure the system for the local environment.
-AC_INIT(src/orca.pl.in)
+AC_INIT(orca/orca.pl.in)
 AC_CONFIG_AUX_DIR(config)
 AC_CANONICAL_SYSTEM
 
@@ -274,7 +274,7 @@ AC_SUBST(UNCOMPRESSOR_PIPE)
 
 # Always build the orcallator files regardless of the operating system.
 BUILD_ORCALLATOR=yes
-ORCALLATOR_SUBDIR=orcallator
+ORCALLATOR_SUBDIR=data_gatherers/orcallator
 INSTALL_LIB_RRDTOOL=
 AC_SUBST(ORCALLATOR_SUBDIR)
 AC_SUBST(INSTALL_LIB_RRDTOOL)
@@ -444,35 +444,37 @@ AC_SUBST(MKDIR)
 #       variable substitutions.
 #--------------------------------------------------------------------
 if test "$BUILD_ORCALLATOR" = yes; then
-  ORCALLATOR_OUTPUT="orcallator/orcallator.cfg
-                     orcallator/orcallator_running.pl
-                     orcallator/restart_orcallator.sh
-                     orcallator/start_orcallator.sh
-                     orcallator/stop_orcallator.sh
-                     orcallator/S99orcallator.sh
-                     orcallator/Makefile"
+  ORCALLATOR_OUTPUT="data_gatherers/orcallator/Makefile
+                     data_gatherers/orcallator/orcallator.cfg
+                     data_gatherers/orcallator/orcallator_running.pl
+                     data_gatherers/orcallator/restart_orcallator.sh
+                     data_gatherers/orcallator/start_orcallator.sh
+                     data_gatherers/orcallator/stop_orcallator.sh
+                     data_gatherers/orcallator/S99orcallator.sh"
 fi
 
 AC_OUTPUT(Makefile
           config/PerlHead1
           config/PerlHead2
-          lib/Makefile
-          packages/Makefile
-          src/Makefile
-          src/orca.pl
-          $ORCALLATOR_OUTPUT
-          docs/Makefile
           contrib/Makefile
           contrib/rotate_orca_graphs/Makefile
           contrib/rotate_orca_graphs/rotate_orca_graphs.sh
-          contrib/orca_services/Makefile
-          contrib/orca_services/orca_services.cfg
-          contrib/orca_services/orca_services.pl
-          contrib/orca_services/orca_services_running.pl
-          contrib/orca_services/restart_orca_services.sh
-          contrib/orca_services/start_orca_services.sh
-          contrib/orca_services/stop_orca_services.sh
-          contrib/orca_services/S99orca_services.sh)
+          data_gatherers/Makefile
+          $ORCALLATOR_OUTPUT
+          data_gatherers/orca_services/Makefile
+          data_gatherers/orca_services/orca_services.cfg
+          data_gatherers/orca_services/orca_services.pl
+          data_gatherers/orca_services/orca_services_running.pl
+          data_gatherers/orca_services/restart_orca_services.sh
+          data_gatherers/orca_services/start_orca_services.sh
+          data_gatherers/orca_services/stop_orca_services.sh
+          data_gatherers/orca_services/S99orca_services.sh
+          docs/Makefile
+          lib/Makefile
+          packages/Makefile
+          orca/Makefile
+          orca/orca.pl
+         )
 
 echo
 echo "----------------------------------------------------------------"

@@ -379,7 +379,7 @@ exit 0;
 # ----------------------------------------------------------------------------
 
 sub usage {
-    die "Usage: $progname [options]
+    die "usage: $progname [options]
     ($progname uses the GNU extended POSIX option format)
 
     --pidfile=FILE        write my PID here           (default: $def_pid)

@@ -8,6 +8,13 @@
 //
 // Portions copied from percollator.se written by Adrian Cockroft.
 //
+// Version 1.30b1:  Oct 8, 2001	Changed method used by raw_disk_map to detect
+//				the end of GLOBAL_disk_info to looking for the
+//				first short disk name.  This works for SCSI
+//				disks and looking for fd or st devices which
+//				should work for EIDE devices.   Patch
+//				contributed by Alan LeGrand
+//				<alegrand@wallace.com>.
 // Version 1.29:   Oct  5, 2001	In SE 3.2.1 stat.se, mknod is a C-preprocessor
 //				define to _xmknod on x86 systems while on SPARC
 //				systems stat.se declares mknod as a normal
@@ -470,72 +477,91 @@ long		squid_client_http;
 
 #endif
 
-// RAWDISK BEGIN
 #ifdef USE_RAWDISK
 #include <sys_kstat.se>
+// This code was developed so that the performance of virtual disks
+// originating from a Sun A1000 raid controller could be monitored.
+// These disks do not show up in the GLOBAL_disk[] io structure of SE.
+//
 // This extension accesses the sys_kstat.se interface to the kstat IO
 // queues to extract info on drives not available in the kstat.se
 // kstat$disk interface.  Global data shared between function calls.
 struct RawDisk {
-  // Exposed interface (matches kstat)
-  char long_name[16];
-  char short_name[8];
-  double reads;
-  double kreads;
-  double writes;
-  double kwrites;
-  double avg_wait;
-  double avg_serv;
-  double service;
-  double wait_percent;
-  double run_percent;
+  // Exposed interface that matches kstat.
+  char		long_name[16];
+  char		short_name[8];
+  double	reads;
+  double	kreads;
+  double	writes;
+  double	kwrites;
+  double	avg_wait;
+  double	avg_serv;
+  double	service;
+  double	wait_percent;
+  double	run_percent;
 
   // Hidden internal registers to track sys_kstats counters.
-  int       _number;		// kstat disk #
-  ulonglong _nread;		// Number of bytes read
-  ulonglong _nwritten;		// Number of bytes written
-  uint      _reads;		// Number of read operations
-  uint      _writes;		// Number of write operations
-  longlong  _wtime;		// Cumulative wait (pre-service) time
-  longlong  _wlentime;		// Cumulative wait length*time product
-  longlong  _wlastupdate;	// Last time wait queue changed
-  longlong  _rtime;		// Cumulative run (service) time
-  longlong  _rlentime;		// Cumulative run length*time product
-  longlong  _rlastupdate;	// Last time run queue changed
-  uint      _wcnt;		// Count of elements in wait state
-  uint      _rcnt;		// Count of elements in run state
+  int		_number;	// kstat disk #
+  ulonglong	_nread;		// Number of bytes read
+  ulonglong	_nwritten;	// Number of bytes written
+  uint		_reads;		// Number of read operations
+  uint		_writes;	// Number of write operations
+  longlong	_wtime;		// Cumulative wait (pre-service) time
+  longlong	_wlentime;	// Cumulative wait length*time product
+  longlong	_wlastupdate;	// Last time wait queue changed
+  longlong	_rtime;		// Cumulative run (service) time
+  longlong	_rlentime;	// Cumulative run length*time product
+  longlong	_rlastupdate;	// Last time run queue changed
+  uint		_wcnt;		// Count of elements in wait state
+  uint		_rcnt;		// Count of elements in run state
 };
 
 // Define global for tracking raw disk data.
 #define MAX_RAWDISKS	512
-RawDisk		RAW_disk[MAX_RAWDISKS];
-int		RAW_disk_map=0;
-int		RAW_disk_count=0;
-double		RAW_disk_lastupdate;
+RawDisk			RAW_disk[MAX_RAWDISKS];
+int			RAW_disk_map=0;
+int			RAW_disk_count=0;
+double			RAW_disk_lastupdate;
 
 // Function to scan kstat and map short device names to long device names.
 raw_disk_map() {
-  int i;
-  int j=0;
+  int  first_len;
+  char first_name[16];
   char long_name[16];
   char short_name[16];
+  int  i;
+  int  j;
 
-  // SE for 2.6 & 2.7 appears to have a bug where MAX_DISK is too
-  // large when an A1000 raid controller is present.  It's not really
-  // SE as iostat had to be patched for the same bug.  The bug appears
-  // to be tied to a failure to update the kstat interface diskinfo
-  // uses to map short names to long names.  Since raw_disk_update has
-  // already identified how many physical devices are present and they
-  // are listed first we limit our self to mapping the first
-  // RAW_disk_count device name.
+  // This section is used to map short names to long names.  Since
+  // raw_disk_update has already identified how many physical devices
+  // it simply tries to find theses devices in GLOBAL_disk_info[].
+  //
+  // SE appears to have a bug where GLOBAL_diskinfo_size can be larger
+  // than the number of entries in GLOBAL_disk_info[] under a variety
+  // of conditions.  In later versions of SE GLOBAL_diskinfo_size has
+  // been removed.  This appears to fix the above problem.  This code
+  // uses MAX_RAWDISKS for the table length and the assumption that
+  // short disks names come before short disk partition names to
+  // detect the end of the table.  If it fails to detect the end it
+  // will coredump when it addresses unallocated memory.
+  strcpy(first_name, GLOBAL_disk_info[0].short_name);
+  first_len = strlen(first_name);
   for (i=0; i<RAW_disk_count; ++i) {
-    strcpy(long_name,GLOBAL_disk_info[i].long_name);
-    if (long_name[0] == 'c' && strchr(long_name, 's') == nil) {
-      strcpy(short_name,GLOBAL_disk_info[i].short_name);
-      for (j=0; j<RAW_disk_count; ++j) {
-        if (strcmp(RAW_disk[j].short_name, short_name) == 0) {
-          strcpy(RAW_disk[j].long_name, long_name);
-          break;
+    // Do not map st & fd devices.
+    if (strncmp(RAW_disk[i].short_name, "st", 2) != 0) {
+      if (strncmp(RAW_disk[i].short_name, "fd", 2) != 0) {
+        for (j=0; j<MAX_RAWDISKS; ++j) {
+          strcpy(short_name, GLOBAL_disk_info[j].short_name);
+          if (j > 0) {
+            if (strncmp(first_name, short_name, first_len) == 0) {
+              break;
+            }
+          }
+          if (strcmp(RAW_disk[i].short_name, short_name) == 0) {
+            strcpy(long_name,GLOBAL_disk_info[j].long_name);
+            strcpy(RAW_disk[i].long_name, long_name);
+            break;
+          }
         }
       }
     }
@@ -713,7 +739,7 @@ raw_disk_update() {
   }
 }
 #endif
-// RAWDISK_END
+// RAWDISK
 
 // Variables for handling output.
 string		compress = getenv("COMPRESSOR"); // How to compress logs.

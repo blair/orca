@@ -2429,6 +2429,7 @@ measure_workload()
   for (refresh$(ww); ww.number != -1; refresh$(ww)) {
     put_output(sprintf("%s_cnt", ww.w.name), sprintf("%4d", ww.w.count));
     put_output(sprintf("%s_lwpcnt", ww.w.name), sprintf("%4d", ww.w.info.lwp_count));
+    put_output(sprintf("%s_lwpmax", ww.w.name), sprintf("%4d", ww.w.info.lwp_max));
 
     if (ww.w.cnt == 0) {
       millisecs_per_switch = ww.w.info.vcontexts + ww.w.info.icontexts;

@@ -90,7 +90,7 @@ measure_workload()
 #include <dirent.se>
 #include <fcntl.se>
 #include <proc.se>
-#include <process_class.se>
+#include <orca_process_class.se>
 #include <pwd.se>
 
 struct work_info_t {
@@ -324,6 +324,7 @@ class work_info_class_t {
             wi[i].info.priority += pp.priority;
             wi[i].info.niceness += pp.niceness;
           }
+          wi[i].info.lwp_max += pp.lwp_max;
           wi[i].info.lwp_count += pp.lwp_count;
           wi[i].count++;
           if (firstmatch == 1 && i > 0) {         // First match only counts

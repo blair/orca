@@ -222,6 +222,7 @@ class proc_class_t {
   ulong   icontexts;      // in-ditto
   ulong   charios;        // characters in and out/interval
   ulong   lwp_count;      // number of lwps for the process
+  ulong   lwp_max;        // number of contributing lwps for the process
   int     uid;            // current uid
   long    ppid;           // parent pid
   int     bindpset;       // processor set binding
@@ -543,6 +544,7 @@ class proc_class_t {
           rpi.n_pr_time = PS.pr_time;
           rpi.o_pr_ctime = rpi.n_pr_ctime;
           rpi.n_pr_ctime = PS.pr_ctime;
+          rpi.lwp_count = PS.pr_nlwp;
           rpi.gencnt = gen;
           struct_empty(rpi, pp);
           nproc++;
@@ -799,7 +801,8 @@ class proc_class_t {
       priority = rpi.pr_pri;
       niceness = rpi.pr_nice;
       sched_class = rpi.pr_clname;
-      lwp_count = NU.pr_count;
+      lwp_max = NU.pr_count;
+      lwp_count = rpi.lwp_count;
       ppid = rpi.pr_ppid;
       bindpset = rpi.pr_bindpset;
       fname = rpi.pr_fname;

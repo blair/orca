@@ -1,7 +1,7 @@
 # http://module-build.sourceforge.net/META-spec.html
 #XXXXXXX This is a prototype!!!  It will change in the future!!! XXXXX#
 name:         Time-HiRes
-version:      1.65
+version:      1.66
 version_from: HiRes.pm
 installdirs:  perl
 requires:

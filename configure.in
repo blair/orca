@@ -65,19 +65,64 @@ PERCOLLATOR_DIR=`(
 )`
 AC_SUBST(PERCOLLATOR_DIR)
 
-AC_ARG_WITH(access-log,
-  [   --with-access-log=FILE location of the Common Log Format access log],
+WATCH_HTTPD=
+NCSA_LOG=
+AC_ARG_WITH(ncsa-log,
+  [   --with-ncsa-log=FILE   location of the NCSA style web server access log],
   [
     case "$withval" in
       "" | y | ye | yes | n | no)
-         AC_MSG_ERROR([*** You must supply an argument to the --with-access-log option.])
+         AC_MSG_ERROR([*** You must supply an argument to the --with-ncsa-log option.])
          ;;
-      *) NCSAHTTPLOG="$withval"
+      *) WEB_LOG="$withval"
+         NCSA_LOG=yes
+         WATCH_HTTPD="-DWATCH_HTTPD"
          ;;
     esac
   ]
 )
-AC_SUBST(NCSAHTTPLOG)
+
+PROXY_LOG=
+AC_ARG_WITH(proxy-log,
+  [   --with-proxy-log=FILE  location of the proxy NCSA style web server access log],
+  [
+    if test "$NCSA_LOG"; then
+      AC_MSG_ERROR([*** You cannot use both --with-ncsa-log and --with-proxy-log.])
+    fi
+    case "$withval" in
+      "" | y | ye | yes | n | no)
+         AC_MSG_ERROR([*** You must supply an argument to the --with-proxy-log option.])
+         ;;
+      *) WEB_LOG="$withval"
+         PROXY_LOG=yes
+         WATCH_HTTPD="-DWATCH_HTTPD -DWATCH_PROXY"
+         ;;
+    esac
+  ]
+)
+
+AC_ARG_WITH(squid-log,
+  [   --with-squid-log=FILE  location of the Squid file],
+  [
+    if test "$NCSA_LOG"; then
+      AC_MSG_ERROR([*** You cannot use both --with-ncsa-log and --with-squid-log.])
+    fi
+    if test "$PROXY_LOG"; then
+      AC_MSG_ERROR([*** You cannot use both --with-proxy-log and --with-squid-log.])
+    fi
+    case "$withval" in
+      "" | y | ye | yes | n | no)
+         AC_MSG_ERROR([*** You must supply an argument to the --with-squid-log option.])
+         ;;
+      *) WEB_LOG="$withval"
+         WATCH_HTTPD="-DWATCH_HTTPD -DWATCH_SQUID"
+         ;;
+    esac
+  ]
+)
+
+AC_SUBST(WATCH_HTTPD)
+AC_SUBST(WEB_LOG)
 
 AC_ARG_PROGRAM
 AC_PATH_PROGS(AWK,mawk gawk nawk awk)
@@ -121,6 +166,6 @@ AC_OUTPUT(config/PerlHead1
 	  docs/Makefile
 	  Makefile)
 
-if test -z "$NCSAHTTPLOG"; then
-  AC_MSG_WARN([*** Unless you use --with-access_log you will not gather WWW access log data.])
+if test -z "$WEB_LOG"; then
+  AC_MSG_WARN([*** Unless you use a --with-*-log option you will not gather WWW log data.])
 fi

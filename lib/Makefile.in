@@ -4,7 +4,7 @@ libdir		= @libdir@
 MKDIR		= @MKDIR@
 INSTALL		= @INSTALL@
 
-all:	percollator.cfg orca.gif.hex
+all:	percollator.cfg orca.gif.hex rrdtool.gif.hex
 
 percollator.cfg: percollator.cfg.in
 	cd ..; ./config.status
@@ -12,6 +12,11 @@ percollator.cfg: percollator.cfg.in
 # Create a hex file representation of orca.gif that can be stored inside
 # orca.pl.
 orca.gif.hex: orca.gif
+	perl -e 'while (sysread(STDIN, $$b, 35)){print unpack("h*", $$b),"\n"}' < $< > $@
+
+# Create a hex file representation of rrdtool.gif that can be stored inside
+# orca.pl.
+rrdtool.gif.hex: rrdtool.gif
 	perl -e 'while (sysread(STDIN, $$b, 35)){print unpack("h*", $$b),"\n"}' < $< > $@
 
 install: all

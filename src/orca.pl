@@ -17,7 +17,7 @@ $Data::Dumper::Deepcopy = 1;
 
 # This is the version of Orca.
 use vars qw($VERSION);
-$VERSION = 0.18;
+$VERSION = 0.19;
 
 # This is the version number used in creating the DS names in RRDs.
 # This should be updated any time a new version of Orca needs some
@@ -102,14 +102,25 @@ sub DESTROY {
   print { $self->{_handle} } <<END;
 $self->{_bottom}
 <p>
-<hr align=left width=225>
-<img width=186 height=45 src="orca.gif">
-<br>
-<font FACE="Arial,Helvetica" SIZE=2>
-  Orca-$::VERSION by
-  <a href="http://www.geocities.com/ResearchTriangle/Thinktank/4996/">Blair Zajac</a>
-  <a href="mailto:bzajac\@geostaff.com">bzajac\@geostaff.com</a>.
-</font>
+<hr align=left width=475>
+<table cellpadding=0 border=0>
+  <tr>
+    <td width=350 valign=center>
+        <img width=186 height=45 src="orca.gif" alt="Orca Home Page">
+      <br>
+      <font FACE="Arial,Helvetica" SIZE=2>
+        Orca-$::VERSION by
+        <a href="http://www.geocities.com/ResearchTriangle/Thinktank/4996/">Blair Zajac</a>
+        <a href="mailto:bzajac\@geostaff.com">bzajac\@geostaff.com</a>.
+      </font>
+    </td>
+    <td width=120 valign=center>
+      <a href="http://ee-staff.ethz.ch/~oetiker/webtools/rrdtool">
+        <img width=120 height=34 src="rrdtool.gif" alt="RRDTool Home Page" border=0>
+      </a>
+    </td>
+  </tr>
+</table>
 </body>
 </html>
 END
@@ -2797,26 +2808,36 @@ sub check_config {
     }
   }
 
-  # Create orca.gif in the HTML directory.  Convert the hexadecimal form
+  # Create the necessary GIF files in the HTML directory.  This should
+  # include orga.gif and rrdtool.gif.  Convert the hexadecimal forms
   # stored in the DATA section to the raw GIF form on disk.
-  my $orca_gif = "$config_options->{html_dir}/orca.gif";
-  print "Creating $orca_gif.\n" if $opt_verbose;
-  if (open(ORCA_WRITE, ">$orca_gif")) {
-    # Skip past the text following the __END__ until the code HEX_ORCA_GIF.
-    while (<main::DATA>) {
-      last if /^HEX_ORCA_GIF/;
+  my $gif_filename = '';
+  while (<main::DATA>) {
+    chomp;
+    if ($gif_filename) {
+      if (/CLOSE/) {
+        close(ORCA_WRITE) or
+          warn "$0: error in closing `$gif_filename' for writing: $!\n";
+        $gif_filename = '';
+      }
+      else {
+        chomp;
+        print ORCA_WRITE pack('h*', $_);
+      }
     }
-
-    # Now read in the 
-    while (<main::DATA>) {
-      chomp;
-      print ORCA_WRITE pack('h*', $_);
+    elsif (/OPEN (.*)/) {
+      $gif_filename = "$config_options->{html_dir}/$1";
+      print "Creating $1.\n" if $opt_verbose;
+      unless (open(ORCA_WRITE, ">$gif_filename")) {
+        warn "$0: cannot open `$gif_filename' for writing: $!\n";
+        $gif_filename = '';
+      }
     }
-    close(ORCA_WRITE) or
-      warn "$0: error in closing `$orca_gif' for writing: $!\n";
   }
-  else {
-    warn "$0: cannot open `$orca_gif' for writing: $!\n";
+  if ($gif_filename) {
+    close(ORCA_WRITE) or
+      warn "$0: error in closing `$gif_filename' for writing: $!\n";
+    $gif_filename = '';
   }
 }
 
@@ -3779,7 +3800,9 @@ Zajac <blair@geostaff.com>.
 
 =cut
 
-HEX_ORCA_GIF
+These are hexadecimal forms of GIFs used by Orca.
+
+OPEN orca.gif
 749464839316ab00d2007fff00ffffff1f0f8f2e1e2f4d1dbe5c2c4e7b3bed8a4a7da9
 490dc858ace7774c0776db16856b35940b44a39a63a22a72b1c991c059000000000000
 0000000000000000000000000000000000000000000000000000000000000000000000
@@ -3845,3 +3868,58 @@ e804217241b1ea3be848c07a133f249a3c688306109c159cd3332eb9721805a299b482
 6ed89cb844b61a2f0941c906257ec46086c5346a34b974ab43269001bd0a010cc31f42
 e4a56e419430cc78311cdffad9c5c6a4c499697b06e4ecbaf1449010a15e004ba1d29a
 ad4f721a0e9965d8404000b3
+CLOSE
+
+OPEN rrdtool.gif
+749464837316870022003f0000000066003399046699e375c864284bf7f73b9a9a9a08
+99ccfbccccffffccffffff7f7f7f7e7e7e000000000000000000c20000000087002200
+0040ef099c94badb83be9b63fbd57c882e866790ac4abe93e292c5032016fd87eafe97
+d44d04b5050342a1f88c4627020663f9fc184b92daa5fa2d0c0201010081cb0b87c4e2
+39d7fb4bad8f302b78965e1fb6eabdbd7cd11b7b777e3ed61727d738a44763909806c3
+905040b077c360984990b390b7738928399043d78784694090e458445a947840c0e890
+70c30b4a5370b9a78386a3d84050e6969a7460e73963b274e430c060d53060304ad505
+a58c250090c5c564ba8920214080e8cafdb8b9d21e2460c080f360cadaa330691421db
+20909e2cdd80f62fd469fc8fe9922109e05579f4dd0c841a10669dc0a1c46bd1851f3e
+5df084504ed20a53a0705436efb2a04d24304645d86491b71ac4080a917bd30c2e93bb
+74a69923203023a0c007f40618c883d351892694854c544ae0c4cd761de55ca844642e
+a7989491aac424af940225071839254ac49e4229cc041410913082362c3506a3e265b9
+130e93d4a06200cc65d6444ddad93dfbb9a06e8d4e4f6a35041f4885528c02e139878a
+c49db86c376872906379900e98a65079bc899ee3e004aa4d15d403bbd1045f4de119c8
+85d5f5d5cf23d426ea4320020a16ade13106efa08617df61b9ad56b525d5b47f5c00e5
+cb2a3b0086ea542ea8d780ee1540c43a6a035cd8c35956d48ef2a23bcdeed4afe0c1da
+afb7d5ed7395f40ad243ec6f0db69b6b9de6647ee547ef7408250b00160ca350af5cac
+b6c0ca617cc09fcf4c51c1401e140895d6895de8319f8114a973f89c534d6181600ec4
+333c907409102c533875519e4b830c71425f0088f00acb17a4121a0212914184c43465
+f73585157d07b5c616c17195c610d55143a919b40248cd0b36e154c597cc09f854154e
+79946d594e513d80900453206f884801a6a6964cf827488d5e5134631b4a5145819b42
+6355861b7639650d8200c240e25a45d314028a412080c1a04e0acbc10f3d1a831c9dc8
+4af356aa9ef454271fdc20a0083c42999dc441ae10c7af9db832e8c8a36200b19e3408
+20a04b27008a4b22a3b6234be2a4b6da15820e80dab04108001b32e137c6dab0ef4b4f
+be2b37561be0dace4fa3a2636c2302c2a54b220c4271a0c584b227242a9c443aba920b
+a545a0c2009811a04d07ca09de670d54005c6ab8ae618be108cc667048b1081bef68a7
+66dae763b00820a4e0cdde7ba61300ba079d0da371635c6f22c6d5e50a9440ab40f11e
+e20bb958bec2231038a448a529e73ef631504bb1ee41b99a3c505a6c27150c2007514a
+0c29327b810c253ba17f508aed2719fecad1f89e1b0002babf6e8cd259c8696b8c4cca
+27dc22dca8aad95fec546523958843ca7bb584c30cfceec99b99a523363c6320b08bdb
+5cdaa2700b07e460c6c85cc8f943a204fae1acc5f400f3b6bf3395a5f2ea696caee07a
+6d8ce56f9600aaeff0763ab51cb1fb034b1e30fc584be6de2f25f2aa88f334d699faa7
+53080e7ceab4485ce402e4a18a49d2b83d660e0faf57dc1437c67a1b004cc80c99a4e6
+4fab0c3d1e5d83aadb70c70c373dd0eeea4c8fe660a6d7e4f3d40e32efa411bb926b71
+bf3b7a5b27fc5b4ab0ceb96f8ceeb71f6b1b71e10947531e6ab2e2da5348d4787baea9
+55ea6d63235a14d6d65004e93d0652e36452342547bd8d1101750af9de6ad5c4a59538
+cf5da823db0cf6e4b189dfea6562bd1d0406b2b2e58d4d230a91c4f6436d3051e5ad7b
+c01810acc53005ac73485b6ba71dca46303cd5ac4108c9c24b26051933260d097df1d9
+5b4266713cf1a52062c1bf1aa688ec1078ef9ecb54035d9bb8760b2d286b88416a911f
+ce57c934553e0d60632dd9fae5c03f0e05ca55d183629a96b502ed3c2b0622cc54eca8
+ab1acd780651aa1a13ac160a2a8dbb657e7ab79915b0d8a1054e0f523bdd59c000ca05
+00e56650aa86d614b81331a12e0457d83259d6f13b24b539e76b3bb81710007c2cd18b
+0d27c28ecdc466f6bdb40c8b794af910e029a418adeb8398bba248b6e8e7af025ce173
+4140c234768bcb65f9eb12c891c99a197baa1e29a298d222e0ea163ac94e2ce7288baf
+06c2a516c7c1c229807bbe139e76a41f5671ce80791097d0b1a8337a19aa16fbf902cc
+840bcf990c8b0bca71a3926641c756cc016e72685b32c50d1d61adc92d9aeaeb5da8d2
+38bf593440a4b252d71e751f2859956c584c67dbda94524a7cfae5416a18d241c1adae
+0af94946aba5dc02753aa17e2ba3002547e91f709d022543890cd3200472f4145f0d66
+e53ce81a0b4ff6b58a3191bf49d83090ee944aac903aad185d8a6434e05d11b1896cad
+d38a6917f96c13befd66aa6df35b5fe466d992b5ba190c6e9d5fea87dcbae57fac7deb
+af5ffa08d0c200220000b3
+CLOSE

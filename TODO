@@ -13,7 +13,7 @@ Orca:
 	Make plots from multiple files sets: delete source files_key and put
 		it into data.
 	Update HTML files if a new file is found with a new group.
+	Update percollator.cfg.in for caching and proxy stuff.
 
 percollator.se:
 	Better documentation.
-	Update using 3.1 diffs from 3.0.

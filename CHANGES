@@ -1,3 +1,30 @@
+Fri Feb 19 11:55:50 PST 1999
+
+	Version 0.19.
+
+	Fix a bug in copying SE 3.1's percollator.se changes where it
+	was not skipping the HTTP/1.x code in the NCSA style access log.
+	Now percollator.se can handle log files with or without the code.
+
+Thu Feb 18 11:54:03 PST 1999
+
+	percollator.se now logs information on integral multiples of
+	the interval.  This is useful for RRD which expects data to be
+	measured on the interval.
+
+	Add Squid log processing to percollator.se courtesy of Adrian
+	Cockroft of Sun Microsystems.
+
+	Rename the configure --with options.  If you want to watch NCSA
+	style access logs, use --with-ncsa-log.  To watch NCSA style
+	proxy access logs, use --with-proxy-log.  And to watch Squid
+	access log, use --with-squid-log.
+
+Wed Feb 17 17:37:35 PST 1999
+
+	Add rrdtool.gif to the GIF files that Orca creates and include
+	a HREF to rrdtool.gif in every HTML file that Orca generates.
+
 Tue Feb 16 10:49:07 PST 1999
 
 	Version 0.18.

@@ -18,7 +18,11 @@ ac_help="$ac_help
 ac_help="$ac_help
    --with-perc-dir=DIR    directory were percollator output is stored"
 ac_help="$ac_help
-   --with-access-log=FILE location of the Common Log Format access log"
+   --with-ncsa-log=FILE   location of the NCSA style web server access log"
+ac_help="$ac_help
+   --with-proxy-log=FILE  location of the proxy NCSA style web server access log"
+ac_help="$ac_help
+   --with-squid-log=FILE  location of the Squid file"
 
 # Initialize some variables set by options.
 # The variables have the same names as the options, with
@@ -576,7 +580,7 @@ else { echo "configure: error: can not run $ac_config_sub" 1>&2; exit 1; }
 fi
 
 echo $ac_n "checking host system type""... $ac_c" 1>&6
-echo "configure:580: checking host system type" >&5
+echo "configure:584: checking host system type" >&5
 
 host_alias=$host
 case "$host_alias" in
@@ -597,7 +601,7 @@ host_os=`echo $host | sed 's/^\([^-]*\)-\([^-]*\)-\(.*\)$/\3/'`
 echo "$ac_t""$host" 1>&6
 
 echo $ac_n "checking target system type""... $ac_c" 1>&6
-echo "configure:601: checking target system type" >&5
+echo "configure:605: checking target system type" >&5
 
 target_alias=$target
 case "$target_alias" in
@@ -615,7 +619,7 @@ target_os=`echo $target | sed 's/^\([^-]*\)-\([^-]*\)-\(.*\)$/\3/'`
 echo "$ac_t""$target" 1>&6
 
 echo $ac_n "checking build system type""... $ac_c" 1>&6
-echo "configure:619: checking build system type" >&5
+echo "configure:623: checking build system type" >&5
 
 build_alias=$build
 case "$build_alias" in
@@ -710,20 +714,71 @@ PERCOLLATOR_DIR=`(
 )`
 
 
-# Check whether --with-access-log or --without-access-log was given.
-if test "${with_access_log+set}" = set; then
-  withval="$with_access_log"
+WATCH_HTTPD=
+NCSA_LOG=
+# Check whether --with-ncsa-log or --without-ncsa-log was given.
+if test "${with_ncsa_log+set}" = set; then
+  withval="$with_ncsa_log"
   
     case "$withval" in
       "" | y | ye | yes | n | no)
-         { echo "configure: error: *** You must supply an argument to the --with-access-log option." 1>&2; exit 1; }
+         { echo "configure: error: *** You must supply an argument to the --with-ncsa-log option." 1>&2; exit 1; }
          ;;
-      *) NCSAHTTPLOG="$withval"
+      *) WEB_LOG="$withval"
+         NCSA_LOG=yes
+         WATCH_HTTPD="-DWATCH_HTTPD"
          ;;
     esac
   
 
 fi
+
+
+PROXY_LOG=
+# Check whether --with-proxy-log or --without-proxy-log was given.
+if test "${with_proxy_log+set}" = set; then
+  withval="$with_proxy_log"
+  
+    if test "$NCSA_LOG"; then
+      { echo "configure: error: *** You cannot use both --with-ncsa-log and --with-proxy-log." 1>&2; exit 1; }
+    fi
+    case "$withval" in
+      "" | y | ye | yes | n | no)
+         { echo "configure: error: *** You must supply an argument to the --with-proxy-log option." 1>&2; exit 1; }
+         ;;
+      *) WEB_LOG="$withval"
+         PROXY_LOG=yes
+         WATCH_HTTPD="-DWATCH_HTTPD -DWATCH_PROXY"
+         ;;
+    esac
+  
+
+fi
+
+
+# Check whether --with-squid-log or --without-squid-log was given.
+if test "${with_squid_log+set}" = set; then
+  withval="$with_squid_log"
+  
+    if test "$NCSA_LOG"; then
+      { echo "configure: error: *** You cannot use both --with-ncsa-log and --with-squid-log." 1>&2; exit 1; }
+    fi
+    if test "$PROXY_LOG"; then
+      { echo "configure: error: *** You cannot use both --with-proxy-log and --with-squid-log." 1>&2; exit 1; }
+    fi
+    case "$withval" in
+      "" | y | ye | yes | n | no)
+         { echo "configure: error: *** You must supply an argument to the --with-squid-log option." 1>&2; exit 1; }
+         ;;
+      *) WEB_LOG="$withval"
+         WATCH_HTTPD="-DWATCH_HTTPD -DWATCH_SQUID"
+         ;;
+    esac
+  
+
+fi
+
+
 
 
 
@@ -751,7 +806,7 @@ do
 # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:755: checking for $ac_word" >&5
+echo "configure:810: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_path_AWK'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -789,7 +844,7 @@ done
 # Extract the first word of "cut", so it can be a program name with args.
 set dummy cut; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:793: checking for $ac_word" >&5
+echo "configure:848: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_path_CUT'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -825,7 +880,7 @@ fi
 # Extract the first word of "expr", so it can be a program name with args.
 set dummy expr; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:829: checking for $ac_word" >&5
+echo "configure:884: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_path_EXPR'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -861,7 +916,7 @@ fi
 # Extract the first word of "se", so it can be a program name with args.
 set dummy se; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:865: checking for $ac_word" >&5
+echo "configure:920: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_path_SE'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -896,7 +951,7 @@ fi
 # Extract the first word of "uname", so it can be a program name with args.
 set dummy uname; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:900: checking for $ac_word" >&5
+echo "configure:955: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_path_UNAME'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -936,7 +991,7 @@ fi
 # Extract the first word of "perl", so it can be a program name with args.
 set dummy perl; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:940: checking for $ac_word" >&5
+echo "configure:995: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_path_PERL'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -973,7 +1028,7 @@ if test "x$PERL" != "xNOT_FOUND"; then
   PERL="$PERL -w"
   
   echo $ac_n "checking if '$PERL' will run Perl scripts""... $ac_c" 1>&6
-echo "configure:977: checking if '$PERL' will run Perl scripts" >&5
+echo "configure:1032: checking if '$PERL' will run Perl scripts" >&5
   rm -f conftest.BZ
   cat > conftest.BZ <<EOF
 #!$PERL
@@ -1179,7 +1234,8 @@ s%@build_os@%$build_os%g
 s%@RRD_DIR@%$RRD_DIR%g
 s%@HTML_DIR@%$HTML_DIR%g
 s%@PERCOLLATOR_DIR@%$PERCOLLATOR_DIR%g
-s%@NCSAHTTPLOG@%$NCSAHTTPLOG%g
+s%@WATCH_HTTPD@%$WATCH_HTTPD%g
+s%@WEB_LOG@%$WEB_LOG%g
 s%@AWK@%$AWK%g
 s%@CUT@%$CUT%g
 s%@EXPR@%$EXPR%g
@@ -1307,6 +1363,6 @@ rm -fr confdefs* $ac_clean_files
 test "$no_create" = yes || ${CONFIG_SHELL-/bin/sh} $CONFIG_STATUS || exit 1
 
 
-if test -z "$NCSAHTTPLOG"; then
-  echo "configure: warning: *** Unless you use --with-access_log you will not gather WWW access log data." 1>&2
+if test -z "$WEB_LOG"; then
+  echo "configure: warning: *** Unless you use a --with-*-log option you will not gather WWW log data." 1>&2
 fi

@@ -10,9 +10,10 @@ AWK=@AWK@
 CUT=@CUT@
 EXPR=@EXPR@
 UNAME=@UNAME@
-NCSAHTTPLOG=@NCSAHTTPLOG@
 PERCOLLATOR_DIR=@PERCOLLATOR_DIR@
 SE=@SE@
+WATCH_HTTPD="@WATCH_HTTPD@"
+WEB_LOG=@WEB_LOG@
 
 # Get the hostname without the fully qualified part; that is, trim off
 # anything past the first `.'.
@@ -22,7 +23,7 @@ uname=`$UNAME -n | $CUT -d. -f1`
 OUTDIR=$PERCOLLATOR_DIR/$uname
 
 # Export the environmental variables.
-export NCSAHTTPLOG OUTDIR
+export OUTDIR WEB_LOG
 
 # Check if percollator is already running.
 pids=`/usr/ucb/ps auxww | $AWK '/percollator.se/ && !/awk/ {print $2}'`
@@ -32,7 +33,9 @@ if test "$pids" != ""; then
 fi
 
 echo "Writing data into $OUTDIR/"
-echo "Using www access log file $NCSAHTTPLOG"
+if test "$WEB_LOG"; then
+  echo "Using www access log file $WEB_LOG"
+fi
 
 # Cd to / so that any automounted filesystems can be unmounted.
 cd /
@@ -46,12 +49,6 @@ fi
 if test ! -d $OUTDIR; then
   echo "Unable to create $OUTDIR/" 1>&2
   exit 2
-fi
-
-# Only turn on HTTP recording if NCSAHTTPLOG is set.
-WATCH_HTTPD=
-if test "$NCSAHTTPLOG"; then
-  WATCH_HTTPD=-DWATCH_HTTPD
 fi
 
 # Now start the logging.

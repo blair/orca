@@ -174,7 +174,7 @@ Outline:
     Devel::DProf            Not required by Orca        19990108
     Digest::MD5             >= 2.24        >= 2.24      2.24
     Math::IntervalSearch    >= 1.05        >= 1.05      1.05
-    RRDs                    >= 1.000411    >= 1.0.41    1.0.41
+    RRDs                    >= 1.000421    >= 1.0.42    1.0.42
     Storable                >= 2.06        >= 2.06      2.06
     Time::HiRes             Not required by Orca        1.45
 

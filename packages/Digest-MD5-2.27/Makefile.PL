@@ -31,6 +31,7 @@ sub free_u32_alignment
     $|=1;
     print "Testing alignment requirements for U32... ";
     return 1 if $^O eq 'VMS';
+    return 1 if $^O eq 'MSWin32';
 
     open(ALIGN_TEST, ">u32align.c") or die "$!";
     print ALIGN_TEST <<'EOT'; close(ALIGN_TEST);
@@ -98,17 +99,13 @@ EOT
 
     my $cc_cmd = "$Config{cc} $Config{ccflags} -I$Config{archlibexp}/CORE";
     my $exe = "u32align$Config{_exe}";
-    if ($^O eq 'MSWin32') {
-        $cc_cmd .= ' -DWIN32IO_IS_STDIO';
-    } else {
-	$cc_cmd .= " -o $exe";
-    }
+    $cc_cmd .= " -o $exe";
     my $rc;
     $rc = system("$cc_cmd $Config{ldflags} u32align.c $Config{libs}");
     if ($rc) {
-	print "Can't compile test program\n";
+	print "Can't compile test program.  Will ensure alignment to play safe.\n\n";
 	unlink("u32align.c", $exe, "u32align$Config{_o}");
-	return;
+	return 0;
     }
 
     $rc = system("./$exe");
@@ -127,5 +124,5 @@ EOT
 	}
 	print "signal $rc\n";
     }
-    return;
+    return 0;
 }

@@ -173,7 +173,7 @@ Outline:
     Data::Dumper            >= 2.101       >= 2.101     2.101
     Date::Parse             Not required by Orca        2.24
     Devel::DProf            Not required by Orca        19990108
-    Digest::MD5             >= 2.26        >= 2.26      2.26
+    Digest::MD5             >= 2.27        >= 2.27      2.27
     Math::IntervalSearch    >= 1.05        >= 1.05      1.05
     RRDs                    >= 1.000431    >= 1.0.43    1.0.43
     Storable                >= 2.07        >= 2.07      2.07
@@ -227,10 +227,10 @@ Outline:
 
     Digest::MD5
 
-      http://www.perl.com/CPAN/authors/id/G/GA/GAAS/Digest-MD5-2.26.tar.gz
+      http://www.perl.com/CPAN/authors/id/G/GA/GAAS/Digest-MD5-2.27.tar.gz
 
-      % gunzip -c Digest-MD5-2.26.tar.gz | tar xvf -
-      % cd Digest-MD5-2.26
+      % gunzip -c Digest-MD5-2.27.tar.gz | tar xvf -
+      % cd Digest-MD5-2.27
       % perl Makefile.PL
       % make
       % make test

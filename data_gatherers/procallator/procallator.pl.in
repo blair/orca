@@ -1,26 +1,40 @@
-#!/usr/bin/perl -w
+# Collector for /proc statistics for use with Linux 2.2 and 2.4 kernels.
 #
-#	collector for /proc statistics for use with Linux 2.2 and 2.4 kernels.
-#
-#	 Copyright (C) 2001 Guilherme Carvalho Chehab.  All Rights Reserved.
+# Copyright (C) 2001 Guilherme Carvalho Chehab.  All Rights Reserved.
 #
 # Config variables
-#$PROC="./linux-2.2";		# Proc directory, usually /proc
-$PROC="/proc";			# Proc directory, usually /proc
-$INTERVAL=300;			# Interval between each measure, in seconds
-$COMPRESS="/usr/bin/gzip";	# Compressor...
-$HOSTNAME=`/bin/hostname`;
-chomp $HOSTNAME;
-$DEST_DIR="/usr/local/var/orca/$HOSTNAME";	# Destination dir for output files
-#$DEST_DIR="/tmp";	# Destination dir for output files
+
+use Sys::Hostname;
+
+#
+# Configuration variables.
+#
+
+# The process directory, usually /proc.
+my $PROC = '@PROC_DIR@';
+
+# Compression program to use after closing an output data file.
+my $COMPRESS = '@COMPRESSOR@';
+
+# The output base directory.
+my $OUT_DIR = '@VAR_DIR@/procallator';
+
+# Measurement interval, in seconds.
+my $INTERVAL = 300;
 
 # Initializations
-$r=0;				# Rotating indice for measuring counter differences
-$rate_ok=0;			# Check if is ok to calculate rates
+my $r = 0;		# Rotating indice for measuring counter differences.
+my $rate_ok = 0;	# Check if is ok to calculate rates.
 
-# Create output dir if needed
-if (! -d $DEST_DIR ) {
-   `mkdir -p $DEST_DIR`;
+# Destination directory for the output data files.
+my $hostname = hostname;
+my $DEST_DIR = "$OUT_DIR/$hostname";
+
+# Create output directory if needed.
+unless (-d $DEST_DIR) {
+    unless (mkdir($DEST_DIR, 0755)) {
+        die "$0: cannot create destiniation directory `$DEST_DIR': $!\n";
+    }
 }
 
 # Read kernel version

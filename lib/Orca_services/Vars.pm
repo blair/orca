@@ -50,7 +50,7 @@ $VERSION = "2.0a1";
 #
 use vars qw($progname);
 push(@EXPORT, qw($progname));
-$progname = "Orca_Services";
+$progname = "orca_services";
 
 #
 # vars for syslogging
@@ -96,8 +96,8 @@ use vars qw(%Services %Options %PrgOptions %HelpText);
 push(@EXPORT, qw(%Services %Options %PrgOptions %HelpText));
 %Services=();
 %Options=("interval" => 300,
-	  "outputdir" => "@VAR_DIR@/Orca_Services",
-	  "compress" => "@COMPRESSOR@",
+	  "outputdir" => "/opt/SWorca/var/orca/orca_services",
+	  "compress" => "/usr/bin/gzip -9",
           "debug" => 0,
           "help" => 0
 	);

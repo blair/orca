@@ -83,10 +83,10 @@ sub check_output {
 		$now_string = strftime "%Y-%m-%d", localtime;
 
 		my $subday = 0;
-		my $tempfilename = "$outputdir/Orca_Services-" . $now_string . "-" . sprintf("%03d", $subday);
+		my $tempfilename = "$outputdir/orca_services-" . $now_string . "-" . sprintf("%03d", $subday);
 		while (-f $tempfilename) {
 			$subday ++;
-			$tempfilename = "$outputdir/Orca_Services-" . $now_string . "-" . sprintf("%03d", $subday);
+			$tempfilename = "$outputdir/orca_services-" . $now_string . "-" . sprintf("%03d", $subday);
 		}		
 		$OutputFilename = $tempfilename;
 

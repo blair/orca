@@ -40,7 +40,7 @@ BEGIN {
 	use IO::File;
 	use Sys::Syslog;
 	use Orca_Services::Vars;
-	$Services{Radius}{File} = "/usr/local/lib/Orca_Services.DB.$nodename";
+	$Services{Radius}{File} = "/usr/local/lib/orca_services.DB.$nodename";
 	$Services{Radius}{FileD} = "";
 	$Services{Radius}{Ok} = -1;
 	$Services{Radius}{External} = 1;
@@ -126,7 +126,7 @@ sub init_radius_vars {
 	$mon++;
 
 
-	$BASE_ACCUM_radius_DB="/var/orca/Orca_Services/$nodename";
+	$BASE_ACCUM_radius_DB="/var/orca/orca_services/$nodename";
 	if ($mon<10) {
 		$ACCUM_radius_DB= "$BASE_ACCUM_radius_DB/radiatorRadiusAccum.$year"."0"."$mon.txt";
 	} else {

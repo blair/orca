@@ -1,0 +1,114 @@
+@SET_MAKE@
+
+prefix                = @prefix@
+exec_prefix           = @exec_prefix@
+bindir                = @bindir@
+libdir                = @libdir@
+libexecdir            = @libexecdir@
+sysconfdir            = @sysconfdir@
+INSTALL               = @INSTALL@
+MKDIR                 = @MKDIR@
+PERL_HEAD             = @PERL_HEAD@
+VAR_DIR               = @VAR_DIR@
+RRD_DIR               = @RRD_DIR@
+INIT_D_DIR            = @INIT_D_DIR@
+RCX_D_CONTAINING_DIR  = @RCX_D_CONTAINING_DIR@
+RAW_ORCA_SERVICES_DIR = $(VAR_DIR)/orca_services
+RRD_ORCA_SERVICES_DIR = $(RRD_DIR)/orca_services
+
+BIN_PERL_SCRIPTS      = orca_services_running
+LIBEXEC_PERL_SCRIPTS  = orca_services
+NOINST_PERL_SCRIPTS   =
+PERL_SCRIPTS          = $(BIN_PERL_SCRIPTS) \
+                        $(LIBEXEC_PERL_SCRIPTS) \
+                        $(NOINST_PERL_SCRIPTS)
+
+BIN_SHELL_SCRIPTS     = restart_orca_services \
+                        stop_orca_services \
+                        start_orca_services
+LIBEXEC_SHELL_SCRIPTS = orca_services
+NOINST_SHELL_SCRIPTS  = S99orca_services
+SHELL_SCRIPTS         = $(BIN_SHELL_SCRIPTS) \
+                        $(LIBEXEC_SHELL_SCRIPTS) \
+                        $(NOINST_SHELL_SCRIPTS)
+
+TARGETS               = $(PERL_SCRIPTS) \
+                        $(SHELL_SCRIPTS)
+BIN_TARGETS           = $(BIN_PERL_SCRIPTS) \
+                        $(BIN_SHELL_SCRIPTS)
+LIBEXEC_TARGETS       = $(LIBEXEC_PERL_SCRIPTS) \
+                        $(LIBEXEC_SHELL_SCRIPTS)
+
+all: Makefile $(TARGETS) orca_services.cfg
+
+install: all
+	$(MKDIR) $(bindir)
+	$(MKDIR) $(libexecdir)
+	$(MKDIR) $(sysconfdir)
+	$(MKDIR) $(RAW_ORCA_SERVICES_DIR)
+	$(MKDIR) $(RRD_ORCA_SERVICES_DIR)
+	@for file in $(BIN_TARGETS); do \
+	  echo $(INSTALL) $$file $(bindir); \
+	  $(INSTALL) $$file $(bindir); \
+	done
+	@for file in $(LIBEXEC_TARGETS); do \
+	  echo $(INSTALL) $$file $(libexecdir); \
+	  $(INSTALL) $$file $(libexecdir); \
+	done
+	if test -r $(sysconfdir)/orca_services.cfg; then \
+	  cp -p $(sysconfdir)/orca_services.cfg $(sysconfdir)/orca_services.cfg.`date +%Y-%m-%d-%H:%M:%S`; \
+	fi
+	$(INSTALL) -m 0644 orca_services.cfg $(sysconfdir)
+
+orca_services_run_at_boot: all
+	test "$(INIT_D_DIR)"
+	test "$(RCX_D_CONTAINING_DIR)"
+	-$(RM) $(INIT_D_DIR)/orca_services
+	-$(RM) $(RCX_D_CONTAINING_DIR)/rc0.d/K01orca_services
+	-$(RM) $(RCX_D_CONTAINING_DIR)/rc1.d/K01orca_services
+	-$(RM) $(RCX_D_CONTAINING_DIR)/rc3.d/S99orca_services
+	$(INSTALL) -m 0744 S99orca_services $(INIT_D_DIR)/orca_services
+	ln $(INIT_D_DIR)/orca_services $(RCX_D_CONTAINING_DIR)/rc0.d/K01orca_services
+	ln $(INIT_D_DIR)/orca_services $(RCX_D_CONTAINING_DIR)/rc1.d/K01orca_services
+	ln $(INIT_D_DIR)/orca_services $(RCX_D_CONTAINING_DIR)/rc3.d/S99orca_services
+
+clean:
+	$(RM) $(TARGETS)
+
+distclean: clean
+	$(RM) *.sh orca_services.cfg orca_services_running.pl Makefile
+
+.SUFFIXES: .pl .sh
+
+.pl: $(PERL_HEAD)
+	cat $(PERL_HEAD) $< > $@
+	chmod 0755 $@
+
+.sh:
+	cp $< $@
+	chmod 0755 $@
+
+Makefile: Makefile.in
+	cd ../.. && CONFIG_FILES=data_gatherers/orca_services/Makefile ./config.status
+	$(MAKE)
+
+orca_services.cfg: orca_services.cfg.in
+	cd ../.. && CONFIG_FILES=data_gatherers/orca_services/orca_services.cfg ./config.status
+
+orca_services.pl: orca_services.pl.in
+	cd ../.. && CONFIG_FILES=data_gatherers/orca_services/orca_services.pl ./config.status
+
+orca_services_running.pl: orca_services_running.pl.in
+	cd ../.. && CONFIG_FILES=data_gatherers/orca_services/orca_services_running.pl ./config.status
+
+restart_orca_services.sh: restart_orca_services.sh.in
+	cd ../.. && CONFIG_FILES=data_gatherers/orca_services/restart_orca_services.sh ./config.status
+
+start_orca_services.sh: start_orca_services.sh.in
+	cd ../.. && CONFIG_FILES=data_gatherers/orca_services/start_orca_services.sh ./config.status
+
+stop_orca_services.sh: stop_orca_services.sh.in
+	cd ../.. && CONFIG_FILES=data_gatherers/orca_services/stop_orca_services.sh ./config.status
+
+S99orca_services.sh: S99orca_services.sh.in
+	cd ../.. && CONFIG_FILES=data_gatherers/orca_services/S99orca_services.sh ./config.status

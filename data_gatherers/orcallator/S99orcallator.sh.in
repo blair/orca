@@ -4,26 +4,29 @@ prefix=@prefix@
 exec_prefix=@exec_prefix@
 bindir=@bindir@
 
+start_orcallator="$bindir/start_orcallator"
+stop_orcallator="$bindir/stop_orcallator"
+
 case "$1" in
 'start')
-	if [ -x $bindir/start_orcallator ]; then
-		umask 022
-		$bindir/start_orcallator
-	else
-		echo "$0: $bindir/start_orcallator does not exist or is not executable."
-	fi
-	;;
+    if [ -x $start_orcallator ]; then
+        umask 022
+        $start_orcallator
+    else
+        echo "$0: $start_orcallator does not exist or is not executable."
+    fi
+    ;;
 
 'stop')
-	if [ -x $bindir/stop_orcallator ]; then
-		$bindir/stop_orcallator
-	fi
-	;;
+    if [ -x $stop_orcallator ]; then
+        $stop_orcallator
+    fi
+    ;;
 
 *)
-	echo "Usage: $0 { start | stop }"
-	exit 1
-	;;
+    echo "Usage: $0 { start | stop }"
+    exit 1
+    ;;
 
 esac
 exit 0

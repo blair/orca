@@ -261,15 +261,23 @@ sub get_date_column {
 # really be a method for a single plot, but the plot is not an object
 # right now, so it doesn't have any methods that can be given to it.
 sub deep_clone_plot {
+  my $plot             = shift;
+  my $restore_creates  = shift;
+
   # Be careful not to make a deep copy of the 'creates' reference,
   # since it can cause recursion.
-  my $plot             = shift;
   my $creates          = delete $plot->{creates};
   my $new_plot         = dclone($plot);
   $plot->{creates}     = $creates;
-  $new_plot->{creates} = $creates;
+  if ($restore_creates) {
+    $new_plot->{creates} = $creates;
+  }
 
-  $new_plot;
+  if (wantarray) {
+    ($new_plot, $creates);
+  } else {
+    $new_plot;
+  }
 }
 
 sub add_plots {
@@ -391,7 +399,7 @@ sub add_plots {
       # Start by making a deep copy of the plot.  Replace the regular
       # expression in the first data with the name of the column that
       # caused the match.
-      $plot = deep_clone_plot($plot);
+      $plot = deep_clone_plot($plot, 1);
 
       # At this point we have a copy of plot.  Now go through looking
       # for all the columns that match and create an additional data
@@ -505,9 +513,11 @@ sub add_plots {
       # caused the match.  Then create string form of the plot object
       # using Data::Dumper::Dumper and replace all of the $1, $2,
       # ... with what was matched in the first data source.
-      $plot                = deep_clone_plot($plot);
+      my $creates;
+      ($plot, $creates)    = deep_clone_plot($plot, 0);
       $plot->{data}[0][$regexp_element_index] = $column_description;
       my $d                = Data::Dumper->Dump([$plot], [qw(plot)]);
+      $plot->{creates}     = $creates;
       my $count            = 1;
       foreach my $match (@matches) {
         $d =~ s/\$$count/$match/mge;

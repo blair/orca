@@ -1,5 +1,10 @@
 # Orca::Constants.pm: Global constants for Orca.
 #
+# $HeadURL$
+# $LastChangedRevision$
+# $LastChangedDate$
+# $LastChangedBy$
+#
 # Copyright (C) 1998-1999 Blair Zajac and Yahoo!, Inc.
 # Copyright (C) 1999-2004 Blair Zajac.
 

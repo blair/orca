@@ -1,5 +1,10 @@
 # Orca configuration file for procallator files.
 
+# $HeadURL$
+# $LastChangedRevision$
+# $LastChangedDate$
+# $LastChangedBy$
+
 # Require at least this version of Orca.
 require			Orca 0.265
 

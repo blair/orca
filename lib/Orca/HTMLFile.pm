@@ -1,5 +1,10 @@
 # Orca::HTMLFile: Manage the creation of HTML files.
 #
+# $HeadURL$
+# $LastChangedRevision$
+# $LastChangedDate$
+# $LastChangedBy$
+#
 # Copyright (C) 1998-1999 Blair Zajac and Yahoo!, Inc.
 # Copyright (C) 1999-2004 Blair Zajac.
 

@@ -1,5 +1,10 @@
 #!/bin/sh
 
+# $HeadURL$
+# $LastChangedRevision$
+# $LastChangedDate$
+# $LastChangedBy$
+
 AWK=@AWK@
 
 # This utility function checks if the specified variable has non-zero

@@ -1,5 +1,10 @@
 # Orca configuration file for orca_services files.
 
+# $HeadURL$
+# $LastChangedRevision$
+# $LastChangedDate$
+# $LastChangedBy$
+
 # Require at least this version of Orca.
 require			0.27
 

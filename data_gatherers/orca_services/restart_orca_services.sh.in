@@ -1,6 +1,12 @@
 #!/bin/sh
 
 # This stops and restarts orca_services.
+
+# $HeadURL$
+# $LastChangedRevision$
+# $LastChangedDate$
+# $LastChangedBy$
+
 prefix=@prefix@
 exec_prefix=@exec_prefix@
 bindir=@bindir@

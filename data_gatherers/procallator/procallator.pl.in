@@ -1,8 +1,11 @@
 # Collector for /proc statistics for use with Linux 2.2 and 2.4 kernels.
 #
-# Copyright (C) 2001 Guilherme Carvalho Chehab.  All Rights Reserved.
+# $HeadURL$
+# $LastChangedRevision$
+# $LastChangedDate$
+# $LastChangedBy$
 #
-# Config variables
+# Copyright (C) 2001 Guilherme Carvalho Chehab.  All Rights Reserved.
 
 use Sys::Hostname;
 

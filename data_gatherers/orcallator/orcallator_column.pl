@@ -1,5 +1,10 @@
 # orcallator_column: display selected columns from orcallator output.
 #
+# $HeadURL$
+# $LastChangedRevision$
+# $LastChangedDate$
+# $LastChangedBy$
+#
 # Copyright (C) 1998-1999 Blair Zajac and Yahoo!/GeoCities, Inc.
 # Copyright (C) 1999-2002 Blair Zajac.
 

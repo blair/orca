@@ -1,0 +1,281 @@
+# orca_services.pl, a log generating services usage monitor
+#
+# This program logs many different services usage to a log file
+# for later processing.
+#
+# Author: Sjaak Westdijk <westdijk@fastmail.fm>
+#
+# thanks to :
+#     Carlos Canau <Carlos.Canau@KPNQwest.pt>
+#     Jose Carlos Pereira <Jose.Pereira@KPNQwest.pt>
+#
+# Most code is adapted from Orca_servcies 1.X written by Carlos Canau
+#
+# Portions ported to perl from Orcallator.se written by Blair Zajac
+# other portions adapted from several other open source scripts
+#
+#
+# BUGS:
+#
+#
+# TODO:
+#
+#
+# LICENSE:
+#         GPL.
+#         (c) 2003      Sjaak Westdijk
+#         (c) 2000-2002 Carlos Canau & Jose Carlos Pereira
+#
+#
+# DISCLAIMER:
+#            you use this program at your own and complete risk
+#            if you don't agree with that then delete it
+#
+
+# Set the location of the Orca_Services modules.
+BEGIN {
+	my $prefix      = "@prefix@";
+	my $exec_prefix = "@exec_prefix@";
+	my $libdir      = "@libdir@";
+	unshift(@INC, $libdir);
+}
+
+#
+# which standard modules to use
+#
+require 5.004;
+use Fcntl;
+use Getopt::Long;                                 # option handler
+use POSIX;                                        # useful functions
+use IO::Handle;
+use IO::File;
+
+#
+# which Orca_Services modules to use
+#
+use Orca_Services::Vars;
+use Orca_Services::Utils;
+use Orca_Services::Output;
+use Orca_Services::Sendmail;
+#use Orca_Services::Dns;
+use Orca_Services::Mailq;
+use Orca_Services::Http;
+#use Orca_Services::Nntp;
+#use Orca_Services::Pop;
+use Orca_Services::Slapd;
+#use Orca_Services::MeritRad;
+#use Orca_Services::Radius;
+
+#
+# See if the modules load succesfully
+#
+if ($Options{debug}) {
+	while ( ($service, $params) = each %Services) {
+		print "$service:\n";
+		while ( ($par, $val) = each %$params) {
+			print "\t$par=$val\n";
+		}
+		print "\n";	
+	}
+}
+
+#
+# Get the options
+#
+GetOptions(%PrgOptions) || usage();
+usage() if $Options{help};
+
+#
+# Look if the options succesfully set
+#
+if ($Options{debug}) {
+	while ( ($options) = each %PrgOptions) {
+		print "$options => $PrgOptions{$options}\n";
+	}
+	print "\n";	
+
+	while ( ($options) = each %Options) {
+		print "$options => $Options{$options}\n";
+	}
+	print "\n";	
+}
+
+if ($Options{debug} == 0) {
+	exit if fork;
+}
+
+#
+# Create the ouput dir structure
+#
+system ("mkdir $Options{outputdir} 2>/dev/null");             # ignore return value
+system ("chmod 0755 $Options{outputdir} 2>/dev/null");        # if you can change these
+                                                     # two systems bye the perl
+                                                     # syscall ... :-)
+system ("mkdir $Options{outputdir}/$nodename 2>/dev/null");   # ignore return value
+system ("chmod 0755 $Options{outputdir}/$nodename 2>/dev/null");
+
+&logit ("ready (pid $$)");
+if (open(P, "> $Options{pidfile}")) {
+	print P "$$\n";
+	close P;
+} else {
+	&logit("can't save pid (can't write to \`$Options{pidfile}')");
+	warn "$progname: can't save pid (can't write to \`$Options{pidfile}')\n";
+}
+
+
+
+#
+# init the services
+#
+print "Initializing : ";
+while ( ($service) = each %Services) {
+	if ($Services{$service}{File} !~ /^off$/i) {
+		my $func= $Services{$service}{Init};
+		if ($func eq "") {
+			next;
+		}
+		$Services{$service}{Ok} = &$func($Services{$service}{File});
+	}
+	print "$service($Services{$service}{Ok}) ";
+}
+print "\n";	
+
+while () {
+	my $outputfile_ok = 0;
+	my ($now, $sleep_till);
+
+	$now        = time;
+	$sleep_till = ($now/$Options{interval}) * $Options{interval};
+	while ($sleep_till < $now + $Options{interval}*0.5) {
+		$sleep_till += $Options{interval};
+	}
+
+	&measure_head ($now);
+
+	#
+	# Init the services vars
+	#
+	while ( ($service) = each %Services) {
+		if ($Services{$service}{Ok} == 0) {
+			my $func= $Services{$service}{Init_Vars};
+			if ($func eq "") {
+				next;
+			}
+			&$func();
+		}
+	}
+
+	#
+	# call the measure routines...
+	# 
+	&measure ($sleep_till);
+
+	while ( ($service) = each %Services) {
+		if ($Services{$service}{Ok} == 0) {
+			my $func= $Services{$service}{Put};
+			if ($func eq "") {
+				next;
+			}
+			&$func();
+		}
+	}
+
+	$outputfile_ok = &check_output ("$Options{outputdir}/$nodename");
+
+	&flush_output ();
+
+}
+
+# got here ? how ??
+exit 0;
+
+#
+# The usage stuff
+#
+sub usage {
+	print "Usage: $progname [options]\n";
+	print "($progname uses the GNU extended POSIX option format)\n";
+	print "\n";
+
+	while ( ($helpline) = each %HelpText) {
+		print "$HelpText{$helpline} $helpline)\n";
+	}
+	print "--help, --version this option summary\n";
+
+	print "\n";
+	print "Note: use filename 'off' to turn off the specific service\n";
+	print "\n";
+	print " This is $progname version $VERSION\n";
+	print "\n";
+
+	exit;
+}
+
+#
+# Cycle several measurables
+#
+# usage: &measure( $sleep_till );
+#
+sub measure () {
+	my ($sleep_till) = @_;
+	$now = time;
+
+	while ($now < $sleep_till) {
+		printf "MEASURE: sleeping for 5\n" if $Options{debug};
+		sleep(5);
+		$now = time;
+
+		# measure...
+		while ( ($service) = each %Services) {
+			if ($Services{$service}{Ok} == 0 && $Services{$service}{External} == 0) {
+				my $func= $Services{$service}{Measure};
+				if ($func eq "") {
+					next;
+				}
+				&$func();
+			}
+		}
+		# measure...
+
+		$now = time;
+	} # while ($now < $sleep_till)
+
+	#
+	# put in the end... calls external prog.
+	#
+	while ( ($service) = each %Services) {
+		if ($Services{$service}{Ok} == 0 && $Services{$service}{External} == 1) {
+			my $func= $Services{$service}{Measure};
+			if ($func eq "") {
+				next;
+			}
+			&$func();
+		}
+		#
+		# some internal services has something extra to check
+		#
+		if (defined($Services{$service}{Extra})) {
+			my $func= $Services{$service}{Extra};
+			if ($func eq "") {
+				next;
+			}
+			&$func();
+		}
+	}
+
+	return 0;
+}
+
+#
+# measure_head -- put first values
+#
+# usage: &measure_head($time)
+#
+sub measure_head() {
+	my ($time) = @_;
+
+	$now_string = strftime "%T", localtime;
+	&put_output(" timestamp", sprintf("%10d", $time));
+	&put_output("locltime", $now_string);
+}

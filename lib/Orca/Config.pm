@@ -30,7 +30,7 @@ use Orca::SourceFileIDs qw(@sfile_fids);
 use vars qw(@EXPORT_OK @ISA $VERSION);
 
 @ISA     = qw(Exporter);
-$VERSION = substr q$Revision: 0.01 $, 10;
+$VERSION = (substr q$Revision$, 10)/100.0;
 
 # Export the main subroutine to load configuration data and a subroutine
 # to get a color indexed by an integer.

@@ -28,7 +28,7 @@ use vars qw(@EXPORT_OK @ISA $VERSION);
                 recursive_mkdir
                 unique);
 @ISA       = qw(Exporter);
-$VERSION   = substr q$Revision: 0.01 $, 10;
+$VERSION   = (substr q$Revision$, 10)/100.0;
 
 # Take a string and capatialize only the first character of the
 # string.

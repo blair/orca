@@ -18,7 +18,7 @@ use vars                qw(@ISA @EXPORT_OK $VERSION);
 
 @ISA       = qw(Exporter);
 @EXPORT_OK = qw(ORCA_DATAFILE_LAST_INDEX);
-$VERSION   = substr q$Revision: 0.01 $, 10;
+$VERSION   = (substr q$Revision$, 10)/100.0;
 
 # Use a blessed reference to an array as the storage for this class.
 # Define these constant subroutines as indexes into the array.

@@ -18,7 +18,7 @@ use Math::IntervalSearch qw(interval_search);
 use vars                 qw(@EXPORT_OK @ISA $VERSION);
 
 @ISA     = qw(Exporter);
-$VERSION = substr q$Revision: 0.01 $, 10;
+$VERSION = (substr q$Revision$, 10)/100.0;
 
 # This module contains three variables.  The first is a hash keyed by
 # filename with a numeric value.  The second is an array, where value

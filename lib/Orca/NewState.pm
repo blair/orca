@@ -18,7 +18,7 @@ use Orca::Constants qw($opt_verbose
 use vars            qw(@EXPORT_OK @ISA $VERSION);
 
 @ISA     = qw(Exporter);
-$VERSION = substr q$Revision: 0.01 $, 10;
+$VERSION = (substr q$Revision$, 10)/100.0;
 
 # Create one global state object for the whole program.
 use vars      qw($orca_state);

@@ -32,7 +32,7 @@ use Orca::Utils         qw(email_message);
 use vars                qw(@ISA $VERSION);
 
 @ISA     = qw(Orca::DataFile);
-$VERSION = substr q$Revision: 0.01 $, 10;
+$VERSION = (substr q$Revision$, 10)/100.0;
 
 # This is a static variable that lists all of the column names for a
 # particular group.

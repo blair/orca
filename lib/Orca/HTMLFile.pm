@@ -15,7 +15,7 @@ use Carp;
 use Orca::Constants qw($ORCA_VERSION);
 use vars            qw(@EXPORT_OK @ISA $VERSION);
 @ISA     = qw(Exporter);
-$VERSION = substr q$Revision: 0.02 $, 10;
+$VERSION = (substr q$Revision$, 10)/100.0;
 
 # $html_hr is the HTML <hr/> tag with the correct width attribute.
 use vars         qw($html_hr);

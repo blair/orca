@@ -18,7 +18,7 @@ use Orca::SourceFileIDs qw(@sfile_fids);
 use vars                qw(@EXPORT_OK @ISA $VERSION);
 
 @ISA     = qw(Exporter);
-$VERSION = substr q$Revision: 0.01 $, 10;
+$VERSION = (substr q$Revision$, 10)/100.0;
 
 # Set up a cache of 100 open file descriptors for the source data
 # files.  This leaves a large number of free file descriptors for

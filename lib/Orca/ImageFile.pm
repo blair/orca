@@ -29,7 +29,7 @@ use Orca::Utils     qw(name_to_fsname recursive_mkdir);
 
 use vars            qw($VERSION);
 
-$VERSION = substr q$Revision: 0.01 $, 10;
+$VERSION = (substr q$Revision$, 10)/100.0;
 
 # Use a blessed reference to an array as the storage for this class.
 # Define these constant subroutines as indexes into the array.  If

@@ -14,7 +14,7 @@ use strict;
 use Exporter;
 use vars qw(@EXPORT_OK @ISA $VERSION);
 @ISA     = qw(Exporter);
-$VERSION = substr q$Revision: 0.01 $, 10;
+$VERSION = (substr q$Revision$, 10)/100.0;
 
 # ORCA_VER_MAJOR        Orca's major version number.  Increment when
 #                       incompatible changes are made to published

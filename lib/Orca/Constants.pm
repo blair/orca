@@ -75,7 +75,7 @@ push(@EXPORT_OK, qw(@CONST_IMAGE_PLOT_TYPES %CONST_IMAGE_PLOT_INFO));
 BEGIN {
   @CONST_IMAGE_PLOT_TYPES = qw(hourly daily weekly monthly quarterly yearly);
   %CONST_IMAGE_PLOT_INFO   =
-  ('hourly'    => [$RRA_PDP_COUNTS[0],   1.5*60*60],        #  18 data points
+  ('hourly'    => [$RRA_PDP_COUNTS[0],   3*60*60],          #  36 data points
    'daily'     => [$RRA_PDP_COUNTS[0],   1.5*DAY_SECONDS],  # 432 data points
    'weekly'    => [$RRA_PDP_COUNTS[1],  10  *DAY_SECONDS],  # 480 data points
    'monthly'   => [$RRA_PDP_COUNTS[2],  40  *DAY_SECONDS],  # 480 data points

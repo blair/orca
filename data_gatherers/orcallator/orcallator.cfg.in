@@ -437,6 +437,34 @@ href			http://www.orcaware.com/orca/docs/orcallator.html#interface_nocanput_rate
 }
 
 plot {
+title			%g Interface In/Out Packet Data Payload Size: $1
+source			orcallator
+data			(.*\d+)InDtSz/p
+data			$1OuDtSz/p
+line_type		area
+line_type		line1
+legend			Input
+legend			Output
+y_legend		Data Bytes/packet
+data_min		0
+data_max		1540
+}
+
+plot {
+title			%g Interface In/Out Packet Header Overhead: $1
+source			orcallator
+data			(.*\d+)InOvH%/p
+data			$1OuOvH%/p
+line_type		area
+line_type		line1
+legend			Input
+legend			Output
+y_legend		% Pkt Hdr Overhead/packet
+data_min		0
+data_max		100
+}
+
+plot {
 title			%g TCP Bits Per Second
 source			orcallator
 data			1024 * 8 * tcp_InKB/s
@@ -479,6 +507,34 @@ y_legend		Percent
 data_min		0
 data_max		200
 href			http://www.orcaware.com/orca/docs/orcallator.html#TCP_retransmission_duplicate_received_percentage
+}
+
+plot {
+title			%g TCP In/Out Packet Data Payload Size
+source			orcallator
+data			tcp_InDtSz/p
+data			tcp_OuDtSz/p
+line_type		area
+line_type		line1
+legend			Input
+legend			Output
+y_legend		Data Bytes/packet
+data_min		0
+data_max		1540
+}
+
+plot {
+title			%g TCP In/Out Packet Header Overhead
+source			orcallator
+data			tcp_InOvH%/p
+data			tcp_OuOvH%/p
+line_type		area
+line_type		line1
+legend			Input
+legend			Output
+y_legend		% Pkt Hdr Overhead/packet
+data_min		0
+data_max		100
 }
 
 plot {

@@ -65,7 +65,8 @@
 #include <utsname.se>
 
 #include <p_iostat_class.se>
-#include <p_netstat_class.se>
+//#include <p_netstat_class.se>
+#include <orca_p_netstat_class.se>
 //#include <p_vmstat_class.se>
 #include <orca_p_vmstat_class.se>
 #include <pure_rules.se>
@@ -1344,8 +1345,16 @@ measure_net()
 	       sprintf("%11.3f", GLOBAL_net[i].opackets));
     put_output(sprintf("%5sInKB/s", tmp_lr_net.names[i]),
 	       sprintf("%11.3f", GLOBAL_net[i].ioctets/1024.0));
+    put_output(sprintf("%5sInDtSz/p", tmp_lr_net.names[i]),
+	       sprintf("%11.3f", GLOBAL_net[i].idtsize));
+    put_output(sprintf("%5sInOvH%%/p", tmp_lr_net.names[i]),
+	       sprintf("%11.3f", GLOBAL_net[i].ihdrovhd));
     put_output(sprintf("%5sOuKB/s", tmp_lr_net.names[i]),
 	       sprintf("%11.3f", GLOBAL_net[i].ooctets/1024.0));
+    put_output(sprintf("%5sOuDtSz/p", tmp_lr_net.names[i]),
+	       sprintf("%11.3f", GLOBAL_net[i].odtsize));
+    put_output(sprintf("%5sOuOvH%%/p", tmp_lr_net.names[i]),
+	       sprintf("%11.3f", GLOBAL_net[i].ohdrovhd));
     put_output(sprintf("%5sIErr/s", tmp_lr_net.names[i]),
 	       sprintf("%11.3f", GLOBAL_net[i].ierrors));
     put_output(sprintf("%5sOErr/s", tmp_lr_net.names[i]),
@@ -1369,10 +1378,33 @@ measure_net()
 #ifdef WATCH_TCP
 measure_tcp()
 {
+  double tmp_tcp_InDtpPkt;
+  double tmp_tcp_OuDtpPkt;
+  double tmp_tcp_InOvHPct;
+  double tmp_tcp_OuOvHPct;
+
   put_output("tcp_Iseg/s", sprintf("%10.3f", tmp_tcp.InDataSegs));
   put_output("tcp_Oseg/s", sprintf("%10.3f", tmp_tcp.OutDataSegs));
   put_output("tcp_InKB/s", sprintf("%10.3f", tmp_tcp.InDataBytes/1024.0));
   put_output("tcp_OuKB/s", sprintf("%10.3f", tmp_tcp.OutDataBytes/1024.0));
+  if ( tmp_tcp.InDataSegs == 0.0 ) {
+    tmp_tcp_InDtpPkt = 0.0;
+    tmp_tcp_InOvHPct = 0.0;
+  } else {
+    tmp_tcp_InDtpPkt = tmp_tcp.InDataBytes/tmp_tcp.InDataSegs;
+    tmp_tcp_InOvHPct = 100 * (40 * tmp_tcp.InDataSegs / (40 * tmp_tcp.InDataSegs + tmp_tcp.InDataBytes));
+  }
+  put_output("tcp_InDtSz/p", sprintf("%10.3f", tmp_tcp_InDtpPkt));
+  put_output("tcp_InOvH%/p", sprintf("%8.3f",  tmp_tcp_InOvHPct));
+  if ( tmp_tcp.OutDataSegs == 0.0 ) {
+    tmp_tcp_OuDtpPkt = 0.0;
+    tmp_tcp_OuOvHPct = 0.0;
+  } else {
+    tmp_tcp_OuDtpPkt = tmp_tcp.OutDataBytes/tmp_tcp.OutDataSegs;
+    tmp_tcp_OuOvHPct = 100 * (40 * tmp_tcp.OutDataSegs / (40 * tmp_tcp.OutDataSegs + tmp_tcp.OutDataBytes));
+  }
+  put_output("tcp_OuDtSz/p", sprintf("%10.3f", tmp_tcp_OuDtpPkt));
+  put_output("tcp_OuOvH%/p", sprintf("%8.3f",  tmp_tcp_OuOvHPct));
   put_output("tcp_Ret%",   sprintf("%8.3f",  tmp_tcp.RetransPercent));
   put_output("tcp_Dup%",   sprintf("%8.3f",  tmp_tcp.InDupPercent));
   put_output("tcp_Icn/s",  sprintf("%9.3f",  tmp_tcp.PassiveOpens));

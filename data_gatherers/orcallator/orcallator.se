@@ -23,8 +23,8 @@
 // The maximum number of columns of data.
 #define MAX_COLUMNS		2048
 
-// Enable kstat io measuring code.
-#define USE_KSTAT_IO		1
+// Enable the raw disk measuring code.
+#define USE_RAWDISK		1
 
 // If WATCH_OS is defined, then measure every part of the operating
 // system.
@@ -297,9 +297,8 @@ long		squid_client_http;
 
 #endif
 
-#ifdef USE_KSTAT_IO
+#ifdef USE_RAWDISK
 #include <sys_kstat.se>
-#include <tapeinfo.se>
 // This code was developed so that the performance of virtual disks
 // originating from a Sun A1000 raid controller could be monitored.
 // These disks do not show up in the GLOBAL_disk[] io structure of SE.
@@ -307,11 +306,10 @@ long		squid_client_http;
 // This extension accesses the sys_kstat.se interface to the kstat IO
 // queues to extract info on drives not available in the kstat.se
 // kstat$disk interface.  Global data shared between function calls.
-struct io_dev_info_t {
+struct RawDisk {
   // Exposed interface that matches kstat.
-  string	dev_class;
-  string	long_name;
-  string	short_name;
+  char		long_name[48];
+  char		short_name[8];
   double	reads;
   double	kreads;
   double	writes;
@@ -339,128 +337,293 @@ struct io_dev_info_t {
 };
 
 // Define global for tracking raw disk data.
-io_dev_info_t	ORCA_io_dev_info[];
-int		ORCA_io_dev_count=0;
-int		ORCA_max_io_dev_count=0;
+#ifndef MAX_RAWDISKS
+#define MAX_RAWDISKS	1024
+#endif
 
-orca_io_info_update() {
-  int		iodev;
-  int		index;
-  ulong		ul;
-  kstat_ctl_t	kc[1];
-  kstat_t	nkp[1];
-  kstat_io_t	kio;
+RawDisk			RAW_disk[MAX_RAWDISKS];
+int			RAW_disk_map=0;
+int			RAW_disk_count=0;
+double			RAW_disk_lastupdate;
 
-  double	read_writes;
-  double	big_etime;
-  double	elapsed_etime;
-  double	hz_etime;
+// Compare two short disk names and return if they have on the same
+// physical device name, ignoring slice info.
+int raw_disk_short_name_cmp(char disk1[],
+                            int  disk1_length,
+                            char disk2[],
+                            int  disk2_length)
+{
+  int i;
 
-  // Initialize kstat control structure
+  // Handle dad disks first since they do not have commas.
+  if (strncmp("dad", disk1, 3) == 0) {
+    return strncmp(disk1, disk2, disk1_length);
+  }
+
+  // Extract the physical disk name from disk slices.  This only works
+  // with SCSI disks where slices have commma separators.
+  for (i=0; i<disk1_length; ++i) {
+    if (disk1[i] == ',') {
+      disk1_length = i;
+      break;
+    }
+  }
+  for (i=0; i<disk2_length; ++i) {
+    if (disk2[i] == ',') {
+      disk2_length = i;
+      break;
+    }
+  }
+  if (disk1_length != disk2_length) {
+    return 1;
+  }
+  return strncmp(disk1, disk2, disk1_length);
+}
+
+// Function to scan kstat and map short device names to long device names.
+raw_disk_map() {
+  int  first_name_length;
+  char first_name[16];
+  int  second_name_length;
+  char second_name[16];
+  char long_name[16];
+  char short_name[16];
+  int  short_name_length;
+  int  i;
+  int  j;
+
+  // This section is used to map short names to long names.  Since
+  // raw_disk_update has already identified how many physical devices
+  // it simply tries to find theses devices in GLOBAL_disk_info[].
+  //
+  // SE appears to have a bug where GLOBAL_diskinfo_size can be larger
+  // than the number of entries in GLOBAL_disk_info[] under a variety
+  // of conditions.  In later versions of SE GLOBAL_diskinfo_size has
+  // been removed.  This appears to fix the above problem.  This code
+  // uses MAX_RAWDISKS for the table length and the assumption that
+  // short disks names come before short disk partition names to
+  // detect the end of the table.  If it fails to detect the end it
+  // will core dump when it addresses unallocated memory.
+  //
+  // These symbols are used to recognize when we slip past the end of
+  // the raw devices in GLOBAL_disk_info.  It would be nice to just
+  // look for a slice like sd0,a but unfortunately EIDE disks do not
+  // have slices.
+  //
+  // Check for the first and second disk in case the CD-ROM shows up
+  // as the first disk since it will not show slice information unless
+  // it is mounted.
+  strcpy(first_name, GLOBAL_disk_info[0].short_name);
+  first_name_length = strlen(first_name);
+  if (MAX_RAWDISKS > 1) {
+    strcpy(second_name, GLOBAL_disk_info[1].short_name);
+    second_name_length = strlen(second_name);
+  }
+  for (i=0; i<RAW_disk_count; ++i) {
+    // Do not map st & fd devices.
+    if (strncmp(RAW_disk[i].short_name, "st", 2) != 0 &&
+        strncmp(RAW_disk[i].short_name, "fd", 2) != 0) {
+      for (j=0; j<MAX_RAWDISKS; ++j) {
+        strcpy(short_name, GLOBAL_disk_info[j].short_name);
+        if (j > 0) {
+          short_name_length = strlen(short_name);
+          if (raw_disk_short_name_cmp(first_name,
+                                      first_name_length,
+                                      short_name,
+                                      short_name_length) == 0) {
+            break;
+          }
+          if (j > 1) {
+            if (raw_disk_short_name_cmp(second_name,
+                                        second_name_length,
+                                        short_name,
+                                        short_name_length) == 0) {
+              break;
+            }
+          }
+        }
+        if (strcmp(RAW_disk[i].short_name, short_name) == 0) {
+          strcpy(long_name, GLOBAL_disk_info[j].long_name);
+          strcpy(RAW_disk[i].long_name, long_name);
+          break;
+        }
+      }
+    }
+  }
+  RAW_disk_map = 0;
+}
+
+raw_disk_update() {
+  int         rdisk;
+  ulong       ul;
+  kstat_ctl_t kc[1];
+  kstat_t     kp[1];
+  kstat_t     nkp[1];
+  kstat_io_t  kio;
+  ulonglong   _nread;
+  ulonglong   _nwritten;
+  uint        _reads;
+  uint        _writes;
+  longlong    _wtime;
+  longlong    _wlentime;
+  longlong    _wlastupdate;
+  longlong    _rtime;
+  longlong    _rlentime;
+  longlong    _rlastupdate;
+  longlong    _wcnt;
+  longlong    _rcnt;
+
+  double      read_writes;
+  double      big_etime;
+  double      elapsed_etime;
+  double      hz_etime;
+  double      nanosecond = NANOSEC;
+  double      update;
+  double      delta;
+  timeval_t   time_update[1];
+  ulong       time_void;
+  char        short_name[8];
+
+  gettimeofday(time_update, time_void);
+  update = time_update[0].tv_sec + (time_update[0].tv_usec / 1000000.0);
+  delta  = update - RAW_disk_lastupdate;
+  RAW_disk_lastupdate = update;
+
   kc[0] = kstat_open();
+  // Read them.
+  if (kstat_read(kc, kp, 0) == -1) {
+    perror("raw_disk_update:kstat_read");
+    exit(1);
+  }
+
   // Traverse the chain looking for IO events.
-  for (ul=kc[0].kc_chain; ul!=0; ul=nkp[0].ks_next) {
+  for (ul=kc[0].kc_chain; ul !=0; ul=nkp[0].ks_next) {
     struct_fill(nkp[0], ul);
     if (nkp[0].ks_type == KSTAT_TYPE_IO) {
-      // Look for disk or tape statistics
-      if (nkp[0].ks_class == "disk" || nkp[0].ks_class == "tape") {
-        // Get data from the kernel for this kstat
-        if (kstat_read(kc, nkp, 0) == -1) {
-          perror("orca_io_info_update:kstat_read error");
-          exit(1);
-        }
-        struct_fill(kio, nkp[0].ks_data);
-
-        // Try to locate device in our array
-        for (iodev=0; iodev < ORCA_io_dev_count; ++iodev) {
-          if (ORCA_io_dev_info[iodev].short_name == nkp[0].ks_name) {
+      strcpy(short_name, nkp[0].ks_name);
+      if (short_name[0] != 'm' &&
+          short_name[0] != 'n' &&
+          strchr(short_name,',') == nil) {
+        // Try to locate device.
+        for (rdisk=0; rdisk<RAW_disk_count; ++rdisk) {
+          if (strcmp(RAW_disk[rdisk].short_name, short_name) == 0) {
             break;
           }
         }
 
-        // It must be new. Add it!
-        if (iodev == ORCA_io_dev_count) {
-          // Grow the device array if needed
-          if (ORCA_io_dev_count == ORCA_max_io_dev_count) {
-            ORCA_max_io_dev_count += 10;
-            ORCA_io_dev_info = renew ORCA_io_dev_info[ORCA_max_io_dev_count];
-          }
-
-          if (nkp[0].ks_class == "tape") {
-            index = find_tape_inst(nkp[0].ks_name);
-          } else {
-            index = find_inst(nkp[0].ks_name);
-          }
-          if (index != -1) {
-            if (nkp[0].ks_class == "tape") {
-              ORCA_io_dev_info[iodev].long_name = GLOBAL_tape_info[index].long_name;
-            } else {
-              ORCA_io_dev_info[iodev].long_name = GLOBAL_disk_info[index].long_name;
-            }
-          } else {
-            ORCA_io_dev_info[iodev].long_name = nkp[0].ks_name;
-          }
-          ORCA_io_dev_info[iodev].short_name = nkp[0].ks_name;
-
-          ORCA_io_dev_info[iodev]._writes      = kio.writes;
-          ORCA_io_dev_info[iodev]._nwritten    = kio.nwritten;
-          ORCA_io_dev_info[iodev]._wlastupdate = kio.wlastupdate;
-          ORCA_io_dev_info[iodev]._wlentime    = kio.wlentime;
-          ORCA_io_dev_info[iodev]._wtime       = kio.wtime;
-          ORCA_io_dev_info[iodev]._wcnt        = kio.wcnt;
-          ORCA_io_dev_info[iodev]._reads       = kio.reads;
-          ORCA_io_dev_info[iodev]._nread       = kio.nread;
-          ORCA_io_dev_info[iodev]._rlastupdate = kio.rlastupdate;
-          ORCA_io_dev_info[iodev]._rlentime    = kio.rlentime;
-          ORCA_io_dev_info[iodev]._rtime       = kio.rtime;
-          ORCA_io_dev_info[iodev]._rcnt        = kio.rcnt;
-          ORCA_io_dev_count++;
+        // It must be new.  Add it!
+        if (rdisk == RAW_disk_count) {
+          // Must be a tape drive or something else.  Schedule device
+          // name map cycle.
+          RAW_disk_map = 1;
+          strcpy(RAW_disk[rdisk].long_name, short_name);
+          strcpy(RAW_disk[rdisk].short_name, short_name);
+          RAW_disk[rdisk]._reads       = 0;
+          RAW_disk[rdisk]._nread       = 0;
+          RAW_disk[rdisk]._rlentime    = 0;
+          RAW_disk[rdisk]._rlastupdate = boot_time;
+          RAW_disk[rdisk]._rcnt        = 0;
+          RAW_disk[rdisk]._writes      = 0;
+          RAW_disk[rdisk]._nwritten    = 0;
+          RAW_disk[rdisk]._wlentime    = 0;
+          RAW_disk[rdisk]._wlastupdate = boot_time;
+          RAW_disk[rdisk]._wcnt        = 0;
+          RAW_disk_count++;
         }
 
-        elapsed_etime = (kio.wlastupdate - ORCA_io_dev_info[iodev]._wlastupdate);
-        if (elapsed_etime == 0) {
-          elapsed_etime = NANOSEC;
-        }
-        hz_etime = elapsed_etime / NANOSEC;
-        big_etime = 1024.0 * hz_etime;
-
-        ORCA_io_dev_info[iodev].reads  =(kio.reads-ORCA_io_dev_info[iodev]._reads)      /hz_etime;
-        ORCA_io_dev_info[iodev].kreads =(kio.nread-ORCA_io_dev_info[iodev]._nread)      /big_etime;
-        ORCA_io_dev_info[iodev].writes =(kio.writes-ORCA_io_dev_info[iodev]._writes)    /hz_etime;
-        ORCA_io_dev_info[iodev].kwrites=(kio.nwritten-ORCA_io_dev_info[iodev]._nwritten)/big_etime;
-
-        read_writes = elapsed_etime * (ORCA_io_dev_info[iodev].reads + ORCA_io_dev_info[iodev].writes) / 1024.0;
-        if (read_writes > 0) {
-          ORCA_io_dev_info[iodev].avg_wait = (kio.wlentime - ORCA_io_dev_info[iodev]._wlentime) / read_writes;
-          ORCA_io_dev_info[iodev].avg_serv = (kio.rlentime - ORCA_io_dev_info[iodev]._rlentime) / read_writes;
-          ORCA_io_dev_info[iodev].service  = ORCA_io_dev_info[iodev].avg_wait + ORCA_io_dev_info[iodev].avg_serv;
+        // Update the device registers.
+        if (kstat_read(kc, nkp, 0) == -1) {
+          perror("raw_disk_update:kstat_read error");
+          exit(1);
         } else {
-          ORCA_io_dev_info[iodev].avg_wait = 0.0;
-          ORCA_io_dev_info[iodev].avg_serv = 0.0;
-          ORCA_io_dev_info[iodev].service  = 0.0;
-        }
+          // Read sys_kstat device IO queue to find out about recent
+          // activity.  We validate data that is returned.  Solaris
+          // 2.6 has occasional glitches when updating certain disks
+          // (c0t0d0) so we cover up the glitches by using data from
+          // the previous cycle.  Eventually, we will get a good
+          // update.  Fixing the data is not necessarily the best
+          // choice.  Currently only kio.nread glitches.  Correcting
+          // the error forces the IOs to get attributed to the next IO
+          // cycle.
+          struct_fill(kio, nkp[0].ks_data);
+          _nread  =  kio.nread;
+          if (RAW_disk[rdisk]._nread > _nread) {
+            _nread = RAW_disk[rdisk]._nread;
+          }
+          _reads = kio.reads;
+	  if (RAW_disk[rdisk]._reads > _reads) {
+            _reads = RAW_disk[rdisk]._reads;
+          }
+          _rlentime    = kio.rlentime;
+          _rtime       = kio.rtime;
+          _rlastupdate = kio.wlastupdate;
+          _rcnt        = kio.rcnt;
+          _nwritten    = kio.nwritten;
+          if (RAW_disk[rdisk]._nwritten > _nwritten) {
+            _nwritten = RAW_disk[rdisk]._nwritten;
+          }
+          _writes = kio.writes;
+          if (RAW_disk[rdisk]._writes > _writes) {
+            _writes = RAW_disk[rdisk]._nwritten;
+          }
+          _wlentime    = kio.wlentime;
+          _wtime       = kio.wtime;
+          _wlastupdate = kio.wlastupdate;
+          _wcnt        = kio.wcnt;
 
-        // Update the counters.
-        ORCA_io_dev_info[iodev].run_percent  = 100.0 * (kio.rtime  - ORCA_io_dev_info[iodev]._rtime) / elapsed_etime;
-        ORCA_io_dev_info[iodev].wait_percent = 100.0 * (kio.wtime - ORCA_io_dev_info[iodev]._wtime) / elapsed_etime;
-        ORCA_io_dev_info[iodev]._writes      = kio.writes;
-        ORCA_io_dev_info[iodev]._nwritten    = kio.nwritten;
-        ORCA_io_dev_info[iodev]._wlastupdate = kio.wlastupdate;
-        ORCA_io_dev_info[iodev]._wlentime    = kio.wlentime;
-        ORCA_io_dev_info[iodev]._wtime       = kio.wtime;
-        ORCA_io_dev_info[iodev]._wcnt        = kio.wcnt;
-        ORCA_io_dev_info[iodev]._reads       = kio.reads;
-        ORCA_io_dev_info[iodev]._nread       = kio.nread;
-        ORCA_io_dev_info[iodev]._rlastupdate = kio.rlastupdate;
-        ORCA_io_dev_info[iodev]._rlentime    = kio.rlentime;
-        ORCA_io_dev_info[iodev]._rtime       = kio.rtime;
-        ORCA_io_dev_info[iodev]._rcnt        = kio.rcnt;
+          elapsed_etime = (_wlastupdate - RAW_disk[rdisk]._wlastupdate);
+          if (elapsed_etime > 0)  {
+            hz_etime = elapsed_etime / nanosecond;
+            big_etime = 1024.0 * hz_etime;
+          } else {
+            elapsed_etime = nanosecond;
+            hz_etime = 1.0;
+            big_etime = 1024.0;
+          }
+          RAW_disk[rdisk].reads  =(_reads-RAW_disk[rdisk]._reads)  /hz_etime;
+          RAW_disk[rdisk].kreads =(_nread-RAW_disk[rdisk]._nread)  /big_etime;
+          RAW_disk[rdisk].writes =(_writes-RAW_disk[rdisk]._writes)/hz_etime;
+          RAW_disk[rdisk].kwrites=(_nwritten-RAW_disk[rdisk]._nwritten) / big_etime;
+
+          read_writes = elapsed_etime * (RAW_disk[rdisk].reads + RAW_disk[rdisk].writes) / 1024.0;
+          if (read_writes > 0) {
+            RAW_disk[rdisk].avg_wait = (_wlentime - RAW_disk[rdisk]._wlentime) / read_writes;
+            RAW_disk[rdisk].avg_serv = (_rlentime - RAW_disk[rdisk]._rlentime) / read_writes;
+            RAW_disk[rdisk].service  = RAW_disk[rdisk].avg_wait + RAW_disk[rdisk].avg_serv;
+          } else {
+            RAW_disk[rdisk].avg_wait = 0.0;
+            RAW_disk[rdisk].avg_serv = 0.0;
+            RAW_disk[rdisk].service  = 0.0;
+          }
+
+          // Update the counters.
+          RAW_disk[rdisk].run_percent  = 100.0 * (_rtime  - RAW_disk[rdisk]._rtime) / elapsed_etime;
+          RAW_disk[rdisk].wait_percent = 100.0 * (_wtime - RAW_disk[rdisk]._wtime) / elapsed_etime;
+          RAW_disk[rdisk]._writes      = _writes;
+          RAW_disk[rdisk]._nwritten    = _nwritten;
+          RAW_disk[rdisk]._wlastupdate = _wlastupdate;
+          RAW_disk[rdisk]._wlentime    = _wlentime;
+          RAW_disk[rdisk]._wtime       = _wtime;
+          RAW_disk[rdisk]._wcnt        = _wcnt;
+          RAW_disk[rdisk]._reads       = _reads;
+          RAW_disk[rdisk]._nread       = _nread;
+          RAW_disk[rdisk]._rlastupdate = _rlastupdate;
+          RAW_disk[rdisk]._rlentime    = _rlentime;
+          RAW_disk[rdisk]._rtime       = _rtime;
+          RAW_disk[rdisk]._rcnt        = _rcnt;
+        }
       }
     }
   }
   kstat_close(kc);
+
+  // Map long device names for any drives that we just discovered.
+  if (RAW_disk_map == 1) {
+    raw_disk_map();
+  }
 }
-#endif // USE_KSTAT_IO
+#endif
+// RAWDISK
 
 // Variables for handling output.
 string		compress = getenv("COMPRESSOR"); // How to compress logs.
@@ -862,8 +1025,8 @@ _measure_os()
   tmp_tcp           = tcp$tcp;
 #endif
 
-#ifdef USE_KSTAT_IO
-   orca_io_info_update();
+#ifdef USE_RAWDISK
+   raw_disk_update();
 #endif
 }
 
@@ -1435,29 +1598,29 @@ measure_disk()
   total_tape_writek   = 0.0;
   tape_count          = 0;
 
-#ifdef USE_KSTAT_IO
-  for (i=0; i<ORCA_io_dev_count; ++i) {
+#ifdef USE_RAWDISK
+  for (i=0; i<RAW_disk_count; ++i) {
     // Record tape drive st devices differently than regular disk devices.
-    if (ORCA_io_dev_info[i].short_name =~ "^st.*") {
+    if (RAW_disk[i].short_name[0] == 's' && RAW_disk[i].short_name[1] == 't') {
       tape_count++;
-      total_tape_reads  += ORCA_io_dev_info[i].reads;
-      total_tape_writes += ORCA_io_dev_info[i].writes;
-      total_tape_readk  += ORCA_io_dev_info[i].kreads;
-      total_tape_writek += ORCA_io_dev_info[i].kwrites;
-      put_output(sprintf("tape_runp_%s", ORCA_io_dev_info[i].long_name),
-                 sprintf("%16.5f", ORCA_io_dev_info[i].run_percent));
+      total_tape_reads  += RAW_disk[i].reads;
+      total_tape_writes += RAW_disk[i].writes;
+      total_tape_readk  += RAW_disk[i].kreads;
+      total_tape_writek += RAW_disk[i].kwrites;
+      put_output(sprintf("tape_runp_%s", RAW_disk[i].long_name),
+                 sprintf("%16.5f", RAW_disk[i].run_percent));
       continue;
     }
     // Block the listing of floppy drives for now.
-    if (ORCA_io_dev_info[i].short_name =~ "^fd.*") {
+    if (RAW_disk[i].short_name[0] == 'f' && RAW_disk[i].short_name[1] == 'd') {
       continue;
     }
     disk_count++;
-    put_output(sprintf("disk_runp_%s", ORCA_io_dev_info[i].long_name),
-               sprintf("%16.5f", ORCA_io_dev_info[i].run_percent));
+    put_output(sprintf("disk_runp_%s", RAW_disk[i].long_name),
+               sprintf("%16.5f", RAW_disk[i].run_percent));
 
-    put_output(sprintf("disk_svct_%s", ORCA_io_dev_info[i].long_name),
-               sprintf("%16.5f", ORCA_io_dev_info[i].service));
+    put_output(sprintf("disk_svct_%s", RAW_disk[i].long_name),
+               sprintf("%16.5f", RAW_disk[i].service));
 
     // Comments from Damon Atkins <Damon.Atkins@nabaus.com.au>.  Check
     // [wr]lentime to see if an EMC is using a fake disk for control.
@@ -1474,13 +1637,13 @@ measure_disk()
 #ifdef HAVE_EMC_DISK_CONTROL
     if ((pioGLOB_old_wlentime[i] + pioGLOB_old_rlentime[i]) > 1) {
 #endif
-      total_disk_reads  += ORCA_io_dev_info[i].reads;
-      total_disk_writes += ORCA_io_dev_info[i].writes;
-      total_disk_readk  += ORCA_io_dev_info[i].kreads;
-      total_disk_writek += ORCA_io_dev_info[i].kwrites;
-      mean_disk_busy    += ORCA_io_dev_info[i].run_percent;
-      if (ORCA_io_dev_info[i].run_percent > peak_disk_busy) {
-         peak_disk_busy = ORCA_io_dev_info[i].run_percent;
+      total_disk_reads  += RAW_disk[i].reads;
+      total_disk_writes += RAW_disk[i].writes;
+      total_disk_readk  += RAW_disk[i].kreads;
+      total_disk_writek += RAW_disk[i].kwrites;
+      mean_disk_busy    += RAW_disk[i].run_percent;
+      if (RAW_disk[i].run_percent > peak_disk_busy) {
+         peak_disk_busy = RAW_disk[i].run_percent;
       }
 #ifdef HAVE_EMC_DISK_CONTROL
     }

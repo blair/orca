@@ -70,11 +70,13 @@ orca_services_run_at_boot: all
 	-$(RM) $(INIT_D_DIR)/orca_services
 	-$(RM) $(RCX_D_CONTAINING_DIR)/rc0.d/K01orca_services
 	-$(RM) $(RCX_D_CONTAINING_DIR)/rc1.d/K01orca_services
+	-$(RM) $(RCX_D_CONTAINING_DIR)/rc2.d/K01orca_services
 	-$(RM) $(RCX_D_CONTAINING_DIR)/rc3.d/S99orca_services
 	$(INSTALL) -m 0744 S99orca_services $(INIT_D_DIR)/orca_services
-	ln $(INIT_D_DIR)/orca_services $(RCX_D_CONTAINING_DIR)/rc0.d/K01orca_services
-	ln $(INIT_D_DIR)/orca_services $(RCX_D_CONTAINING_DIR)/rc1.d/K01orca_services
-	ln $(INIT_D_DIR)/orca_services $(RCX_D_CONTAINING_DIR)/rc3.d/S99orca_services
+	ln -s $(INIT_D_DIR)/orca_services $(RCX_D_CONTAINING_DIR)/rc0.d/K01orca_services
+	ln -s $(INIT_D_DIR)/orca_services $(RCX_D_CONTAINING_DIR)/rc1.d/K01orca_services
+	ln -s $(INIT_D_DIR)/orca_services $(RCX_D_CONTAINING_DIR)/rc2.d/K01orca_services
+	ln -s $(INIT_D_DIR)/orca_services $(RCX_D_CONTAINING_DIR)/rc3.d/S99orca_services
 
 clean:
 	$(RM) $(TARGETS)

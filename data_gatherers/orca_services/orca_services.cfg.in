@@ -72,14 +72,14 @@ filename_compare	sub {
 			}
 }
 
-#
-# ATTENTION: change this to your values
-#
+# This sets the text, that should not be HTML markup, that is used
+# only in the main index.html file.  It is used in the <title></title>
+# element and also placed in the HTML body after the html_page_header
+# in a <h1></h1> element index.html file.
 html_top_title		Services Status
 
-#
-# ATTENTION: change this to your values
-#
+# This sets the HTML markup that is placed at the very top of every
+# web page and is primarily used to display the site's logo.
 html_page_header
   <a href="http://www.kpnQwest.pt/">
     <img border=0 alt="kpnQwest Portugal"
@@ -87,6 +87,8 @@ html_page_header
      width=101 height=61></a>
   <spacer type=vertical size=4>
 
+# This sets the HTML markup that is placed at the bottom of every web
+# page.
 html_page_footer
   <spacer type=vertical size=20>
   <font face="Arial,Helvetica">

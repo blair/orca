@@ -1551,18 +1551,20 @@ By default, files are only searched for when Orca starts up.
 
 =item B<html_top_title> I<text> ...
 
-The I<text> is placed at the top of the main index.html that Orca
-creates.  By default, no additional text is placed at the top of the
-main index.html.
+This sets the text, that should not be HTML markup, that is used only
+in the main index.html file.  It is used in the <title></title>
+element and also placed in the HTML body after the html_page_header in
+a <h1></h1> element index.html file.  By default, no additional text
+is placed at the top of the main index.html.
 
-=item B<html_page_header> I<text> ...
+=item B<html_page_header> I<html> ...
 
-The I<text> is placed at the top of each HTML file that Orca creates.
+The I<html> is placed at the top of each HTML file that Orca creates.
 By default, no additional text is placed at the top of each HTML file.
 
-=item B<html_page_footer> I<text> ...
+=item B<html_page_footer> I<html> ...
 
-The I<text> is placed at the bottom of each HTML file that Orca
+The I<html> is placed at the bottom of each HTML file that Orca
 creates.  By default, no additional text is placed at the bottom of
 each HTML file.
 

@@ -217,6 +217,36 @@ AC_ARG_ENABLE(librrdtool,
 )
 AC_SUBST(INSTALL_LIB_RRDTOOL)
 
+BUILD_AIXALLATOR=yes
+AIXALLATOR_SUBDIR=aix
+AC_ARG_ENABLE(aixallator,
+  AC_HELP_STRING([--disable-aixallator],
+                 [Do not enable building and installing aixallator]),
+  [
+    if test "$enableval" = no; then
+      BUILD_AIXALLATOR=no
+      AIXALLATOR_SUBDIR=
+    fi
+  ]
+)
+AC_SUBST(BUILD_AIXALLATOR)
+AC_SUBST(AIXALLATOR_SUBDIR)
+
+BUILD_HPALLATOR=yes
+HPALLATOR_SUBDIR=hp
+AC_ARG_ENABLE(hpallator,
+  AC_HELP_STRING([--disable-hpallator],
+                 [Do not enable building and installing hpallator]),
+  [
+    if test "$enableval" = no; then
+      BUILD_HPALLATOR=no
+      HPALLATOR_SUBDIR=
+    fi
+  ]
+)
+AC_SUBST(BUILD_HPALLATOR)
+AC_SUBST(HPALLATOR_SUBDIR)
+
 BUILD_ORCALLATOR=yes
 ORCALLATOR_SUBDIR=orcallator
 AC_ARG_ENABLE(orcallator,
@@ -529,6 +559,17 @@ fi
 #       Generate the Makefiles and shell scripts with the
 #       variable substitutions.
 #--------------------------------------------------------------------
+if test "$BUILD_AIXALLATOR" = yes; then
+  OUTPUT_AIXALLATOR="data_gatherers/aix/Makefile
+                     data_gatherers/aix/orca-aix-stat.pl
+                     data_gatherers/aix/orca-aixtsm-stat.pl"
+fi
+
+if test "$BUILD_HPALLATOR" = yes; then
+  OUTPUT_HPALLATOR="data_gatherers/hp/Makefile
+                    data_gatherers/hp/orca-hp-stat.pl"
+fi
+
 if test "$BUILD_ORCALLATOR" = yes; then
   OUTPUT_ORCALLATOR="data_gatherers/orcallator/Makefile
                      data_gatherers/orcallator/orcallator.cfg
@@ -564,6 +605,8 @@ AC_OUTPUT(Makefile
           contrib/rotate_orca_graphs/Makefile
           contrib/rotate_orca_graphs/rotate_orca_graphs.sh
           data_gatherers/Makefile
+          $OUTPUT_HPALLATOR
+          $OUTPUT_AIXALLATOR
           $OUTPUT_ORCALLATOR
           $OUTPUT_ORCA_SERVICES
           $OUTPUT_PROCALLATOR

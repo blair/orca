@@ -41,6 +41,8 @@
 # $LastChangedBy$
 # $LastChangedRevision$
 
+my $COMPRESS = '@COMPRESSOR@';
+
 # Note: Execution speed is more important than cleanliness here.
 
 # Explicitly set PATH to prevent odd problems if run manually.
@@ -504,15 +506,91 @@ while ( $iterations-- > 0 ) {
         $need_header     = 1;
     }
 
+    ## Get TSM Tape usage
+    $tsmpvt = 0;
+    open IN, "dsmadmc -id=view -password=view 'query libvol' | grep 'Private' | wc -l |";
+    while (<IN>) {
+    chomp;
+    @fld = split(/ +/,);
+    if (/\d/) {
+      $tsmpvt = $fld[1];
+     }
+    }
+    close IN;
+
+    $tsmscr = 0;
+    open IN, "dsmadmc -id=view -password=view 'query libvol' | grep 'Scratch' | wc -l |";
+    while (<IN>) {
+    chomp;
+    @fld = split(/ +/,);
+    if (/\d/) {
+      $tsmscr = $fld[1];
+     }
+    }
+    close IN;
+
+    $tsmvlt = 0;
+    open IN, "dsmadmc -id=view -password=view 'query drmedia' | grep 'Vault' | wc -l |";
+    while (<IN>) {
+    chomp;
+    @fld = split(/ +/,);
+    if (/\d/) {
+      $tsmvlt = $fld[1];
+     }
+    }
+
+    $tsm_tape_info = join "\t", $tsmpvt, $tsmscr, $tsmvlt;
+    $tsm_tape_header = join "\t", tsmpvt, tsmscr, tsmvlt;
+
+    if ( scalar( split ' ', $tsm_tape_header ) !=
+      scalar( split ' ', $tsm_tape_info ) )
+    {
+        print STDERR "WARNING: TSM Tape header does not match TSM Tape info.\n";
+        $tsm_tape_header = '';
+        $tsm_tape_info   = '';
+        $need_header     = 1;
+    }
+
+    ## Get TSM Disk Storage Pool usage
+    $tsmphcy = 0;
+    $tsmphcn = 0;
+    open IN, "dsmadmc -id=view -password=view 'query stgpool' |";
+    while (<IN>) {
+    @fld = split(/ +/,);
+    if (/\d/) {
+      if ( $fld[0] eq "PHCYDISKPO-" ) {
+        $tsmphcy = $fld[3];
+       }
+      elsif ( $fld[0] eq "PHCNDISKPO-" ) {
+        $tsmphcn = $fld[3];
+       }
+     }
+    }
+    close IN;
+
+    $tsm_stg_info = join "\t", $tsmphcy, $tsmphcn;
+    $tsm_stg_header = join "\t", tsmphcy, tsmphcn;
+
+    if ( scalar( split ' ', $tsm_stg_header ) !=
+      scalar( split ' ', $tsm_stg_info ) )
+    {
+        print STDERR "WARNING: TSM Storage Pool header does not match TSM Storage Pool info.\n";
+        $tsm_stg_header = '';
+        $tsm_stg_info   = '';
+        $need_header     = 1;
+    }
+
     ## Join header and info then verify column counts.
     $out_header = join "\t", "timestamp", "locltime", $load_header, $up_header,
       $proc_header, $vmstat_header, $fs_header, $iostat_header, $packet_header,
-      $tcp_header, $tsm_header, $swap_header, $mem_header, $tsm_rmt_header;
+      $tcp_header, $tsm_header, $swap_header, $mem_header, $tsm_rmt_header,
+      $tsm_log_header, $tsm_tape_header, $tsm_stg_header;
     $out_header =~ tr/ \t/\t/s;    # translate whitespace to single tabs
 
     $out_info = join "\t", $timestamp, $locltime, $load_info, $up_info, $proc_info,
       $vmstat_info, $fs_info, $iostat_info, $packet_info, $tcp_info, $tsm_info, 
-	$swap_info, $mem_info, $tsm_rmt_info;
+      $swap_info, $mem_info, $tsm_rmt_info, $tsm_log_info, $tsm_tape_info,
+      $tsm_stg_info;
     $out_info =~ tr/ \t/\t/s;      # translate whitespace to single tabs
 
     $header_cnt = split ' ', $out_header;
@@ -540,7 +618,7 @@ while ( $iterations-- > 0 ) {
 }
 close OUT;
 
-@args = ( "/usr/bin/gzip", "-f", "$stat_file" );
+@args = ($COMPRESS, "-f", $stat_file);
 system(@args);
 
 exit 0;
@@ -548,7 +626,7 @@ exit 0;
 # This subroutine is called by the signal handler.
 sub exit_nicely {
     close OUT;
-    @args = ( "/usr/bin/gzip", "-f", "$stat_file" );
+    @args = ($COMPRESS, "-f", $stat_file);
     system(@args);
     exit 0;
 }

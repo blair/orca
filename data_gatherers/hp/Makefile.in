@@ -1,0 +1,63 @@
+@SET_MAKE@
+
+prefix                = @prefix@
+exec_prefix           = @exec_prefix@
+bindir                = @bindir@
+INSTALL               = @INSTALL@
+MKDIR                 = @MKDIR@
+PERL_HEAD             = @PERL_HEAD@
+RRD_DIR               = @RRD_DIR@
+VAR_DIR               = @VAR_DIR@
+RAW_ORCALLATOR_DIR    = $(VAR_DIR)/orcallator
+
+BIN_PERL_SCRIPTS      = orca-hp-stat
+LIBEXEC_PERL_SCRIPTS  =
+NOINST_PERL_SCRIPTS   =
+PERL_SCRIPTS          = $(BIN_PERL_SCRIPTS) \
+                        $(LIBEXEC_PERL_SCRIPTS) \
+                        $(NOINST_PERL_SCRIPTS)
+
+BIN_SHELL_SCRIPTS     =
+LIBEXEC_SHELL_SCRIPTS =
+NOINST_SHELL_SCRIPTS  =
+SHELL_SCRIPTS         = $(BIN_SHELL_SCRIPTS) \
+                        $(LIBEXEC_SHELL_SCRIPTS) \
+                        $(NOINST_SHELL_SCRIPTS)
+
+TARGETS               = $(PERL_SCRIPTS) \
+                        $(SHELL_SCRIPTS)
+BIN_TARGETS           = $(BIN_PERL_SCRIPTS) \
+                        $(BIN_SHELL_SCRIPTS)
+LIBEXEC_TARGETS       = $(LIBEXEC_PERL_SCRIPTS) \
+                        $(LIBEXEC_SHELL_SCRIPTS)
+
+all: Makefile $(TARGETS)
+
+install: all
+	$(MKDIR) $(bindir)
+	@for file in $(BIN_TARGETS); do \
+	  echo $(INSTALL) $$file $(bindir); \
+	  $(INSTALL) $$file $(bindir); \
+	done
+
+clean:
+	$(RM) $(TARGETS)
+
+distclean: clean
+	$(RM) *.sh orca-hp-stat.pl Makefile
+
+.SUFFIXES: .pl .sh
+
+.pl: $(PERL_HEAD)
+	cat $(PERL_HEAD) $< > $@
+	chmod 0755 $@
+
+.sh:
+	cp $< $@
+	chmod 0755 $@
+
+Makefile: Makefile.in
+	cd ../.. && CONFIG_FILES=data_gatherers/hp/Makefile ./config.status
+
+orca-hp-stat.pl: orca-hp-stat.pl.in
+	cd ../.. && CONFIG_FILES=data_gatherers/hp/orca-hp-stat.pl ./config.status

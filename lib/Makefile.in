@@ -30,6 +30,7 @@ install: all
 	$(MKDIR) $(libdir)/Orca
 	$(MKDIR) $(libdir)/SE/3.2.1
 	$(MKDIR) $(libdir)/SE/3.3
+	$(MKDIR) $(libdir)/SE/3.3.1
 	@for f in Orca/*.pm; do \
 	  echo $(INSTALL) -m 0644 $$f $(libdir)/Orca; \
 	  $(INSTALL) -m 0644 $$f $(libdir)/Orca; \
@@ -41,13 +42,13 @@ install: all
 	    $(INSTALL) -m 0644 $$f $(libdir)/Orca/Config; \
 	  done; \
 	fi
-	@for f in SE/3.2.1/*; do \
-	  echo $(INSTALL) -m 0644 $$f $(libdir)/SE/3.2.1; \
-	  $(INSTALL) -m 0644 $$f $(libdir)/SE/3.2.1; \
-	done
-	@for f in SE/3.3/*; do \
-	  echo $(INSTALL) -m 0644 $$f $(libdir)/SE/3.3; \
-	  $(INSTALL) -m 0644 $$f $(libdir)/SE/3.3; \
+	@for d in SE/*; do \
+	  test ! -d $$d && continue; \
+	  for f in $$d/*; do \
+	    test ! -f $$f && continue; \
+	    echo $(INSTALL) -m 0644 $$f $(libdir)/$$d; \
+	    $(INSTALL) -m 0644 $$f $(libdir)/$$d; \
+	  done \
 	done
 
 clean:

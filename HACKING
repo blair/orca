@@ -180,8 +180,8 @@ and immediately after the page break comes the title of the section.
 
 This helps out people who use the Emacs page commands, such as
 'pages-directory' and 'narrow-to-page'.  Such people are not as scarce
-as you might think, and if you'd like to become one of them, then type
-C-x C-p C-h in Emacs sometime.
+as you might think, and if you'd like to become one of them, then add
+(require 'page-ext) to your .emacs and type C-x C-p C-h sometime.
 
 
 

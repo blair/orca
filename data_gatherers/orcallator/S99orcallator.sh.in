@@ -9,7 +9,7 @@ stop_orcallator="$bindir/stop_orcallator"
 
 case "$1" in
   start)
-    if [ -x $start_orcallator ]; then
+    if test -x $start_orcallator; then
       umask 022
       $start_orcallator
     else
@@ -18,7 +18,7 @@ case "$1" in
     ;;
 
   stop)
-    if [ -x $stop_orcallator ]; then
+    if test -x $stop_orcallator; then
       $stop_orcallator
     fi
     ;;

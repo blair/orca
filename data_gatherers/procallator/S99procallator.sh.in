@@ -20,7 +20,7 @@ RETVAL=0
 start()
 {
   echo -n $"Starting procallator: "
-  if [ -x $procallator ]; then
+  if test -x $procallator; then
     $procallator &
     RETVAL=$?
     PID=$!

@@ -6,7 +6,7 @@ bindir=@bindir@
 
 case "$1" in
   start)
-    if [ -x $bindir/start_orca_services ]; then
+    if test -x $bindir/start_orca_services; then
       umask 022
       $bindir/start_orca_services
     else
@@ -15,7 +15,7 @@ case "$1" in
     ;;
 
   stop)
-    if [ -x $bindir/stop_orca_services ]; then
+    if test -x $bindir/stop_orca_services; then
       $bindir/stop_orca_services
     fi
     ;;

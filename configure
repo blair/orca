@@ -2937,8 +2937,8 @@ INSTALL="$config_dir/install-sh -c"
 MKDIR="$config_dir/mkinstalldirs"
 
 #--------------------------------------------------------------------
-#	Generate the Makefiles and shell scripts with the
-#	variable substitutions.
+#       Generate the Makefiles and shell scripts with the
+#       variable substitutions.
 #--------------------------------------------------------------------
 if test "$BUILD_ORCALLATOR" = yes; then
   ORCALLATOR_OUTPUT="orcallator/orcallator.cfg

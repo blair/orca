@@ -425,8 +425,8 @@ AC_SUBST(INSTALL)
 AC_SUBST(MKDIR)
 
 #--------------------------------------------------------------------
-#	Generate the Makefiles and shell scripts with the
-#	variable substitutions.
+#       Generate the Makefiles and shell scripts with the
+#       variable substitutions.
 #--------------------------------------------------------------------
 if test "$BUILD_ORCALLATOR" = yes; then
   ORCALLATOR_OUTPUT="orcallator/orcallator.cfg
@@ -439,25 +439,25 @@ if test "$BUILD_ORCALLATOR" = yes; then
 fi
 
 AC_OUTPUT(Makefile
-	  config/PerlHead1
-	  config/PerlHead2
-	  lib/Makefile
-	  packages/Makefile
-	  src/Makefile
-	  src/orca.pl
-	  $ORCALLATOR_OUTPUT
-	  docs/Makefile
-	  contrib/Makefile
-	  contrib/rotate_orca_graphs/Makefile
-	  contrib/rotate_orca_graphs/rotate_orca_graphs.sh
-	  contrib/orca_services/Makefile
-	  contrib/orca_services/orca_services.cfg
-	  contrib/orca_services/orca_services.pl
-	  contrib/orca_services/orca_services_running.pl
-	  contrib/orca_services/restart_orca_services.sh
-	  contrib/orca_services/start_orca_services.sh
-	  contrib/orca_services/stop_orca_services.sh
-	  contrib/orca_services/S99orca_services.sh)
+          config/PerlHead1
+          config/PerlHead2
+          lib/Makefile
+          packages/Makefile
+          src/Makefile
+          src/orca.pl
+          $ORCALLATOR_OUTPUT
+          docs/Makefile
+          contrib/Makefile
+          contrib/rotate_orca_graphs/Makefile
+          contrib/rotate_orca_graphs/rotate_orca_graphs.sh
+          contrib/orca_services/Makefile
+          contrib/orca_services/orca_services.cfg
+          contrib/orca_services/orca_services.pl
+          contrib/orca_services/orca_services_running.pl
+          contrib/orca_services/restart_orca_services.sh
+          contrib/orca_services/start_orca_services.sh
+          contrib/orca_services/stop_orca_services.sh
+          contrib/orca_services/S99orca_services.sh)
 
 echo
 echo "----------------------------------------------------------------"

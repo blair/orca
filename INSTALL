@@ -139,13 +139,13 @@ Outline:
     Orca requires the following Perl modules at the specified
     versions:
 
-    Name			Required Version	Included With Orca
+    Name                        Required Version        Included With Orca
     ----------------------------------------------------------------------
-    Data::Dumper		2.101 or greater	2.101
-    Digest::MD5			2.21 or greater		2.21
-    Math::IntervalSearch	1.05 or greater		1.05
-    RRDs			1.0.33 or greater	1.0.33
-    Storable			2.06 or greater		2.06
+    Data::Dumper                2.101 or greater        2.101
+    Digest::MD5                 2.21 or greater         2.21
+    Math::IntervalSearch        1.05 or greater         1.05
+    RRDs                        1.0.33 or greater       1.0.33
+    Storable                    2.06 or greater         2.06
 
     All five of these modules are included with the Orca distribution
     in the packages directory.  When you configure Orca in step 3),
@@ -226,7 +226,7 @@ Outline:
 
     To make Orca and these Perl modules run the following command:
 
-    % make		[ To optimize: make CFLAGS=-O or CFLAGS=-O3 ]
+    % make                [ To optimize: make CFLAGS=-O or CFLAGS=-O3 ]
 
  6) Test if the Perl modules properly compiled.
 

@@ -1615,10 +1615,10 @@ measurement time is stored in the file.  This is stored into a group.
 A generic example of a group and its parameters are:
 
   group GROUP_NAME1 {
-  find_files		filename1 filename2 ...
-  column_description	column1_name column2_name ...
-  date_source		file_mtime
-  interval		300
+  find_files            filename1 filename2 ...
+  column_description    column1_name column2_name ...
+  date_source           file_mtime
+  interval              300
   .
   .
   .
@@ -1825,15 +1825,15 @@ The final step is to tell Orca what plots to create and how to create
 them.  The general format for creating a plot is:
 
   plot {
-  title		Plot title
-  source	GROUP_NAME1
-  data		column_name1
-  data		1024 * column_name2 + column_name3
-  legend	First column
-  legend	Some math
-  y_legend	Counts/sec
-  data_min	0
-  data_max	100
+  title         Plot title
+  source        GROUP_NAME1
+  data          column_name1
+  data          1024 * column_name2 + column_name3
+  legend        First column
+  legend        Some math
+  y_legend      Counts/sec
+  data_min      0
+  data_max      100
   .
   .
   }
@@ -1882,8 +1882,8 @@ you have number of bytes per second input and output and you want to
 plot the total number of bits per second, you could do this:
 
   plot {
-  source	bytes_per_second
-  data		8 * ( in_bytes_per_second + out_bytes_per_second )
+  source        bytes_per_second
+  data          8 * ( in_bytes_per_second + out_bytes_per_second )
   }
 
 The second form allows for matching column names that match a regular
@@ -1909,25 +1909,25 @@ for example:
   }
 
   plot {
-  source	throughput
-  data		(.*\d)Ipkt/s
-  data		$1Opkt/s
+  source        throughput
+  data          (.*\d)Ipkt/s
+  data          $1Opkt/s
   .
   .
   }
 
   plot {
-  source	throughput
-  data		(.*\d)InKB/s
-  data		$1OuKB/s
+  source        throughput
+  data          (.*\d)InKB/s
+  data          $1OuKB/s
   .
   .
   }
 
   plot {
-  source	throughput
-  data		(.*\d)IErr/s
-  data		$1OErr/s
+  source        throughput
+  data          (.*\d)IErr/s
+  data          $1OErr/s
   .
   .
   }
@@ -2049,12 +2049,12 @@ and only two data_types's.  The data_type of COUNTER will be applied
 to column3 and column4.
 
   plot {
-  data		column1
-  data		column2
-  data		column3
-  data		column4
-  data_type	DERIVE
-  data_type	COUNTER
+  data          column1
+  data          column2
+  data          column3
+  data          column4
+  data_type     DERIVE
+  data_type     COUNTER
   }
 
 
@@ -2090,13 +2090,13 @@ values but do not want to limit the first data source, then set the
 I<number>'s to U.  For example:
 
   plot {
-  data		column1
-  data		column2
-  data		column3
-  data_min	U
-  data_max	U
-  data_min	0
-  data_max	100
+  data          column1
+  data          column2
+  data          column3
+  data_min      U
+  data_max      U
+  data_min      0
+  data_max      100
   }
 
 If there are no minimum or maximum values specified for a particular
@@ -2263,15 +2263,15 @@ but you can specify multiple summary_format options if there are
 multiple plots on the graph:
 
   plot {
-  source		things
-  data			some
-  data			other
-  data			things
-  data			something_else
-  summary_format	%.0lf
-  summary_format	%4.1f %s
-  color			0000ff
-  color			ff0000
+  source                things
+  data                  some
+  data                  other
+  data                  things
+  data                  something_else
+  summary_format        %.0lf
+  summary_format        %4.1f %s
+  color                 0000ff
+  color                 ff0000
   }
 
 If there are no summary format specifiers, then the default format of

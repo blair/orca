@@ -16,14 +16,14 @@ use vars qw(@EXPORT_OK @ISA $VERSION);
 @ISA     = qw(Exporter);
 $VERSION = substr q$Revision: 0.01 $, 10;
 
-# ORCA_VERSION		This version of Orca.
-# ORCA_RRD_VERSION	This is the version number used in creating the DS
-#			names in RRDs.  This should be updated any time a
-#			new version of Orca needs some new content in its
-#			RRD files.  The DS name is a concatentation of the
-#			string Orca with this string of digits.
-# DAY_SECONDS		The number of seconds in one day.
-# IS_WIN32		If Orca is running on a Windows platform.
+# ORCA_VERSION          This version of Orca.
+# ORCA_RRD_VERSION      This is the version number used in creating the DS
+#                       names in RRDs.  This should be updated any time a
+#                       new version of Orca needs some new content in its
+#                       RRD files.  The DS name is a concatentation of the
+#                       string Orca with this string of digits.
+# DAY_SECONDS           The number of seconds in one day.
+# IS_WIN32              If Orca is running on a Windows platform.
 use vars         qw($ORCA_VERSION $ORCA_RRD_VERSION);
 push(@EXPORT_OK, qw($ORCA_VERSION $ORCA_RRD_VERSION DAY_SECONDS IS_WIN32));
 $ORCA_VERSION        =  '0.27';
@@ -117,13 +117,13 @@ push(@EXPORT_OK, qw($MAX_PLOT_TYPE_LENGTH));
 
 # These variables are set once at program start depending upon the
 # command line arguments:
-# $opt_daemon			Daemonize Orca.
-# $opt_generate_gifs		Generate GIFs instead of PNGs.
-# $opt_log_filename		Output log filename.
-# $opt_once_only		Do only one pass through Orca.
-# $opt_no_html			Do not generate any HTML files.
-# $opt_no_images		Do not generate any image files.
-# $opt_verbose			Be verbose about my running.
+# $opt_daemon                   Daemonize Orca.
+# $opt_generate_gifs            Generate GIFs instead of PNGs.
+# $opt_log_filename             Output log filename.
+# $opt_once_only                Do only one pass through Orca.
+# $opt_no_html                  Do not generate any HTML files.
+# $opt_no_images                Do not generate any image files.
+# $opt_verbose                  Be verbose about my running.
 use vars         qw($opt_daemon
                     $opt_generate_gifs
                     $opt_log_filename

@@ -14,7 +14,7 @@ use strict;
 use Carp;
 use RRDs;
 use Orca::Constants qw($opt_verbose
-          	       $ORCA_RRD_VERSION
+                       $ORCA_RRD_VERSION
                        @RRA_PDP_COUNTS
                        @RRA_ROW_COUNTS
                        $INCORRECT_NUMBER_OF_ARGS);

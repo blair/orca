@@ -21,7 +21,7 @@ to.
 Update procallator to the latest version.
 
 Remove the percol listing in find_files in procallator.cfg and
-	orca_services.cfg.
+orca_services.cfg.
 
 Update orca_services to 1.7.2 or 2.0.
 

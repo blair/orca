@@ -1,12 +1,12 @@
 # Orca configuration file for orcallator files.
 
-# base_dir is prepended to the paths data_dir, find_files, html_dir,
+# base_dir is prepended to the paths find_files, html_dir, rrd_dir,
 # and state_file only if the path does not match the regular
 # expression ^\\?\.{0,2}/, which matches /, ./, ../, and \./.
 base_dir		@RRD_DIR@/orcallator
 
-# data_dir specifies the location of the generated RRD data files.
-data_dir		.
+# rrd_dir specifies the location of the generated RRD data files.
+rrd_dir			.
 
 # state_file specifies the location of the state file that remembers
 # the modification time of each source data file.
@@ -17,7 +17,7 @@ html_dir		@HTML_DIR@
 
 # By default create .meta tag files for all GIFs so that the web
 # browser will automatically reload them.
-expire_gifs		1
+expire_images		1
 
 # Find files at the following times:
 #    0:10 to pick up new orcallator files for the new day.
@@ -36,7 +36,7 @@ late_interval		interval + 30
 
 # This defines where the find the source data files and the format of those
 # files.
-files orcallator {
+group orcallator {
 find_files		@ORCALLATOR_DIR@/(.*)/(?:(?:orcallator)|(?:percol))-\d{4}-\d{2}-\d{2}
 column_description	first_line
 date_source		column_name timestamp
@@ -45,25 +45,13 @@ interval		300
 reopen			1
 }
 
-html_top_title		GeoCities Host Status
+html_top_title		Yahoo!/GeoCities Host Status
 
 html_page_header
-  <table border=0 cellspacing=0 cellpadding=0 width="100%">
-    <tr>
-      <td><a href="http://www.geocities.com">
-          <img border=0 alt="GeoCities"
-           src="http://pic.geocities.com/images/main/hp/logo_top.gif"
-           width=126 height=58></a>
-      </td>
-    </tr>
-    <tr>
-      <td><a href="http://www.geocities.com">
-          <img border=0 alt="GeoCities"
-           src="http://pic.geocities.com/images/main/hp/tagline.gif"
-           width=124 height=36></a>
-      </td>
-    </tr>
-  </table>
+  <a href="http://geocities.yahoo.com/home/">
+    <img border=0 alt="Yahoo!/GeoCities"
+     src="http://a372.g.akamaitech.net/7/372/27/5fd49246b3dc72/us.yimg.com/i/geo/ygeo.gif"
+     width=305 height=36></a>
   <spacer type=vertical size=4>
 
 html_page_footer
@@ -73,7 +61,7 @@ html_page_footer
   </font>
 
 plot {
-title			%g Average # Processes in Run Queue
+title			%g Average # Processes in Run Queue (Load Average)
 source			orcallator
 data			1runq
 data			5runq
@@ -84,34 +72,7 @@ legend			15 Minute Average
 y_legend		# Processes
 data_min		0
 data_max		100
-}
-
-plot {
-title			%g System Load
-source			orcallator
-data			1load
-data			5load
-data			15load
-legend			1 Minute Average
-legend			5 Minute Average
-legend			15 Minute Average
-y_legend		Load
-data_min		0
-data_max		200
-}
-
-plot {
-title			%g Number of System & Httpd Processes
-source			orcallator
-data			#proc
-data			#httpds
-line_type		line1
-line_type		area
-legend			System total
-legend			Number httpds
-y_legend		# Processes
-data_min		0
-data_max		10000
+href			http://www.geocities.com/~bzking/docs/orcallator.html#processes_in_run_queue
 }
 
 plot {
@@ -120,18 +81,66 @@ source			orcallator
 data			usr%
 data			sys%
 data			100 - usr% - sys%
-legend			User
-legend			System
-legend			Idle
 line_type		area
 line_type		stack
 line_type		stack
+legend			User
+legend			System
+legend			Idle
 y_legend		Percent
 data_min		0
 data_max		100
 plot_min		0
 plot_max		100
 rigid_min_max		1
+href			http://www.geocities.com/~bzking/docs/orcallator.html#cpu_usage
+}
+
+plot {
+title			%g New Process Spawn Rate
+source			orcallator
+data			#proc/s
+data			#proc/p5s
+line_type		area
+line_type		line1
+legend			5 min average procs/s
+legend			Peak 5 second procs/s
+y_legend		New processes/second
+data_min		0
+data_max		100000
+optional
+href			http://www.geocities.com/~bzking/docs/orcallator.html#new_process_spawn_rate
+}
+
+plot {
+title			%g Number of System & Web Server Processes
+source			orcallator
+data			#proc
+data			#httpds
+line_type		line1
+line_type		area
+legend			System total
+legend			Number web servers
+y_legend		# Processes
+data_min		0
+data_max		10000
+color			0000ff
+color			00ff00
+optional
+href			http://www.geocities.com/~bzking/docs/orcallator.html#number_system_processes
+}
+
+plot {
+title			%g Number of Web Server Processes
+source			orcallator
+data			#httpds
+line_type		area
+legend			Number Web Server Processes
+y_legend		# Processes
+data_min		0
+data_max		10000
+optional
+href			http://www.geocities.com/~bzking/docs/orcallator.html#number_web_server_processes
 }
 
 plot {
@@ -139,11 +148,16 @@ title			%g Web Server Hit Rate
 source			orcallator
 data			httpop/s
 data			http/p5s
+line_type		area
+line_type		line1
 legend			5 min average hits/s
 legend			Peak 5 second hits/s
 y_legend		Hits/second
 data_min		0
+color			00ff00
+color			0000ff
 optional
+href			http://www.geocities.com/~bzking/docs/orcallator.html#web_server_hit_rate
 }
 
 plot {
@@ -170,180 +184,212 @@ data_max		100
 plot_min		0
 plot_max		100
 rigid_min_max		1
+optional
+href			http://www.geocities.com/~bzking/docs/orcallator.html#web_server_file_size
 }
 
 plot {
 title			%g Web Server Data Transfer Rate
 source			orcallator
 data			httpb/s
+line_type		area
 legend			Bytes/s
 y_legend		Bytes/s
 data_min		0
+optional
+href			http://www.geocities.com/~bzking/docs/orcallator.html#web_server_data_transfer_rate
 }
 
 plot {
 title			%g Web Server HTTP Error Rate
 source			orcallator
 data			htErr/s
+line_type		area
 legend			HTTP Errors/s
 y_legend		Errors/s
 data_min		0
+optional
+href			http://www.geocities.com/~bzking/docs/orcallator.html#web_server_error_rate
 }
 
 plot {
-title			%g Bits Per Second: be0
+title			%g Interface Bits Per Second: be0
 source			orcallator
 data			1024 * 8 * be0InKB/s
 data			1024 * 8 * be0OuKB/s
 line_type		area
+line_type		line1
 legend			Input
 legend			Output
-y_legend		bits/s
+y_legend		Bits/s
 data_min		0
 data_max		100000000
 optional
+href			http://www.geocities.com/~bzking/docs/orcallator.html#interface_bits_per_second
 }
 
 plot {
-title			%g Bits Per Second: elxl0
+title			%g Interface Bits Per Second: elxl0
 source			orcallator
 data			1024 * 8 * elxl0InKB/s
 data			1024 * 8 * elxl0OuKB/s
 line_type		area
+line_type		line1
 legend			Input
 legend			Output
-y_legend		bits/s
+y_legend		Bits/s
 data_min		0
 data_max		100000000
 optional
+href			http://www.geocities.com/~bzking/docs/orcallator.html#interface_bits_per_second
 }
 
 plot {
-title			%g Bits Per Second: hme0
+title			%g Interface Bits Per Second: hme0
 source			orcallator
 data			1024 * 8 * hme0InKB/s
 data			1024 * 8 * hme0OuKB/s
 line_type		area
+line_type		line1
 legend			Input
 legend			Output
-y_legend		bits/s
+y_legend		Bits/s
 data_min		0
 data_max		100000000
 optional
+href			http://www.geocities.com/~bzking/docs/orcallator.html#interface_bits_per_second
 }
 
 plot {
-title			%g Bits Per Second: hme1
+title			%g Interface Bits Per Second: hme1
 source			orcallator
 data			1024 * 8 * hme1InKB/s
 data			1024 * 8 * hme1OuKB/s
 line_type		area
+line_type		line1
 legend			Input
 legend			Output
-y_legend		bits/s
+y_legend		Bits/s
 data_min		0
 data_max		100000000
 optional
+href			http://www.geocities.com/~bzking/docs/orcallator.html#interface_bits_per_second
 }
 
 plot {
-title			%g Bits Per Second: hme2
+title			%g Interface Bits Per Second: hme2
 source			orcallator
 data			1024 * 8 * hme2InKB/s
 data			1024 * 8 * hme2OuKB/s
 line_type		area
+line_type		line1
 legend			Input
 legend			Output
-y_legend		bits/s
+y_legend		Bits/s
 data_min		0
 data_max		100000000
 optional
+href			http://www.geocities.com/~bzking/docs/orcallator.html#interface_bits_per_second
 }
 
 plot {
-title			%g Bits Per Second: le0
+title			%g Interface Bits Per Second: le0
 source			orcallator
 data			1024 * 8 * le0InKB/s
 data			1024 * 8 * le0OuKB/s
 line_type		area
+line_type		line1
 legend			Input
 legend			Output
-y_legend		bits/s
+y_legend		Bits/s
 data_min		0
 data_max		10000000
 optional
+href			http://www.geocities.com/~bzking/docs/orcallator.html#interface_bits_per_second
 }
 
 plot {
-title			%g Bits Per Second: le1
+title			%g Interface Bits Per Second: le1
 source			orcallator
 data			1024 * 8 * le1InKB/s
 data			1024 * 8 * le1OuKB/s
 line_type		area
+line_type		line1
 legend			Input
 legend			Output
-y_legend		bits/s
+y_legend		Bits/s
 data_min		0
 data_max		10000000
 optional
+href			http://www.geocities.com/~bzking/docs/orcallator.html#interface_bits_per_second
 }
 
 plot {
-title			%g Packets Per Second: $1
+title			%g Interface Packets Per Second: $1
 source			orcallator
 data			(.*\d)Ipkt/s
 data			$1Opkt/s
 line_type		area
+line_type		line1
 legend			Input
 legend			Output
 y_legend		Packets/s
 data_min		0
 data_max		100000
 flush_regexps		1
+href			http://www.geocities.com/~bzking/docs/orcallator.html#interface_packets_per_second
 }
 
 plot {
-title			%g Errors Per Second: $1
+title			%g Interface Errors Per Second: $1
 source			orcallator
 data			(.*\d)IErr/s
 data			$1OErr/s
 line_type		area
+line_type		line1
 legend			Input
 legend			Output
 y_legend		Errors/s
 data_min		0
 flush_regexps		1
+href			http://www.geocities.com/~bzking/docs/orcallator.html#interface_errors_per_second
 }
 
 plot {
-title			%g Ethernet Nocanput Rate
+title			%g Interface Nocanput Rate
 source			orcallator
 data			(.*\d)NoCP/s
+line_type		area
 legend			$1
 y_legend		Nocanput/s
 data_min		0
 flush_regexps		1
+href			http://www.geocities.com/~bzking/docs/orcallator.html#interface_nocanput_rate
 }
 
 plot {
-title			%g Ethernet Deferred Packet Rate
+title			%g Interface Deferred Packet Rate
 source			orcallator
 data			(.*\d)Defr/s
+line_type		area
 legend			$1
 y_legend		Defers/s
 data_min		0
 flush_regexps		1
+href			http://www.geocities.com/~bzking/docs/orcallator.html#interface_deferred_packet_rate
 }
 
 plot {
-title			%g Ethernet Collisions
+title			%g Interface Collisions
 source			orcallator
 data			(.*\d)Coll%
+line_type		area
 legend			$1
 y_legend		Percent
 data_min		0
 data_max		200
 flush_regexps		1
+href			http://www.geocities.com/~bzking/docs/orcallator.html#interface_collisions
 }
 
 plot {
@@ -352,11 +398,13 @@ source			orcallator
 data			1024 * 8 * tcp_InKB/s
 data			1024 * 8 * tcp_OuKB/s
 line_type		area
+line_type		line1
 legend			Input
 legend			Output
-y_legend		bits/s
+y_legend		Bits/s
 data_min		0
 data_max		1000000000
+href			http://www.geocities.com/~bzking/docs/orcallator.html#TCP_bits_per_second
 }
 
 plot {
@@ -365,11 +413,13 @@ source			orcallator
 data			tcp_Iseg/s
 data			tcp_Oseg/s
 line_type		area
+line_type		line1
 legend			Input
 legend			Output
 y_legend		Segments/s
 data_min		0
 data_max		20000
+href			http://www.geocities.com/~bzking/docs/orcallator.html#TCP_segments_per_second
 }
 
 plot {
@@ -377,11 +427,14 @@ title			%g TCP Retransmission & Duplicate Received Percentage
 source			orcallator
 data			tcp_Ret%
 data			tcp_Dup%
+line_type		area
+line_type		line1
 legend			Retransmission
 legend			Duplicate Received
 y_legend		Percent
 data_min		0
 data_max		200
+href			http://www.geocities.com/~bzking/docs/orcallator.html#TCP_retransmission_duplicate_received_percentage
 }
 
 plot {
@@ -389,39 +442,48 @@ title			%g TCP New Connection Rate
 source			orcallator
 data			tcp_Icn/s
 data			tcp_Ocn/s
+line_type		area
+line_type		line1
 legend			Input - Passive
 legend			Output - Active
 y_legend		Connections/s
 data_min		0
 data_max		10000
+href			http://www.geocities.com/~bzking/docs/orcallator.html#TCP_new_connection_rate
 }
 
 plot {
 title			%g TCP Number Open Connections
 source			orcallator
 data			tcp_estb
+line_type		area
 legend			# Open Connections
 y_legend		Number Open TCP Connections
 data_min		0
 data_max		50000
+href			http://www.geocities.com/~bzking/docs/orcallator.html#TCP_number_open_connections
 }
 
 plot {
 title			%g TCP Reset Rate
 source			orcallator
 data			tcp_Rst/s
+line_type		area
 legend			Number TCP Resets/s
 y_legend		Resets/s
 data_min		0
+href			http://www.geocities.com/~bzking/docs/orcallator.html#TCP_reset_rate
 }
 
 plot {
 title			%g TCP Attempt Fail Rate
 source			orcallator
 data			tcp_Atf/s
+line_type		area
 legend			TCP Attempt Fails/s
 y_legend		Atf/s
 data_min		0
+href			http://www.geocities.com/~bzking/docs/orcallator.html#TCP_attempt_fail_rate
 }
 
 plot {
@@ -434,6 +496,7 @@ legend			TCP Listen Drops
 legend			TCP Listen Drop Q0
 legend			TCP Half Open Drops
 data_min		0
+href			http://www.geocities.com/~bzking/docs/orcallator.html#TCP_listen_drop_rate
 }
 
 plot {
@@ -441,19 +504,24 @@ title			%g Sleeps on Mutex Rate
 source			orcallator
 data			smtx
 data			smtx/cpu
+line_type		area
+line_type		line1
 legend			Sleeps on mutex
 legend			Sleeps on mutex/cpu
 y_legend		Smtx/s
 data_min		0
+href			http://www.geocities.com/~bzking/docs/orcallator.html#sleeps_mutex_rate
 }
 
 plot {
 title			%g NFS Call Rate
 source			orcallator
 data			nfs_call/s
+line_type		area
 legend			NFS Calls/s
 y_legend		Calls/s
 data_min		0
+href			http://www.geocities.com/~bzking/docs/orcallator.html#NFS_call_rate
 }
 
 plot {
@@ -461,23 +529,87 @@ title			%g NFS Timeouts & Bad Transmits Rate
 source			orcallator
 data			nfs_timo/s
 data			nfs_badx/s
+line_type		area
+line_type		line1
 legend			NFS Timeouts
 legend			Bad Transmits
 y_legend		Count/s
 data_min		0
+href			http://www.geocities.com/~bzking/docs/orcallator.html#NFS_timeouts_bad_transmits_rate
 }
 
 plot {
-title			%g Peak & Mean Disk Busy
+title			%g Disk System Wide Reads/Writes Per Second
 source			orcallator
-data			disk_peak
-data			disk_mean
-line_type		line1
+data			disk_rd/s
+data			disk_wr/s
 line_type		area
-legend			Peak Disk Busy
-legend			Mean Disk Busy
-y_legend		Disk Busy Measure
+line_type		line1
+legend			Reads/s
+legend			Writes/s
+y_legend		Ops/s
 data_min		0
+optional
+href			http://www.geocities.com/~bzking/docs/orcallator.html#disk_system_wide_reads_writes_per_second
+}
+
+plot {
+title			%g Disk System Wide Transfer Rate
+source			orcallator
+data			1024 * disk_rK/s
+data			1024 * disk_wK/s
+line_type		area
+line_type		line1
+legend			Read transfer rate
+legend			Write transfer rate
+y_legend		Bytes/s
+data_min		0
+optional
+href			http://www.geocities.com/~bzking/docs/orcallator.html#disk_system_wide_transfer_rate
+}
+
+plot {
+title			%g Disk Run Percent
+source			orcallator
+data			disk_runp_(c\d+t\d+d\d+)
+line_type		line2
+legend			$1
+y_legend		Run Percent
+data_min		0
+data_max		100
+plot_min		0
+optional
+href			http://www.geocities.com/~bzking/docs/orcallator.html#disk_run_percent
+}
+
+plot {
+title			%g Disk Space Percent Usage
+source			orcallator
+data			mntP_(.*)
+line_type		line2
+legend			$1
+y_legend		Percent
+data_min		0
+data_max		100
+plot_min		0
+plot_max		100
+optional
+href			http://www.geocities.com/~bzking/docs/orcallator.html#disk_space_percent_usage
+}
+
+plot {
+title			%g Disk Inode Percent Usage
+source			orcallator
+data			mntp_(.*)
+line_type		line2
+legend			$1
+y_legend		Percent
+data_min		0
+data_max		100
+plot_min		0
+plot_max		100
+optional
+href			http://www.geocities.com/~bzking/docs/orcallator.html#disk_inode_percent_usage
 }
 
 plot {
@@ -485,11 +617,14 @@ title			%g Cache Hit Percentages
 source			orcallator
 data			dnlc_hit%
 data			inod_hit%
+line_type		area
+line_type		line1
 legend			DNLC
 legend			Inode Cache
 y_legend		Percent
 data_min		0
 data_max		100
+href			http://www.geocities.com/~bzking/docs/orcallator.html#cache_hit_percentages
 }
 
 plot {
@@ -497,39 +632,59 @@ title			%g Cache Reference Rate
 source			orcallator
 data			dnlc_ref/s
 data			inod_ref/s
-line_type		line1
 line_type		area
+line_type		line1
 legend			DNLC
 legend			Inode Cache
 y_legend		References/s
 data_min		0
+href			http://www.geocities.com/~bzking/docs/orcallator.html#cache_reference_rate
 }
 
 plot {
 title			%g Inode Steal Rate
 source			orcallator
 data			inod_stl/s
+line_type		area
 legend			Inode w/page steals/s
 y_legend		Steals/s
 data_min		0
+href			http://www.geocities.com/~bzking/docs/orcallator.html#inode_steal_rate
 }
 
 plot {
 title			%g Available Swap Space
 source			orcallator
 data			1024 * swap_avail
+line_type		area
 legend			Available Swap Space
 y_legend		Bytes
+base			1024
 data_min		0
+href			http://www.geocities.com/~bzking/docs/orcallator.html#available_swap_space
 }
 
 plot {
 title			%g Page Residence Time
 source			orcallator
 data			page_rstim
+line_type		area
 legend			Page Residence Time
 y_legend		Seconds
 data_min		0
+href			http://www.geocities.com/~bzking/docs/orcallator.html#page_residence_time
+}
+
+plot {
+title			%g Page Scan Rate
+source			orcallator
+data			scanrate
+line_type		area
+legend			Page Scan Rate
+y_legend		Pages/s
+data_min		0
+optional
+href			http://www.geocities.com/~bzking/docs/orcallator.html#page_scan_rate
 }
 
 plot {
@@ -553,6 +708,7 @@ plot_min		0
 color			00ff00
 color			ff0000
 color			0000ff
+href			http://www.geocities.com/~bzking/docs/orcallator.html#page_usage
 }
 
 plot {
@@ -560,9 +716,12 @@ title			%g Pages Locked & IO
 source			orcallator
 data			pageslock
 data			pagesio
+line_type		area
+line_type		line1
 legend			Locked
 legend			IO
 y_legend		Number of Pages
 data_min		0
 plot_min		0
+href			http://www.geocities.com/~bzking/docs/orcallator.html#pages_locked_IO
 }

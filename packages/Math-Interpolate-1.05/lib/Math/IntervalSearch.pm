@@ -1,15 +1,17 @@
 package Math::IntervalSearch;
 
-require 5.004_04;
+require 5.004_01;
 
 use strict;
-use vars qw(@ISA $VERSION @EXPORT_OK);
+use vars qw(@EXPORT_OK @ISA $VERSION);
 use Exporter;
-use Carp qw(cluck);
+use Carp;
 
-$VERSION   = do {my @r=(q$Revision: 1.02 $=~/\d+/g);sprintf "%d."."%02d"x$#r,@r};
-@ISA       = qw(Exporter);
 @EXPORT_OK = qw(interval_search);
+@ISA       = qw(Exporter);
+$VERSION   = substr q$Revision: 1.05 $, 10;
+
+sub cluck { warn Carp::longmess @_ }
 
 sub LessThan {
   $_[0] < $_[1];
@@ -77,8 +79,7 @@ sub interval_search {
 
   # Is the point greater than the largest point in the sequence?
   if ( &$LessThanEqualTo($sequenceRef->[$num-1], $x) ) {
-    $last_interval_result = $num - 1;
-    return $last_interval_result;
+    return $last_interval_result = $num - 1;
   }
 
   # Use the result from the last run as a start for this run.
@@ -160,9 +161,9 @@ Math::IntervalSearch - Search where an element lies in a list of sorted elements
 
 =head1 SYNOPSIS
 
- use Math::IntervalSearch qw(interval);
+ use Math::IntervalSearch qw(interval_search);
  my @array = (1..5);
- my $location = interval(2.4, \@array);
+ my $location = interval_search(2.4, \@array);
 
  # Use your own comparison operators.
  sub ReverseLessThan {
@@ -173,64 +174,66 @@ Math::IntervalSearch - Search where an element lies in a list of sorted elements
    $_[0] <= $_[1];
  }
 
- $location = interval(2.4,
-                     \@array,
-                     \&ReverseLessThan,
-                     \&ReverseLessThanEqualTo);
+ $location = interval_search(2.4,
+                             \@array,
+                             \&ReverseLessThan,
+                             \&ReverseLessThanEqualTo);
 
 =head1 DESCRIPTION
 
-This subroutine is used to locate a position in an array of values where a
-given value would fit.  It has been designed to be efficient in the common
-situation that it is called repeatedly.  The user can supply a different
-set of comparison operators to replace the standard < and <=.
+This subroutine is used to locate a position in an array of values where
+a given value would fit.  It has been designed to be efficient in the
+common situation that it is called repeatedly.  The user can supply a
+different set of comparison operators to replace the standard < and <=.
 
 =head1 SUBROUTINES
 
 =over 4
 
-=item B<interval> I<value> I<sequence> [I<less_than> [I<less_than_equal_to>]]
+=item B<interval_search> I<value> I<sequence> [I<less_than> [I<less_than_equal_to>]]
 
-Given a I<value> I<interval> returns the location in the reference to an array
-I<sequence> where the value would fit.  The default < operator to compare the
-elements in I<sequence> can be replaced by the subroutine I<less_than> which
-should return 1 if the first element passed to I<less_than> is less than the
-second.  The default <= operator to compare the elements in I<sequence> can
-be replaced by the subroutine I<less_than> which should return 1 if the first
-element passed to I<less_than> is less than the second.
+Given a I<value> I<interval_search> returns the location in the reference
+to an array I<sequence> where the value would fit.  The default <
+operator to compare the elements in I<sequence> can be replaced by the
+subroutine I<less_than> which should return 1 if the first element passed
+to I<less_than> is less than the second.  The default <= operator to
+compare the elements in I<sequence> can be replaced by the subroutine
+I<less_than> which should return 1 if the first element passed to
+I<less_than> is less than the second.
 
-The values in I<sequence> should already be sorted in numerically increasing
-order or in the order that would be produced by using the I<less_than>
-subroutine.
+The values in I<sequence> should already be sorted in numerically
+increasing order or in the order that would be produced by using the
+I<less_than> subroutine.
 
 Let N be the number of elements in referenced array I<sequence>, then
-I<interval> returns these values:
+I<interval_search> returns these values:
     -1  if                    I<value> < I<sequence>->[0]
     i   if I<sequence>->[i]   <= I<value> < I<sequence>->[i+1]
     N-1 if I<sequence>->[N-1] <= I<value>
 
 If a reference is made to an empty array, then -1 is always returned.
 
-If there is illegal input to I<interval>, such as an improper number of
-arguments, then an empty list in list context, an undefined value in
-scalar context, or nothing in a void context is returned.
+If there is illegal input to I<interval_search>, such as an improper
+number of arguments, then an empty list in list context, an undefined
+value in scalar context, or nothing in a void context is returned.
 
-This subroutine is designed to be efficient in the common situation that it is
-called repeatedly, with I<value> taken from an increasing or decreasing
-list of values.  This will happen, e.g., when an irregular waveform is
-interpolated to create a sequence with constant separation.  The first guess
-for the output is therefore taken to be the value returned at the previous
-call and stored in the variable ilo.  A first check ascertains that ilo is
-less than the number of data points in I<sequence>.  This is necessary since
-the present call may have nothing to do with the previous call.  Then, if
-   I<sequence>->[ilo] <= I<value> < I<sequence>->[ilo+1],
+This subroutine is designed to be efficient in the common situation
+that it is called repeatedly, with I<value> taken from an increasing or
+decreasing list of values.  This will happen, e.g., when an irregular
+waveform is interpolated to create a sequence with constant separation.
+The first guess for the output is therefore taken to be the value
+returned at the previous call and stored in the variable ilo.  A first
+check ascertains that ilo is less than the number of data points in
+I<sequence>.  This is necessary since the present call may have nothing
+to do with the previous call.  Then, if
+    I<sequence>->[ilo] <= I<value> < I<sequence>->[ilo+1],
 
-we set left = ilo and are done after just three comparisons.
-Otherwise, we repeatedly double the difference
+we set left = ilo and are done after just three comparisons.  Otherwise,
+we repeatedly double the difference
     istep = ihi - ilo
 
 while also moving ilo and ihi in the direction of x, until
-   I<sequence>->[ilo] <= x < I<sequence>->[ihi],
+    I<sequence>->[ilo] <= x < I<sequence>->[ihi],
 
 after which bisection is used to get, in addition,
     ilo+1 = ihi.

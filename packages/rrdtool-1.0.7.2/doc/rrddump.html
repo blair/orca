@@ -1,6 +1,6 @@
     <HTML> 
 	<HEAD> 
-	    <TITLE>dump - dump the contents of an B<RRD> in human readable form
+	    <TITLE>dump - dump the contents of an B<RRD> to XML format
 
 </TITLE> 
 	</HEAD>
@@ -24,7 +24,7 @@
 <H1><A NAME="NAME">NAME
 
 </A></H1>
-rrdtool dump - dump the contents of an <STRONG>RRD</STRONG> in human readable form
+rrdtool dump - dump the contents of an <STRONG>RRD</STRONG> to XML format
 
 
 <P>
@@ -34,7 +34,9 @@ rrdtool dump - dump the contents of an <STRONG>RRD</STRONG> in human readable fo
 <H1><A NAME="SYNOPSIS">SYNOPSIS
 
 </A></H1>
-<STRONG>rrdtool</STRONG>  <STRONG>dump</STRONG>  <EM>filename</EM> [<STRONG>--full</STRONG>|<STRONG>-f</STRONG>] 
+<STRONG>rrdtool</STRONG>  <STRONG>dump</STRONG>  <EM>filename.rrd</EM>  &gt;  <EM>filename.xml</EM> 
+
+ 
 
 
 <P>
@@ -44,24 +46,18 @@ rrdtool dump - dump the contents of an <STRONG>RRD</STRONG> in human readable fo
 <H1><A NAME="DESCRIPTION">DESCRIPTION
 
 </A></H1>
-The <STRONG>dump</STRONG> function prints the contents of an <STRONG>RRD</STRONG> in human readable form.
+The <STRONG>dump</STRONG> function prints the contents of an <STRONG>RRD</STRONG> in human readable (?) XML format. This format can be read by rrdrestore.
+Together they allow you to transfer your files from one architecture to
+another as well as manipulating the contents of an <STRONG>RRD</STRONG> file in a somewhat more convenient manner.
 
 
 <P>
 
 <DL>
-<DT><STRONG><A NAME="item_filename">filename
+<DT><STRONG><A NAME="item_filename">filename.rrd
 
 </A></STRONG><DD>
 The name of the <STRONG>RRD</STRONG> you want to dump.
-
-
-<P>
-
-<DT><STRONG><A NAME="item__full_f">--full|-f 
-
-</A></STRONG><DD>
-By default only the headers of the <STRONG>RRD</STRONG> are printed. With this option you get the actual data as well.
 
 
 <P>
@@ -72,8 +68,9 @@ By default only the headers of the <STRONG>RRD</STRONG> are printed. With this o
 <H1><A NAME="AUTHOR">AUTHOR
 
 </A></H1>
-Tobias Oetiker <A
-HREF="MAILTO:<oetiker@ee.ethz.ch>"><oetiker@ee.ethz.ch></A>
+Tobias Oetiker &lt;<A HREF="MAILTO:oetiker@ee.ethz.ch">oetiker@ee.ethz.ch</A>&gt;
+
+
 
 
 <P>

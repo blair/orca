@@ -1,5 +1,5 @@
 /*****************************************************************************
- * RRDTOOL 0.99.31 Copyright Tobias Oetiker, 1997, 1998, 1999
+ * RRDtool  Copyright Tobias Oetiker, 1997, 1998, 1999
  *****************************************************************************
  * rrd_fetch.c  read date from an rrd to use for further processing
  *****************************************************************************
@@ -24,32 +24,16 @@ rrd_fetch(int argc,
 {
 
 
-    long     step_tmp = 1, start_tmp = -24*3600, end_tmp=time(NULL);
+    long     step_tmp =1;
+    time_t   start_tmp=0, end_tmp=0;
     enum     cf_en cf_idx;
 
-#ifdef WANT_AT_STYLE_TIMESPEC
     struct time_value start_tv, end_tv;
     char     *parsetime_error = NULL;
-    int      start_tmp_is_ok = 0,
-             end_tmp_is_ok = 0;
 
-    end_tv.type = ABSOLUTE_TIME;
-    end_tv.tm = *localtime(&end_tmp);
-    end_tv.offset = 0;
-        
-    start_tv.type = RELATIVE_TO_END_TIME;
-    start_tv.tm = *localtime(&end_tmp); /* to init tm_zone and tm_gmtoff */
-    start_tv.offset = -24*3600;/* to be compatible with the original code.  */
-    start_tv.tm.tm_sec = 0;    /** alternatively we could set tm_mday to -1 */
-    start_tv.tm.tm_min = 0;    /** but this would yield -23(25) hours offset */
-    start_tv.tm.tm_hour = 0;   /** twice a year, when DST is coming in or   */
-    start_tv.tm.tm_mday = 0;   /** out of effect                            */
-    start_tv.tm.tm_mon = 0;
-    start_tv.tm.tm_year = 0;
-    start_tv.tm.tm_wday = 0;
-    start_tv.tm.tm_yday = 0;
-    start_tv.tm.tm_isdst = -1; /* for mktime to guess */
-#endif
+    /* init start and end time */
+    parsetime("end-24h", &start_tv);
+    parsetime("now", &end_tv);
 
     while (1){
 	static struct option long_options[] =
@@ -69,45 +53,16 @@ rrd_fetch(int argc,
 
 	switch(opt) {
 	case 's':
-#ifdef WANT_AT_STYLE_TIMESPEC
-            {
-            char *endp;
-            start_tmp_is_ok = 0;
-            start_tmp = strtol(optarg, &endp, 0);
-            if (*endp == '\0') /* it was a valid number */
-                if (start_tmp > 31122038 || /* 31 Dec 2038 in DDMMYYYY */
-                    start_tmp < 0) {
-                    start_tmp_is_ok = 1;
-                    break;
-                }
             if ((parsetime_error = parsetime(optarg, &start_tv))) {
                 rrd_set_error( "start time: %s", parsetime_error );
                 return -1;
-             }
-            }
-#else
-            start_tmp = atol(optarg);
-#endif
+	    }
 	    break;
 	case 'e':
-#ifdef WANT_AT_STYLE_TIMESPEC
-            {
-            char *endp;
-            end_tmp_is_ok = 0;
-            end_tmp = strtol(optarg, &endp, 0);
-            if (*endp == '\0') /* it was a valid number */
-                if (end_tmp > 31122038) { /* 31 Dec 2038 in DDMMYYYY */
-                    end_tmp_is_ok = 1;
-                    break;
-                }
             if ((parsetime_error = parsetime(optarg, &end_tv))) {
                 rrd_set_error( "end time: %s", parsetime_error );
                 return -1;
-             }
-            }
-#else
-            end_tmp = atol(optarg);
-#endif
+	    }
 	    break;
 	case 'r':
 	    step_tmp = atol(optarg);
@@ -117,56 +72,12 @@ rrd_fetch(int argc,
 	    return(-1);
 	}
     }
-#ifdef WANT_AT_STYLE_TIMESPEC
-    if ((start_tv.type == RELATIVE_TO_END_TIME ||
-           (start_tmp_is_ok && start_tmp < 0)) && /* same as the line above */
-           end_tv.type == RELATIVE_TO_START_TIME) {
-        rrd_set_error("the start and end times cannot be specified "
-                      "relative to each other");
-        return(-1);
-    }
 
-    if (start_tv.type == RELATIVE_TO_START_TIME) {
-        rrd_set_error("the start time cannot be specified relative to itself");
-        return(-1);
-    }
-                
-    if (end_tv.type == RELATIVE_TO_END_TIME) {
-        rrd_set_error("the end time cannot be specified relative to itself");
-        return(-1);
-    }
-                
-    /* We don't care to keep all the values in their range,
-       mktime will do this for us */
-    if (start_tv.type == RELATIVE_TO_END_TIME) {
-        if (end_tmp_is_ok)
-            end_tv.tm = *localtime( &end_tmp );
-        start_tv.tm.tm_sec  += end_tv.tm.tm_sec;
-        start_tv.tm.tm_min  += end_tv.tm.tm_min;
-        start_tv.tm.tm_hour += end_tv.tm.tm_hour;
-        start_tv.tm.tm_mday += end_tv.tm.tm_mday;
-        start_tv.tm.tm_mon  += end_tv.tm.tm_mon;
-        start_tv.tm.tm_year += end_tv.tm.tm_year;
-    }
-    if (end_tv.type == RELATIVE_TO_START_TIME) {
-        if (start_tmp_is_ok)
-            start_tv.tm = *localtime( &start_tmp );
-        end_tv.tm.tm_sec  += start_tv.tm.tm_sec;
-        end_tv.tm.tm_min  += start_tv.tm.tm_min;
-        end_tv.tm.tm_hour += start_tv.tm.tm_hour;
-        end_tv.tm.tm_mday += start_tv.tm.tm_mday;
-        end_tv.tm.tm_mon  += start_tv.tm.tm_mon;
-        end_tv.tm.tm_year += start_tv.tm.tm_year;
-    }
-    if (!start_tmp_is_ok)
-        start_tmp = mktime(&start_tv.tm) + start_tv.offset;
-    if (!end_tmp_is_ok)
-        end_tmp = mktime(&end_tv.tm) + end_tv.offset;
-#endif
-
-    if (start_tmp <= 0)
-	start_tmp = end_tmp + start_tmp;
     
+    if (proc_start_end(&start_tv,&end_tv,&start_tmp,&end_tmp) == -1){
+	return -1;
+    }  
+
     
     if (start_tmp < 3600*24*365*10){
 	rrd_set_error("the first entry to fetch should be after 1980");
@@ -247,7 +158,9 @@ rrd_fetch_fn(
 	    fclose(in_file);
 	    return(-1);
 	}
-	strncpy((*ds_namv)[i],rrd.ds_def[i].ds_nam,DS_NAM_SIZE);
+	strncpy((*ds_namv)[i],rrd.ds_def[i].ds_nam,DS_NAM_SIZE-1);
+	(*ds_namv)[i][DS_NAM_SIZE-1]='\0';
+
     }
     
     /* find the rra which best matches the requirements */
@@ -262,8 +175,8 @@ rrd_fetch_fn(
 			 - (rrd.rra_def[i].pdp_cnt 
 			    * rrd.rra_def[i].row_cnt
 			    * rrd.stat_head->pdp_step));
-	    
-	    full_match = *start - *end;
+
+	    full_match = *end -*start;
 	    /* best full match */
 	    if(cal_end >= *end 
 	       && cal_start <= *start){

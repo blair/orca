@@ -8,7 +8,7 @@ BEGIN {
   $| = 1;
   $NumberTests = 500;
   $ArraySize   = 500;
-  print "1..", 2*$NumberTests+5, "\n";
+  print "1..", 2*$NumberTests+6, "\n";
 }
 END   {print "not ok 1\n" unless $loaded; }
 
@@ -35,8 +35,6 @@ sub FakeLessThanEqualTo {
   $_[0] >= $_[1];
 }
  
-my @array = (0 .. $ArraySize-1);
- 
 srand();
 
 # Check for illegal parameters.
@@ -47,7 +45,20 @@ ok( !interval_search(2, 3) );						#  4
 # Check that -1 is returned for an empty array.
 ok( interval_search(10, []) == -1 );					#  5
 
+# Try to create a properly sorted array by placing new values in the
+# correct location in the array.
+my @array = ();
+for (my $i=0; $i<$ArraySize; ++$i) {
+  my $value = rand(100);
+  my $location = interval_search($value, \@array) + 1;
+  splice(@array, $location, 0, $value);
+}
+
+my @array1 = sort {$a <=> $b} @array;
+ok( "@array" eq "@array1" );						#  6
+
 # Check a random test.
+@array = (0 .. $ArraySize-1);
 for (1 .. $NumberTests) {
   my $ok = 1;
   my $number = 1.5 * $ArraySize * rand() - $ArraySize/3;
@@ -61,7 +72,7 @@ for (1 .. $NumberTests) {
   elsif ( int($number) != $answer ) {
     $ok = 0;
   }
-  ok( $ok );								#  6
+  ok( $ok );								#  7
 }
 
 # Reverse the array and use some different comparision routines.
@@ -83,5 +94,5 @@ for (1 .. $NumberTests) {
     $ok = 0;
   }
 
-  ok( $ok );								#  7
+  ok( $ok );								#  8
 }

@@ -1,0 +1,7 @@
+Orcallator:
+ 1) Why are my Ethernet bits/second measurements all 0?
+
+    On 2.5.1 or older Solaris operating system releases, the kernel does
+    not measure the bits/second going through a particular device.  I
+    believe some later kernel and device driver patches may fix this,
+    but Solaris 2.6 and greater definitely does measure this.

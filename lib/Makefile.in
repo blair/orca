@@ -6,11 +6,7 @@ libdir		= @libdir@
 MKDIR		= @MKDIR@
 INSTALL		= @INSTALL@
 
-all:	orcallator.cfg orca.gif.hex rrdtool.gif.hex
-
-orcallator.cfg: orcallator.cfg.in
-	(cd ..; ./config.status)
-	$(MAKE)
+all:		orca.gif.hex rrdtool.gif.hex
 
 # Create a hex file representation of orca.gif that can be stored inside
 # orca.pl.
@@ -23,13 +19,12 @@ rrdtool.gif.hex: rrdtool.gif
 	perl -e 'while (sysread(STDIN, $$b, 35)){print unpack("h*", $$b),"\n"}' < $< > $@
 
 install: all
-	$(MKDIR) $(libdir)
-	-cp -p $(libdir)/orcallator.cfg $(libdir)/orcallator.cfg.`date +%Y-%m-%d-%H:%M:%S`
-	$(INSTALL) -m 0644 orcallator.cfg $(libdir)
-	$(INSTALL) -m 0644 orcallator.se $(libdir)
 
 clean:
-	$(RM) orcallator.cfg
 
 distclean: clean
 	$(RM) Makefile
+
+Makefile: Makefile.in
+	cd .. && CONFIG_FILES=lib/Makefile ./config.status
+	$(MAKE)

@@ -1,0 +1,65 @@
+@SET_MAKE@
+
+prefix		= @prefix@
+exec_prefix	= @exec_prefix@
+bindir		= @bindir@
+libdir		= @libdir@
+MKDIR		= @MKDIR@
+INSTALL		= @INSTALL@
+PERL_HEAD	= @PERL_HEAD@
+ORCALLATOR_DIR	= @ORCALLATOR_DIR@
+RRD_DIR		= @RRD_DIR@
+RRDTOOL_DIR	= @RRDTOOL_DIR@
+PERL_SCRIPTS	= orcallator_column orcallator_running
+SHELL_SCRIPTS	= restart_orcallator stop_orcallator start_orcallator
+TARGETS		= $(PERL_SCRIPTS) $(SHELL_SCRIPTS)
+
+all:		$(TARGETS) orcallator.cfg
+
+install: all
+		$(MKDIR) $(bindir)
+		$(MKDIR) $(libdir)
+		@for file in $(TARGETS); do			\
+			echo $(INSTALL) $$file $(bindir);	\
+			$(INSTALL) $$file $(bindir);		\
+		done
+		if test -r $(libdir)/orcallator.cfg; then	\
+			cp -p $(libdir)/orcallator.cfg $(libdir)/orcallator.cfg.`date +%Y-%m-%d-%H:%M:%S`; \
+		fi
+		$(INSTALL) -m 0644 orcallator.cfg $(libdir)
+		$(INSTALL) -m 0644 orcallator.se $(libdir)
+
+clean:
+		$(RM) $(TARGETS)
+
+distclean:	clean
+		$(RM) *.sh orcallator.cfg orcallator_running.pl Makefile
+
+.SUFFIXES:	.pl .sh
+
+.pl:		$(PERL_HEAD)
+		cat $(PERL_HEAD) $< > $@
+		chmod 0755 $@
+
+.sh:
+		cp $< $@
+		chmod 0755 $@
+
+Makefile:	Makefile.in
+		cd .. && CONFIG_FILES=orcallator/Makefile ./config.status
+		$(MAKE)
+
+orcallator.cfg:			orcallator.cfg.in
+		cd .. && CONFIG_FILES=orcallator/orcallator.cfg ./config.status
+
+orcallator_running.pl:		orcallator_running.pl.in
+		cd .. && CONFIG_FILES=orcallator/orcallator_running.pl ./config.status
+
+restart_orcallator.sh:		restart_orcallator.sh.in
+		cd .. && CONFIG_FILES=orcallator/restart_orcallator.sh ./config.status
+
+start_orcallator.sh:		start_orcallator.sh.in
+		cd .. && CONFIG_FILES=orcallator/start_orcallator.sh ./config.status
+
+stop_orcallator.sh:		stop_orcallator.sh.in
+		cd .. && CONFIG_FILES=orcallator/stop_orcallator.sh ./config.status

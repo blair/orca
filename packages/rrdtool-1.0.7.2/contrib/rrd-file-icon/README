@@ -1,0 +1,19 @@
+From: "Alex van den Bogaerdt" <alex@ergens.op.Het.Net>
+
+This icon can be used, for instance, by apache httpd.
+
+(note: path names may differ in your setup)
+
+Copy the icon to /home/apache/icons/
+Modify /etc/httpd/conf/srm.conf by adding:
+
+       AddIcon /icons/rrd.png .rrd
+       AddDescription "Round Robin Database" .rrd
+
+You could even run a script when an rrd file is clicked on:
+
+       AddHandler rrd-handler rrd
+       Action rrd-handler /cgi-bin/some-general-rrd-script.cgi
+
+
+Alex

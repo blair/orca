@@ -31,6 +31,9 @@ DDDDEEEESSSSCCCCRRRRIIIIPPPPTTTTIIIIOOOONNNN
        the individual functions of the rrrrrrrrddddttttoooooooollll check the
        corresponding man page.
 
+       For an introduction to the usage of rrdtool make sure you
+       check the _r_r_d_t_u_t_o_r_i_a_l manpage.
+
        FFFFUUUUNNNNCCCCTTTTIIIIOOOONNNNSSSS
 
        While the man pages talk of command line switches you have
@@ -41,27 +44,24 @@ DDDDEEEESSSSCCCCRRRRIIIIPPPPTTTTIIIIOOOONNNN
        quickly. Check the section on the section on _R_e_m_o_t_e
        _C_o_n_t_r_o_l further down.
 
-       ccccrrrreeeeaaaatttteeee  Set up a new Round Robin Database (RRD). Check
-               rrdcreate
+       ccccrrrreeeeaaaatttteeee  Set up a new Round Robin Database (RRD). Check the
+               _r_r_d_c_r_e_a_t_e manpage.
 
-       uuuuppppddddaaaatttteeee  Store new data values into an RRD. Check rrdupdate
+       uuuuppppddddaaaatttteeee  Store new data values into an RRD. Check the
+               _r_r_d_u_p_d_a_t_e manpage.
 
        ggggrrrraaaapppphhhh   Create a graph from data stored in one or several
                RRD. Apart from generating graphs, data can also
-               be extracted to stdout. Check rrdgraph
+               be extracted to stdout. Check the _r_r_d_g_r_a_p_h
+               manpage.
 
-       dddduuuummmmpppp    Dump the contents of an RRD in plain ASCII. This
-               is manly used for debugging. Check rrddump
-
-       ffffeeeettttcccchhhh   Get data for a certain time period from a RRD. The
-               graph function uses fetch to retrieve its data
-               from an rrd. Check rrdfetch
+       dddduuuummmmpppp    Dump the contents of an RRD in plain ASCII. In
+               connection with restore you can use it to
+               transport an rrd from one architecture to another.
 
 
 
-
-
-16/May/99                  19990525.23                          1
+25/Aug/99                     1.0.7                             1
 
 
 
@@ -70,9 +70,26 @@ DDDDEEEESSSSCCCCRRRRIIIIPPPPTTTTIIIIOOOONNNN
 RRDTOOL(1)                   rrdtool                   RRDTOOL(1)
 
 
-       ttttuuuunnnneeee    Alter setup of an RRD
+               Check the _r_r_d_d_u_m_p manpage.
 
-       llllaaaasssstttt    Find last update time of an RRD
+       rrrreeeessssttttoooorrrreeee Restore an RRD in XML format to a binary rrd ...
+               Check the _r_r_d_r_e_s_t_o_r_e manpage
+
+       ffffeeeettttcccchhhh   Get data for a certain time period from a RRD. The
+               graph function uses fetch to retrieve its data
+               from an rrd. Check the _r_r_d_f_e_t_c_h manpage.
+
+       ttttuuuunnnneeee    Alter setup of an RRD. Check the _r_r_d_t_u_n_e manpage.
+
+       llllaaaasssstttt    Find last update time of an RRD. Check the _r_r_d_l_a_s_t
+               manpage.
+
+       rrrrrrrrddddrrrreeeessssiiiizzzzeeee
+               Change the size of individual RRAs ... Dangerous!
+               Check the _r_r_d_r_e_s_i_z_e manpage.
+
+       rrrrrrrrddddccccggggiiii  This is a standalone tool for producing rrd graphs
+               on the fly. Check the _r_r_d_c_g_i manpage.
 
        HHHHOOOOWWWW DDDDOOOOEEEESSSS RRRRRRRRDDDDTTTTOOOOOOOOLLLL WWWWOOOORRRRKKKK????
 
@@ -107,6 +124,18 @@ RRDTOOL(1)                   rrdtool                   RRDTOOL(1)
                maximum, total, last) should be used to build the
                consolidated values (see rrdcreate). You can
                define any number of different consolidation
+
+
+
+25/Aug/99                     1.0.7                             2
+
+
+
+
+
+RRDTOOL(1)                   rrdtool                   RRDTOOL(1)
+
+
                setups within one RRRRRRRRDDDD. They will all be maintained
                on the fly when new data is loaded into the RRRRRRRRDDDD.
 
@@ -124,18 +153,6 @@ RRDTOOL(1)                   rrdtool                   RRDTOOL(1)
                one of the values in the storage area was last
                written to. New values are written to the Round
                Robin Archive in a ...  you guess it ... round
-
-
-
-16/May/99                  19990525.23                          2
-
-
-
-
-
-RRDTOOL(1)                   rrdtool                   RRDTOOL(1)
-
-
                robin manner. This automatically limits the
                history to the last 1000 values. Because you can
                define several RRRRRRRRAAAAs within a single RRRRRRRRDDDD, you can
@@ -173,13 +190,25 @@ RRDTOOL(1)                   rrdtool                   RRDTOOL(1)
                configurable level. If so, an _*_U_N_K_N_O_W_N_* value will
                be written to the RRRRRRRRAAAA.
 
+
+
+
+25/Aug/99                     1.0.7                             3
+
+
+
+
+
+RRDTOOL(1)                   rrdtool                   RRDTOOL(1)
+
+
        Graphing
                The rrrrrrrrddddttttoooooooollll also allows one to generate reports in
                numerical and graphical form based on the data
                stored in one or several RRRRRRRRDDDDs. The graphing
                feature is fully configurable. Size, color and
                contents of the graph can be defined freely. Check
-               rrdgraph for more information on this.
+               the _r_r_d_g_r_a_p_h manpage for more information on this.
 
        RRRREEEEMMMMOOOOTTTTEEEE CCCCOOOONNNNTTTTRRRROOOOLLLL
 
@@ -190,18 +219,6 @@ RRDTOOL(1)                   rrdtool                   RRDTOOL(1)
        the pipes rrrrrrrrddddttttoooooooollll accepts the same arguments as on the
        command line. When a command is completed, rrdtool will
        print the string  'OK', followed by timing information of
-
-
-
-16/May/99                  19990525.23                          3
-
-
-
-
-
-RRDTOOL(1)                   rrdtool                   RRDTOOL(1)
-
-
        the form uuuu::::_u_s_e_r_t_i_m_e ssss::::_s_y_s_t_e_m_t_i_m_e both values are running
        totals of seconds since rrdtool was started. If an error
        occurs, a line of the form 'ERROR: _D_e_s_c_r_i_p_t_i_o_n _o_f _e_r_r_o_r'
@@ -242,6 +259,13 @@ AAAAUUUUTTTTHHHHOOOORRRR
 
 
 
+25/Aug/99                     1.0.7                             4
+
+
+
+
+
+RRDTOOL(1)                   rrdtool                   RRDTOOL(1)
 
 
 
@@ -259,6 +283,48 @@ AAAAUUUUTTTTHHHHOOOORRRR
 
 
 
-16/May/99                  19990525.23                          4
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+25/Aug/99                     1.0.7                             5
 
 

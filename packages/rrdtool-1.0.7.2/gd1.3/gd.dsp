@@ -41,7 +41,7 @@ RSC=rc.exe
 # PROP Intermediate_Dir "Release"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /YX /FD /c
-# ADD CPP /nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_CTYPE_DISABLE_MACROS" /FD /c
+# ADD CPP /nologo /MT /W3 /GX /O2 /I "." /I "..\libpng-1.0.3" /I "..\zlib-1.1.3" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_CTYPE_DISABLE_MACROS" /FD /c
 # SUBTRACT CPP /YX
 # ADD BASE RSC /l 0x100c
 # ADD RSC /l 0x100c
@@ -65,7 +65,7 @@ LIB32=link.exe -lib
 # PROP Intermediate_Dir "Debug"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /Z7 /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /YX /FD /c
-# ADD CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /D "_CTYPE_DISABLE_MACROS" /FR /FD /c
+# ADD CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /I "..\libpng-1.0.3" /I "..\zlib-1.1.3" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /D "_CTYPE_DISABLE_MACROS" /FR /FD /c
 # SUBTRACT CPP /YX
 # ADD BASE RSC /l 0x100c
 # ADD RSC /l 0x100c
@@ -105,6 +105,30 @@ SOURCE=.\GDFONTS.C
 # Begin Source File
 
 SOURCE=.\gdfontt.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\gdlucidab10.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\gdlucidab12.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\gdlucidab14.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\gdlucidan10.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\gdlucidan12.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\gdlucidan14.c
 # End Source File
 # End Target
 # End Project

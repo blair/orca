@@ -1,7 +1,7 @@
 # This file is an input file used by the GNU "autoconf" program to
 # generate the file "configure", which is run during Borp installation
 # to configure the system for the local environment.
-AC_INIT(src/orca.pl)
+AC_INIT(src/orca.pl.in)
 AC_CONFIG_AUX_DIR(config)
 AC_CANONICAL_SYSTEM
 
@@ -11,11 +11,16 @@ CONFIGURE_COMMAND_LINE=${1+"$@"}
 AC_SUBST(CONFIGURE_COMMAND_LINE)
 
 # Define the directories containing packages that Orca makes use of here.
-# The path packages gets added where necessary.
-DIGEST_MD5_DIR=Digest-MD5-2.07
-MATH_INTERPOLATE_DIR=Math-Interpolate-1.02
-RRDTOOL_DIR=rrdtool-0.99.31
-STORABLE_DIR=Storable-0.6@3
+# The directory name packages where these packages are distributed with
+# Orca gets added where necessary.
+COMPRESS_ZLIB_DIR=Compress-Zlib-1.05
+DATA_DUMPER_DIR=Data-Dumper-2.101
+DIGEST_MD5_DIR=Digest-MD5-2.09
+MATH_INTERPOLATE_DIR=Math-Interpolate-1.05
+RRDTOOL_DIR=rrdtool-1.0.7.2
+STORABLE_DIR=Storable-0.6.5
+AC_SUBST(COMPRESS_ZLIB_DIR)
+AC_SUBST(DATA_DUMPER_DIR)
 AC_SUBST(DIGEST_MD5_DIR)
 AC_SUBST(MATH_INTERPOLATE_DIR)
 AC_SUBST(RRDTOOL_DIR)
@@ -81,7 +86,7 @@ ORCALLATOR_DIR=`(
 )`
 AC_SUBST(ORCALLATOR_DIR)
 
-WATCH_HTTPD=
+WATCH_WEB=
 NCSA_LOG=
 AC_ARG_WITH(ncsa-log,
   [   --with-ncsa-log=FILE       location of the NCSA style web server access log],
@@ -92,7 +97,7 @@ AC_ARG_WITH(ncsa-log,
          ;;
       *) WEB_LOG="$withval"
          NCSA_LOG=yes
-         WATCH_HTTPD="-DWATCH_HTTPD"
+         WATCH_WEB="-DWATCH_WEB"
          ;;
     esac
   ]
@@ -111,7 +116,7 @@ AC_ARG_WITH(proxy-log,
          ;;
       *) WEB_LOG="$withval"
          PROXY_LOG=yes
-         WATCH_HTTPD="-DWATCH_HTTPD -DWATCH_PROXY"
+         WATCH_WEB="-DWATCH_WEB -DWATCH_PROXY"
          ;;
     esac
   ]
@@ -131,13 +136,12 @@ AC_ARG_WITH(squid-log,
          AC_MSG_ERROR([*** You must supply an argument to the --with-squid-log option.])
          ;;
       *) WEB_LOG="$withval"
-         WATCH_HTTPD="-DWATCH_HTTPD -DWATCH_SQUID"
+         WATCH_WEB="-DWATCH_WEB -DWATCH_SQUID"
          ;;
     esac
   ]
 )
-
-AC_SUBST(WATCH_HTTPD)
+AC_SUBST(WATCH_WEB)
 AC_SUBST(WEB_LOG)
 
 # To get a default CFLAGS for this build, check for a C compiler.  This
@@ -146,14 +150,16 @@ AC_PROG_CC
 
 AC_PROG_MAKE_SET
 AC_ARG_PROGRAM
-AC_PATH_PROGS(AWK,mawk gawk nawk awk)
+AC_PATH_PROG(BZIP2, bzip2)
+AC_PATH_PROG(BUNZIP2, bunzip2)
+AC_PATH_PROG(COMPRESS, compress)
 AC_PATH_PROG(CUT, cut, cut)
 AC_PATH_PROG(EXPR, expr, expr)
-AC_PATH_PROG(SE, se,,/opt/RICHPse/bin:$PATH)
-AC_PATH_PROG(UNAME, uname, uname)
+AC_PATH_PROG(GZIP, gzip)
+AC_PATH_PROG(GUNZIP, gunzip)
+AC_PATH_PROGS(AWK, mawk gawk nawk awk)
 
 # Include the file that defines BORP_PERL_RUN.
-sinclude(config/acinclude.m4)
 AC_PATH_PROG(PERL, perl, NOT_FOUND)
 if test "x$PERL" = "xNOT_FOUND"; then
   AC_MSG_ERROR([*** Perl not found.  Please install Perl.  See INSTALL how to do this.])
@@ -163,46 +169,128 @@ fi
 PERL_HEAD="../config/$PERL_HEAD"
 AC_SUBST(PERL_HEAD)
 
-# Check for necessary Perl modules.
+AC_PATH_PROG(UNAME, uname, uname)
+AC_PATH_PROG(UNCOMPRESS, uncompress)
+
+# Determine the correct flags to compress files depending upon the compress
+# programs available.
+COMPRESSOR=
+UNCOMPRESSOR_PIPE=
+if test -n "$BZIP2" -a -n "$BUNZIP2"; then
+  COMPRESSOR="$BZIP2 -9"
+  UNCOMPRESSOR_PIPE="$BUNZIP2 -c"
+elif test -n "$GZIP" -a -n "$GUNZIP"; then
+  COMPRESSOR="$GZIP -9"
+  UNCOMPRESSOR_PIPE="$GUNZIP -c"
+elif test -n "$COMPRESS" -a -n "$UNCOMPRESS"; then
+  COMPRESSOR="$COMPRESS"
+  UNCOMPRESSOR_PIPE="$UNCOMPRESS -c"
+fi
+AC_SUBST(COMPRESSOR)
+AC_SUBST(UNCOMPRESSOR_PIPE)
+
+# Now we check for those portions of Orca that should be built and set
+# up for installation.  The first step is to check for operating system
+# specific modules.  For Solaris hosts, orcallator.se is built and
+# installed.  This requires the additional building of a librrd.so
+# installed in libdir.  Then we check for the proper Perl modules.
+AC_MSG_CHECKING([for solaris host for orcallator install])
+case "$target" in
+  *-solaris*)
+    BUILD_ORCALLATOR=yes
+    ORCALLATOR_SUBDIR=orcallator
+    # Add --enable-shared to the configure options for RRDtool if it is
+    # not already declared.
+    expr "$CONFIGURE_COMMAND_LINE" : "--enable-shared" >/dev/null 2>&1 || CONFIGURE_COMMAND_LINE="$CONFIGURE_COMMAND_LINE --enable-shared"
+
+    INSTALL_LIB_RRDTOOL=install_lib_rrdtool
+    MAKE_RRDTOOL=make_rrdtool
+    TEST_RRDTOOL=test_rrdtool
+    INSTALL_PERL_RRDTOOL=
+    CLEAN_RRDTOOL=clean_rrdtool
+    DISTCLEAN_RRDTOOL=distclean_rrdtool
+    ;;
+  *)
+    INSTALL_LIB_RRDTOOL=
+    BUILD_ORCALLATOR=no
+    ORCALLATOR_SUBDIR=
+    ;;
+esac
+AC_SUBST(ORCALLATOR_SUBDIR)
+AC_SUBST(INSTALL_LIB_RRDTOOL)
+
+AC_MSG_RESULT($BUILD_ORCALLATOR)
+if test "$BUILD_ORCALLATOR" = "yes"; then
+  AC_PATH_PROG(SE, se,,$PATH:/opt/RICHPse/bin)
+fi
+
+dnl BORP_PERL_MODULE(borp_cv_perl_compress_zlib, $PERL, Compress::Zlib, 1.05)
+if test "$borp_cv_perl_compress_zlib" = no; then
+  MAKE_COMPRESS_ZLIB=make_compress_zlib
+  TEST_COMPRESS_ZLIB=test_compress_zlib
+  INSTALL_PERL_COMPRESS_ZLIB=install_perl_compress_zlib
+  CLEAN_COMPRESS_ZLIB=clean_compress_zlib
+  DISTCLEAN_COMPRESS_ZLIB=distclean_compress_zlib
+fi
+AC_SUBST(MAKE_COMPRESS_ZLIB)
+AC_SUBST(TEST_COMPRESS_ZLIB)
+AC_SUBST(INSTALL_PERL_COMPRESS_ZLIB)
+AC_SUBST(CLEAN_COMPRESS_ZLIB)
+AC_SUBST(DISTCLEAN_COMPRESS_ZLIB)
+
+BORP_PERL_MODULE(borp_cv_perl_data_dumper, $PERL, Data::Dumper, 2.101)
+if test "$borp_cv_perl_data_dumper" = no; then
+  MAKE_DATA_DUMPER=make_data_dumper
+  TEST_DATA_DUMPER=test_data_dumper
+  INSTALL_PERL_DATA_DUMPER=install_perl_data_dumper
+  CLEAN_DATA_DUMPER=clean_data_dumper
+  DISTCLEAN_DATA_DUMPER=distclean_data_dumper
+fi
+AC_SUBST(MAKE_DATA_DUMPER)
+AC_SUBST(TEST_DATA_DUMPER)
+AC_SUBST(INSTALL_PERL_DATA_DUMPER)
+AC_SUBST(CLEAN_DATA_DUMPER)
+AC_SUBST(DISTCLEAN_DATA_DUMPER)
+
 BORP_PERL_MODULE(borp_cv_perl_digest_md5, $PERL, Digest::MD5, 2.00)
 if test "$borp_cv_perl_digest_md5" = no; then
   MAKE_DIGEST_MD5=make_digest_md5
   TEST_DIGEST_MD5=test_digest_md5
-  INSTALL_DIGEST_MD5=install_digest_md5
+  INSTALL_PERL_DIGEST_MD5=install_perl_digest_md5
   CLEAN_DIGEST_MD5=clean_digest_md5
   DISTCLEAN_DIGEST_MD5=distclean_digest_md5
 fi
 AC_SUBST(MAKE_DIGEST_MD5)
 AC_SUBST(TEST_DIGEST_MD5)
-AC_SUBST(INSTALL_DIGEST_MD5)
+AC_SUBST(INSTALL_PERL_DIGEST_MD5)
 AC_SUBST(CLEAN_DIGEST_MD5)
 AC_SUBST(DISTCLEAN_DIGEST_MD5)
 
-BORP_PERL_MODULE(borp_cv_perl_math_interpolate, $PERL, Math::Interpolate, 1.00)
+BORP_PERL_MODULE(borp_cv_perl_math_interpolate, $PERL, Math::Interpolate, 1.04)
 if test "$borp_cv_perl_math_interpolate" = no; then
   MAKE_MATH_INTERPOLATE=make_math_interpolate
   TEST_MATH_INTERPOLATE=test_math_interpolate
-  INSTALL_MATH_INTERPOLATE=install_math_interpolate
+  INSTALL_PERL_MATH_INTERPOLATE=install_perl_math_interpolate
   CLEAN_MATH_INTERPOLATE=clean_math_interpolate
   DISTCLEAN_MATH_INTERPOLATE=distclean_math_interpolate
 fi
 AC_SUBST(MAKE_MATH_INTERPOLATE)
 AC_SUBST(TEST_MATH_INTERPOLATE)
-AC_SUBST(INSTALL_MATH_INTERPOLATE)
+AC_SUBST(INSTALL_PERL_MATH_INTERPOLATE)
 AC_SUBST(CLEAN_MATH_INTERPOLATE)
 AC_SUBST(DISTCLEAN_MATH_INTERPOLATE)
 
-BORP_PERL_MODULE(borp_cv_perl_rdds, $PERL, RRDs, 0.99029)
+BORP_PERL_MODULE(borp_cv_perl_rdds, $PERL, RRDs, 1.000072)
 if test "$borp_cv_perl_rdds" = no; then
   MAKE_RRDTOOL=make_rrdtool
   TEST_RRDTOOL=test_rrdtool
-  INSTALL_RRDTOOL=install_rrdtool
+  INSTALL_PERL_RRDTOOL=install_perl_rrdtool
   CLEAN_RRDTOOL=clean_rrdtool
   DISTCLEAN_RRDTOOL=distclean_rrdtool
 fi
 AC_SUBST(MAKE_RRDTOOL)
 AC_SUBST(TEST_RRDTOOL)
-AC_SUBST(INSTALL_RRDTOOL)
+AC_SUBST(INSTALL_PERL_RRDTOOL)
 AC_SUBST(CLEAN_RRDTOOL)
 AC_SUBST(DISTCLEAN_RRDTOOL)
 
@@ -210,16 +298,15 @@ BORP_PERL_MODULE(borp_cv_perl_storable, $PERL, Storable, 0.603)
 if test "$borp_cv_perl_storable" = no; then
   MAKE_STORABLE=make_storable
   TEST_STORABLE=test_storable
-  INSTALL_STORABLE=install_storable
+  INSTALL_PERL_STORABLE=install_perl_storable
   CLEAN_STORABLE=clean_storable
   DISTCLEAN_STORABLE=distclean_storable
 fi
 AC_SUBST(MAKE_STORABLE)
 AC_SUBST(TEST_STORABLE)
-AC_SUBST(INSTALL_STORABLE)
+AC_SUBST(INSTALL_PERL_STORABLE)
 AC_SUBST(CLEAN_STORABLE)
 AC_SUBST(DISTCLEAN_STORABLE)
-
 
 # Define the INSTALL and MKDIR variables to point to the scripts in
 # the config directory.
@@ -230,29 +317,34 @@ AC_SUBST(MKDIR)
 
 #--------------------------------------------------------------------
 #	Generate the Makefiles and shell scripts with the
-#	variable substitution.
+#	variable substitutions.
 #--------------------------------------------------------------------
+if test "$BUILD_ORCALLATOR" = "yes"; then
+  ORCALLATOR_OUTPUT="orcallator/orcallator.cfg
+                     orcallator/orcallator_running.pl
+                     orcallator/restart_orcallator.sh
+                     orcallator/start_orcallator.sh
+                     orcallator/stop_orcallator.sh
+                     orcallator/Makefile"
+fi
+
 AC_OUTPUT(config/PerlHead1
 	  config/PerlHead2
-	  packages/Makefile
-	  src/orcallator_running.pl
-	  src/restart_orcallator.sh
-	  src/start_orcallator.sh
-	  src/stop_orcallator.sh
-	  src/Makefile
-	  lib/orcallator.cfg
 	  lib/Makefile
+	  packages/Makefile
+	  src/orca.pl
+	  src/Makefile
+	  $ORCALLATOR_OUTPUT
 	  docs/Makefile
 	  Makefile)
 
-if test "$borp_cv_perl_rdds" != "yes"; then
-  echo ""
-  echo "Running configure in packages/$RRDTOOL_DIR to create RRDtool and RRDs.pm."
-  echo ""
-  echo "(cd packages/$RRDTOOL_DIR; ./configure $CONFIGURE_COMMAND_LINE --cache-file=../../config.cache)"
-  echo ""
-  (cd packages/$RRDTOOL_DIR; ./configure $CONFIGURE_COMMAND_LINE --cache-file=../../config.cache)
-fi
+command="(cd packages/$RRDTOOL_DIR; ./configure $CONFIGURE_COMMAND_LINE --cache-file=../../config.cache)"
+echo ""
+echo "Running configure in packages/$RRDTOOL_DIR to create RRDtool and RRDs.pm."
+echo ""
+echo $command
+echo ""
+eval $command
 
 if test -z "$WEB_LOG"; then
   AC_MSG_WARN([*** Unless you use a --with-*-log option you will not gather WWW log data.])

@@ -77,8 +77,8 @@ you might be sending the wrong data into a RRD.
 
 <P>
 
-The template switch alows you to specify which data sources you are going
-to update and in which order. If the datasources specified in the template
+The template switch allows you to specify which data sources you are going
+to update and in which order. If the data sources specified in the template
 are not available in the rrd file, the update process will abort with an
 error message.
 
@@ -100,17 +100,17 @@ of type <STRONG>COUNTER</STRONG>,
 <P>
 
 The remaining elements of the argument are DS updates. The order of this
-list is the same as the order the datasources were defined in the rra. If
+list is the same as the order the data sources were defined in the rra. If
 there is no data for a certain data-source, the letter 
 <STRONG>U</STRONG> (eg. N:0.1:U:1) can be defined.
 
 
 <P>
 
-The format of the value acquired from the datasource is dependent of the
-datasource type chosen. Normally it will be numeric, but the data
+The format of the value acquired from the data source is dependent of the
+data source type chosen. Normally it will be numeric, but the data
 acquisition modules my impose their very own parsing of this parameter as
-long as the colon (<STRONG>:</STRONG>) remains the datasource value separator.
+long as the colon (<STRONG>:</STRONG>) remains the data source value separator.
 
 
 <P>

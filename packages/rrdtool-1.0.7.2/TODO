@@ -1,9 +1,45 @@
-let the user define the base resolution of the
-graph independantly of the pixle resolution. If it is smaller than one
-pixle it will simply be ignored
+1.1.x Goals
+-----------
 
-do not fail if the same DEF gets stacked twice 
-im->gdes[ii].p_data = im->gdes[vidx].p_data;
-is a bad idea ... 
+let the user define the base resolution of the graph independently of
+the pixel resolution. If it is smaller than one pixel it will simply
+be ignored
 
-get 1.0 out ...
+allow sub second presition for step definition
+
+modularise consolidation and aquisition functions
+
+Allow the user to define vertical scaling of graphs in a more flexible way.
+some thing like --inner-range 0-1000 and --outer-range 0-10000 which means
+that the grapher can choose its vertical scaling in the given range ... 
+this would replace upper and lower limit
+
+make the inclusion of G?PRINT like output in to the lables of other graph 
+elements possible
+
+add axis on the right and on top of the graph ... 
+
+add configurable counter wrap
+
+95th percentile plotting
+
+build derivatives while plotting
+
+show trend by building moving average and represent it as an arrow
+
+offer side by side tiny box plots for each succesive hour, or some other
+means of seeing the variation rather than just the mean level
+
+circular periodic plots ... (polar)
+
+analyse data in non time domain ... 
+
+add smothing functions to grapher, using rolling average ... 
+
+make VRULE and HRULE with 123 versions ... 
+
+configurable fonts ... truetype ? colors ...
+antialiasing ... 
+
+make it possible to define order of legend items independant of their order
+on the commandline ...

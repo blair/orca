@@ -61,7 +61,7 @@ DDDDEEEESSSSCCCCRRRRIIIIPPPPTTTTIIIIOOOONNNN
 
 
 
-4/May/99                   19990504.23                          1
+9/Aug/99                      1.0.7                             1
 
 
 
@@ -120,14 +120,14 @@ BIN_DEC_HEX(1)               rrdtool               BIN_DEC_HEX(1)
        is difficult and prone to errors. Therefore we normally
        would use another base, called hexadecimal. It uses 16
        different symbols. First the symbols from the decimal
-       system are used, thereafter we continue with the alfabetic
-       characters. We get 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, A, B, C,
-       D, E and F. This system is choosen because the hexadecimal
-       form can be converted into the binary system very easy
+       system are used, thereafter we continue with the
+       alphabetic characters. We get 0, 1, 2, 3, 4, 5, 6, 7, 8,
+       9, A, B, C, D, E and F. This system is chosen because the
+       hexadecimal form can be converted into the binary system
 
 
 
-4/May/99                   19990504.23                          2
+9/Aug/99                      1.0.7                             2
 
 
 
@@ -136,7 +136,7 @@ BIN_DEC_HEX(1)               rrdtool               BIN_DEC_HEX(1)
 BIN_DEC_HEX(1)               rrdtool               BIN_DEC_HEX(1)
 
 
-       (and back).
+       very easy (and back).
 
        There is yet another system in use, called the octal
        system. This was more common in the old days but not
@@ -193,7 +193,7 @@ BIN_DEC_HEX(1)               rrdtool               BIN_DEC_HEX(1)
 
 
 
-4/May/99                   19990504.23                          3
+9/Aug/99                      1.0.7                             3
 
 
 
@@ -209,7 +209,7 @@ BIN_DEC_HEX(1)               rrdtool               BIN_DEC_HEX(1)
        have a hard time converting a number like _1_2_3_4(16).
        Therefore hexadecimal numbers get a prefix. This prefix
        depends on the language you're writing in. Some of the
-       prefixes are "0x" for C, "$" for pascal, "#" for HTML.  It
+       prefixes are "0x" for C, "$" for Pascal, "#" for HTML.  It
        is common to assume that if a number starts with a zero,
        it is octal.  It does not matter what is used as long as
        you know what it is.  I will use "0x" for hexadecimal, "%"
@@ -259,7 +259,7 @@ BIN_DEC_HEX(1)               rrdtool               BIN_DEC_HEX(1)
 
 
 
-4/May/99                   19990504.23                          4
+9/Aug/99                      1.0.7                             4
 
 
 
@@ -325,7 +325,7 @@ BIN_DEC_HEX(1)               rrdtool               BIN_DEC_HEX(1)
 
 
 
-4/May/99                   19990504.23                          5
+9/Aug/99                      1.0.7                             5
 
 
 
@@ -391,7 +391,7 @@ BIN_DEC_HEX(1)               rrdtool               BIN_DEC_HEX(1)
 
 
 
-4/May/99                   19990504.23                          6
+9/Aug/99                      1.0.7                             6
 
 
 
@@ -450,14 +450,14 @@ BIN_DEC_HEX(1)               rrdtool               BIN_DEC_HEX(1)
        For low values, try to do the calculations yourself, check
        them with a calculator. The more you do the calculations
        yourself, the more you find that you didn't make mistakes.
-       In the end, you'll do calcula in other bases as easy as
+       In the end, you'll do calculi in other bases as easy as
        you do in decimal.
 
-       When the numbers get bigger, you'll have to realise that a
+       When the numbers get bigger, you'll have to realize that a
 
 
 
-4/May/99                   19990504.23                          7
+9/Aug/99                      1.0.7                             7
 
 
 
@@ -468,7 +468,7 @@ BIN_DEC_HEX(1)               rrdtool               BIN_DEC_HEX(1)
 
        computer is not called a computer just to have a nice
        name. There are many different calculators available. Use
-       them. For unix you could use "bc" which is called so as it
+       them. For Unix you could use "bc" which is called so as it
        is short for Binary Calculator. It calculates not only in
        decimal, but in all bases you'll ever use (among them
        Binary).
@@ -523,6 +523,6 @@ AAAAUUUUTTTTHHHHOOOORRRR
 
 
 
-4/May/99                   19990504.23                          8
+9/Aug/99                      1.0.7                             8
 
 

@@ -1,4 +1,4 @@
 #!@PERL@ -w # -*- perl -*-
 
-require 5.005;
+require 5.004_01;
 

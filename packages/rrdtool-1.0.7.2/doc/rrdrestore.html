@@ -1,0 +1,97 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>restore - restore the contents of an B<RRD> from its XML dump format
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+<!--
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+</UL>
+-->
+<!-- INDEX END -->
+
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+rrdtool restore - restore the contents of an <STRONG>RRD</STRONG> from its XML dump format
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<STRONG>rrdtool</STRONG>  <STRONG>restore</STRONG>  <EM>filename.xml</EM>  <EM>filename.rrd</EM>
+
+[<STRONG>--range-check</STRONG>|<STRONG>-r</STRONG>]
+
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+The <STRONG>restore</STRONG> function reads the XML representation of an RRD and converts it into the
+native <STRONG>RRD</STRONG> format.
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_filename">filename.xml
+
+</A></STRONG><DD>
+The name of the <STRONG>XML</STRONG> you want to restore.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_filename">filename.rrd
+
+</A></STRONG><DD>
+The name of the <STRONG>RRD</STRONG> to restore.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__range_check_r">--range-check|-r
+
+</A></STRONG><DD>
+Make sure the values in the RRAs do not exceed the limits defined for the
+different datasources.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="AUTHOR">AUTHOR
+
+</A></H1>
+Tobias Oetiker <A
+HREF="MAILTO:<oetiker@ee.ethz.ch>"><oetiker@ee.ethz.ch></A>
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

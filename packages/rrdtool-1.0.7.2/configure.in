@@ -1,49 +1,65 @@
-dnl This file is the master file for the configure process.
-dnl It is only edited by developers. If you are trying to compile
-dnl rrd_tool, use "sh configure" instead of this file.
+dnl RRDtool AutoConf script ... 
+dnl ---------------------------
 dnl
-dnl From it, config.h.in and configure are both made.
-dnl To make them, you (a developer) will need to install the latest
-dnl versions of GNU m4 and GNU autoconf. Then you run "autoheader"
-dnl in the distribution directory to make config.h.in, and
-dnl "autoconf" to make the configure script. These two files
-dnl must be shipped with the distribution; end users should not need
-dnl m4 and autoconf to be able to compile. All they need is
-dnl to run "sh configure".
+dnl Created by Jeff Allen, Tobi Oetiker, Blair Zajac
 dnl
-dnl The format of this file is basically one macro to a line.
-dnl Text that is not a macro and not a comment is passed straight
-dnl through to the configure script.
 dnl
-dnl Comments are "dnl" followed by comments. It means delete
-dnl to newline.
-dnl
-dnl When you want to pass a literal bit of text to a macro as
-dnl an argument, you use square brackets. Thus, you cannot use
-dnl the bracket shorthand for /bin/test... you must use the
-dnl actual program name.
-dnl
-dnl Our tests do not cache. This is because I'm too lazy to
-dnl figure out how to use the caching macros. There's not many,
-dnl so it's not a big problem.
-dnl
-dnl 	-jra
 
+dnl make sure we are being executed in the right place
 AC_INIT(src/rrd_tool.c)
-AC_CONFIG_HEADER(config.h)
 
-dnl Check for programs.
+dnl all our local stuff like install scripts and include files
+dnl is in there
+AC_CONFIG_AUX_DIR(config)
+
+dnl determine the type of system we are running on
+AC_CANONICAL_SYSTEM
+
+dnl tell automake the this script is for rrdtool
+AM_INIT_AUTOMAKE(rrdtool, 1.0.7)
+
+dnl where we install our stuff ...
+AC_PREFIX_DEFAULT( /usr/local/rrdtool-1.0.7 )
+
+dnl tell automake which file to use as config header
+AM_CONFIG_HEADER(config/config.h)
+
+dnl Minimum Autoconf version required.
+AC_PREREQ(2.13)
+
+dnl Define library subdirectory names here.
+CGI_LIB_DIR=cgilib-0.4
+GD_LIB_DIR=gd1.3
+PNG_LIB_DIR=libpng-1.0.3
+ZLIB_LIB_DIR=zlib-1.1.3
+
+dnl substitute them in all the files listed in AC_OUTPUT
+AC_SUBST(CGI_LIB_DIR)
+AC_SUBST(GD_LIB_DIR)
+AC_SUBST(PNG_LIB_DIR)
+AC_SUBST(ZLIB_LIB_DIR)
+
+
+dnl Check for Perl.
+AC_PATH_PROG(PERL, perl, no)
+if test "x$PERL" = "nox"; then
+	COMP_PERL=
+else
+	COMP_PERL="perl_piped perl_shared"
+fi
+AC_SUBST(COMP_PERL)
+
+
+dnl Check for the compiler and static/shared library creation.
 AC_PROG_CC
 AC_PROG_CPP
-AC_PROG_INSTALL
-AC_PROG_LN_S
-AC_PROG_MAKE_SET
-AC_PROG_RANLIB
-AC_PATH_PROG(PERL, perl, no)
+dnl RRD_ACLOCAL_FIND_LIBTOOL
 
+dnl don't build a shared library ... perl will do it's own magic. 
+dnl this can be changed when running configure
+AC_DISABLE_SHARED
 
-dnl Checks for libraries.
-AC_CHECK_LIB(m, acos)
+AM_PROG_LIBTOOL
 
 dnl Checks for header files.
 AC_HEADER_STDC
@@ -54,85 +70,205 @@ AC_C_CONST
 AC_HEADER_TIME
 AC_STRUCT_TM
 
+dnl Checks for libraries.
+AC_CHECK_LIB(m, acos)
+
 dnl If CC is not set we assume gcc
 if test ${CC-gcc} = gcc; then
-  rd_cv_prog_hpcc=no
-oCFLAGS_EXTRA=$CFLAGS_EXTRA
-CFLAGS_EXTRA="$CFLAGS_EXTRA -Wall -pedantic -fPIC"
-AC_CACHE_CHECK(if we can use GCC-specific compiler options, rd_cv_gcc_opt,
-[
-AC_TRY_COMPILE( , return 0 ,
-	 rd_cv_gcc_opt=yes,
-	 rd_cv_gcc_opt=no )
-])
-if test $rd_cv_gcc_opt = no; then
-	CFLAGS_EXTRA=$oCFLAGS_EXTRA
-fi
-
-else
-AC_CACHE_CHECK(if we should use HP compiler options, rd_cv_prog_hpcc,
-[
-cat > conftest.c <<EOF
-#ifdef _HPUX_SOURCE
-  yes;
-#endif
-EOF
-if AC_TRY_COMMAND(${CC-cc} -Ae -z -E conftest.c) | egrep yes >/dev/null 2>&1
-then
-  rd_cv_prog_hpcc=yes
-else
-  rd_cv_prog_hpcc=no
-fi])
-fi
-if test $rd_cv_prog_hpcc = yes; then
-	CFLAGS_EXTRA="$CFLAGS_EXTRA -Ae -z"
+	oCFLAGS=$CFLAGS
+	CFLAGS="$CFLAGS -Wall -pedantic"
+	AC_CACHE_CHECK(if we can use GCC-specific compiler options, rd_cv_gcc_opt,
+	[
+	AC_TRY_COMPILE( , return 0 ,
+		rd_cv_gcc_opt=yes,
+		rd_cv_gcc_opt=no )
+	])
+	if test $rd_cv_gcc_opt = no; then
+		CFLAGS=$oCFLAGS
+	fi
 fi
 
 dnl Checks for library functions.
 AC_FUNC_STRFTIME
 AC_FUNC_VPRINTF
 
-AC_CHECK_FUNCS(mktime getrusage gettimeofday)
+dnl for each function found we get a definition in config.h 
+dnl of the form HAVE_FUNCTION
+AC_CHECK_FUNCS(snprintf fpclass isnan finite isinf memmove strchr mktime getrusage gettimeofday)
 
-oCFLAGS_EXTRA=$CFLAGS_EXTRA
-AC_CACHE_CHECK([if the compiler does proper IEEE math], rd_cv_ieee_works,
-[AC_TRY_RUN([int main(void){
-              double a=0.0/0.0,b=0.0,c;
-              c=a/b;if (c==a) c=a;return isnan(a/c)?0:1;
+dnl what does realloc do if it gets called with a NULL pointer
+
+AC_CACHE_CHECK([if realloc can deal with NULL], rd_cv_null_realloc,
+[AC_TRY_RUN([#include <stdlib.h>
+	      int main(void){
+              char *x = NULL;
+	      x = realloc (x,10);
+	      if (x==NULL) return 1;
+	      return 0;
              }],
-           [rd_cv_ieee_works=yes],[
-AC_MSG_RESULT(no it does not)
-CFLAGS_EXTRA="$CFLAGS_EXTRA -ieee"
-AC_CACHE_CHECK([if the compiler does proper IEEE math with -ieee], rd_cv_ieee_switch,
-[AC_TRY_RUN([int main(void){
-              double a=0.0/0.0,b=0.0,c;
-              c=a/b;if (c==a) c=a;return isnan(a/c)?0:1;   
-             }],
-           [rd_cv_ieee_switch=yes],[rd_cv_ieee_switch=no;
-AC_MSG_RESULT(nope)
+           [rd_cv_null_realloc=yes],[rd_cv_null_realloc=nope],:)])
+
+if test x"$rd_cv_null_realloc" = xnope; then
+AC_DEFINE(NO_NULL_REALLOC)
+fi
+
+dnl determine how to get IEEE math to work on this box.
+
+AC_DEFUN(AC_IEEE, 
+AC_CACHE_CHECK([if IEEE math works $1], [rd_cv_ieee_$2],
+[AC_TRY_RUN([$3
+
+#if (! defined(HAVE_FINITE) && defined(HAVE_ISNAN) && defined(HAVE_ISINF))
+#  define HAVE_FINITE 1
+#  define finite(a) (! isnan(a) && ! isinf(a))
+#endif
+
+#if (! defined(HAVE_ISINF) && defined(HAVE_FPCLASS))
+#  define HAVE_ISINF 1
+#  include <ieeefp.h>
+#  define isinf(a) (fpclass(a) == FP_NINF || fpclass(a) == FP_PINF)
+#endif
+
+#include <stdio.h>
+int main(void){
+    double nan,inf,c,d;
+     $4;
+     /* some math to see if we get a segfault; */
+     nan=0.0/0.0;
+     inf=1.0/0.0;
+     c = 1.0;
+     c = c / 0.0; /* try getting fpe */
+     c = inf + nan;
+     c = inf / nan;
+     if (! isnan(nan)) {printf ("isnan(NaN) ... "); return 1;}
+     if (nan == nan) {printf ("nan != nan ..."); return 1;}
+     if (! isinf(inf)) {printf ("isinf(oo) ... "); return 1;}
+     if (! isinf(-inf)) {printf ("isinf(-oo) ... "); return 1;}
+     if (! inf > 0) {printf ("inf > 0 ... "); return 1;}
+     if (! -inf < 0) {printf ("inf < 0 ... "); return 1;}
+     return 0;
+}],
+           [rd_cv_ieee_$2=yes],[rd_cv_ieee_$2=no],:)]))
+
+oCFLAGS=$CFLAGS
+unset CFLAGS
+
+AC_IEEE([out of the box],works)
+
+if test "$rd_cv_ieee_works" != yes ; then
+
+CFLAGS=-ieee
+AC_IEEE([with the -ieee switch],switch)
+
+ if test "$rd_cv_ieee_switch" != yes ; then
+
+CFLAGS=-mieee
+AC_IEEE([with the -mieee switch],mswitch)
+
+  if test "$rd_cv_ieee_mswitch" != yes ; then
+
+CFLAGS="-q float=rndsngl"
+AC_IEEE([with the -q float=rndsngl switch],qswitch)
+
+  if test "$rd_cv_ieee_qswitch" != yes ; then
+
+unset CFLAGS
+
+AC_IEEE([with fpsetmask(0)],mask,[#include <floatingpoint.h>],[fpsetmask(0)])
+
+   if test "$rd_cv_ieee_mask" != yes ; then
+
+AC_IEEE([with signal(SIGFPE,SIG_IGN)],sigfpe,[#include <signal.h>],[signal(SIGFPE,SIG_IGN)])
+
+    if test "$rd_cv_ieee_sigfpe" != yes ; then
+
+
 echo "--------------------------------------------------------------"
 echo "Your Compiler does not do propper IEEE math ... "
 echo "Please find out how to make IEEE math work with your Compiler"
-echo "And let me know (oetiker@ee.ethz.ch)"
+echo "and let me know (oetiker@ee.ethz.ch)"
+echo "Check config.log to see what went wrong ..."
 echo ""
 exit 1
-],:)])
-],:)])
-
-CFLAGS_EXTRA=$oCFLAGS_EXTRA
-
-if test x$rd_cv_ieee_switch = xyes; then
-	CFLAGS_EXTRA="$CFLAGS_EXTRA -ieee"
+     fi
+    fi
+   fi
+  fi
+ fi
 fi
 
-AC_SUBST(CFLAGS_EXTRA)
+CFLAGS=$oCFLAGS
+
+if test x$rd_cv_ieee_sigfpe = xyes; then
+   AC_DEFINE(MUST_DISABLE_SIGFPE)
+fi
+
+if test x$rd_cv_ieee_mask = xyes; then
+   AC_DEFINE(MUST_DISABLE_FPMASK)
+fi
+
+if test x$rd_cv_ieee_switch = xyes; then
+   CFLAGS="$CFLAGS -ieee"
+fi
+
+if test x$rd_cv_ieee_mswitch = xyes; then
+   CFLAGS="$CFLAGS -mieee"
+fi
+
+if test x$rd_cv_ieee_qswitch = xyes; then
+   CFLAGS="$CFLAGS -q float=rndsngl"
+fi
+
 AC_SUBST(CFLAGS)
 
-AC_OUTPUT(Makefile src/Makefile gd1.2/Makefile doc/GNUmakefile perl-shared/examples/shared-demo.pl perl-piped/examples/piped-demo.pl, [chmod +x perl-*/examples/*.pl])
+AC_OUTPUT(cgilib-0.4/Makefile				\
+          config/Makefile				\
+          examples/shared-demo.pl			\
+          examples/piped-demo.pl			\
+          examples/stripes.pl				\
+          examples/bigtops.pl				\
+          examples/minmax.pl				\
+          examples/cgi-demo.cgi				\
+          examples/Makefile				\
+          contrib/Makefile				\
+          contrib/trytime/Makefile			\
+          contrib/log2rrd/Makefile			\
+          contrib/log2rrd/log2rrd.pl			\
+          contrib/rrd-file-icon/Makefile		\
+          doc/Makefile					\
+          gd1.3/Makefile				\
+          libpng-1.0.3/Makefile				\
+          zlib-1.1.3/Makefile				\
+          src/Makefile					\
+          Makefile,					\
+          [chmod +x examples/*.cgi examples/*.pl contrib/*/*.pl])
 
 AC_MSG_CHECKING(in)
 AC_MSG_RESULT(and out again)
 
-echo $ac_n "ordering CD from http://cdnow.com/gift/oetiker@ee.ethz.ch""... $ac_c" 1>&6
-sleep 3
-AC_MSG_RESULT([just kidding ;-)])
+echo $ac_n "ordering CD from http://cdnow.com/gift/oetiker@ee.ethz.ch $ac_c" 1>&6
+sleep 1
+echo $ac_n ".$ac_c" 1>&6
+sleep 1
+echo $ac_n ".$ac_c" 1>&6
+sleep 1
+echo $ac_n ".$ac_c" 1>&6
+sleep 1
+echo $ac_n ".$ac_c" 1>&6
+sleep 1
+AC_MSG_RESULT([ just kidding ;-)])
+echo
+echo "----------------------------------------------------------------"
+echo "Config is DONE!"
+echo
+echo "Type 'make' to compile the software and use 'make install' to "
+echo "install everything to $prefix. If you want to install the perl"
+echo "modules in site-perl, try 'make site-perl-install'."
+echo 
+echo "       ... that wishlist mentioned above does realy exist. So if"
+echo "you feel like showing your appreciation for rrdtool this is the"
+echo "place to go. :-)"
+echo 
+echo "                            -- Tobi Oetiker <oetiker@ee.ethz.ch>"
+echo "----------------------------------------------------------------"
+

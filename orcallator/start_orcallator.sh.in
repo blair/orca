@@ -7,13 +7,33 @@ prefix=@prefix@
 exec_prefix=@exec_prefix@
 libdir=@libdir@
 AWK=@AWK@
+COMPRESSOR="@COMPRESSOR@"
 CUT=@CUT@
 EXPR=@EXPR@
 UNAME=@UNAME@
 ORCALLATOR_DIR=@ORCALLATOR_DIR@
 SE=@SE@
-WATCH_HTTPD="@WATCH_HTTPD@"
+WATCH_WEB="@WATCH_WEB@"
 WEB_LOG=@WEB_LOG@
+
+# Check if the SE executable was found upon configure.
+if test -z "$SE"; then
+  echo "When you configured Orca the se executable was not found.  If you"
+  echo "do not have the SE toolkit installed on your system, then follow"
+  echo "the steps in section 8 of INSTALL."
+  echo ""
+  echo "Once you have the SE toolkit installed on your system, then either"
+  echo "rerun configure so that it finds se, or edit start_orcallator.sh"
+  echo "and define SE to the location of se."
+  exit 1
+fi
+
+if test ! -x "$SE"; then
+  echo "The SE executable at"
+  echo "  $SE"
+  echo "does not exist or is not executable.  Please correct this problem."
+  exit 1
+fi
 
 # Get the hostname without the fully qualified part; that is, trim off
 # anything past the first `.'.
@@ -23,7 +43,7 @@ uname=`$UNAME -n | $CUT -d. -f1`
 OUTDIR=$ORCALLATOR_DIR/$uname
 
 # Export the environmental variables.
-export OUTDIR WEB_LOG
+export COMPRESSOR OUTDIR WEB_LOG
 
 # Check if orcallator is already running.
 pids=`/usr/ucb/ps auxww | $AWK '/orcallator.se/ && !/awk/ {print $2}'`
@@ -53,7 +73,7 @@ fi
 
 # Now start the logging.
 echo "Starting logging"
-$SE $LE_PATCH -DWATCH_OS $WATCH_HTTPD $libdir/orcallator.se &
+$SE $LE_PATCH -DWATCH_OS $WATCH_WEB $libdir/orcallator.se &
 
 # Write the PID of orcallator to a file to make killing easier.
 pid=$!

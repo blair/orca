@@ -1,3 +1,20 @@
+1999-08-06   Gisle Aas <gisle@aas.no>
+
+   Release 2.09
+
+   Documentation update.
+
+
+
+1999-07-28   Gisle Aas <gisle@aas.no>
+
+   Release 2.08
+
+   The addfile() methods could trigger a core dump when passed
+   a filehandle that had failed to open.
+
+
+
 1999-04-26   Gisle Aas <gisle@aas.no>
 
    Release 2.07
@@ -8,7 +25,7 @@
    SHA module did.
 
    The module should now work better when liked statically with perl,
-   because we know use a safer module-loaded test in Digest.pm.
+   because we now use a safer module-loaded test in Digest.pm.
 
    Assume we know the outcome of the alignment test on VMS. Patch by
    Chuck Lane <lane@duphy4.physics.drexel.edu>

@@ -1,5 +1,5 @@
 /*****************************************************************************
- * RRDTOOL 0.99.31 Copyright Tobias Oetiker, 1997, 1998, 1999
+ * RRDtool  Copyright Tobias Oetiker, 1997, 1998, 1999
  *****************************************************************************
  * rrd_create.c  creates new rrds
  *****************************************************************************/
@@ -13,12 +13,11 @@ rrd_create(int argc, char **argv)
     rrd_t          rrd;
     long                i,long_tmp;
     time_t             last_up;
-#ifdef WANT_AT_STYLE_TIMESPEC
     struct time_value last_up_tv;
     char *parsetime_error = NULL;
-    int last_up_is_ok = 0;
-#endif
 
+    /* init last_up */
+    last_up = time(NULL)-10;
     /* init rrd clean */
     rrd_init(&rrd);
     /* static header */
@@ -44,7 +43,7 @@ rrd_create(int argc, char **argv)
     /* a default value */
     rrd.ds_def = NULL;
     rrd.rra_def = NULL;
-    last_up = time(NULL);
+    
     while (1){
 	static struct option long_options[] =
 	{
@@ -62,17 +61,6 @@ rrd_create(int argc, char **argv)
 	
 	switch(opt) {
 	case 'b':
-#ifdef WANT_AT_STYLE_TIMESPEC
-            {
-            char *endp;
-            last_up_is_ok = 0;
-            last_up = strtol(optarg, &endp, 0);
-            if (*endp == '\0') /* it was a valid number */
-                if (last_up > 31122038 || /* 31 Dec 2038 in DDMMYYYY */
-                    last_up < 0) {
-                    last_up_is_ok = 1;
-                    break;
-                }
             if ((parsetime_error = parsetime(optarg, &last_up_tv))) {
                 rrd_set_error("last update time: %s", parsetime_error );
 		rrd_free(&rrd);
@@ -85,15 +73,9 @@ rrd_create(int argc, char **argv)
 		rrd_free(&rrd);
 		return(-1);
 	    }
-	    if (!last_up_is_ok)
-		last_up = mktime(&last_up_tv.tm) + last_up_tv.offset;
-            }/* this is for the entire block */
-	
-#else
-	    last_up = atol(optarg);
-#endif
-	    if (last_up < 0) /* if time is negative this means go back from now. */
-	      last_up = time(NULL)+last_up;
+
+	    last_up = mktime(&last_up_tv.tm) + last_up_tv.offset;
+	    
 	    if (last_up < 3600*24*365*10){
 		rrd_set_error("the first entry to the RRD should be after 1980");
 		rrd_free(&rrd);
@@ -123,7 +105,7 @@ rrd_create(int argc, char **argv)
 	char minstr[20], maxstr[20];	
 	if (strncmp(argv[i],"DS:",3)==0){
 	    size_t old_size = sizeof(ds_def_t)*(rrd.stat_head->ds_cnt);
-	    if((rrd.ds_def = realloc(rrd.ds_def,
+	    if((rrd.ds_def = rrd_realloc(rrd.ds_def,
 				     old_size+sizeof(ds_def_t)))==NULL){
 		rrd_set_error("allocating rrd.ds_def");
 		rrd_free(&rrd);
@@ -166,7 +148,7 @@ rrd_create(int argc, char **argv)
 	    }
 	} else if (strncmp(argv[i],"RRA:",3)==0){
 	    size_t old_size = sizeof(rra_def_t)*(rrd.stat_head->rra_cnt);
-	    if((rrd.rra_def = realloc(rrd.rra_def,
+	    if((rrd.rra_def = rrd_realloc(rrd.rra_def,
 				      old_size+sizeof(rra_def_t)))==NULL){
 		rrd_set_error("allocating rrd.rra_def");
 		rrd_free(&rrd);

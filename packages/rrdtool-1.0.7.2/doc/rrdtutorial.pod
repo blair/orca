@@ -1,6 +1,6 @@
 =head1 NAME
 
-rrdtutorial - Alex van den Bogaerdts RRD Tool tutorial
+rrdtutorial - Alex van den Bogaerdts RRDtool tutorial
 
 =head1 DESCRIPTION
 
@@ -60,10 +60,10 @@ and process data collected via SNMP. The data will most likely be bytes
 (or bits) transfered from and to a network or a computer.
 RRDtool lets you create a database, store data in it, retrieve that data
 and create graphs in GIF format for display on a web browser. Those GIF
-images are dependant on the data you collected and could be, for instance,
+images are dependent on the data you collected and could be, for instance,
 an overview of the average network usage, or rather the peaks that occurred.
 It can also be used to display tidal waves, solar radiation, power
-consumption, number of visitors at an exibition, noise levels near an
+consumption, number of visitors at an exhibition, noise levels near an
 airport, temperature on your favorite holiday location, temperature in the
 fridge and whatever you imagination can come up with. You need a sensor to
 measure the data and be able to feed the numbers to RRDtool. Many devices
@@ -89,7 +89,7 @@ and not only for this particular list! Look in the documentation that
 came with RRDtool for the location and usage of the list.
 
 I suggest you take a moment to subscribe to the mailing list right now
-by sending an email to <rrdtool-users-request@list.ee.ethz.ch> with a
+by sending an email to E<lt>rrd-users-request@list.ee.ethz.chE<gt> with a
 subject of "subscribe". If you ever want to leave this list, you write
 an email to the same address but now with a subject of "unsubscribe".
 
@@ -311,7 +311,7 @@ When looking at the image, you notice that the horizontal axis displays
 The vertical axis displays the range we entered. We provided kilometers
 and when divided by 300 seconds, we get very small numbers. To be exact,
 the first value was 12 (12357-12345) and divided by 300 this makes 0.04
-RRDtool displays this as 40 m which means 40 mili (so: NOT meters).
+RRDtool displays this as 40 m which means 40 milli (so: NOT meters).
 What we did wrong was that we should have measured in meters, this would
 have been (12357000-12345000)/300 = 12000/300 = 40.
 
@@ -323,7 +323,7 @@ gif file !
       --start 920804400 --end 920808000               \
       --vertical-label m/s                            \
       DEF:myspeed=test.rrd:speed:AVERAGE              \
-      CDEF:realspeed=myspeed,1000,*                   \
+      "CDEF:realspeed=myspeed,1000,*"                 \
       LINE2:realspeed#FF0000
 
 After viewing this GIF, you notice the "m" has disappeared. This it what
@@ -352,7 +352,7 @@ Now let's create this GIF, and add some more magic ...
       --start 920804400 --end 920808000               \
       --vertical-label km/h                           \
       DEF:myspeed=test.rrd:speed:AVERAGE              \
-      CDEF:kmh=myspeed,3600,*                         \
+      "CDEF:kmh=myspeed,3600,*"                       \
       CDEF:fast=kmh,100,GT,kmh,0,IF                   \
       CDEF:good=kmh,100,GT,0,kmh,IF                   \
       HRULE:100#0000FF:"Maximum allowed"              \
@@ -401,7 +401,7 @@ GIF:
       --start 920804400 --end 920808000               \
       --vertical-label km/h                           \
       DEF:myspeed=test.rrd:speed:AVERAGE              \
-      CDEF:kmh=myspeed,3600,*                         \
+      "CDEF:kmh=myspeed,3600,*"                       \
       CDEF:fast=kmh,100,GT,100,0,IF                   \
       CDEF:over=kmh,100,GT,kmh,100,-,0,IF             \
       CDEF:good=kmh,100,GT,0,kmh,IF                   \
@@ -641,7 +641,7 @@ see if you can play around with the options and calculations.
 
 Suggestion:
 
-Display in bytes per second and in bits per second. Make the ethernet
+Display in bytes per second and in bits per second. Make the Ethernet
 graphics go red if they are over four megabits per second.
 
 =head2 Consolidation Functions
@@ -792,7 +792,7 @@ Let's try them all:
             DEF:linec=all.rrd:c:AVERAGE LINE3:linec#0000FF:"Line C" \
             DEF:lined=all.rrd:d:AVERAGE LINE3:lined#000000:"Line D"
 
-=head2 RRD Tool under the Microscope
+=head2 RRDtool under the Microscope
 
 =over 2
 
@@ -1064,7 +1064,7 @@ documentation and they didn't.
 
 =head1 SEE ALSO
 
-The RRD Tool manpages
+The RRDtool manpages
 
 =head1 AUTHOR
 
@@ -1074,5 +1074,5 @@ basic questions. They will not only get their answer but at the same
 time learn a whole lot more.
 
 Alex van den Bogaerdt
-<alex@ergens.op.het.net>
+E<lt>alex@ergens.op.het.netE<gt>
 

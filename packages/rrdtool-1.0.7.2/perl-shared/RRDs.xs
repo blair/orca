@@ -31,6 +31,15 @@ extern "C" {
 
 MODULE = RRDs	PACKAGE = RRDs	PREFIX = rrd_
 
+BOOT:
+#ifdef MUST_DISABLE_SIGFPE
+	signal(SIGFPE,SIG_IGN);
+#endif
+#ifdef MUST_DISABLE_FPMASK
+	fpsetmask(0);
+#endif 
+	
+
 SV*
 rrd_error()
 	CODE:
@@ -87,7 +96,6 @@ rrd_graph(...)
 	char **argv;
 	AV *retar;
 	PPCODE:
-		calcpr = NULL;
 		argv = (char **) malloc((items+1)*sizeof(char *));
 		argv[0] = "dummy";
 		for (i = 0; i < items; i++) argv[i+1] = (char *) SvPV(ST(i),na);
@@ -110,7 +118,7 @@ rrd_graph(...)
 			free(calcpr);
 		}
 		EXTEND(sp,4);
-		PUSHs(sv_2mortal(newRV_inc((SV*)retar)));
+		PUSHs(sv_2mortal(newRV_noinc((SV*)retar)));
 		PUSHs(sv_2mortal(newSViv(xsize)));
 		PUSHs(sv_2mortal(newSViv(ysize)));
 
@@ -153,8 +161,8 @@ rrd_fetch(...)
 		EXTEND(sp,5);
 		PUSHs(sv_2mortal(newSViv(start)));
 		PUSHs(sv_2mortal(newSViv(step)));
-		PUSHs(sv_2mortal(newRV_inc((SV*)names)));
-		PUSHs(sv_2mortal(newRV_inc((SV*)retar)));
+		PUSHs(sv_2mortal(newRV_noinc((SV*)names)));
+		PUSHs(sv_2mortal(newRV_noinc((SV*)retar)));
 
 int
 rrd_tune(...)

@@ -1,22 +1,399 @@
-Other:
+This is a pretty comprehensive to-do list for Orca and the related data
+gathering tools.  Any comments and additions to this list are welcome.
+
+To motivate the discussion of this to do list, let me give some background
+on our setup.  GeoCities site has over 100 hosts.  I've been running
+orcallator.se on some hosts since September 1998 that have stored over
+300 source text files. Currently I have 34472 files using 7.3 gigabytes
+of storage.  I have 9 different orcallator.cfg for different classes
+of machines.
+
+* Orca: Load arbitrarily formatted source text files.
+
+	(If this is implemented, then the problems of source text files
+	not containing fields that orcallator.cfg is looking for and
+	Orca complaining will disappear).
+
+	Orca can only handle source text files that have data from one
+	source, such as a host, in a single file.  It cannot currently
+	handle source data like this:
+
+		# Web_server	time		hits/s	bytes/s
+		www1		933189273	1304	10324
+		www2		933189273	2545	40322
+
+	I plan on having Orca allow something like this in the configuration
+	file for each group.  To read the data above, something like this
+	would be defined.  Here the ChangeSubGroup and StoreMeasurement
+	would be macros or subroutines defined elsewhere for Orca users
+	to use.
+
+	group web_servers {
+	upon_open
+		# Do nothing special.
+
+	upon_new_data
+		while (<$fh>) {
+		  next if /^#/;
+		  my @line = split;
+		  next unless (@line == 4);
+		  my ($www, $time, $hits_s, $bytes_s) = @line;
+		  ChangeSubGroup($www);
+		  StoreMeasurement('Hits Per Second', $time, $hits_s);
+		  StoreMeasurement('Bytes Per Second', $time, $bytes_s);
+		}
+
+	upon_close
+		# Do nothing special.
+	}
+
+	For the standard orcallator.se output, something like this would
+	be used:
+
+	group orcallator {
+	find_files /usr/local/var/orca/orcallator/(.*)/orcallator-\d+-\d+\d+
+
+	upon_open
+		# Look for the first # line describing the data.
+		while (<$fh>)) {
+		  last if /^#/;
+		}
+		@ColumnsNames = split;
+		# Do some searching for the column with the Unix time in it.
+		my $time_column = ....;
+		splice(@ColumnNames, $time_column, 1);
+
+	upon_new_data
+		# Load the new data.
+		while (my $line = <$fh>) {
+		  my @line = split;
+		  next unless @line == @ColumnNames + 1;
+		  my ($time) = splice(@line, $time_column, 1);
+		  #
+		  StoreMeasurements($time, \@ColumnNames, \@line);
+		}
+
+	}
+
+	The code for each upon_* would be Perl code designed explicitly
+	for the type of source text.  This would allow the arbitrary
+	reading of text files, leaving the specifics to the user of
+	Orca.
+
+	This work would also include caching away the type of measurements
+	that each source data file provides.  Currently Orca reads the
+	header of each source text file for the names of the columns.
+	With the number of source text files I have, this takes a long
+	time.
+
+* OS independent data gathering tools:
+
+	Many people have been asking for Orca for operating systems other
+	than Solaris, since orcallator.se only runs on Solaris hosts.
+
+	I've given this a little thought and one good solution to this is
+	use other publically available tools that gather host information.
+	The one that came to mind is top (ftp://ftp.groupsys.com/pub/top).
+	Looking at the configure script for top, it runs on the following
+	OSes:
+
+	    386bsd     For a 386BSD system
+	    aix32      POWER and POWER2 running AIX 3.2.5.0
+	    aix41      PowerPC running AIX 4.1.2.0
+	    aux3       a Mac running A/UX version 3.x
+	    bsd386     For a BSD/386 system
+	    bsd43      any generic 4.3BSD system
+	    bsd44      For a 4.4BSD system
+	    bsd44a     For a pre-release 4.4BSD system
+	    bsdos2     For a BSD/OS 2.X system (based on the 4.4BSD Lite system)
+	    convex     any C2XX running Convex OS 11.X.
+	    dcosx      For Pyramid DC/OSX
+	    decosf1    DEC Alpha AXP running OSF/1 or Digital Unix 4.0.
+	    dgux       for DG AViiON with DG/UX 5.4+
+	    dynix      any Sequent Running Dynix 3.0.x
+	    dynix32    any Sequent Running Dynix 3.2.x
+	    freebsd20  For a FreeBSD-2.0 (4.4BSD) system
+	    ftx        For FTX based System V Release 4
+	    hpux10     any hp9000 running hpux version 10.x
+	    hpux7      any hp9000 running hpux version 7 or earlier
+	    hpux8      any hp9000 running hpux version 8 (may work with 9)
+	    hpux9      any hp9000 running hpux version 9
+	    irix5      any uniprocessor, 32 bit SGI machine running IRIX 5.3
+	    irix62     any uniprocessor, SGI machine running IRIX 6.2
+	    linux      Linux 1.2.x, 1.3.x, using the /proc filesystem
+	    mtxinu     any VAX Running Mt. Xinu MORE/bsd
+	    ncr3000    For NCR 3000 series systems Release 2.00.02 and above -
+	    netbsd08   For a NetBSD system
+	    netbsd10   For a NetBSD-1.0 (4.4BSD) system
+	    netbsd132  For a NetBSD-1.3.2 (4.4BSD) system
+	    next32     any m68k or intel NEXTSTEP v3.x system
+	    next40     any hppa or sparc NEXTSTEP v3.3 system
+	    osmp41a    any Solbourne running OS/MP 4.1A
+	    sco        SCO UNIX
+	    sco5       SCO UNIX OpenServer5
+	    sunos4     any Sun running SunOS version 4.x
+	    sunos4mp   any multi-processor Sun running SunOS versions 4.1.2 or later
+	    sunos5     Any Sun running SunOS 5.x (Solaris 2.x)
+	    svr4       Intel based System V Release 4
+	    svr42      For Intel based System V Release 4.2 (DESTINY)
+	    ultrix4    any DEC running ULTRIX V4.2 or later
+	    umax       Encore Multimax running any release of UMAX 4.3
+	    utek       Tektronix 43xx running UTek 4.1
+
+	If somebody were to write a tie into top's source code that would
+	generate output every X minutes to a text file or even RRD files,
+	then Orca could put it together into a nice package.
+
+	In line with this di
+	(ftp://ftp.pz.pirmasens.de/pub/unix/utilities/), a freely
+	available disk usage program that could be used to generate disk
+	usage plots loaded by Orca.
+
+* orcallator.se: Dump directly to RRD files.
+
+	A separate RRD file would be created for each measurement.
+	I do not want all the data stored in a single RRD, since people
+	commonly add or remove hardware from the system, which will cause
+	more or less data to be stored.  Also, this currently would not
+	work with RRDtool, since you cannot dynamically add more RRAs
+	to a RRD file.	Saving each measurement in a separate RRD file
+	removes this issue.
+
+	Pros:
+		1) Disk space savings.	For an old host using over 70
+		   megabytes of storage for text output, the RRD files
+		   consume 3.5 megabytes of storage.
+		2) Orca processing time.  Orca spends a large amount of
+		   kernel and CPU time in finding files and getting
+		   the column headers from these files.  By storing
+		   the data in RRD files, this is no longer a problem.
+		   Also, Orca itself would not need to move the data
+		   from text to RRD form, speeding up the process of
+		   generating the final plots.
+
+	Cons:
+		1) Potential slowdown in updating the data files.
+		   It is easier to write a single text line using fprintf
+		   than using rrd_update.  What is the impact on a single
+		   orcallator.se process?
+		2) RRDtool format changes and upgrading the data files.
+		   Text files do not change, but if RRDtool does change,
+		   then the data files will need to be upgraded somehow.
+		3) Loss of data over time.  Due to the consolidation
+		   function of RRD, older data will not be as precise
+		   in case it needs to be examined.
+		4) You cannot grep or simply parse the text files for
+		   particular data for ad-hoc studies.
+		5) The RRD creation parameters would be set by
+		   orcallator.se and not by Orca, making modifications
+		   harder.
+
+	Question: Do the pros outweigh the cons?
+
+	Work to do: Get RRDtool to build a librrd.so that orcallator.se
+	would attach to.  The RRDs.so that gets built in the perl-shared
+	directory has RRDs.o included in it with references to Perl
+	variables, so this shared library cannot be loaded by anybody
+	else.  Two things can be done.	One is to modify the perl-shared
+	Makefile.PL to build a librrd.so without RRDs.so.  The other is
+	to somehow make librrd.so with libtool.  Either libtool can be
+	integrated into RRDtool as a whole, or probably simpler would
+	be to add another directory to RRDtool and use libtool in there
+	to make the shared library.  The first libtool solution would
+	allow RRDtool to make shared libraries on almost any host without
+	requiring that gcc be installed, since currently the Makefile's
+	look for gcc to use the -fPIC flags.
+
+* Orca: Potentially use Cricket's configuration ConfigTree Module.
+
+	Given more complex Orca installations where many different Orca
+	configuration files are used, maintaining them will start to be
+	complicated.  For example, in Yahoo!/GeoCities I have 9 different
+	configurations to split up the hosts for our site I found that
+	for the number of hosts and the number of data files require this
+	for reasonable generating of the resulting HTML and PNG files.
+
+	It looks like using ConfigTree would allow Orca to use the same
+	inheritance that Cricket uses.	I don't know enough about the
+	Cricket config tree setup to know if it would work well with Orca.
+
+	Work to do:  Review the ConfigTree code.
+
+* Orca: Allow different group sources in the same plot.
+
+	Currently Orca only allows data sources from one group.  Expand
+	the code to list the group in each data line.  Initially, however
+	only data from one group would be allowed in one data statement.
+
+* Orca: Put the last update time for each host in an HTML file somewhere.
+
+	This could be done simply up updating a file that gets included
+	by the real HTML file.	This way the main HTML files do not
+	have to get rewritten all the time.  On large installations,
+	writing the HTML files is lengthy.
+
+* Orca: Turn off HTML creation via command line option.
+
+	Add a command line option to turn off HTML file creation.
+
+* Orca: Update the HTML files is new data is found.
+
+	Currently Orca will only update the HTML files if new source
+	files are found, but not if new data in existing files is found.
+	Change this.
+
+* orcallator.se: Put HTTP proxy and caching statistics into orcallator.cfg.
+
+	Since orcallator.se measures HTTP proxy and caching statistics,
+	update orcallator.cfg.in to display these data sets.
+
+* Orca:
+
+	Do what it takes to remove the same Ethernet port listings in
+	orcallator.cfg.in.  They seem redundant, but are not totally,
+	since different interfaces have different maximum data transfer
+	rates.
+
+* Orca:
+
+	Add some error checking code for the maximum number of available
+	colors so undefined errors do not arise.
+
+* Other:
 	Mention the AIX tool nmon.
 
-Orca:
-	Come up with a better error scheme than using warn() for some
-		errors and the email warn for others.
-	Do something better if the number of columns changes in a single
-		orcallator file.
-	Have a scheme were at any point of time a data file may add or
-		change the number of columns of data and column names.
-	Lock file.
-	Arbitrary date reading.
-	Use Cricket's configuration ConfigTree?????
-	More configuration file defaults.
-	Better date loading support.
-	Make plots from multiple files sets: delete source files_key and put
-		it into data.
-	Update HTML files if a new file is found with a new group.
-	Update orcallator.cfg.in for caching and proxy stuff.
 
-orcallator.se:
-	Better documentation.
+
+
+
+Some notes from Paul Company <paul.company@plpt.com>:
+
+I'd create one graph for each and autoscale.  That way you have system
+processes, httpd processes and a combination.  All your bases are covered.
+
+Presenting data in a useful, meaningful way is an artform & is very
+difficult.  What makes it an artform is the definitions of useful and
+meaningful are subjective.  General rules of thumb:
+        + Know your audience.
+        + Know what you're measuring and why (definitions/goals).
+        + Know what the measurements mean.
+          aka., know what is good/bad/acceptable (limits/thresholds).
+        + Know how you're measuring.
+          aka., how reliable is your measurement?
+
+Graphs are just one way of presenting data.
+
+I definitely don't claim to be an expert of any kind in this area,
+but here are my preferences.
+
+Most resources have a max and min limit (this defines your range).  I like
+to see the max value at the top of the y-axis and the min at the bottom.
+
+Most resources have a usage pattern (this defines your scale).  I like
+to see autoscaling graphs which dynamically modify the top & bottom to
+show the points of activity. This is useful when the range is huge and
+the activity is localized to a small band within the huge range.
+
+For example,
+
+We have a Fractional T1 (384Kbps with 50% CIR) at my company and I use
+mrtg to monitor it.  Because the range is small I use a fixed min & max,
+and a fixed linear scale of 1.
+        (1) x-axis is time
+            y-axis is Kbps w/ min=0
+                                    max=384kb
+                                    scale=1Kbps (linear)
+
+Assume a web site gets anywhere from 0 hits/second to 10Million hits
+per second.  I would want multiple graphs depending on usage pattern:
+        (1) x-axis is time
+            y-axis is Kbps w/ min=0
+                                    max=10Million
+                                    scale=1Hit/s (linear)
+
+        (2) x-axis is time
+            y-axis is Kbps w/ min=0
+                                    max=10Million
+                                    scale=1-1000Hit/s (logarithmic)
+
+        (3) x-axis is time
+            y-axis is Kbps w/ min={min value of lowest usage, usually zero}
+                                    max={max value of highest usage}
+                                    scale=auto (multiple graphs with
+                                    appropriate range/scale)
+
+Bottom line is it would be nice if one could modify the various attributes
+of the graphs (range, scale, labels, title, ...) interactively.  I realize
+the orca graphs are generated fixed PNG files. Just dreaming.
+
+Here are the things I'd like modified in orca, for my (audience)
+specific use.
+        + Definitions for all Data Sets which includes what is good and bad.
+          For example, is a 15-20% collision rate bad?
+          What is a Disk Busy Measure and is 95 a bad number?
+          Also, suggestions for what to do if things are bad.
+        + Finer resolution (more graphs) on each Data Set.
+          For example, a graph for each disk, when you click on that graph
+          you get a graph for each: 
+          Bytes read
+          Bytes written
+          KBytes read
+          KBytes written
+          Average # of transactions waiting
+          Average # of transactions serviced
+          Reads issued
+          Writes issued
+          Average service time (milliseconds)
+          % of time spent waiting for service
+          % of time spent busy
+        + The ability to set thresholds (like virtual_adiran.se, zoom.se
+          or pure_test.se) and have those thresholds graphed as color
+          changes (red, amber, green etc.)
+        + System & Httpd Processes
+          Have 3 separate graphs as mentioned above.
+        + CPU Usage
+          Have multiprocessor support - separate graphs for each processor,
+          in addition to the combined graph.
+        + Packets Per Second
+          I'd like to know the definition of packet and maybe the
+          ave,min,max size.  And maybe the packet types (IP, TCP,
+          UDP, ICMP).
+        + Errors Per Second
+          Possibly a graph per error type.
+        + Nocanput Rate
+          I'd like to know the definition of nocanput.
+          What is the unit on the y-axis. What does 3m mean?
+        + Collisions
+          Deferred Packet Rate
+          TCP Bits Per Second
+          TCP Segments Per Second
+          TCP Retransmission & Duplicate Received Percentage
+          TCP New Connection Rate
+          TCP Number Open Connections
+          TCP Reset Rate
+          TCP Attempt Fail Rate
+          TCP Listen Drop Rate
+          Should all be per interface AND cumulative.
+        + Page Residence Time
+          What's a good/bad/acceptable number?
+          How do you read this graph and relate it to pageouts
+          or swap thrashing.
+          Maybe we should plot the sr field of vmstat. p.329
+        + Page Usage
+          Unless you know how memory subsystems work, 
+          this graph is hard to read. The only obvious
+          thing this graph tells you is if the Free List
+          is too small. The Free List can be fine, but you
+          can still have performance problems!
+          The Other & System Total labels are useless.
+          Detecting a swap problem (thrashing) would be more useful!
+        + Pages Locked & IO
+          This maps directly to the kernel page usage above.
+          It is redundant and therefore useless.
+        + Bits Per Second: <interface>
+          Doesn't work for all OS versions and/or NICs.
+        + Web Server Hit Rate, Web Server File Size, Web Server Data
+          Transfer Rate,
+          Web Server HTTP Error Rate
+          All don't seem to work!
+          Probably my fault, I'll take a closer look.

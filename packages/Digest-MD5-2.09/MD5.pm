@@ -3,7 +3,7 @@ package Digest::MD5;
 use strict;
 use vars qw($VERSION @ISA @EXPORT_OK);
 
-$VERSION = '2.07';  # $Date: 1999/04/03 18:07:49 $
+$VERSION = '2.09';  # $Date: 1999/08/05 23:24:05 $
 
 require Exporter;
 *import = \&Exporter::import;
@@ -152,13 +152,13 @@ checksum can also be calculated in OO style:
     $md5 = Digest::MD5->new;
     $md5->add('foo', 'bar');
     $md5->add('baz');
-    $digest = $md5->digest();
+    $digest = $md5->hexdigest;
     
-    print "Digest is ", unpack("H*", $digest), "\n";
+    print "Digest is $digest\n";
 
 With OO style you can break the message arbitrary.  This means that we
-are no longer limited to have space for the whole message in memory.
-We can handle messages of any size.
+are no longer limited to have space for the whole message in memory, i.e.
+we can handle messages of any size.
 
 This is useful when calculating checksum for files:
 
@@ -175,7 +175,8 @@ This is useful when calculating checksum for files:
     close(FILE);
     print $md5->b64digest, " $file\n";
 
-Or we can use the builtin addfile method to read the file much faster:
+Or we can use the builtin addfile method for more efficient reading of
+the file:
 
     use Digest::MD5;
 

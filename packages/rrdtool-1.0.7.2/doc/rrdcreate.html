@@ -55,8 +55,8 @@ rrdtool create - Set up a new Round Robin Database
 <H1><A NAME="DESCRIPTION">DESCRIPTION
 
 </A></H1>
-The create function of the rrd tool lets you set up new Round Robin
-Database (<STRONG>RRD</STRONG>) files. The file is created at its final, full size and filled with <EM>*UNKNOWN*</EM> data.
+The create function of the RRDtool lets you set up new Round Robin Database
+(<STRONG>RRD</STRONG>) files. The file is created at its final, full size and filled with <EM>*UNKNOWN*</EM> data.
 
 
 <P>
@@ -70,7 +70,7 @@ The name of the <STRONG>RRD</STRONG> you want to create. <STRONG>RRD</STRONG> fi
 
 <P>
 
-<DT><STRONG><A NAME="item__start_b">--start|-b start time (default: current time)
+<DT><STRONG><A NAME="item__start_b">--start|-b start time (default: now - 10s)
 
 </A></STRONG><DD>
 Specifies the time in seconds since 1970-01-01 UTC when the first value
@@ -79,9 +79,8 @@ should be added to the <STRONG>RRD</STRONG>. <STRONG>rrdtool</STRONG> will not a
 
 <P>
 
-Negative input is treated as current time minus the specified number of
-seconds. See also AT-STYLE TIME SPECIFICATION section in the
-<EM>rrdfetch</EM> documentation for alternative ways to specify time.
+See also AT-STYLE TIME SPECIFICATION section in the
+<EM>rrdfetch</EM> documentation for more ways to specify time.
 
 
 <P>
@@ -129,8 +128,17 @@ this data source before the value of the data source is assumed to be <EM>*UNKNO
 <EM>min</EM> and <EM>max</EM> are optional entries defining the expected range of the data supplied by
 this data source. If <EM>min</EM> and/or <EM>max</EM> are defined, any value outside the defined range will be regarded as
 <EM>*UNKNOWN*</EM>. If you do not know or care about min and max, set them to U for unknown.
-Note that min and max always refere to the processed values of the DS. For
-a traffic-<STRONG>COUNTER</STRONG> type DS this would be the max and min data-rate expected from the device.
+Note that min and max always refer to the processed values of the DS. For a
+traffic-<STRONG>COUNTER</STRONG> type DS this would be the max and min data-rate expected from the device.
+
+
+<P>
+
+<EM>If information on minimal/maximal expected values is available,
+always set the min and/or max properties. This will help RRDtool in
+doing a simple sanity check on the data supplied when running update.</EM>
+
+
 
 
 <P>
@@ -206,8 +214,8 @@ same with the for the maximum and average temperature, respectively.
 <H1><A NAME="AUTHOR">AUTHOR
 
 </A></H1>
-Tobias Oetiker <A
-HREF="MAILTO:<oetiker@ee.ethz.ch>"><oetiker@ee.ethz.ch></A>
+Tobias Oetiker &lt;<A HREF="MAILTO:oetiker@ee.ethz.ch">oetiker@ee.ethz.ch</A>&gt;
+
 
 <P>
 

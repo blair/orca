@@ -1,0 +1,115 @@
+This is the README file for Data::Dumper, the Perl
+data-structure printing/stringification module.
+
+This is version 2.101.  See the CHANGES section below for details on
+the new features and fixes in this release.
+
+Perl version 5.004 or later is required to build and use this module.
+
+
+---NOTE----NOTE----NOTE----NOTE----NOTE----NOTE----NOTE----NOTE---NOTE---
+|                                                                       |
+|  Data-Dumper comes standard with perl from version 5.004_71.          |
+|                                                                       |
+|  Building the XSUB version *requires* a C compiler that groks ANSI    |
+|  prototypes.  You may install the non-XSUB version if you're not so   |
+|  lucky.  See the INSTALLATION section below.                          |
+|                                                                       |
+---NOTE----NOTE----NOTE----NOTE----NOTE----NOTE----NOTE----NOTE---NOTE---
+
+
+You may find this module useful if you:
+
+   * are writing an application that must display perl data
+     structures.
+
+   * want to store some data structures to disk, in either a
+     compact or perl readable format (Dumper outputs pure perl,
+     so you don't have to invent your own portable data format, or
+     parse it;  simply "do FILE" or read the data back in with 
+     perl and eval() it).  See the MLDBM module for an example of
+     one such use.
+
+   * want a simple, yet powerful, persistence engine that can be
+     quickly integrated into your application, and is a breeze to
+     debug.
+
+   * want a facility to make copies of data, or quickly find
+     differences between data structures.
+
+Dumper can be efficient if you are on a system supported by MakeMaker
+and xsubpp, the perl extension building tools.  In this case, Dumper 
+will build a XSUB extension that will be much faster than its perl 
+counterpart (in my tests, about 4 to 5 times).  In either case, 
+you should be able to use this module without loss of functionality.
+
+See the embedded documentation in the module for more details.
+
+Comments and suggestions are always welcome.
+
+ - Sarathy.
+   gsar@umich.edu
+
+---------------------------------------------------------------------
+INSTALLATION
+
+Installation requires a functional Makemaker and perl 5.004 or later.  Do
+either of these:
+
+   a. If your platform has a C compiler AND is supported by xsubpp:
+
+   	 gzip -c -d Data-Dumper-2.101.tar.gz | tar xvf -
+   	 cd Data-Dumper-2.101
+   	 perl Makefile.PL
+   	 make test
+   	 make install
+
+   b. If you have no C compiler OR if you don't want the XSUB extension 
+      (no loss of functionality, only speed):
+
+   	 gzip -c -d Data-Dumper-2.101.tar.gz | tar xvf -
+   	 cd Data-Dumper-2.101
+   	 perl Makefile.PL noxs                  # flips to non-xsub version
+   	 make test
+   	 make install
+
+      If you decide to go back to compiling the XSUB extension after this,
+      just do:
+
+         make distclean
+   	 perl Makefile.PL xs                    # flips to non-xsub version
+         make test
+         make install
+
+---------------------------------------------------------------------
+CHANGES
+
+    2.101 (30 Apr 1999)
+            Minor release to sync with version in 5.005_03. Fixes
+            dump of dummy coderefs.
+
+    2.10  (31 Oct 1998)
+            Bugfixes for dumping related undef values, globs, and better
+	    double quoting: three patches suggested by Gisle Aas
+	    <gisle@aas.no>.
+
+            Escaping of single quotes in the XS version could get tripped
+	    up by the presence of nulls in the string. Fix suggested by
+	    Slaven Rezic <eserte@cs.tu-berlin.de>.
+
+            Rather large scale reworking of the logic in how seen values
+	    are stashed.  Anonymous scalars that may be encountered while
+	    traversing the structure are properly tracked, in case they
+	    become used in data dumped in a later pass. There used to be a
+	    problem with the previous logic that prevented such structures
+	    from being dumped correctly.
+
+            Various additions to the testsuite.
+
+    2.09  (9 July 1998)
+            Implement $Data::Dumper::Bless, suggested by Mark Daku
+	    <daku@nortel.ca>.
+
+    2.081 (15 January 1998)
+            Minor release to fix Makefile.PL not accepting
+            MakeMaker args.

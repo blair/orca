@@ -1,5 +1,5 @@
 /*****************************************************************************
- * RRDTOOL 0.99.31 Copyright Tobias Oetiker, 1997, 1998, 1999
+ * RRDtool  Copyright Tobias Oetiker, 1997, 1998, 1999
  *****************************************************************************
  * rrd_open.c  Open an RRD File
  *****************************************************************************
@@ -8,6 +8,7 @@
  *****************************************************************************/
 
 #include "rrd_tool.h"
+#define MEMBLK 8192
 
 /* open a database file, return its header and a open filehandle */
 /* positioned to the first cdp in the first rra */
@@ -16,14 +17,24 @@ int
 rrd_open(char *file_name, FILE **in_file, rrd_t *rrd, int rdwr)    
 {
 
+    
     char *mode = NULL;
+    rrd_init(rrd);
     if (rdwr == RRD_READONLY) {
+#ifndef WIN32
+	mode = "r";
+#else
 	mode = "rb";
+#endif
     } else {
+#ifndef WIN32
+	mode = "r+";
+#else
 	mode = "rb+";
+#endif
     }
     
-    if ((*in_file = fopen(file_name,mode)) == NULL ){
+    if (((*in_file) = fopen(file_name,mode)) == NULL ){
 	rrd_set_error("rrdopen can't open '%s'",file_name);
 	return (-1);
     }
@@ -75,6 +86,7 @@ void rrd_init(rrd_t *rrd)
     rrd->rra_ptr = NULL;
     rrd->pdp_prep = NULL;
     rrd->cdp_prep = NULL;
+    rrd->rrd_value = NULL;
 }
 
 void rrd_free(rrd_t *rrd)
@@ -86,4 +98,40 @@ void rrd_free(rrd_t *rrd)
     free(rrd->rra_ptr);
     free(rrd->pdp_prep);
     free(rrd->cdp_prep);
+    free(rrd->rrd_value);
 }
+
+int readfile(char *file_name, char **buffer, int skipfirst){
+    long writecnt=0,totalcnt = MEMBLK;
+    FILE *input=NULL;
+    char c ;
+    if ((strcmp("-",file_name) == 0)) { *input = *stdin; }
+    else {
+      if ((input = fopen(file_name,"rb")) == NULL ){
+	rrd_set_error("readfile can't open '%s'",file_name);
+	return (-1);
+      }
+    }
+    if (skipfirst){
+      do { c = getc(input); } while (c != '\n' && ! feof(input)); 
+    }
+    if (((*buffer) = (char *) malloc((MEMBLK+4)*sizeof(char))) == NULL) {
+	perror("Allocate Buffer:");
+	exit(1);
+    };
+    do{
+      writecnt += fread((*buffer)+writecnt, 1, MEMBLK * sizeof(char) ,input);
+      if (writecnt >= totalcnt){
+	totalcnt += MEMBLK;
+	if (((*buffer)=rrd_realloc((*buffer), (totalcnt+4) * sizeof(char)))==NULL){
+	    perror("Realloc Buffer:");
+	    exit(1);
+	};
+      }
+    } while (! feof(input));
+    (*buffer)[writecnt] = '\0';
+    fclose(input);
+    return writecnt;
+}
+
+

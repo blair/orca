@@ -1,5 +1,5 @@
 /*****************************************************************************
- * RRDTOOL 0.99.31 Copyright Tobias Oetiker, 1997, 1998, 1999
+ * RRDtool  Copyright Tobias Oetiker, 1997, 1998, 1999
  *****************************************************************************
  * rrd_tool.c  Startup wrapper
  *****************************************************************************
@@ -21,7 +21,7 @@ int HandleInputLine(int, char **, FILE*);
 void PrintUsage(void)
 {
     printf("\n"
-	   "RRD TOOL 0.99.28  Copyright (C) 1999 by Tobias Oetiker <tobi@oetiker.ch>\n\n"
+	   "RRDtool   Copyright (C) 1999 by Tobias Oetiker <tobi@oetiker.ch>\n\n"
 	   "Usage: rrdtool [options] command command_options\n\n"
 	   "Valid commands and command_options are listed below.\n\n"
 
@@ -30,14 +30,18 @@ void PrintUsage(void)
 	   "\t\t[--step|-s step]\n"
 	   "\t\t[DS:ds-name:DST:heartbeat:min:max] [RRA:CF:xff:steps:rows]\n\n"
 
-	   "* dump - dump an RRD\n\n"
-	   "\trrdtool dump filename.rrd [--full|-f]\n\n"
+	   "* dump - dump an RRD to XML\n\n"
+	   "\trrdtool dump filename.rrd >filename.xml\n\n"
+
+	   "* restore - restore an RRD file from its XML form\n\n"
+	   "\trrdtool restore [--range-check|-r] filename.xml filename.rrd\n\n"
 
            "* last - show last update time for RRD\n\n"
            "\trrdtool last filename.rrd\n\n"
 
 	   "* update - update an RRD\n\n"
 	   "\trrdtool update filename\n"
+	   "\t\t--template|-t ds-name:ds-name:...\n"
 	   "\t\ttime|N:value[:value...]\n\n"
 	   "\t\t[ time:value[:value...] ..]\n\n"
 
@@ -49,11 +53,15 @@ void PrintUsage(void)
 	   "* graph - generate a graph from one or several RRD\n\n"
 	   "\trrdtool graph filename [-s|--start seconds] [-e|--end seconds]\n"
 	   "\t\t[-x|--x-grid x-axis grid and label]\n"
+	   "\t\t[--alt-y-grid]\n"
 	   "\t\t[-y|--y-grid y-axis grid and label]\n"
 	   "\t\t[-v|--vertical-label string] [-w|--width pixels]\n"
 	   "\t\t[-h|--height pixels] [-o|--logarithmic]\n"
-	   "\t\t[-u|--upper-limit value]\n"
+	   "\t\t[-u|--upper-limit value] [-z|--lazy]\n"
 	   "\t\t[-l|--lower-limit value] [-r|--rigid]\n"
+	   "\t\t[--alt-autoscale]\n"
+	   "\t\t[-f|--imginfo printfstr]\n"
+	   "\t\t[-a|--imgformat GIF|PNG]\n"
 	   "\t\t[-c|--color COLORTAG#rrggbb] [-t|--title string]\n"
 	   "\t\t[DEF:vname=rrd:ds-name:CF]\n"
 	   "\t\t[CDEF:vname=rpn-expression]\n"
@@ -76,7 +84,7 @@ void PrintUsage(void)
 	   " * resize - alter the lenght of one of the RRAs in an RRD\n\n"
 	   "\trrdtool resize filename rranum GROW|SHRINK rows\n\n"
 
-	   "RRD TOOL is distributed under the Terms of the GNU General\n"
+	   "RRDtool is distributed under the Terms of the GNU General\n"
 	   "Public License Version 2. (www.gnu.org/copyleft/gpl.html)\n\n"
 
 	   "For more information read the RRD manpages\n\n");
@@ -87,7 +95,12 @@ int main(int argc, char *argv[])
 {
     char **myargv;
     char aLine[MAX_LENGTH];
-
+#ifdef MUST_DISABLE_SIGFPE
+    signal(SIGFPE,SIG_IGN);
+#endif
+#ifdef MUST_DISABLE_FPMASK
+    fpsetmask(0);
+#endif
     if (argc == 1)
 	{
 	    PrintUsage();
@@ -154,6 +167,9 @@ int HandleInputLine(int argc, char **argv, FILE* out)
 
     if (argc < 3 
 	|| strcmp("help", argv[1]) == 0
+	|| strcmp("--help", argv[1]) == 0
+	|| strcmp("-help", argv[1]) == 0
+	|| strcmp("-?", argv[1]) == 0
 	|| strcmp("-h", argv[1]) == 0 ) {
 	PrintUsage();
 	return 0;
@@ -163,6 +179,14 @@ int HandleInputLine(int argc, char **argv, FILE* out)
 	rrd_create(argc-1, &argv[1]);
     else if (strcmp("dump", argv[1]) == 0)
 	rrd_dump(argc-1, &argv[1]);
+    else if (strcmp("--version", argv[1]) == 0 ||
+	     strcmp("version", argv[1]) == 0 || 
+	     strcmp("v", argv[1]) == 0 ||
+	     strcmp("-v", argv[1]) == 0  ||
+	     strcmp("-version", argv[1]) == 0  )
+        printf("RRDtool   Copyright (C) 1999 by Tobias Oetiker <tobi@oetiker.ch>\n");
+    else if (strcmp("restore", argv[1]) == 0)
+	rrd_restore(argc-1, &argv[1]);
     else if (strcmp("resize", argv[1]) == 0)
 	rrd_resize(argc-1, &argv[1]);
     else if (strcmp("last", argv[1]) == 0)
@@ -196,7 +220,6 @@ int HandleInputLine(int argc, char **argv, FILE* out)
 	char **calcpr;
 	int xsize, ysize;
 	int i;
-	calcpr = NULL;
 	if( rrd_graph(argc-1, &argv[1], &calcpr, &xsize, &ysize) != -1 ) {
 	    if (strcmp(argv[2],"-") != 0) 
 		printf ("%dx%d\n",xsize,ysize);

@@ -3,4 +3,3 @@ README
 Makefile.PL
 RRDp.pm
 t/base.t
-examples/piped-demo.pl

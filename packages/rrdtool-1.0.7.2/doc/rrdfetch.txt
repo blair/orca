@@ -34,34 +34,34 @@ DDDDEEEESSSSCCCCRRRRIIIIPPPPTTTTIIIIOOOONNNN
                but it will return data even if no absolute match
                is possible.
 
-       --------ssssttttaaaarrrrtttt|----ssss _s_t_a_r_t (default -24*3600)
+       --------ssssttttaaaarrrrtttt|----ssss _s_t_a_r_t (default end-1day)
                when should the data begin. A time in seconds
                since epoch (1970-01-01) is required. Negative
-               numbers are relative to the end time. By default
-               one day worth of data will be fetched. See also
-               AT-STYLE TIME SPECIFICATION section for
-               alternative ways to specify start time.
+               numbers are relative to the current time. By
+               default one day worth of data will be fetched. See
+               also AT-STYLE TIME SPECIFICATION section for a
+               detailed explanation on  ways to specify start
+               time.
 
-       --------eeeennnndddd|----eeee _e_n_d (default current time)
+       --------eeeennnndddd|----eeee _e_n_d (default now)
                when should the data end. Time in seconds since
                epoch. See also AT-STYLE TIME SPECIFICATION
-               section for alternative ways to specify end time.
+               section for a detailed explanation of how to
+               specify end time.
 
        AAAATTTT----SSSSTTTTYYYYLLLLEEEE TTTTIIIIMMMMEEEE SSSSPPPPEEEECCCCIIIIFFFFIIIICCCCAAAATTTTIIIIOOOONNNN
 
-       The rrdtool does also understand at-style time
-       specification.  The specification is called "at-style"
-       after unix command _a_t(1) that has moderately complex ways
-       to specify time to run your job at.  The at-style
-       specification consists of two parts: TTTTIIIIMMMMEEEE RRRREEEEFFFFEEEERRRREEEENNNNCCCCEEEE
-       specification and TTTTIIIIMMMMEEEE OOOOFFFFFFFFSSSSEEEETTTT specification.
+       Apart from the traditional _S_e_c_o_n_d_s _s_i_n_c_e _e_p_o_c_h, rrdtool
+       does also understand at-style time specification.  The
+       specification is called "at-style" after Unix command
+       _a_t(1) that has moderately complex ways to specify time to
+       run your job at.  The at-style specification consists of
+       two parts: TTTTIIIIMMMMEEEE RRRREEEEFFFFEEEERRRREEEENNNNCCCCEEEE specification and TTTTIIIIMMMMEEEE OOOOFFFFFFFFSSSSEEEETTTT
+       specification.
 
 
 
-
-
-
-21/Apr/99                  19990426.22                          1
+17/Aug/99                     1.0.7                             1
 
 
 
@@ -79,11 +79,11 @@ RRDFETCH(1)                  rrdtool                  RRDFETCH(1)
        reference consists of _t_i_m_e_-_o_f_-_d_a_y reference (which should
        come first, if present) and _d_a_y reference.
 
-       _T_i_m_e_-_o_f_-_d_a_y can be specified as HHHHHHHH::::MMMMMMMM, HHHHHHHH....MMMMMMMM, HHHHHHHHMMMMMMMM, or
-       just HHHHHHHH, you can suffix it with aaaammmm or ppppmmmm or use 24-hours
-       clock. The few special times of day are understood as
-       well, these include mmmmiiiiddddnnnniiiigggghhhhtttt (00:00), nnnnoooooooonnnn (12:00) and
-       british tttteeeeaaaattttiiiimmmmeeee (16:00).
+       _T_i_m_e_-_o_f_-_d_a_y can be specified as HHHHHHHH::::MMMMMMMM, HHHHHHHH....MMMMMMMM, or just HHHHHHHH,
+       you can suffix it with aaaammmm or ppppmmmm or use 24-hours clock. The
+       few special times of day are understood as well, these
+       include mmmmiiiiddddnnnniiiigggghhhhtttt (00:00), nnnnoooooooonnnn (12:00) and British tttteeeeaaaattttiiiimmmmeeee
+       (16:00).
 
        The _d_a_y can be specified as _m_o_n_t_h_-_n_a_m_e _d_a_y_-_o_f_-_t_h_e_-_m_o_n_t_h
        and optional 2- or 4-digit _y_e_a_r number (e.g. March 8
@@ -91,11 +91,10 @@ RRDFETCH(1)                  rrdtool                  RRDFETCH(1)
        Monday), or one of the words: yyyyeeeesssstttteeeerrrrddddaaaayyyy, ttttooooddddaaaayyyy, ttttoooommmmoooorrrrrrrroooowwww.
        You can also specify _d_a_y as a full date in several
        numerical formats; these include: MMMMMMMM////DDDDDDDD////[[[[YYYYYYYY]]]]YYYYYYYY,
-       DDDDDDDD....MMMMMMMM....[[[[YYYYYYYY]]]]YYYYYYYY, DDDDDDDDMMMMMMMM[[[[YYYYYYYY]]]]YYYYYYYY (_N_O_T_E_1: this is different from
-       the original _a_t(1) behavior, which interprets a single-
-       number date as MMDD[YY]YY) _N_O_T_E_2: if you specify _d_a_y this
-       way, the _t_i_m_e_-_o_f_-_d_a_y is REQUIRED to be present in front of
-       it.
+       DDDDDDDD....MMMMMMMM....[[[[YYYYYYYY]]]]YYYYYYYY, YYYYYYYYYYYYYYYYMMMMMMMMDDDDDDDD (_N_O_T_E_1: this is different from the
+       original _a_t(1) behavior, which interprets a single-number
+       date as MMDD[YY]YY) _N_O_T_E_2: if you specify _d_a_y this way,
+       the _t_i_m_e_-_o_f_-_d_a_y is REQUIRED to be present.
 
        Finally, you can use words nnnnoooowwww, ssssttttaaaarrrrtttt, or eeeennnndddd as your time
        reference. NNNNoooowwww refers to the current moment (and is also a
@@ -110,7 +109,7 @@ RRDFETCH(1)                  rrdtool                  RRDFETCH(1)
 
        TTTTIIIIMMMMEEEE OOOOFFFFFFFFSSSSEEEETTTT SSSSPPPPEEEECCCCIIIIFFFFIIIICCCCAAAATTTTIIIIOOOONNNN
 
-       Time offset specification is used to add (or substract)
+       Time offset specification is used to add (or subtract)
        certain time interval to (from) the time reference moment.
        It consists of _s_i_g_n (++++ or ----) and _a_m_o_u_n_t. The following
        time units can be used to specify the _a_m_o_u_n_t: yyyyeeeeaaaarrrrssss,
@@ -124,10 +123,11 @@ RRDFETCH(1)                  rrdtool                  RRDFETCH(1)
        _N_O_T_E_3: If you specify time offset in days, weeks, months,
        or years, you will end with the time offset that may vary
        depending on you time reference, because all those time
+       units have no single well defined time interval value
 
 
 
-21/Apr/99                  19990426.22                          2
+17/Aug/99                     1.0.7                             2
 
 
 
@@ -136,7 +136,6 @@ RRDFETCH(1)                  rrdtool                  RRDFETCH(1)
 RRDFETCH(1)                  rrdtool                  RRDFETCH(1)
 
 
-       units have no single well defined time interval value
        (1 year contains either 365 or 366 days, 1 month is 28 to
        31 days long, and even 1 day may be not equal to 24 hours
        twice a year, when DST-related clock adjustments take
@@ -150,7 +149,7 @@ RRDFETCH(1)                  rrdtool                  RRDFETCH(1)
        (after _m_k_t_i_m_e(3) normalization); in the EET timezone
        '3:30am Mar 29 1999 -1 day' yields '3:30am Mar 28 1999'
        (Sunday) which is invalid time/date combination (because
-       of 3am -> 4am DST forward clock ajustment, see the below
+       of 3am -> 4am DST forward clock adjustment, see the below
        example).  On the other hand, hours, minutes, and seconds
        are well defined time intervals, and these are guaranteed
        to always produce time offsets exactly as specified (e.g.
@@ -163,7 +162,7 @@ RRDFETCH(1)                  rrdtool                  RRDFETCH(1)
        expected)
 
        _N_O_T_E_4: The single-letter abbreviation for both mmmmoooonnnntttthhhhssss and
-       mmmmiiiinnnnuuuutttteeeessss is mmmm. To disambiguiate, the parser tries to read
+       mmmmiiiinnnnuuuutttteeeessss is mmmm. To disambiguate, the parser tries to read
        your mind :) by applying the following two heuristics:
 
        1  If mmmm is used in context of (i.e. right after the)
@@ -183,7 +182,7 @@ RRDFETCH(1)                  rrdtool                  RRDFETCH(1)
        Whitespace can be inserted freely or omitted altogether,
        there are, however, cases when whitespace is required
        (e.g., 'midnight Thu'). In this case you should either
-       quote the whole phrase to prevent it from bieng taken
+       quote the whole phrase to prevent it from being taken
        apart by your shell or use '_' (underscore) or ',' (comma)
        which also count as whitespace (e.g., midnight_Thu or
        midnight,Thu)
@@ -193,7 +192,8 @@ RRDFETCH(1)                  rrdtool                  RRDFETCH(1)
 
 
 
-21/Apr/99                  19990426.22                          3
+
+17/Aug/99                     1.0.7                             3
 
 
 
@@ -214,13 +214,22 @@ RRDFETCH(1)                  rrdtool                  RRDFETCH(1)
 
        _2_3_:_5_9 _3_1_._1_2_._1_9_9_9 -- 1 minute to the year 2000
 
-       _1_2_a_m _0_1_0_1_0_1 -- start of the new millenium
+       _1_2_/_3_1_/_9_9 _1_1_:_5_9_p_m -- 1 minute to the year 2000 for
+       imperialists
+
+       _1_2_a_m _0_1_/_0_1_/_0_1 -- start of the new millennium
 
        _e_n_d_-_3_w_e_e_k_s or _e_-_3_w -- 3 weeks before end time (may be used
        as start time specification)
 
        _s_t_a_r_t_+_6_h_o_u_r_s or _s_+_6_h -- 6 hours after start time (may be
        used as end time specification)
+
+       _9_3_1_2_2_5_5_3_7 -- 18:45  July 5th, 1999 (yes, seconds since
+       1970 are valid as well)
+
+       _1_9_9_7_0_7_0_3 _1_2_:_4_5 -- 12:45  July 3th, 1997 (not quote
+       standard, but I love this ...)
 
 AAAAUUUUTTTTHHHHOOOORRRR
        Tobias Oetiker <oetiker@ee.ethz.ch>
@@ -250,15 +259,6 @@ AAAAUUUUTTTTHHHHOOOORRRR
 
 
 
-
-
-
-
-
-
-
-
-
-21/Apr/99                  19990426.22                          4
+17/Aug/99                     1.0.7                             4
 
 

@@ -1,5 +1,5 @@
 /*****************************************************************************
- * RRDTOOL 0.99.31 Copyright Tobias Oetiker, 1997, 1998, 1999
+ * RRDtool  Copyright Tobias Oetiker, 1997, 1998, 1999
  *****************************************************************************
  * change header parameters of an rrd
  *****************************************************************************
@@ -107,7 +107,8 @@ rrd_tune(int argc, char **argv)
 		rrd_free(&rrd);
 		return -1;
 	    }
-	    strncpy(rrd.ds_def[ds].dst,dst,DST_SIZE);
+	    strncpy(rrd.ds_def[ds].dst,dst,DST_SIZE-1);
+	    rrd.ds_def[ds].dst[DST_SIZE-1]='\0';
 
 	    rrd.pdp_prep[ds].last_ds[0] = 'U';
 	    rrd.pdp_prep[ds].last_ds[1] = 'N';
@@ -127,7 +128,8 @@ rrd_tune(int argc, char **argv)
 		rrd_free(&rrd);
 		return -1;
 	    }
-	    strncpy(rrd.ds_def[ds].ds_nam,ds_new,DS_NAM_SIZE);
+	    strncpy(rrd.ds_def[ds].ds_nam,ds_new,DS_NAM_SIZE-1);
+	    rrd.ds_def[ds].ds_nam[DS_NAM_SIZE-1]='\0';
 	    break;
 	case '?':
             rrd_set_error("unknown option '%s'",argv[optind-1]);

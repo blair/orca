@@ -1,5 +1,5 @@
 /*****************************************************************************
- * RRDTOOL 0.99.31 Copyright Tobias Oetiker, 1997, 1998, 1999
+ * RRDtool  Copyright Tobias Oetiker, 1997, 1998, 1999
  *****************************************************************************
  * rrd_update.c  RRD Update Function
  *****************************************************************************
@@ -15,8 +15,6 @@
  #include <sys/locking.h>
  #include <sys/stat.h>
  #include <io.h>
-#else
- #include <unistd.h>
 #endif
 
 
@@ -39,6 +37,9 @@ rrd_update(int argc, char **argv)
 					  * area in the rrd file.  this
 					  * pointer changes as each rrd is
 					  * processed. */
+    unsigned long    rra_current;        /* byte pointer to the current write
+					  * spot in the rrd file. */
+    unsigned long    rra_pos_tmp;        /* temporary byte pointer. */
     unsigned long    interval,
 	pre_int,post_int;                /* interval between this and
 					  * the last run */
@@ -63,7 +64,7 @@ rrd_update(int argc, char **argv)
 
     long             *tmpl_idx;          /* index representing the settings
 					    transported by the template index */
-    long             tmpl_max = 0;
+    long             tmpl_cnt = 2;       /* time and data */
 
     FILE             *rrd_file;
     rrd_t            rrd;
@@ -72,7 +73,6 @@ rrd_update(int argc, char **argv)
     int              wrote_to_file = 0;
     char             *template = NULL;          
 
-    rrd_init(&rrd);
     while (1) {
 	static struct option long_options[] =
 	{
@@ -108,8 +108,7 @@ rrd_update(int argc, char **argv)
     if(rrd_open(argv[optind],&rrd_file,&rrd, RRD_READWRITE)==-1){
 	return -1;
     }
-    rra_begin=ftell(rrd_file);
-    rra_start=rra_begin;
+    rra_current = rra_start = rra_begin = ftell(rrd_file);
 
     /* get exclusive lock to whole file.
      * lock gets removed when we close the file.
@@ -147,27 +146,35 @@ rrd_update(int argc, char **argv)
 	return(-1);
     }
     /* initialize template redirector */
+
+    /* the first entry [0] points to zero as the first entry in an
+       update argument is always the time. The remaining entries point
+       the the index number of their respective datasource. */
     for (i=0;i<=rrd.stat_head->ds_cnt;i++) tmpl_idx[i]=i;
-    tmpl_max=rrd.stat_head->ds_cnt;
+    tmpl_cnt=rrd.stat_head->ds_cnt+1;
     if (template) {
 	char *dsname;
-	long temp_len;
+	int tmpl_len;
 	dsname = template;
-	temp_len = strlen(template);
-	tmpl_max = 0;
-	for (i=0;i<=temp_len;i++) {
-	    if (template[i] == ':' || template[i] =='\0') {
+	template++;
+	tmpl_cnt = 1; /* the first entry is the time */
+	tmpl_len = strlen(template);
+	for(i=0;i<=tmpl_len;i++) {
+	    if (template[i] == ':' || template[i] == '\0') {
 		template[i] = '\0';
-		if ((tmpl_idx[++tmpl_max] = ds_match(&rrd,dsname)) == -1){			    free(updvals);
-		    free(pdp_temp);
-		    free(tmpl_idx);
-		    rrd_free(&rrd);
-		    fclose(rrd_file);
-		    return(-1);
+		if ((tmpl_idx[tmpl_cnt++] = ds_match(&rrd,dsname)) == -1){
+		    free(updvals); free(pdp_temp);
+		    free(tmpl_idx); rrd_free(&rrd);
+		    fclose(rrd_file); return(-1);
 		}
 		/* the first element is always the time */
-		tmpl_idx[tmpl_max]++; 
+		tmpl_idx[tmpl_cnt-1]++; 
+
+		/* go to the next entry on the template */
+	        dsname = &template[i+1];
+
 	    }	    
+
 	}
     }
     if ((pdp_new = malloc(sizeof(rrd_value_t)
@@ -183,35 +190,27 @@ rrd_update(int argc, char **argv)
 
     /* loop through the arguments. */
     for(arg_i=optind+1; arg_i<argc;arg_i++) {
-	unsigned long count_colons = 0;
-
-/* fprintf(stderr, "Handling %s\t%s\n", argv[arg_i]); */
-	/* parse the update line ... the first value is the time, the
-	   remaining ones are the datasources */
-	/* skip any initial :'s */
-	i=0;
-	while (argv[arg_i][i] && argv[arg_i][i] == ':')
-	    ++i;
-	
+	char *stepper;;
 	/* initialize all ds input to unknown except the first one
            which has always got to be set */
-	for(ii=1;ii<=rrd.stat_head->ds_cnt;ii++)
-	    updvals[ii] = "U";
+	for(ii=1;ii<=rrd.stat_head->ds_cnt;ii++) updvals[ii] = "U";
 	ii=0;
-	updvals[ii++] = &argv[arg_i][i];
-	for (;argv[arg_i][i] != '\0';++i) {
-	    if (argv[arg_i][i] == ':') {
-		count_colons++;
-		argv[arg_i][i] = '\0';
-		if (ii<=tmpl_max) {
-		    updvals[tmpl_idx[ii++]] = &argv[arg_i][i+1];
+	stepper = argv[arg_i];
+	updvals[0]=stepper;
+	while (*stepper) {
+	    if (*stepper == ':') {
+		*stepper = '\0';
+		ii++;
+		if (ii<tmpl_cnt){		    
+		    updvals[tmpl_idx[ii]] = stepper+1;
 		}
 	    }
+	    stepper++;
 	}
 
-	if (ii-1 != count_colons || ii-1 != tmpl_max) {
-	    rrd_set_error("expected %lu data source readings (got %lu) from %s...",
-			  tmpl_max, count_colons, argv[arg_i]);
+	if (ii+1 != tmpl_cnt) {
+	    rrd_set_error("expected %lu data source readings (got %lu) from %s:...",
+			  tmpl_cnt-1, ii, argv[arg_i]);
 	    break;
 	}
 	
@@ -231,11 +230,13 @@ rrd_update(int argc, char **argv)
 	
 	
 	/* seek to the beginning of the rrd's */
-	if(fseek(rrd_file, rra_begin, SEEK_SET) != 0) {
-	    rrd_set_error("seek error in rrd");
-	    break;
+	if (rra_current != rra_begin) {
+	    if(fseek(rrd_file, rra_begin, SEEK_SET) != 0) {
+		rrd_set_error("seek error in rrd");
+		break;
+	    }
+	    rra_current = rra_begin;
 	}
-	
 	rra_start = rra_begin;
 
 	/* when was the current pdp started */
@@ -335,7 +336,7 @@ rrd_update(int argc, char **argv)
 	    if(dst_idx == DST_COUNTER || dst_idx == DST_DERIVE){
 		strncpy(rrd.pdp_prep[i].last_ds,
 			updvals[i+1],LAST_DS_LEN-1);
-		rrd.pdp_prep[i].last_ds[LAST_DS_LEN]=0;
+		rrd.pdp_prep[i].last_ds[LAST_DS_LEN-1]='\0';
 	    }
 	}
 	/* break out of the argument parsing loop if the error_string is set */
@@ -451,13 +452,15 @@ rrd_update(int argc, char **argv)
 #ifdef DEBUG
 			fprintf(stderr,"  -- RRA Preseek %ld\n",ftell(rrd_file));
 #endif
-
-			if(fseek(rrd_file, 
-				 (rra_start + (rrd.stat_head->ds_cnt
-					       *rrd.rra_ptr[i].cur_row
-					       * sizeof(rrd_value_t))), SEEK_SET) != 0){
-			    rrd_set_error("seek error in rrd");
-			    break;
+			/* determine if a seek is even needed. */
+			rra_pos_tmp = rra_start +
+				rrd.stat_head->ds_cnt*rrd.rra_ptr[i].cur_row*sizeof(rrd_value_t);
+			if(rra_pos_tmp != rra_current) {
+			    if(fseek(rrd_file, rra_pos_tmp, SEEK_SET) != 0){
+				rrd_set_error("seek error in rrd");
+				break;
+			    }
+			    rra_current = rra_pos_tmp;
 			}
 #ifdef DEBUG
 			fprintf(stderr,"  -- RRA Postseek %ld\n",ftell(rrd_file));
@@ -562,6 +565,7 @@ rrd_update(int argc, char **argv)
 				rrd_set_error("writing rrd");
 				break;
 			    }
+			    rra_current += sizeof(rrd_value_t);
 			    wrote_to_file = 1;
 
 #ifdef DEBUG

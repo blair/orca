@@ -1,852 +1,191 @@
-0.99.31
-From: Tobi
-0) hmpf ... forgot to add rrdresize.pod and friends to MANIFEST
+CangeLog for RRDtool 1.0.x
+--------------------------
+- bugfix, + enhancement, * contrib, = RELEASE
+---------------------------------------------
+
+= 1.0.7 1999/08/27 -- Tobi
+
+- 1999/08/27 -- bdowling@noc.faxnet.net
+  some strncpy were lacking the x[LAST]='\0'; safeguard ... 
+
+- 1999/08/25 -- Tobi
+  Samples were shifted one interval into the future by rrdgraph ... 
+  check minmax.pl in the examples directory ... 
+
+- 1999/08/25 -- Tobi
+  Updated rrdtools manpage to point to all the newer functions in the
+  package which have been left out before ...
+
+- 1999/08/25 -- Tobi
+  RRDs.xs: changed newRV_inc to newRV_noinc in a few places (graph and
+  fetch) otherwhise I'm afraid we got the refference count wrong and perl
+  was leaking memmory like a sive ...
+
+- 1999/08/24 -- Tobi
+  added -lm to perl Makefile.PL just to be sure it is there when
+  perl builds its shared module ... 
+
++ 1999/08/23 -- Tobi
+  added test for "-q float=rndsngl" todo proper IEEE math on AIX 4.2.0 with
+  IBM xlC
+
++ 1999/08/23 -- Tobi
+  added new stripes example ... 
+
+- 1999/08/23 -- Tobi
+  fixed spacing adjustment with '\s' instead of 1.5 it now adds 0.5
+  line-hights ...
+
+- 1999/08/20 -- Tobi + Jesper Skriver <jesper@skriver.dk>
+  found and fixed buffer overflow in legend processing when dealing with
+  large numbers
+  
++ 1999/08/20 -- Philippe.Simonet@swisscom.com
+  range-check option for rrdrestore
+
+- 1999/08/19 -- Tobi
+  replaced micro by u in SI prefix array
+
+- 1999/08/19 -- Tobi
+  better floating point veryfication in IEEE test ... missed SIGFPE
+  condition in freeBSD.
+
+- 1999/08/17 -- Tobi reacting to a bug report from W. James Showalter, Jr.
+  made time parser work as expected with dates of the form august 20 1999 as
+  well as dates of the form 8/17/1999 and 17.8.1999
+
+- 1999/08/17 -- Blair Zajac <bzajac@geostaff.com>
+  propagate CFLAGS from configure to PERL module compilation
+
+- 1999/08/17 -- Ragnar Kjørstad <mrtg@ragnark.vestdata.no>
+  fixed perl path in log2rrd contrib script
+
+- 1999/08/16 -- Philippe.Simonet@swisscom.com
+  DINF and friends for NT
+
+= 1.0.6 1999/08/14 -- Tobi
+
+- 1999/08/14 -- Tobi
+  Fixed install location of html pages ... they go to ../html now ...
+
+- 1999/08/14 -- Tobi
+  Fixed CDEF parser ... it should now be fine with a,-1,*
+
+- 1999/08/14 -- Tobi
+  Updated rrdgraph manpage to be in line with the changes I made to alexs
+  INF patch when integrating it ... sorry alex
+
+
+= 1.0.5 1999/08/13 -- Tobi
+
+- 1999/08/13 -- Tobi
+  Tested portability of 1.0.5 release on Solaris, Linux and FreeBSD
+
++ 1999/08/13 -- Tobi
+  changed IEEE tests ... now they tell you what fails and they are less picky
+  
++ 1999/08/12 -- Alex + Tobi
+  added INF and NEGINF operator to CDEF rpn functions. This pushes an
+  positive or negative infinite number onto the stack respectively ... when
+  graphing, they get replaced by a value equivalent to the upper or lower
+  boundery of the graphing area ...
+
++ 1999/08/10 -- Tobi
+  Integrated Blairs autoconf ... added dist and install support
+
++ 1999/08/09 -- Blair
+  Added automake/libtool support ... with --enable-shared you can
+  now get a shared library version of rrdtool ... 
+
+= 1.0.4 1999/08/06 -- tobi oetiker <tobi@caida.org>
+
+- 1999/08/06 -- Tobi
+  made rrdcgi parser more robust to invalid inputfiles.
+
+- 1999/08/04 -- Tobi + Philippe
+  in rrd_cgi I was freeing cgi arguments. Fixed ...
  
-0.99.30
-From: Alex
-0) We can now alter the number of rows in an RRA with rrd_resize
++ 1999/08/03 -- Tobi Oetiker <tobi@caida.org>
+  added % operator to CDEF rpn functions ...
+  this should allow for some funky operations in connection with TIME
 
-0.99.29
-From: Blair
-0) Prevent Makefile from rebuilding the perl modules on every run
++ 1999/08/03 -- Tobi Oetiker <tobi@caida.org>
+  added --enable-site-perl option to configure
+  for people who want the RRD{s,p} perl modules installed
+  in their site-perl directories
 
-0.99.28
-From: Blair
-0) fixed filedescriptor leak in rrd_graph
-From: Alan Lichty <alan_lichty@eli.net>
-0) fixes for rrdintroduction
-1) contrib/log2rrd for mrtg *.log file to *.rrd conversion
-From: Tobi
-0) fixed data_fetch bug ... I did not set the requested
-   data resolution properly ... the data resolution returned
-   by rrd_fetch was more or less random ...
++ 1999/08/03 -- Tobi Oetiker <tobi@caida.org>
+  do not try to compile perl modules if no perl is found
 
-0.99.27
-From: Tobi
-0) fixed the - file-name to really work.
-1) The rrdintro is now in the doc tree.
+- 1999/08/02 -- Hermann Hueni <hueni@glue.ch>
+  drop "rb" open mode for non win32 architectures
 
-0.99.26
-From: Tobi and Jeremy
-0) fixed documentaion GNUMakefile
-From: Kai Siering <kai.siering@mediaways.net>
-0) Updated rrdgraph.pod ...
-From: Tobi with inspiration from Kai
-0) if rrdgraph get - as a filename, its output will go to standard out
-1) ****INCOMPATIBLE***** the IF operator was not taking its argments in the
-  correct order ... I have put an example into the manpage to show how
-  it should be done and how it is now done ...
-From: Alex van den Bogaerdt <alex@ergens.op.het.net>
-0) Contributed two tutorial, make sure you visit
-   bin_dec_hex.man and rrdtutorial.man in the doc directory.
- 
-0.99.25
-From: Blair Zajac <bzajac@geostaff.com>
-0) do not set PATH in top Makefile ... 
-From: Tobi
-0) added better IEEE test to configure
+- 1999/07/30 -- Tobias Weingartner <weingart@cs.ualberta.ca>
+  spell fixes for documentation
 
-0.99.24
-From: Jeremy Fischer <jeremy@kiva.net>
-0) install functionality for Makefile
-From: Tobi
-0) removed TOTAL  function ...
+= 1.0.3 1999/07/30 -- tobi oetiker <tobi@caida.org>
 
-0.99.23
-* fixed cache bug in configure script ... CFLAGS_EXTRA were disregarded in
-  the second run ... found by Douglas Brunk
+- 1999/07/30 -- Tobi
+  Fixed default start time in rrd_create. 
+  Start time of new rrds was set to 1970.01.01 causing VERY long update times
+  for the initial update ... 
 
-0.99.22
-* From Russ Wright <rwwright@home.com>
-0) use PIC instead of pic
-* From Tobi
-0) fixed a memory leak in rrd_graph (p_data was not fully freed)
-   purify is a cool tool indeed :-)
+= 1.0.2 1999/07/28 -- tobi oetiker <tobi@caida.org>
 
-0.99.21
-* From Tobi
-0) Checking for IEEE math in configure ... find out if -ieee helps
-1) rrdtool checks its base arguments with strcmp
-2) errors get sent to stderr when called from the command line
-3) various documentation problems
-4) fixed display bug discovered by Alex van den Bogaerdt
-   the graph display was off by one step
-5) fixed infinite loop which occurs when trying to paint a grid line
-   at 2:00 am on a day when day light saving time gets activated ... (now
-   guess what happens today :-)
+- 1999/07/28 -- Tobi
+  Added configure checks for reallocs ability to deal with NULL pointers
+  this helps compiling on SunOS
 
-* From Blair
-0) Fewer spelling errors for CHANGES file ... thanks !
-1) some additional memory cleanup so that rrdfiles do not contain
-   random date in unused areas ...
+- 1999/07/28 -- Tobi
+  Added check for memmove availablility. Replace with bcopy if necessary.
 
-0.99.20
-* From Oleg Cherevko <olwi@icyb.kiev.ua>
-0) Allowed uppercase letters in DEF and CDEF names for rrd_graph (note
-   that you now can produce conflicts when using strings which match
-   the name of an rpn function call
-1) make at style time code understand long weekday names
-2) corrected documentation about the length of ds names (it 19 chars and not 9)
++ 1999/07/28 -- Tobi
+  Added better IEEE tests ...
 
-* From Tobi
-0) Switched to calloc in rrd_create, to prevent from arbitrary strings
-   showing up in the rrdfiles
-1) Made the two graphs produced by the perl-shared example code match by
-   specifying the end time in addition to the start time ... There is still
-   a potential difference between the gifs, because there seem to be some
-   random entries in the color map, which do not define colors for any pixels
-   actually in the graph. If you convert the graphs to PNM format they are
-   completely the same
++ 1999/07/28 -- Tobi
+  Added Dynamic stack allocation to RPN in CDEF
 
-0.99.19
-* From Tobi
-0) Fixed example in rrd_create man-page
-1) Fixed rpn parser to properly track through the expressions ...
-2) Fixed stacking code so that it is possible to stack the same variable several times.
-3) Added --base switch to rrd_graph which allows to switch the scaling base to 1024
-   this takes care of situations where you want to graph memory instead of
-   traffic
++ 1999/07/27 -- Tobi & Tobias Weingartner <weingart@cs.ualberta.ca>
+  Added DUP, POP and EXC operator for CDEF.
 
-0.99.18
-* From Oleg Cherevko <olwi@icyb.kiev.ua>
-0) Removed vsnprintf from parsetime for portability reasons ...
++ 1999/07/27 -- Sasha Mikheev <sasha@aldan.netvision.net.il>
+  alternate grid and scaling functions for rrdgraph. Use --alt-y-grid and
+  --alt-autoscale to activate.
 
-0.99.17 
-* From Tobi
-0) added the missing files from Olegs at patch ... now the thing
-   compiles again ...
-1) massively enhanced the number of functions accepted in the
-   CDEF arguments of rrd_graph. Things like if, less than, larger or equal,
-   is unknown and more are available. Check the rrd_graph documentation for
-   more info on this ...
+- 1999/07/27 -- Tobi
+  fixed about 1000 memmory leaks in rrdcg. Wonder it was working before ...
 
-0.99.16
-* From Oleg Cherevko <olwi@icyb.kiev.ua>
-0) The rrdtool function HandleInputLine never checks the return values of the
-   rrd_fetch() and rrd_graph() calls.
-1) Added AT-STYLE TIME SPECIFICATION. This allows to specify the time
-   using a more user-friendly format than all just seconds since 1970.
-   See the rrdfetch manpage for a long description of these features ...
-0.99.15
-* From Blair
-1) Uses CFLAGS to compile RRDs.o with the same optimization
-   flags.
-2) Remove some extra ;'s
-3) Spelling fixes.
+- 1999/07/26 -- Tamas Kovacshazy <khazy@mit.bme.hu>
+  improved vc++ project files for rrdtool
 
-0.99.14 
-* From Tobi
-0) rrd_graph now returns the gif image size. The commandline version just
-   prints XSIZExYSIZE after being called and the perl version returns
-   the size as two additional return values from the graph call.
+- 1999/07/26 -- Tobi
+  added ranlib to cgi png z and gd library ...
 
-   PLEASE NOTE THIS mAY BREAK SCRIPTS ANALYZING THE DATA RETURNED BY
-   RRD_GRAPH ...
+= 1.0.1 1999/07/23 -- tobi oetiker <tobi@caida.org>
 
-1) added perl-piped/  perl-shared/ to make all building
+- 1999/07/23 -- Tobi
+  plugged memory leek in parsetime.c
+- 1999/07/23 -- Tobi
+  fixed serious error in data_reduce function. This was causing the graph to
+  intermittently disappear. It was also displaying inaccurate values for
+  spiky data, if this data had to be reduced due to the width of the image
+  as compared to the resolution of the RRA data.  (does this fix the errors
+  seen by cricket users ????)
 
-0.99.13
-* From: Oleg Cherevko <olwi@icyb.kiev.ua>
-0) fixed typo in the prt_fctn code of rrd_graph ..
++ 1999/07/22 -- Seth Lepzelter <slepzelt@cs.oberlin.edu>
+  DEC needs -mieee to do proper IEEE math ... added configure test
 
-0.99.12
-* From Tobi:
-0) New graph function COMMENT added. It prints simple text into the legend.
-   No evaluation occurs
-1) New graph legend feature added. The legend area formating can now be
-   influenced by adding special escaped characters to the end of some
-   of the legend entries. Whenever such an entry is processed, the placement
-   of the pending legend items is done as defined the special character.
-   See NOTE 2 at the end of the rrdgraph manual for details.
++ 1999/07/22 -- Philippe.Simonet@swisscom.com
+  vc++ project files for rrdtool
 
-0.99.11
-* From Tobi:
-0) added --template switch to rrd_update. This allows to specify which
-   datasources you intend to update. It provides some protection against
-   updating the wrong datasources.
+* 1999/07/19 -- Alex van den Bogaerdt <alex@ergens.op.Het.Net>
+  rrd file icon contributed
 
-0.99.10
-* From Tobi:
-0) added missing : in optarg template of rrd_create
+- 1999/07/19 -- tobi oetiker <tobi@caida.org>
+  added strcasecmp function into parsetime as this is not
+  available on all systems.
 
-0.99.9
-* From Tobi:
-1) removed rrd_format2.h this was not used ...
-2) renamed diff to rrd_diff and added ranlib step to library
-   creation ... this is all for the benefit of FreeBSD
-* From: Andrew Turner <turner@mint.net>
-1) added new consolidation functions LAST and TOTAL
+= 1.0.0 1999/07/15 -- tobi oetiker <tobi@caida.org>
+  Released first 'stable' version of RRDtool after almost
+  18 Month of 'development'
 
-0.99.8 Thu Feb 4 1999
-* From Tobi:
-1) Removed compiler waring from rrd_graph.c (blair, I went to default all
-   the way ...)
-2) revisited configure.in ... made gcc option test work properly
-
-0.99.7 Mon Feb 1 1999
-* From Tobi
-1) removed kill command from the end of RRDp.pm
-2) fixed rrdtune ... ds selector did not work ...
-3) removed warnings from diff.c
-4) fixed default -start time when creating new rrds ... 
-   this was 1.1.1970 instead of NOW ...
- 
-0.99.6 Fri Jan 29 1999
-* From Tobi 
-1) more ... don't compare with nan fixes ... this time in rrd_update
-2) on request from Russ Wright made VRULE and HRULE being painted on top 
-   of the grid 
-
-* From Blair
-1) real decimal version numbers for perl modules
-2) better argument checking for rrd_update
-
-0.99.5 was only available to 30 minutes ...
-
-0.99.4 Thu Jan 28 1999
-* From Tobi
-1) Happy BSD patch ... it seems that RRDTOOL will work on BSD once
-   there are no compares with NAN ... I have altered one if in rrd_create.
-   lets see if this helps
-
-0.99.3 Wed Jan 27 1999
-* From Tobi
-1) ran with electric fence ... found bugs in RPN processing, and in data
-  fetch (related to DS naming)
-2) removed superfluous im_free calls which were in fact causing segfaults by
-  trying to release memory which was already released ...
-
-0.99.2 Tue Jan 26 1999
-* From Tobi trying to find the cores reported by Jesper Skriver
-  changed rrd_create to use DNAN instead of unknown. Maybe we have
-  a problem with the representation of UNKNOWN as NAN on FreeBSD ...
-  We should not get floating point exceptions because of this or should we ?
-  
-* From Blair
-  1) Spelling mistakes in the pod files.
-  2) Updated 0.99.0 to 0.99.1 in the RRDs.pm and RRDp.pm files.
-  3) Updated the rrdcreate.pod file to accurately reflect the
-     correct options to rrd_create().
-  4) Allow uppercase characters in the ds-name in rrd_create.
-
-0.99.1 Fri Jan 22 1999
-
-* Fixed notice in gifs
-* Fixed color selection for base elements 
-
-Thu Jan 14 1999
-*****************************************************************************
-* BIG CHANGE ... The new format is in place .....
-* drop your old files ... everything is new now .....
-*****************************************************************************
-
-* Tobi ... user visible changes are that the data sources do have
-  names now and that the xxf can be set individually for each RRA
-  this means that some command line options had to be changed ...
-  Basically everything which deals with DS selection.
-
-*****************************************************************************
-*****************************************************************************
-*****************************************************************************
-
-Mon Jan 11 1999
-* Tobi
-1) Fixed data_reduce again ... blair pointed out a core dump condition in the
-   perl module ... 
-
-Sat Jan 9 1999
-* Tobi
-1) Fixed rounding error in rrd_graph/ytr ... it lead to zero values
-   not being identified correctly ...
-2) applied Philippe fixes for better compilation of the Perl module under NT
-3) new version number for perl module
-4) Fixed AVERAGE calculator in print_calc ... thanks to Sasha Mikheev for the hint
-5) Fixed bug in reduce_data function which killed CDEF under certain circumstances because start
-   was not adjusted according to the new step size ...
-
-Wed Dec 16 1998
-* Tobi
-1) when using the rigid option and the data would be outside the graph, the
-   line gets drawn 2 pixels out side graph ... this is not tested :-) 
-   rrd_graph.c ~ line 246 around line 1900 I removed all the sanity checks for
-   the graphics to be inside the valid area ...
-
-* jeff alan
-I'd like to be able to turn off interlaced gifs, since I think they
-look messy when they are coming in. I added an option called
-"interlaced" (abbrev: "i") which will set the graph to interlaced. The
-graphs now default to progressive.
-
-*phillipe
-moved #include "../src/rrd_tool.h" in RRD.xs to etern"C" section
-to make it work on NT ...
-
-
-Sat Nov 21 1998
-* Blair Zajac <bzajac@geostaff.com>
-1) Update the rrd_update function to be able to take multiple
-   timestamp/DATA pairs.  When there's a lot of data to dump
-   into an RRD, this will save a lot of time.  In one test I
-   ran updating 1000 data points into a single RRD trimmed
-   40% off the execution time.  This reduction is caused by
-   two factors: rrd_update gets called only once and the RRD
-   gets opened and closed only once.  The new input to
-   rrd_update still takes the old format, but allows trailing
-   time and DATA: pairs:
-
-   rrdtool update demo.rrd [--time|-t timestamp] DATA:...
-      timestamp DATA:... timestamp DATA:... ....
-
-   This change did a lot of work to rrd_update.c.  To see all
-   the changes I would do a diff -ruWb between the previous
-   and this version.  This will ignore lines that have had
-   their indentation changed due to the addition of a while
-   loop around the whole update structure.
-
-   The only problem I see is that in the loop where the
-   timestamp/DATA pairs are processed there is a single
-   fwrite call to write some data to the RRD.  If some of
-   these succeed and then one fails, should the remaining
-   data that needs to be written at the end of rrd_update
-   still be written to the file or should we just exit
-   and leave the RRD alone.  If the first fwrite succeeds and
-   everything else fails, will the RRD still be ok for
-   future updates.
-
-   I've run some comparisons between the RRDs generated by
-   the old rrd_update and this rrd_update and I've found only
-   a few instances where the RRDs differ.  The output of
-   rrdtool dump did not differ however and the resulting GIFs
-   looked identical.  I would recommend that we be careful
-   with the code for a little bit.  I would greatly appreciate
-   it if somebody else could take a look at it.  I do think
-   it's important, as that 40% savings in time is very important
-   for how I'm using RRD.
-
-2) Update the POD for rrd_update.
-
-3) Some spelling corrections.
-
-4) Update test.pl to output demo1 and demo2 RRDs and GIFs.
-   Demo1 is created using single timestamp/DATA pair calls
-   to rrd_update while demo2 is updated using one single
-   call.  This allows us to compare the output RRDs and GIFs.
-
-5) To allow the comparison of RRDs created and updated using
-   slightly different code, I found a problem where the filler
-   bytes the compiler uses to align doubles and other types
-   in the structs in rrd_format.h would be filled with random
-   data.  This would cause simple cmp compares to fail on
-   newly created RRDs.  Now rrd_create does a memset to 0 of
-   all newly malloc memory to set these filler bytes to a
-   consistent value.
-
-Wed Nov 18 1998
-* Tobi
-1) rrdtool graph will now consolidate data previous before plotting it, if
-   the resolution of the data is higher than the resolution of the plotting
-   area.
-
-Tue Nov 17 1998
-* Tobi
-1) allow negative --start time in create. This means go back the specified 
-   amount of time from NOW ... this is the same as it is supported with other
-   modules ... 
-2) make sure we do draw outside the appointed area. With the --rigid
-   option this could be accomplished and would make gdlib work so hard that
-   rrdtool appears to be dead ..
-
-Sat Nov 14 1998
-* Blair Zajac <bzajac@geostaff.com>
-1) 1000 spelling fixes (thanks!)
-2) a new Datasource type called DERIVE. It calculates the derivative between
-   the current and previous value of the datasource.
-   This lets you plot the rate of increase or decrease of a counter
-   value, such as the number of people in a room.
-3) some contents fixes for the pod docs ...
-4) more tests for the binary perl module
-
-Fri Nov 6 1998
-* Blair Zajac <bzajac@geostaff.com>
-  more spelling and other fixes ... especially a few remaining exits were
-  replaced by returns ...
-
-* tobi
-1) fixed the parsing of : in string arguments of rrd_graph. An output string
-   can now contain a : if it is escaped with \ .. a \ has to be escaped as
-   well ... this makes the changes from the 24-oct really work ...
-2) in connection with 1) there were also problems with arguments where the
-   string was blank ... 
-
-Tue Nov 3 1998
-* Blair Zajac <bzajac@geostaff.com>
-1) added a missing fclose to rrd_open ...
-
-Mon Nov 2 1998
-* Tobias Oetiker
-1) configurable color for arrow in Graph
-2) added new format definition header to distribution .. this is bound to
-   be integrated ... once I get some time to do it ... (any takers?)
-
-Sat Oct 31 1998
-* Win32 patches from Philipp Simonet <philipp.simonet@swisscom.ch>
-1) New Visual Studio Config files for building WIN32 binaries
-2) Locking enabled under WIN32
-
-* Tobias Oetiker
-1) fixed scaling again ... when there is no data, the graph will show 0..1
-   and not -1..1
-2) Added a little arrow indicating the positive x axis direction
-3) paint x and y axis before the graph, so that it does not hide it
-
-Sat Oct 24 1998
-* Perl and other patches from Blair Zajac <bzajac@geostaff.com>
-1) Have rrd_last return a time_t instead of an int, so the real
-   time from the RRD file is returned.
-2) Fixed an error where rrd.live_head->last_up was returned from
-   rrd_last after rrd was freed.
-3) Make perl/Makefile.PL a little neater.
-4) Add a realclean option to perl/Makefile.PL.
-5) Small formatting change to RRD.xs.
-6) Added a little RRD::last testing code to test.pl and added some
-   more ok's for now and future use for more tests.  Changed the code
-   to run under use strict.
-* Tobi O.
-1) removed machine option from rrd_last ... it will now only return
-   the unix time_t when the rrd was last updated ... 
-2) allo ':' in graph arguments, if the : is escaped with a \. In perl
-   strings you have to enter two \ because perl interprets them 
-   as well: eg  "Max\\: %2f"
-
-Fri Oct 23 1998
-* Makefile Patches from Blair Zajac <bzajac@geostaff.com>
-1) Allow the user to do something like make CFLAGS=-O3 and not loose
-   the other important flags, such as -DHAVE_CONFIG_H, etc.
-2) Move all OS and compiler dependent flags into CFLAGS_EXTRA.  This
-   changes Makefile.in's and configure.in.
-3) Add realclean targets to all Makefiles.
-4) Have realclean clean up many more things to return the package to
-   a clean state.
-
-Mon Oct 19 1998
-* Fixed rrdcreate.pod ... the example was out of date ...
-
-Sun Oct 18 1998
-* From Jeff: rrd_open will open readonly when ever possible. This
-  allows to graph without write permission ... 
-* From Jeff Allan: Removed all remaining  \n from the error
-  messages and fixed some spelling
-* From Jeff: Improved handling of cases where no data is
-  found
-* rrd_graph: if minval == maxval pumb max up and pull min down 1% 
-  ... by tobi as suggested by allan.
-
-Mon Oct 12 1998
-* This time the diff.c fix for negative numbers
-  and counter wrap detector code are really in ... tobi
-
-Thu Oct 08 1998
-* Added file locking code to rrd_update ... written by Russ Wright.
-  The locking code uses fcntl so I guess it will not work on NT ...
-  any takers ?
-
-* Fixed longstanding bug in diff.c ... now it works even for 0-10
-  Tobi.
-
-* made rrd_graph work even when there is no data to plot ... Russ Wright
-
-* added new last function provided by Russ Wright. This func allows
-  to query an RRD for it's last modification date ... 
-
-* added counter overflow patch as suggested by Andres Kroonmaa <andre@ml.ee>
-  to rrd_update. This will only work for 32 bit and 64 bit counters.
-  Are there any others in SNMP land ?
-
-Thu Aug 13 1998
-* raised stacksize in rrd_graphs rpn machine to 30 (otmar)
-* fixed label placement in graph for precisions != 0 (otmar) 
-
-Sat June 13 1998
-* added ms devstudio stuff from philippe
-
-Mon June 8 1998
-* WIN32 Portability fixes from Philippe
-
-Sun June 7 1998
-* fixed coredumps with rrd_error ... I was freeing free memory.
-  somehow I had assumed, that free(x) would set x to NULL ...
-  this is not true :-)
-
-Wed June 3 1998
-* fix for PRINT and GPRINT calc in rrd_graph ...
-* fix for STACK function command line parsing ... It must follow
-  directly after a LINE*, AREA or STACK function
-
-Tue June 2 1998
-* lots of fixes from Jost Krieger integrated
-* increased MAX_LENGTH to 10000 in rrd_tool as suggested by simon ...
-
-Tue May 26 1998
-* did some instruction reordering in rrd_graph.c to make
-  a segfault go away which was discovered by David Vickers
-
-Sun May 24 1998
-* cleanup session. In order to improve rrdtools perl integration
-  I have started moving all the printf code out of the individual
-  functions. Now they all return their findings (except rrd_dump)
-  to rrd_tool.c which then prints them.
-
-* the perlmodule got extended to use these new possibilities. The
-  RRD::fetch and RRD::graph return the things they used to print
-  directly to perl. See the test.pl for an example. There is still
-  no documentation though for the perl module
-  
-Tue May 12 1998
-* Patch to rrdcreate.pod from Amos Shapira <amos@gezernet.co.il>
-
-Thu May 7 1998
-* debugged memory allocation and access errors in CDEF. Now
-  things should work as advertised ... Thanks to
-  David Vickers <David.Vickers@citec.com.au> for finding the
-  bug ...
-
-Fri May 1 1998
-* finally added the --logarithm switch ... or rather the logic behind it.
-  you can now draw graphs with logarithmic scale in the data axis ... 
-
-* fixed some minor drawing bugs ...
-
-Thu Apr 30 1998
-* hp portability patch from "Crawley, Tom" <Tom.Crawley@hi.riotinto.com.au>
-  you should now be able to compile with gcc on hp as well ...
-
-Fri Apr 18 1998
-
-* Patch from Otmar Lendl (O.Lendl@Austria.EU.net) to
-  fix perl coredump ... 
-
-* Split the top makefile into Makefile.dist and Makefile
-  Makefile does not contain any gnu only things anymore
-
-* Renamed doc Makefile to GNUmakefile because it contains
-  several GNU only constructs. Lets be straight in this respect
-  and stop pretending it was a Makefile. 
-
-Thu Apr 9 1998 
-**** INCOMPATIBLE CHANGES ****
-
-* altered PRINT and GPRINT functions ... we really need to give
-  them a consolidation function ... [G]PRINT:<vname>:<cf>:<format>
-  otherwise things are not clear for calculation. You can now
-  define the operation for PRINT and GPRINT independent from the
-  data source consolidation method. This allows to calc things
-  like average maximum, or maximal 5 minute average ... or what ever
-  you choose ...
-
-* options of graph, create and update have changed again. The old style
-  LINE1:..., DS:..., DATA:... arguments are back. I found that this
-  is more logical than doing everything with options. This will be
-  especially helpful for the perl interface
-
-* Completed CDEF/DEF implementation. Now you can create new
-  data sources on the fly by doing some rpn math. Check rrd_demo.pl for
-  an example of CDEF rpn math.
-
-* updated rrdgraph, rrdupdate and rrdcreate  man-pages to reflect new
-  command-line options
-
-* updated rrd_demo.pl to work with new command-line options
-  log2rrd.pl and graphrrd.pl are *NOT* updated yet ...
-
-* updated perl test.pl to work with new options ... unfortunately
-  test.pl crashes after generating about 3 graphs ... I guess there is
-  a memory leak, but debugging the core of an shared library perl
-  is quite a problem ... no solution yet ... When I link perl statically
-  to the rrd stuff things work without core ... 
-
-Wed Apr 8 1998 -- Wrolf / Russ
-* new scripts log2rrd.pl and graphrrd.pl 
-
-Mon Apr 6 1998
-* compete RPN implementation ... things compile ... too tired to
-  test, will do later
-
-Sun Apr 5 1998
-* added -fpic for gcc and -z for hp compilers to generate
-  position independent code which helps when doing shared
-  libraries ...
-  
-Thu Apr 2 1998 -- Wrolf
-* Makefile.in fixes
-
-Wed Apr 1 1998
-* Updated docs for rrd graph ... will take the graph functions out of long
-  opts ... as they are not really options ... 
-
-Tue Mar 31 1998 
-* small Makfile.in fixes ...
-
-Tue Mar 31 1998 -- Wrolf
-* spelling fixes 
-
-Mon Mar 30 1998
-* big source split ... its now all neatly separated
-  in subdirectories.
-
-* gd1.2 is now included in the release ...
-
-Mon Mar 30 1998 -- Philippe.Simonet@swisscom.com
-* rrd_open.c use rb+ instead of r+ for fopen
-* ntdemo.pl created to the test rrdtool.exe under NT
-
-Sun Mar 29 1998
-* INCOMPATIBLE CHANGE remaining functions converted to getopt_long
-* started loadable perl module ... its all in the RRD directory
-
-Thu Mar 26 1998 -- jeff.allen@acm.org
-* added some files to make things work under DevStudio
-  not tested yet ...
-
-Tue Mar 24 1998
-* started changing calling sequence rrd_graph.c done
-* updated to much newer getopt ... maybe it has a few potential 
-  bugs fixed
-* updated rrdgraph.pod for new calling sequence
-
-Mon Mar 23 1998 
-* improved labeling for horizontal grid
-
-Sat Mar 21 1998 -- jeff.allen@acm.org
-* hpux portability improved
-* sunos port
-
-Wed Mar 18 1998
-* added log2rrd.pl to configure.in and Makefile.in
-* about 1'000 spelling fixes from Wrolf applied 
-* Fixed help screen in rrd_tune (LINE1 ...)
-* Fixed error in GPRINT and PRINT function of rrd_graph.c (Philippe)
-* added log2rrd.pl by Russ and Wrolf
-
-Sun Mar 15 1998
-* Updated Makefile to produce *.pl.in files from *.pl files on tar and dist
-* Updated Makefile to generate *.html and *.man files from *.pl and *.pm 
-* total rewrite of horizontal grid lines I guess now things look more the
-  way they should ...
-* INCOMPATIBLE CHANGE the -y option is now called -v and -y is now
-  equivalent to x in the respect, that it allows to configure the horizontal
-  -grid. (log grid will come soon)
-* implemented title function -t (it was already there but not active)
-* made RRD.pm complain if it is not used correctly
-* updated documentation for RRD.pm
-* INCOMPATIBLE CHANGE ... there are now 3 types of LINE -- LINE1 LINE2 and
-LINE3
-  they are increasing in size.
-* if there are only PRINT commands in a graph command line, no GIF will be
-  created ...
-
-Fri Mar 13 1998
-* fixed some potentially ambiguous else statements (gcc-2.8.1 objected)
-* fixed error in STACK option
-* added documentation for log scale
-* added documentation for y-axis spacing config
-
-Thu Mar 12 1998
-* added rule to configure so that it looks in
-  /usr/local/include/gd for include files
-* added -d option to rrd_tune.c to allow to change
-  the DST of a DS ... (special request from Alan)
-
-Thu Mar 12 1998 -- jeff.allen@acm.org
-* cleaned up rrd_tool.h to make better use of configure
-* tried to separate out Win32 stuff better
-* made calls to strftime fail if it doesn't exist (probably
-  need to ship a substitute, unless this is more portable than it sounds)
-* created config.h.nt, which will probably be useful for porting
-  to NT. We'll see.
-
-Wed Mar 11 1998
-* oops nonblocking was NOT in last release ... sorry ... here it is ..
-* started to create RRD.pm 
-* adapted rrd_demo.pl to work with it ... 
-
-Mon Mar 9 1998
-* better values for xlab array ...
-* fixed error with rrd_fetch 
-  (it was not fetching the right data if the pointer wrapped straight from
-   the beginning)
-* check VRULE and HRULE placement
-* changed linking order -lgd and then -lm as floor from gd is in m
-* made rrd_demo use nonblocking read to get data from pipe
-
-Mon Mar 9 1988 -- Wrolf (how about using diff -u )
-* lots of spelling fixes
-* some linting fixes
-* better Makefile portability
-
-Sun Mar 8 1998
-* added rrd_tune.c and rrdtune.pod ... read the docs ... 
-* compiled rrdtool and gdlib with -pg in order to run it
-  under gprof ... the results were, that most time is spent
-  compressing the gif file. As the profiling is only on a function level, I
-  was not able to identify hot spots within the code ...
-* added getrusage and gettimeofday  call to rrd_tool.c in order to get
-  better grip on time spent on each function ... the results will be printed
-  after the OK prompt. Adapted rrd_demo.pl accordingly ... 
-
-Sun Mar 8 1998 -- jeff.allen@acm.org
-* Fix to first line of rrd_demo.pl. Autoconf docs say that
-  Sequent's unix needs the space. Whatever...
-* cosmetic changes to rrd_demo.pl.in
-* changed getopt.c to suck in rrdtool.h, so that it includes
-  string.h. The comments in getopt.c seem to imply that
-  this can break things, but it clears up a warning for me.
-  What do others think?
-
-Sat Mar 7 1998 
-* tried some cool graphs ... the current one produced by rrd_demo.pl
-  looks really freaky ... not that anyone would want to use
-  such a graph, (I guess) but it can be done ... 
-* finally rrd_graph does work as described in the manpage
-* many cosmetic changes to the graph
-* use Open2 and select in rrd_demo.pl
-* added OK response to rrd tool
-* integrated simons opt patch ...
-
-Fri Mar 6 1998	-- jeff.allen@acm.org
-* docs in configure.in
-* HP cc and GCC flags discovery (not tested on HP -- Wrolf,
-  please give it a try)
-* improvements to makefile
-* one-line changes to rrd_graph.c and getopt.c to keep Purify and
-  Gcc happy.
-
-Thu Mar 5 1998
-* some more HPUX portability stuff by Wrolf
-* rrd_tool.h cleanup
-* added project files for MS VC++ by Philippe
-* aesthetic tuning on the graph ... 
-* text labels below the graph area
-* VRULE and HRULE implemented
-* Debugged argument parsing ... no more segfaults when you give the wrong
-  number of arguments.
-
-Wed Mar 4 1998
-* now rrdgraph is working ... not all methods are implemented yet, but it
-  does produce graphs ...  see rrd_demo.pl 
-
-Tue Mar 3 1998
-* fixed some further minor problems .... bug fixing goes ahead, but not
-  finished yet ...  CODE DOES NOT WORK
-
-* found the 'memory problem' there is a difference between
-  malloc(a-b * sizeof(c)) when I want to do malloc((a-b) * sizeof(c)) 
-  I love braces ... :-)
-
-Tue Mar 3 1998 -- jeff.allen@acm.org
-* Added configure.in and friends, to simplify configuration.
-
-Sun Mar 1 1998
-* started to make rrd_graph work as advertised. Programming went well,
-  unfortunately debugging is not yet done and not all the functionality
-  is implemented. But I guess if it did not crash, the AREA, LINE and
-  STACK functions should be OK ... I guess there is some memory problem.
-* enhanced Makefile to be able to do the man and html versions
-
-Thu Feb 26 1998
-* fixed pipe mode commandline parsing
-* made rrd_demo.pl work again ... no graphics at the moment
-* altered commandline options for update ... negative numbers were a problem
-* Integrated some patches from Wrolf 
-* filename and pod patches from Jeff added
-* changed Makefile structure to make it ready for autoconf/configure ... (jeff)
-* added rrd_getopt for good now it will work the same on all systems.
-  Maybe we should go to gnu_getopt once jeff integrates configure ?
-* made rrd_update work as advertised in the manpage
-
-Wed Feb 25 1998
-* some 'make the compiler happy' patches from Jeff
-* CFLAGS for HP cc from Wrolf
-* included source for getopt in case your system does not have it 
-  edit Makefile ...
-
-Sun Feb 22 1998
-* improved/spell-checked pod documentation (Russ)
-* rrd_fetch and rrd_dump work as advertised in the docs
-
-Sat Feb 21 1998
-* stared bringing code in line with documentation. rrd_create.c done
-
-Sun Feb 15 1998
-* created full documentation for rrdtool in pod format
-
-Sun Feb 1 1998
-* fixed seek bug in rrd_update
-* rewrote rrd_tool argument scanner now it does quoting as it should be.
-* rrd_graph ... scaling bug fixes
-* horizontal grid fixed
-* added copyright notice
-* vertical grpd fixed
-* wrote demo app in perl
-* updated TODO and README
-
-Thu Jan 22 1998
-* Russ has debugged my rrd_graph code. 
-* Fixed one remaining malloc error
-* improved visual appearance of the graph
-* updated TODO list
-
-Sun Jan 18 1998
-* added Dan and Russ rrd_tool.c ... rrd_main.c is gone
-* current setup assumes gd1.2 to exist in the compile directory
-* things compile again ... 
-* rrd_graph is done, but not yet debugged ... so while it compiles,
-  it will not do what it should (I guess )
-* this release is for dan dunn to integrate the new rrd_main.c
-* created TODO and CONTRIBUTORS files
-
-Thu Jan 08 1998
-
-* mrtg DOES NOT COMPILE ... you can leave out rrd_graph and the
-  relevant parts of rrd_main to get it to compile ... 
-
-* releasing the code because there were some changes in other modules as
-  well 
-* rrd_graph is about 50 percent done ... remaining twist clever
-  horizontal grid ... 
-
-Sat Nov 29 1997
-
-* debugged rrd_fetch 
-
-Fri Nov 28 1997
-
-* rrd_update a ; after a if prevented CF MAX from working
-
-* rrd_dump fied time in output
-
-* rrd_perf fixed mrhb in demo db
-
-* rrd_fetch created. This function will get the data
-  for the graphs
-
-Thu Nov 27 1997
-
-* rrd_update debugged ... I guess (!) it works now correctly
-
-  note: we always assume that a input value represents the average
-        from the last to the current run
-
-* rrd_fupd created. This is like rrd_update, but it accepts input
-  from a file or stdin ... (this saves us from restarting
-  rrd_update for each file)
-
-* rrd_perf.pl created. It helps to assess the performance you
-  can achieve with an rrd on your system.
-
-
-Sun Nov 23 1997
-
-* rrd_update created ... does not yet work ... but it should !
-* some problem s with the format removed in the process ...
-
-  

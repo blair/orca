@@ -1,4 +1,4 @@
-/* $Id: MD5.xs,v 1.23 1999/03/26 13:27:49 gisle Exp $ */
+/* $Id: MD5.xs,v 1.24 1999/07/28 10:38:50 gisle Exp $ */
 
 /* 
  * This library is free software; you can redistribute it and/or
@@ -555,21 +555,23 @@ addfile(self, fh)
 	unsigned char buffer[4096];
 	int  n;
     CODE:
-        if (fill) {
-	    /* The MD5Update() function is faster if it can work with
-	     * complete blocks.  This will fill up any buffered block
-	     * first.
-	     */
-	    STRLEN missing = 64 - fill;
-	    if ( (n = PerlIO_read(fh, buffer, missing)))
-		MD5Update(context, buffer, n);
-	    else
-		XSRETURN(1);  /* self */
-	}
+	if (fh) {
+            if (fill) {
+	        /* The MD5Update() function is faster if it can work with
+	         * complete blocks.  This will fill up any buffered block
+	         * first.
+	         */
+	        STRLEN missing = 64 - fill;
+	        if ( (n = PerlIO_read(fh, buffer, missing)))
+	 	    MD5Update(context, buffer, n);
+	        else
+		    XSRETURN(1);  /* self */
+	    }
 
-	/* Process blocks until EOF */
-        while ( (n = PerlIO_read(fh, buffer, sizeof(buffer)))) {
-	    MD5Update(context, buffer, n);
+	    /* Process blocks until EOF */
+            while ( (n = PerlIO_read(fh, buffer, sizeof(buffer)))) {
+	        MD5Update(context, buffer, n);
+	    }
 	}
 	XSRETURN(1);  /* self */
 

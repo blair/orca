@@ -1,4 +1,3 @@
-#include <malloc.h>
 #include <stdio.h>
 #include <math.h>
 #include <string.h>
@@ -13,16 +12,18 @@ gdImagePtr gdImageCreate(int sx, int sy)
 {
 	int i;
 	gdImagePtr im;
-	im = (gdImage *) malloc(sizeof(gdImage));
-	im->pixels = (unsigned char **) malloc(sizeof(unsigned char *) * sx);
+	im = (gdImage *) calloc(1,sizeof(gdImage));
+	/* NOW ROW-MAJOR IN GD 1.3 */
+	im->pixels = (unsigned char **) malloc(sizeof(unsigned char *) * sy);
 	im->polyInts = 0;
 	im->polyAllocated = 0;
 	im->brush = 0;
 	im->tile = 0;
 	im->style = 0;
-	for (i=0; (i<sx); i++) {
+	for (i=0; (i<sy); i++) {
+		/* NOW ROW-MAJOR IN GD 1.3 */
 		im->pixels[i] = (unsigned char *) calloc(
-			sy, sizeof(unsigned char));
+			sx, sizeof(unsigned char));
 	}	
 	im->sx = sx;
 	im->sy = sy;
@@ -35,7 +36,7 @@ gdImagePtr gdImageCreate(int sx, int sy)
 void gdImageDestroy(gdImagePtr im)
 {
 	int i;
-	for (i=0; (i<im->sx); i++) {
+	for (i=0; (i<im->sy); i++) {
 		free(im->pixels[i]);
 	}	
 	free(im->pixels);
@@ -157,7 +158,8 @@ void gdImageSetPixel(gdImagePtr im, int x, int y, int color)
 		break;
 		default:
 		if (gdImageBoundsSafe(im, x, y)) {
-			 im->pixels[x][y] = color;
+			/* NOW ROW-MAJOR IN GD 1.3 */
+			im->pixels[y][x] = color;
 		}
 		break;
 	}
@@ -216,7 +218,8 @@ static void gdImageTileApply(gdImagePtr im, int x, int y)
 int gdImageGetPixel(gdImagePtr im, int x, int y)
 {
 	if (gdImageBoundsSafe(im, x, y)) {
-		return im->pixels[x][y];
+		/* NOW ROW-MAJOR IN GD 1.3 */
+		return im->pixels[y][x];
 	} else {
 		return 0;
 	}
@@ -310,19 +313,8 @@ void gdImageLine(gdImagePtr im, int x1, int y1, int x2, int y2, int color)
 	}
 }
 
-/* As above, plus dashing */
-
-#define dashedSet \
-	{ \
-		dashStep++; \
-		if (dashStep == gdDashSize) { \
-			dashStep = 0; \
-			on = !on; \
-		} \
-		if (on) { \
-			gdImageSetPixel(im, x, y, color); \
-		} \
-	}
+static void dashedSet(gdImagePtr im, int x, int y, int color,
+	int *onP, int *dashStepP);
 
 void gdImageDashedLine(gdImagePtr im, int x1, int y1, int x2, int y2, int color)
 {
@@ -346,7 +338,7 @@ void gdImageDashedLine(gdImagePtr im, int x1, int y1, int x2, int y2, int color)
 			ydirflag = 1;
 			xend = x2;
 		}
-		dashedSet;
+		dashedSet(im, x, y, color, &on, &dashStep);
 		if (((y2 - y1) * ydirflag) > 0) {
 			while (x < xend) {
 				x++;
@@ -356,7 +348,7 @@ void gdImageDashedLine(gdImagePtr im, int x1, int y1, int x2, int y2, int color)
 					y++;
 					d+=incr2;
 				}
-				dashedSet;
+				dashedSet(im, x, y, color, &on, &dashStep);
 			}
 		} else {
 			while (x < xend) {
@@ -367,7 +359,7 @@ void gdImageDashedLine(gdImagePtr im, int x1, int y1, int x2, int y2, int color)
 					y--;
 					d+=incr2;
 				}
-				dashedSet;
+				dashedSet(im, x, y, color, &on, &dashStep);
 			}
 		}		
 	} else {
@@ -385,7 +377,7 @@ void gdImageDashedLine(gdImagePtr im, int x1, int y1, int x2, int y2, int color)
 			yend = y2;
 			xdirflag = 1;
 		}
-		dashedSet;
+		dashedSet(im, x, y, color, &on, &dashStep);
 		if (((x2 - x1) * xdirflag) > 0) {
 			while (y < yend) {
 				y++;
@@ -395,7 +387,7 @@ void gdImageDashedLine(gdImagePtr im, int x1, int y1, int x2, int y2, int color)
 					x++;
 					d+=incr2;
 				}
-				dashedSet;
+				dashedSet(im, x, y, color, &on, &dashStep);
 			}
 		} else {
 			while (y < yend) {
@@ -406,11 +398,29 @@ void gdImageDashedLine(gdImagePtr im, int x1, int y1, int x2, int y2, int color)
 					x--;
 					d+=incr2;
 				}
-				dashedSet;
+				dashedSet(im, x, y, color, &on, &dashStep);
 			}
 		}
 	}
 }
+
+static void dashedSet(gdImagePtr im, int x, int y, int color,
+	int *onP, int *dashStepP)
+{
+	int dashStep = *dashStepP;
+	int on = *onP;
+	dashStep++;
+	if (dashStep == gdDashSize) {
+		dashStep = 0;
+		on = !on;
+	}
+	if (on) {
+		gdImageSetPixel(im, x, y, color);
+	}
+	*dashStepP = dashStep;
+	*onP = on;
+}
+	
 
 int gdImageBoundsSafe(gdImagePtr im, int x, int y)
 {
@@ -418,7 +428,8 @@ int gdImageBoundsSafe(gdImagePtr im, int x, int y)
 		((x < 0) || (x >= im->sx))));
 }
 
-void gdImageChar(gdImagePtr im, gdFontPtr f, int x, int y, int c, int color)
+void gdImageChar(gdImagePtr im, gdFontPtr f, int x, int y, 
+	int c, int color)
 {
 	int cx, cy;
 	int px, py;
@@ -441,7 +452,8 @@ void gdImageChar(gdImagePtr im, gdFontPtr f, int x, int y, int c, int color)
 	}
 }
 
-void gdImageCharUp(gdImagePtr im, gdFontPtr f, int x, int y, char c, int color)
+void gdImageCharUp(gdImagePtr im, gdFontPtr f, 
+	int x, int y, int c, int color)
 {
 	int cx, cy;
 	int px, py;
@@ -464,7 +476,8 @@ void gdImageCharUp(gdImagePtr im, gdFontPtr f, int x, int y, char c, int color)
 	}
 }
 
-void gdImageString(gdImagePtr im, gdFontPtr f, int x, int y, char *s, int color)
+void gdImageString(gdImagePtr im, gdFontPtr f, 
+	int x, int y, char *s, int color)
 {
 	int i;
 	int l;
@@ -475,7 +488,8 @@ void gdImageString(gdImagePtr im, gdFontPtr f, int x, int y, char *s, int color)
 	}
 }
 
-void gdImageStringUp(gdImagePtr im, gdFontPtr f, int x, int y, char *s, int color)
+void gdImageStringUp(gdImagePtr im, gdFontPtr f, 
+	int x, int y, char *s, int color)
 {
 	int i;
 	int l;
@@ -484,6 +498,42 @@ void gdImageStringUp(gdImagePtr im, gdFontPtr f, int x, int y, char *s, int colo
 		gdImageCharUp(im, f, x, y, s[i], color);
 		y -= f->w;
 	}
+}
+
+static int strlen16(unsigned short *s);
+
+void gdImageString16(gdImagePtr im, gdFontPtr f, 
+	int x, int y, unsigned short *s, int color)
+{
+	int i;
+	int l;
+	l = strlen16(s);
+	for (i=0; (i<l); i++) {
+		gdImageChar(im, f, x, y, s[i], color);
+		x += f->w;
+	}
+}
+
+void gdImageStringUp16(gdImagePtr im, gdFontPtr f, 
+	int x, int y, unsigned short *s, int color)
+{
+	int i;
+	int l;
+	l = strlen16(s);
+	for (i=0; (i<l); i++) {
+		gdImageCharUp(im, f, x, y, s[i], color);
+		y -= f->w;
+	}
+}
+
+static int strlen16(unsigned short *s)
+{
+	int len = 0;
+	while (*s) {
+		s++;
+		len++;
+	}
+	return len;
 }
 
 /* s and e are integers modulo 360 (degrees), with 0 degrees
@@ -696,19 +746,6 @@ void gdImageFill(gdImagePtr im, int x, int y, int color)
 	}
 }
 	
-#ifdef TEST_CODE
-void gdImageDump(gdImagePtr im)
-{
-	int i, j;
-	for (i=0; (i < im->sy); i++) {
-		for (j=0; (j < im->sx); j++) {
-			printf("%d", im->pixels[j][i]);
-		}
-		printf("\n");
-	}
-}
-#endif
-
 /* Code drawn from ppmtogif.c, from the pbmplus package
 **
 ** Based on GIFENCOD by David Rowley <mgardi@watdscu.waterloo.edu>. A
@@ -728,32 +765,25 @@ void gdImageDump(gdImagePtr im)
 ** The Graphics Interchange Format(c) is the Copyright property of
 ** CompuServe Incorporated.  GIF(sm) is a Service Mark property of
 ** CompuServe Incorporated.
+*
+*  Heavily modified by Mouse, 1998-02-12.  
+*  Remove LZW compression.
+*  Added miGIF run length compression.
+*
 */
 
 /*
  * a code_int must be able to hold 2**GIFBITS values of type int, and also -1
  */
-typedef int             code_int;
-
-#ifdef SIGNED_COMPARE_SLOW
-typedef unsigned long int count_int;
-typedef unsigned short int count_short;
-#else /*SIGNED_COMPARE_SLOW*/
-typedef long int          count_int;
-#endif /*SIGNED_COMPARE_SLOW*/
+typedef int code_int;
 
 static int colorstobpp(int colors);
 static void BumpPixel (void);
 static int GIFNextPixel (gdImagePtr im);
 static void GIFEncode (FILE *fp, int GWidth, int GHeight, int GInterlace, int Background, int Transparent, int BitsPerPixel, int *Red, int *Green, int *Blue, gdImagePtr im);
 static void Putword (int w, FILE *fp);
-static void compress (int init_bits, FILE *outfile, gdImagePtr im);
+static void compress (int, FILE *, gdImagePtr, int);
 static void output (code_int code);
-static void cl_block (void);
-static void cl_hash (register count_int hsize);
-static void char_init (void);
-static void char_out (int c);
-static void flush_char (void);
 /* Allows for reuse */
 static void init_statics(void);
 
@@ -955,7 +985,7 @@ GIFEncode(FILE *fp, int GWidth, int GHeight, int GInterlace, int Background, int
         /*
          * OR in the resolution
          */
-        B |= (Resolution - 1) << 5;
+        B |= (Resolution - 1) << 4;
 
         /*
          * OR in the Bits per Pixel
@@ -1030,7 +1060,7 @@ GIFEncode(FILE *fp, int GWidth, int GHeight, int GInterlace, int Background, int
         /*
          * Go and actually compress the data
          */
-        compress( InitCodeSize+1, fp, im );
+        compress( InitCodeSize+1, fp, im, Background );
 
         /*
          * Write out a Zero-length packet (to end the series)
@@ -1053,341 +1083,404 @@ Putword(int w, FILE *fp)
         fputc( (w / 256) & 0xff, fp );
 }
 
+#define GIFBITS 12
 
-/***************************************************************************
+/*-----------------------------------------------------------------------
  *
- *  GIFCOMPR.C       - GIF Image compression routines
+ * miGIF Compression - mouse and ivo's GIF-compatible compression
  *
- *  Lempel-Ziv compression based on 'compress'.  GIF modifications by
- *  David Rowley (mgardi@watdcsu.waterloo.edu)
+ *          -run length encoding compression routines-
  *
- ***************************************************************************/
-
-/*
- * General DEFINEs
+ * Copyright (C) 1998 Hutchison Avenue Software Corporation
+ *               http://www.hasc.com
+ *               info@hasc.com
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose and without fee is hereby granted, provided
+ * that the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation.  This software is provided "AS IS." The Hutchison Avenue 
+ * Software Corporation disclaims all warranties, either express or implied, 
+ * including but not limited to implied warranties of merchantability and 
+ * fitness for a particular purpose, with respect to this code and accompanying
+ * documentation. 
+ * 
+ * The miGIF compression routines do not, strictly speaking, generate files 
+ * conforming to the GIF spec, since the image data is not LZW-compressed 
+ * (this is the point: in order to avoid transgression of the Unisys patent 
+ * on the LZW algorithm.)  However, miGIF generates data streams that any 
+ * reasonably sane LZW decompresser will decompress to what we want.
+ *
+ * miGIF compression uses run length encoding. It compresses horizontal runs 
+ * of pixels of the same color. This type of compression gives good results
+ * on images with many runs, for example images with lines, text and solid 
+ * shapes on a solid-colored background. It gives little or no compression 
+ * on images with few runs, for example digital or scanned photos.
+ *
+ *                               der Mouse
+ *                      mouse@rodents.montreal.qc.ca
+ *            7D C8 61 52 5D E7 2D 39  4E F1 31 3E E8 B3 27 4B
+ *
+ *                             ivo@hasc.com
+ *
+ * The Graphics Interchange Format(c) is the Copyright property of
+ * CompuServe Incorporated.  GIF(sm) is a Service Mark property of
+ * CompuServe Incorporated.
+ *
  */
 
-#define GIFBITS    12
+static int rl_pixel;
+static int rl_basecode;
+static int rl_count;
+static int rl_table_pixel;
+static int rl_table_max;
+static int just_cleared;
+static int out_bits;
+static int out_bits_init;
+static int out_count;
+static int out_bump;
+static int out_bump_init;
+static int out_clear;
+static int out_clear_init;
+static int max_ocodes;
+static int code_clear;
+static int code_eof;
+static unsigned int obuf;
+static int obits;
+static FILE *ofile;
+static unsigned char oblock[256];
+static int oblen;
 
-#define HSIZE  5003            /* 80% occupancy */
+/* Used only when debugging GIF compression code */
+/* #define DEBUGGING_ENVARS */
 
-#ifdef NO_UCHAR
- typedef char   char_type;
-#else /*NO_UCHAR*/
- typedef        unsigned char   char_type;
-#endif /*NO_UCHAR*/
+#ifdef DEBUGGING_ENVARS
 
-/*
- *
- * GIF Image compression - modified 'compress'
- *
- * Based on: compress.c - File compression ala IEEE Computer, June 1984.
- *
- * By Authors:  Spencer W. Thomas       (decvax!harpo!utah-cs!utah-gr!thomas)
- *              Jim McKie               (decvax!mcvax!jim)
- *              Steve Davies            (decvax!vax135!petsd!peora!srd)
- *              Ken Turkowski           (decvax!decwrl!turtlevax!ken)
- *              James A. Woods          (decvax!ihnp4!ames!jaw)
- *              Joe Orost               (decvax!vax135!petsd!joe)
- *
- */
-#include <ctype.h>
+static int verbose_set = 0;
+static int verbose;
+#define VERBOSE (verbose_set?verbose:set_verbose())
 
-#define ARGVAL() (*++(*argv) || (--argc && *++argv))
-
-static int n_bits;                        /* number of bits/code */
-static int maxbits = GIFBITS;                /* user settable max # bits/code */
-static code_int maxcode;                  /* maximum code, given n_bits */
-static code_int maxmaxcode = (code_int)1 << GIFBITS; /* should NEVER generate this code */
-#ifdef COMPATIBLE               /* But wrong! */
-# define MAXCODE(n_bits)        ((code_int) 1 << (n_bits) - 1)
-#else /*COMPATIBLE*/
-# define MAXCODE(n_bits)        (((code_int) 1 << (n_bits)) - 1)
-#endif /*COMPATIBLE*/
-
-static count_int htab [HSIZE];
-static unsigned short codetab [HSIZE];
-#define HashTabOf(i)       htab[i]
-#define CodeTabOf(i)    codetab[i]
-
-static code_int hsize = HSIZE;                 /* for dynamic table sizing */
-
-/*
- * To save much memory, we overlay the table used by compress() with those
- * used by decompress().  The tab_prefix table is the same size and type
- * as the codetab.  The tab_suffix table needs 2**GIFBITS characters.  We
- * get this from the beginning of htab.  The output stack uses the rest
- * of htab, and contains characters.  There is plenty of room for any
- * possible stack (stack used to be 8000 characters).
- */
-
-#define tab_prefixof(i) CodeTabOf(i)
-#define tab_suffixof(i)        ((char_type*)(htab))[i]
-#define de_stack               ((char_type*)&tab_suffixof((code_int)1<<GIFBITS))
-
-static code_int free_ent = 0;                  /* first unused entry */
-
-/*
- * block compression parameters -- after all codes are used up,
- * and compression rate changes, start over.
- */
-static int clear_flg = 0;
-
-static int offset;
-static long int in_count = 1;            /* length of input */
-static long int out_count = 0;           /* # of codes output (for debugging) */
-
-/*
- * compress stdin to stdout
- *
- * Algorithm:  use open addressing double hashing (no chaining) on the
- * prefix code / next character combination.  We do a variant of Knuth's
- * algorithm D (vol. 3, sec. 6.4) along with G. Knott's relatively-prime
- * secondary probe.  Here, the modular division first probe is gives way
- * to a faster exclusive-or manipulation.  Also do block compression with
- * an adaptive reset, whereby the code table is cleared when the compression
- * ratio decreases, but after the table fills.  The variable-length output
- * codes are re-sized at this point, and a special CLEAR code is generated
- * for the decompressor.  Late addition:  construct the table according to
- * file size for noticeable speed improvement on small files.  Please direct
- * questions about this implementation to ames!jaw.
- */
-
-static int g_init_bits;
-static FILE* g_outfile;
-
-static int ClearCode;
-static int EOFCode;
-
-static void
-compress(int init_bits, FILE *outfile, gdImagePtr im)
+static int set_verbose(void)
 {
-    register long fcode;
-    register code_int i /* = 0 */;
-    register int c;
-    register code_int ent;
-    register code_int disp;
-    register code_int hsize_reg;
-    register int hshift;
-
-    /*
-     * Set up the globals:  g_init_bits - initial number of bits
-     *                      g_outfile   - pointer to output file
-     */
-    g_init_bits = init_bits;
-    g_outfile = outfile;
-
-    /*
-     * Set up the necessary values
-     */
-    offset = 0;
-    out_count = 0;
-    clear_flg = 0;
-    in_count = 1;
-    maxcode = MAXCODE(n_bits = g_init_bits);
-
-    ClearCode = (1 << (init_bits - 1));
-    EOFCode = ClearCode + 1;
-    free_ent = ClearCode + 2;
-
-    char_init();
-
-    ent = GIFNextPixel( im );
-
-    hshift = 0;
-    for ( fcode = (long) hsize;  fcode < 65536L; fcode *= 2L )
-        ++hshift;
-    hshift = 8 - hshift;                /* set hash code range bound */
-
-    hsize_reg = hsize;
-    cl_hash( (count_int) hsize_reg);            /* clear hash table */
-
-    output( (code_int)ClearCode );
-
-#ifdef SIGNED_COMPARE_SLOW
-    while ( (c = GIFNextPixel( im )) != (unsigned) EOF ) {
-#else /*SIGNED_COMPARE_SLOW*/
-    while ( (c = GIFNextPixel( im )) != EOF ) {  /* } */
-#endif /*SIGNED_COMPARE_SLOW*/
-
-        ++in_count;
-
-        fcode = (long) (((long) c << maxbits) + ent);
-        i = (((code_int)c << hshift) ^ ent);    /* xor hashing */
-
-        if ( HashTabOf (i) == fcode ) {
-            ent = CodeTabOf (i);
-            continue;
-        } else if ( (long)HashTabOf (i) < 0 )      /* empty slot */
-            goto nomatch;
-        disp = hsize_reg - i;           /* secondary hash (after G. Knott) */
-        if ( i == 0 )
-            disp = 1;
-probe:
-        if ( (i -= disp) < 0 )
-            i += hsize_reg;
-
-        if ( HashTabOf (i) == fcode ) {
-            ent = CodeTabOf (i);
-            continue;
-        }
-        if ( (long)HashTabOf (i) > 0 )
-            goto probe;
-nomatch:
-        output ( (code_int) ent );
-        ++out_count;
-        ent = c;
-#ifdef SIGNED_COMPARE_SLOW
-        if ( (unsigned) free_ent < (unsigned) maxmaxcode) {
-#else /*SIGNED_COMPARE_SLOW*/
-        if ( free_ent < maxmaxcode ) {  /* } */
-#endif /*SIGNED_COMPARE_SLOW*/
-            CodeTabOf (i) = free_ent++; /* code -> hashtable */
-            HashTabOf (i) = fcode;
-        } else
-                cl_block();
-    }
-    /*
-     * Put out the final code.
-     */
-    output( (code_int)ent );
-    ++out_count;
-    output( (code_int) EOFCode );
+ verbose = !!getenv("GIF_VERBOSE");
+ verbose_set = 1;
+ return(verbose);
 }
 
-/*****************************************************************
- * TAG( output )
- *
- * Output the given code.
- * Inputs:
- *      code:   A n_bits-bit integer.  If == -1, then EOF.  This assumes
- *              that n_bits =< (long)wordsize - 1.
- * Outputs:
- *      Outputs code to the file.
- * Assumptions:
- *      Chars are 8 bits long.
- * Algorithm:
- *      Maintain a GIFBITS character long buffer (so that 8 codes will
- * fit in it exactly).  Use the VAX insv instruction to insert each
- * code in turn.  When the buffer fills up empty it and start over.
- */
+#else
 
-static unsigned long cur_accum = 0;
-static int cur_bits = 0;
+#define VERBOSE 0
 
-static unsigned long masks[] = { 0x0000, 0x0001, 0x0003, 0x0007, 0x000F,
-                                  0x001F, 0x003F, 0x007F, 0x00FF,
-                                  0x01FF, 0x03FF, 0x07FF, 0x0FFF,
-                                  0x1FFF, 0x3FFF, 0x7FFF, 0xFFFF };
+#endif
 
-static void
-output(code_int code)
+
+static const char *binformat(unsigned int v, int nbits)
 {
-    cur_accum &= masks[ cur_bits ];
+ static char bufs[8][64];
+ static int bhand = 0;
+ unsigned int bit;
+ int bno;
+ char *bp;
 
-    if( cur_bits > 0 )
-        cur_accum |= ((long)code << cur_bits);
+ bhand --;
+ if (bhand < 0) bhand = (sizeof(bufs)/sizeof(bufs[0]))-1;
+ bp = &bufs[bhand][0];
+ for (bno=nbits-1,bit=1U<<bno;bno>=0;bno--,bit>>=1)
+  { *bp++ = (v & bit) ? '1' : '0';
+    if (((bno&3) == 0) && (bno != 0)) *bp++ = '.';
+  }
+ *bp = '\0';
+ return(&bufs[bhand][0]);
+}
+
+static void write_block(void)
+{
+ int i;
+
+ if (VERBOSE)
+  { printf("write_block %d:",oblen);
+    for (i=0;i<oblen;i++) printf(" %02x",oblock[i]);
+    printf("\n");
+  }
+ fputc(oblen,ofile);
+ fwrite(&oblock[0],1,oblen,ofile);
+ oblen = 0;
+}
+
+static void block_out(unsigned char c)
+{
+ if (VERBOSE) printf("block_out %s\n",binformat(c,8));
+ oblock[oblen++] = c;
+ if (oblen >= 255) write_block();
+}
+
+static void block_flush(void)
+{
+ if (VERBOSE) printf("block_flush\n");
+ if (oblen > 0) write_block();
+}
+
+static void output(int val)
+{
+ if (VERBOSE) printf("output %s [%s %d %d]\n",binformat(val,out_bits),binformat(obuf,obits),obits,out_bits);
+ obuf |= val << obits;
+ obits += out_bits;
+ while (obits >= 8)
+  { block_out(obuf&0xff);
+    obuf >>= 8;
+    obits -= 8;
+  }
+ if (VERBOSE) printf("output leaving [%s %d]\n",binformat(obuf,obits),obits);
+}
+
+static void output_flush(void)
+{
+ if (VERBOSE) printf("output_flush\n");
+ if (obits > 0) block_out(obuf);
+ block_flush();
+}
+
+static void did_clear(void)
+{
+ if (VERBOSE) printf("did_clear\n");
+ out_bits = out_bits_init;
+ out_bump = out_bump_init;
+ out_clear = out_clear_init;
+ out_count = 0;
+ rl_table_max = 0;
+ just_cleared = 1;
+}
+
+static void output_plain(int c)
+{
+ if (VERBOSE) printf("output_plain %s\n",binformat(c,out_bits));
+ just_cleared = 0;
+ output(c);
+ out_count ++;
+ if (out_count >= out_bump)
+  { out_bits ++;
+    out_bump += 1 << (out_bits - 1);
+  }
+ if (out_count >= out_clear)
+  { output(code_clear);
+    did_clear();
+  }
+}
+
+static unsigned int isqrt(unsigned int x)
+{
+ unsigned int r;
+ unsigned int v;
+
+ if (x < 2) return(x);
+ for (v=x,r=1;v;v>>=2,r<<=1) ;
+ while (1)
+  { v = ((x / r) + r) / 2;
+    if ((v == r) || (v == r+1)) return(r);
+    r = v;
+  }
+}
+
+static unsigned int compute_triangle_count(unsigned int count, unsigned int nrepcodes)
+{
+ unsigned int perrep;
+ unsigned int cost;
+
+ cost = 0;
+ perrep = (nrepcodes * (nrepcodes+1)) / 2;
+ while (count >= perrep)
+  { cost += nrepcodes;
+    count -= perrep;
+  }
+ if (count > 0)
+  { unsigned int n;
+    n = isqrt(count);
+    while ((n*(n+1)) >= 2*count) n --;
+    while ((n*(n+1)) < 2*count) n ++;
+    cost += n;
+  }
+ return(cost);
+}
+
+static void max_out_clear(void)
+{
+ out_clear = max_ocodes;
+}
+
+static void reset_out_clear(void)
+{
+ out_clear = out_clear_init;
+ if (out_count >= out_clear)
+  { output(code_clear);
+    did_clear();
+  }
+}
+
+static void rl_flush_fromclear(int count)
+{
+ int n;
+
+ if (VERBOSE) printf("rl_flush_fromclear %d\n",count);
+ max_out_clear();
+ rl_table_pixel = rl_pixel;
+ n = 1;
+ while (count > 0)
+  { if (n == 1)
+     { rl_table_max = 1;
+       output_plain(rl_pixel);
+       count --;
+     }
+    else if (count >= n)
+     { rl_table_max = n;
+       output_plain(rl_basecode+n-2);
+       count -= n;
+     }
+    else if (count == 1)
+     { rl_table_max ++;
+       output_plain(rl_pixel);
+       count = 0;
+     }
     else
-        cur_accum = code;
-
-    cur_bits += n_bits;
-
-    while( cur_bits >= 8 ) {
-        char_out( (unsigned int)(cur_accum & 0xff) );
-        cur_accum >>= 8;
-        cur_bits -= 8;
-    }
-
-    /*
-     * If the next entry is going to be too big for the code size,
-     * then increase it, if possible.
-     */
-   if ( free_ent > maxcode || clear_flg ) {
-
-            if( clear_flg ) {
-
-                maxcode = MAXCODE (n_bits = g_init_bits);
-                clear_flg = 0;
-
-            } else {
-
-                ++n_bits;
-                if ( n_bits == maxbits )
-                    maxcode = maxmaxcode;
-                else
-                    maxcode = MAXCODE(n_bits);
-            }
-        }
-
-    if( code == EOFCode ) {
-        /*
-         * At EOF, write the rest of the buffer.
-         */
-        while( cur_bits > 0 ) {
-                char_out( (unsigned int)(cur_accum & 0xff) );
-                cur_accum >>= 8;
-                cur_bits -= 8;
-        }
-
-        flush_char();
-
-        fflush( g_outfile );
-
-        if( ferror( g_outfile ) )
-		return;
-    }
+     { rl_table_max ++;
+       output_plain(rl_basecode+count-2);
+       count = 0;
+     }
+    if (out_count == 0) n = 1; else n ++;
+  }
+ reset_out_clear();
+ if (VERBOSE) printf("rl_flush_fromclear leaving table_max=%d\n",rl_table_max);
 }
 
-/*
- * Clear out the hash table
- */
-static void
-cl_block (void)             /* table clear for block compress */
+static void rl_flush_clearorrep(int count)
+{
+ int withclr;
+
+ if (VERBOSE) printf("rl_flush_clearorrep %d\n",count);
+ withclr = 1 + compute_triangle_count(count,max_ocodes);
+ if (withclr < count)
+  { output(code_clear);
+    did_clear();
+    rl_flush_fromclear(count);
+  }
+ else
+  { for (;count>0;count--) output_plain(rl_pixel);
+  }
+}
+
+static void rl_flush_withtable(int count)
+{
+ int repmax;
+ int repleft;
+ int leftover;
+
+ if (VERBOSE) printf("rl_flush_withtable %d\n",count);
+ repmax = count / rl_table_max;
+ leftover = count % rl_table_max;
+ repleft = (leftover ? 1 : 0);
+ if (out_count+repmax+repleft > max_ocodes)
+  { repmax = max_ocodes - out_count;
+    leftover = count - (repmax * rl_table_max);
+    repleft = 1 + compute_triangle_count(leftover,max_ocodes);
+  }
+ if (VERBOSE) printf("rl_flush_withtable repmax=%d leftover=%d repleft=%d\n",repmax,leftover,repleft);
+ if (1+compute_triangle_count(count,max_ocodes) < repmax+repleft)
+  { output(code_clear);
+    did_clear();
+    rl_flush_fromclear(count);
+    return;
+  }
+ max_out_clear();
+ for (;repmax>0;repmax--) output_plain(rl_basecode+rl_table_max-2);
+ if (leftover)
+  { if (just_cleared)
+     { rl_flush_fromclear(leftover);
+     }
+    else if (leftover == 1)
+     { output_plain(rl_pixel);
+     }
+    else
+     { output_plain(rl_basecode+leftover-2);
+     }
+  }
+ reset_out_clear();
+}
+
+static void rl_flush(void)
 {
 
-        cl_hash ( (count_int) hsize );
-        free_ent = ClearCode + 2;
-        clear_flg = 1;
-
-        output( (code_int)ClearCode );
+ if (VERBOSE) printf("rl_flush [ %d %d\n",rl_count,rl_pixel);
+ if (rl_count == 1)
+  { output_plain(rl_pixel);
+    rl_count = 0;
+    if (VERBOSE) printf("rl_flush ]\n");
+    return;
+  }
+ if (just_cleared)
+  { rl_flush_fromclear(rl_count);
+  }
+ else if ((rl_table_max < 2) || (rl_table_pixel != rl_pixel))
+  { rl_flush_clearorrep(rl_count);
+  }
+ else
+  { rl_flush_withtable(rl_count);
+  }
+ if (VERBOSE) printf("rl_flush ]\n");
+ rl_count = 0;
 }
 
-static void
-cl_hash(register count_int hsize)          /* reset code table */
-                         
+static void compress(int init_bits, FILE *outfile, gdImagePtr im, int background)
 {
+ int c;
 
-        register count_int *htab_p = htab+hsize;
-
-        register long i;
-        register long m1 = -1;
-
-        i = hsize - 16;
-        do {                            /* might use Sys V memset(3) here */
-                *(htab_p-16) = m1;
-                *(htab_p-15) = m1;
-                *(htab_p-14) = m1;
-                *(htab_p-13) = m1;
-                *(htab_p-12) = m1;
-                *(htab_p-11) = m1;
-                *(htab_p-10) = m1;
-                *(htab_p-9) = m1;
-                *(htab_p-8) = m1;
-                *(htab_p-7) = m1;
-                *(htab_p-6) = m1;
-                *(htab_p-5) = m1;
-                *(htab_p-4) = m1;
-                *(htab_p-3) = m1;
-                *(htab_p-2) = m1;
-                *(htab_p-1) = m1;
-                htab_p -= 16;
-        } while ((i -= 16) >= 0);
-
-        for ( i += 16; i > 0; --i )
-                *--htab_p = m1;
+ ofile = outfile;
+ obuf = 0;
+ obits = 0;
+ oblen = 0;
+ code_clear = 1 << (init_bits - 1);
+ code_eof = code_clear + 1;
+ rl_basecode = code_eof + 1;
+ out_bump_init = (1 << (init_bits - 1)) - 1;
+ /* for images with a lot of runs, making out_clear_init larger will
+    give better compression. */ 
+ out_clear_init = (init_bits <= 3) ? 9 : (out_bump_init-1);
+#ifdef DEBUGGING_ENVARS
+  { const char *ocienv;
+    ocienv = getenv("GIF_OUT_CLEAR_INIT");
+    if (ocienv)
+     { out_clear_init = atoi(ocienv);
+       if (VERBOSE) printf("[overriding out_clear_init to %d]\n",out_clear_init);
+     }
+  }
+#endif
+ out_bits_init = init_bits;
+ max_ocodes = (1 << GIFBITS) - ((1 << (out_bits_init - 1)) + 3);
+ did_clear();
+ output(code_clear);
+ rl_count = 0;
+ while (1)
+  { c = GIFNextPixel(im);
+    if ((rl_count > 0) && (c != rl_pixel)) rl_flush();
+    if (c == EOF) break;
+    if (rl_pixel == c)
+     { rl_count ++;
+     }
+    else
+     { rl_pixel = c;
+       rl_count = 1;
+     }
+  }
+ output(code_eof);
+ output_flush();
 }
 
-/******************************************************************************
+/*-----------------------------------------------------------------------
+ *
+ * End of miGIF section  - See copyright notice at start of section.
+ *
+ *-----------------------------------------------------------------------
+
+
+ ******************************************************************************
  *
  * GIF Specific routines
  *
@@ -1399,43 +1492,8 @@ cl_hash(register count_int hsize)          /* reset code table */
 static int a_count;
 
 /*
- * Set up the 'byte output' routine
- */
-static void
-char_init(void)
-{
-        a_count = 0;
-}
-
-/*
  * Define the storage for the packet accumulator
  */
-static char accum[ 256 ];
-
-/*
- * Add a character to the end of the current packet, and if it is 254
- * characters, flush the packet to disk.
- */
-static void
-char_out(int c)
-{
-        accum[ a_count++ ] = c;
-        if( a_count >= 254 )
-                flush_char();
-}
-
-/*
- * Flush the packet to disk, and reset the accumulator
- */
-static void
-flush_char(void)
-{
-        if( a_count > 0 ) {
-                fputc( a_count, g_outfile );
-                fwrite( accum, 1, a_count, g_outfile );
-                a_count = 0;
-        }
-}
 
 static void init_statics(void) {
 	/* Some of these are properly initialized later. What I'm doing
@@ -1450,22 +1508,6 @@ static void init_statics(void) {
 	Pass = 0;
 	Interlace = 0;
 	a_count = 0;
-	cur_accum = 0;
-	cur_bits = 0;
-	g_init_bits = 0;
-	g_outfile = 0;
-	ClearCode = 0;
-	EOFCode = 0;
-	free_ent = 0;
-	clear_flg = 0;
-	offset = 0;
-	in_count = 1;
-	out_count = 0;	
-	hsize = HSIZE;
-	n_bits = 0;
-	maxbits = GIFBITS;
-	maxcode = 0;
-	maxmaxcode = (code_int)1 << GIFBITS;
 }
 
 
@@ -1695,7 +1737,7 @@ DoExtension(FILE *fd, int label, int *Transparent)
 }
 
 static int
-GetDataBlock(FILE *fd, unsigned char *buf)
+GetDataBlock_(FILE *fd, unsigned char *buf)
 {
        unsigned char   count;
 
@@ -1713,7 +1755,25 @@ GetDataBlock(FILE *fd, unsigned char *buf)
 }
 
 static int
-GetCode(FILE *fd, int code_size, int flag)
+GetDataBlock(FILE *fd, unsigned char *buf)
+{
+ int rv;
+ int i;
+
+ rv = GetDataBlock_(fd,buf);
+ if (VERBOSE)
+  { printf("[GetDataBlock returning %d",rv);
+    if (rv > 0)
+     { printf(":");
+       for (i=0;i<rv;i++) printf(" %02x",buf[i]);
+     }
+    printf("]\n");
+  }
+ return(rv);
+}
+
+static int
+GetCode_(FILE *fd, int code_size, int flag)
 {
        static unsigned char    buf[280];
        static int              curbit, lastbit, done, last_byte;
@@ -1750,12 +1810,21 @@ GetCode(FILE *fd, int code_size, int flag)
                ret |= ((buf[ i / 8 ] & (1 << (i % 8))) != 0) << j;
 
        curbit += code_size;
-
        return ret;
 }
 
 static int
-LWZReadByte(FILE *fd, int flag, int input_code_size)
+GetCode(FILE *fd, int code_size, int flag)
+{
+ int rv;
+
+ rv = GetCode_(fd,code_size,flag);
+ if (VERBOSE) printf("[GetCode(,%d,%d) returning %d]\n",code_size,flag,rv);
+ return(rv);
+}
+
+static int
+LWZReadByte_(FILE *fd, int flag, int input_code_size)
 {
        static int      fresh = FALSE;
        int             code, incode;
@@ -1864,6 +1933,16 @@ LWZReadByte(FILE *fd, int flag, int input_code_size)
                        return *--sp;
        }
        return code;
+}
+
+static int
+LWZReadByte(FILE *fd, int flag, int input_code_size)
+{
+ int rv;
+
+ rv = LWZReadByte_(fd,flag,input_code_size);
+ if (VERBOSE) printf("[LWZReadByte(,%d,%d) returning %d]\n",flag,input_code_size,rv);
+ return(rv);
 }
 
 static void
@@ -2182,7 +2261,8 @@ gdImagePtr gdImageCreateFromGd(FILE *in)
 				gdImageDestroy(im);
 				return 0;
 			}
-			im->pixels[x][y] = ch;
+			/* ROW-MAJOR IN GD 1.3 */
+			im->pixels[y][x] = ch;
 		}
 	}
 	return im;
@@ -2212,7 +2292,8 @@ void gdImageGd(gdImagePtr im, FILE *out)
 	}
 	for (y=0; (y < im->sy); y++) {	
 		for (x=0; (x < im->sx); x++) {	
-			putc((unsigned char)im->pixels[x][y], out);
+			/* ROW-MAJOR IN GD 1.3 */
+			putc((unsigned char)im->pixels[y][x], out);
 		}
 	}
 }
@@ -2375,7 +2456,8 @@ void gdImageFilledPolygon(gdImagePtr im, gdPointPtr p, int n, int c)
 			y2 = p[i].y;
 		}
 	}
-	for (y=y1; (y <= y2); y++) {
+	/* Fix in 1.3: count a vertex only once */
+	for (y=y1; (y < y2); y++) {
 		int interLast = 0;
 		int dirLast = 0;
 		int interFirst = 1;
@@ -2533,4 +2615,3 @@ void gdImageInterlace(gdImagePtr im, int interlaceArg)
 {
 	im->interlace = interlaceArg;
 }
-

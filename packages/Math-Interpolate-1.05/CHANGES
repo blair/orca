@@ -1,3 +1,30 @@
+Tue Aug 24 11:28:45 PDT 1999
+
+	Release 1.05.
+
+Tue Aug 24 11:28:19 PDT 1999
+
+	Make the module work with Perl 5.004_01.
+
+Tue Aug 17 11:42:49 PDT 1999
+
+	Release 1.04.
+
+Tue Aug 17 11:42:26 PDT 1999
+
+	Add one more test to check if a properly sorted array can be
+	created using interval_search.
+
+Tue Aug 17 11:12:12 PDT 1999
+
+	Release 1.03.
+
+Tue Aug 17 11:07:53 PDT 1999
+
+	Update the POD documentation in Math::IntervalSearch.  It was not
+	correctly listing the interval_search function, rather it was
+	listing a function named interval.
+
 Thu Apr  8 10:20:30 PDT 1999 <blair@geostaff.com> (Blair Zajac)
 
 	Have ok() in t/*.t return the success or failure of the

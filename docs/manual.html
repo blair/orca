@@ -1,0 +1,98 @@
+CPU Utilization doesn't break out on a multiprocessor system.
+In fact, no explaination on how it works on such a platform.
+I guess I'll look at the source.
+I'm assuming it aggregates all processors.
+
+--pjc
+
+And none of the give a small paragraph description
+of the 33 Data Sets.
+
+As I mentioned before, most of these are self explainitory,
+but some need more explaination. For example,
+        how large is a packet &/or segment (I know they're variable length),
+        what is a Nocanput Rate,
+        what is the unit, the y-axis (Disk Busy Measure) on Peak & Mean Disk
+Busy
+        ...
+        I'm looking them up in Adrian's book, but it would be nice if they
+were
+        included in the documentation for orcallator.
+
+          Average # Processes in Run Queue
+          System Load
+          CPU Usage
+          Number of System & Httpd Processes
+          Web Server Hit Rate
+          Web Server File Size
+          Web Server Data Transfer Rate
+          Web Server HTTP Error Rate
+          Bits Per Second: <interface>
+          Packets Per Second: <interface>
+          Errors Per Second: <interface>
+          Ethernet Nocanput Rate
+          Ethernet Deferred Packet Rate
+          Ethernet Collisions
+          TCP Bits Per Second
+          TCP Segments Per Second
+          TCP Retransmission & Duplicate Received Percentage
+          TCP New Connection Rate
+          TCP Number Open Connections
+          TCP Reset Rate
+          TCP Attempt Fail Rate
+          TCP Listen Drop Rate
+          Sleeps on Mutex Rate
+          NFS Call Rate
+          NFS Timeouts & Bad Transmits Rate
+          Peak & Mean Disk Busy
+          Cache Hit Percentages
+          Cache Reference Rate
+          Inode Steal Rate
+          Available Swap Space
+          Page Residence Time
+          Page Usage
+          Pages Locked & IO
+
+-----Original Message-----
+From: Blair Zajac [mailto:bzajac@geostaff.com]
+Sent: Wednesday, June 09, 1999 10:45 AM
+To: Company, Paul
+Subject: Re: Orca observations
+
+
+Hello Paul,
+
+True on the first observation, not always true on the bits per second
+depending on the OS version and the support for the different
+Ethernet port types.  On 2.6 or greater, I believe all hme, le, etc
+measure bits per second, but on older OSes, you cannot get these
+on all Ethernet types.
+
+What do you mean by "No definitions for Data Sets"?  Is this missing
+from the Orca manual?
+
+Thanks for the notes, I'll put them in the next release of Orca.
+
+Blair
+
+
+"Company, Paul" wrote:
+> 
+> Observations on Solaris 2.x:
+> 
+>         + Average # Processes in Run Queue
+>           and
+>           System Load
+>           are identical (y axis the same - should they be, no!)
+>         + Bits Per Second does not work, although the Packets Per Second
+> does.
+>         + No definitions for Data Sets
+> 
+> File this stuff away or not.
+> Just though you might want this data.
+> I'll send you the fixes if I find them.
+> 
+> --pjc
+> 
+>
+

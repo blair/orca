@@ -1,114 +1,164 @@
 @SET_MAKE@
 
-PERL			= @PERL@
-CFLAGS			= @CFLAGS@
-digest_md5_dir		= @DIGEST_MD5_DIR@
-math_interpolate_dir	= @MATH_INTERPOLATE_DIR@
-rrdtool_dir		= @RRDTOOL_DIR@
-storable_dir		= @STORABLE_DIR@
+PERL				= @PERL@
+CFLAGS				= @CFLAGS@
 
-MAKE_DIGEST_MD5		= @MAKE_DIGEST_MD5@
-MAKE_MATH_INTERPOLATE	= @MAKE_MATH_INTERPOLATE@
-MAKE_RRDTOOL		= @MAKE_RRDTOOL@
-MAKE_STORABLE		= @MAKE_STORABLE@
-MAKE_TARGETS		= $(MAKE_DIGEST_MD5) $(MAKE_MATH_INTERPOLATE) $(MAKE_RRDTOOL) $(MAKE_STORABLE)
+compress_zlib_dir		= @COMPRESS_ZLIB_DIR@
+data_dumper_dir			= @DATA_DUMPER_DIR@
+digest_md5_dir			= @DIGEST_MD5_DIR@
+math_interpolate_dir		= @MATH_INTERPOLATE_DIR@
+rrdtool_dir			= @RRDTOOL_DIR@
+storable_dir			= @STORABLE_DIR@
 
-TEST_DIGEST_MD5		= @TEST_DIGEST_MD5@
-TEST_MATH_INTERPOLATE	= @TEST_MATH_INTERPOLATE@
-TEST_RRDTOOL		= @TEST_RRDTOOL@
-TEST_STORABLE		= @TEST_STORABLE@
-TEST_TARGETS		= $(TEST_DIGEST_MD5) $(TEST_MATH_INTERPOLATE) $(TEST_RRDTOOL) $(TEST_STORABLE)
+MAKE_COMPRESS_ZLIB		= @MAKE_COMPRESS_ZLIB@
+MAKE_DATA_DUMPER		= @MAKE_DATA_DUMPER@
+MAKE_DIGEST_MD5			= @MAKE_DIGEST_MD5@
+MAKE_MATH_INTERPOLATE		= @MAKE_MATH_INTERPOLATE@
+MAKE_RRDTOOL			= @MAKE_RRDTOOL@
+MAKE_STORABLE			= @MAKE_STORABLE@
+MAKE_TARGETS			= $(MAKE_COMPRESS_ZLIB) $(MAKE_DATA_DUMPER) $(MAKE_DIGEST_MD5) $(MAKE_MATH_INTERPOLATE) $(MAKE_RRDTOOL) $(MAKE_STORABLE)
 
-INSTALL_DIGEST_MD5	= @INSTALL_DIGEST_MD5@
-INSTALL_MATH_INTERPOLATE= @INSTALL_MATH_INTERPOLATE@
-INSTALL_RRDTOOL		= @INSTALL_RRDTOOL@
-INSTALL_STORABLE	= @INSTALL_STORABLE@
-INSTALL_TARGETS		= $(INSTALL_DIGEST_MD5) $(INSTALL_MATH_INTERPOLATE) $(INSTALL_RRDTOOL) $(INSTALL_STORABLE)
+TEST_COMPRESS_ZLIB		= @TEST_COMPRESS_ZLIB@
+TEST_DATA_DUMPER		= @TEST_DATA_DUMPER@
+TEST_DIGEST_MD5			= @TEST_DIGEST_MD5@
+TEST_MATH_INTERPOLATE		= @TEST_MATH_INTERPOLATE@
+TEST_RRDTOOL			= @TEST_RRDTOOL@
+TEST_STORABLE			= @TEST_STORABLE@
+TEST_TARGETS			= $(TEST_COMPRESS_ZLIB) $(TEST_DATA_DUMPER) $(TEST_DIGEST_MD5) $(TEST_MATH_INTERPOLATE) $(TEST_RRDTOOL) $(TEST_STORABLE)
 
-CLEAN_DIGEST_MD5	= @CLEAN_DIGEST_MD5@
-CLEAN_MATH_INTERPOLATE	= @CLEAN_MATH_INTERPOLATE@
-CLEAN_RRDTOOL		= @CLEAN_RRDTOOL@
-CLEAN_STORABLE		= @CLEAN_STORABLE@
-CLEAN_TARGETS		= $(CLEAN_DIGEST_MD5) $(CLEAN_MATH_INTERPOLATE) $(CLEAN_RRDTOOL) $(CLEAN_STORABLE)
+INSTALL_PERL_COMPRESS_ZLIB	= @INSTALL_PERL_COMPRESS_ZLIB@
+INSTALL_PERL_DATA_DUMPER	= @INSTALL_PERL_DATA_DUMPER@
+INSTALL_PERL_DIGEST_MD5		= @INSTALL_PERL_DIGEST_MD5@
+INSTALL_PERL_MATH_INTERPOLATE	= @INSTALL_PERL_MATH_INTERPOLATE@
+INSTALL_PERL_RRDTOOL		= @INSTALL_PERL_RRDTOOL@
+INSTALL_PERL_STORABLE		= @INSTALL_PERL_STORABLE@
+INSTALL_PERL_TARGETS		= $(INSTALL_PERL_COMPRESS_ZLIB) $(INSTALL_PERL_DATA_DUMPER) $(INSTALL_PERL_DIGEST_MD5) $(INSTALL_PERL_MATH_INTERPOLATE) $(INSTALL_PERL_RRDTOOL) $(INSTALL_PERL_STORABLE)
 
-DISTCLEAN_DIGEST_MD5	= @DISTCLEAN_DIGEST_MD5@
-DISTCLEAN_MATH_INTERPOLATE = @DISTCLEAN_MATH_INTERPOLATE@
-DISTCLEAN_RRDTOOL	= @DISTCLEAN_RRDTOOL@
-DISTCLEAN_STORABLE	= @DISTCLEAN_STORABLE@
-DISTCLEAN_TARGETS	= $(DISTCLEAN_DIGEST_MD5) $(DISTCLEAN_MATH_INTERPOLATE) $(DISTCLEAN_RRDTOOL) $(DISTCLEAN_STORABLE)
+INSTALL_LIB_RRDTOOL		= @INSTALL_LIB_RRDTOOL@
+INSTALL_LIB_TARGETS		= $(INSTALL_LIB_RRDTOOL)
 
-all:	Makefile
+CLEAN_COMPRESS_ZLIB		= @CLEAN_COMPRESS_ZLIB@
+CLEAN_DATA_DUMPER		= @CLEAN_DATA_DUMPER@
+CLEAN_DIGEST_MD5		= @CLEAN_DIGEST_MD5@
+CLEAN_MATH_INTERPOLATE		= @CLEAN_MATH_INTERPOLATE@
+CLEAN_RRDTOOL			= @CLEAN_RRDTOOL@
+CLEAN_STORABLE			= @CLEAN_STORABLE@
+CLEAN_TARGETS			= $(CLEAN_COMPRESS_ZLIB) $(CLEAN_DIGEST_MD5) $(CLEAN_MATH_INTERPOLATE) $(CLEAN_RRDTOOL) $(CLEAN_STORABLE)
 
-modules: Makefile $(MAKE_TARGETS)
+DISTCLEAN_COMPRESS_ZLIB		= @DISTCLEAN_COMPRESS_ZLIB@
+DISTCLEAN_DATA_DUMPER		= @DISTCLEAN_DATA_DUMPER@
+DISTCLEAN_DIGEST_MD5		= @DISTCLEAN_DIGEST_MD5@
+DISTCLEAN_MATH_INTERPOLATE	= @DISTCLEAN_MATH_INTERPOLATE@
+DISTCLEAN_RRDTOOL		= @DISTCLEAN_RRDTOOL@
+DISTCLEAN_STORABLE		= @DISTCLEAN_STORABLE@
+DISTCLEAN_TARGETS		= $(DISTCLEAN_COMPRESS_ZLIB) $(DISTCLEAN_DATA_DUMPER) $(DISTCLEAN_DIGEST_MD5) $(DISTCLEAN_MATH_INTERPOLATE) $(DISTCLEAN_RRDTOOL) $(DISTCLEAN_STORABLE)
+
+all:	Makefile $(MAKE_TARGETS)
+
+make_compress_zlib: make_rrdtool_zlib $(compress_zlib_dir)/Makefile
+	cd $(compress_zlib_dir) && $(MAKE) OPTIMIZE="$(CFLAGS)"
+
+$(compress_zlib_dir)/Makefile: $(compress_zlib_dir)/Makefile.PL $(PERL)
+	cd $(compress_zlib_dir) && $(PERL) Makefile.PL
+
+make_data_dumper: $(data_dumper_dir)/Makefile
+	cd $(data_dumper_dir) && $(MAKE) OPTIMIZE="$(CFLAGS)"
+
+$(data_dumper_dir)/Makefile: $(data_dumper_dir)/Makefile.PL $(PERL)
+	cd $(data_dumper_dir) && $(PERL) Makefile.PL
 
 make_digest_md5: $(digest_md5_dir)/Makefile
-	(cd $(digest_md5_dir) && $(MAKE) OPTIMIZE="$(CFLAGS)")
+	cd $(digest_md5_dir) && $(MAKE) OPTIMIZE="$(CFLAGS)"
 
 $(digest_md5_dir)/Makefile: $(digest_md5_dir)/Makefile.PL $(PERL)
-	(cd $(digest_md5_dir) && $(PERL) Makefile.PL)
+	cd $(digest_md5_dir) && $(PERL) Makefile.PL
 
 make_math_interpolate: $(math_interpolate_dir)/Makefile
-	(cd $(math_interpolate_dir) && $(MAKE) OPTIMIZE="$(CFLAGS)")
+	cd $(math_interpolate_dir) && $(MAKE) OPTIMIZE="$(CFLAGS)"
 
 $(math_interpolate_dir)/Makefile: $(math_interpolate_dir)/Makefile.PL $(PERL)
-	(cd $(math_interpolate_dir) && $(PERL) Makefile.PL)
+	cd $(math_interpolate_dir) && $(PERL) Makefile.PL
 
 make_rrdtool: $(rrdtool_dir)/Makefile $(PERL)
-	(cd $(rrdtool_dir) && $(MAKE) CFLAGS="$(CFLAGS)")
+	cd $(rrdtool_dir) && $(MAKE) CFLAGS="$(CFLAGS)"
+
+make_rrdtool_zlib: $(rrdtool_dir)/Makefile $(PERL)
+	cd $(rrdtool_dir) && $(MAKE) CFLAGS="$(CFLAGS)" zlib-1.1.3/librrd_z.a
 
 $(rrdtool_dir)/Makefile: $(rrdtool_dir)/Makefile.in
-	(cd .. && ./configure @CONFIGURE_COMMAND_LINE@)
+	cd .. && ./configure @CONFIGURE_COMMAND_LINE@
 
 make_storable: $(storable_dir)/Makefile
-	(cd $(storable_dir) && $(MAKE) OPTIMIZE="$(CFLAGS)")
+	cd $(storable_dir) && $(MAKE) OPTIMIZE="$(CFLAGS)"
 
 $(storable_dir)/Makefile: $(storable_dir)/Makefile.PL $(PERL)
-	(cd $(storable_dir) && $(PERL) Makefile.PL)
+	cd $(storable_dir) && $(PERL) Makefile.PL
 
 test:
 
 test_modules: $(TEST_TARGETS)
 
+test_compress_zlib: make_rrdtool_zlib $(compress_zlib_dir)/Makefile
+	cd $(compress_zlib_dir) && $(MAKE) OPTIMIZE="$(CFLAGS)" test
+
+test_data_dumper: $(data_dumper_dir)/Makefile
+	cd $(data_dumper_dir) && $(MAKE) OPTIMIZE="$(CFLAGS)" test
+
 test_digest_md5: $(digest_md5_dir)/Makefile
-	(cd $(digest_md5_dir) && $(MAKE) CFLAGS="$(CFLAGS)" test)
+	cd $(digest_md5_dir) && $(MAKE) OPTIMIZE="$(CFLAGS)" test
 
 test_math_interpolate: $(math_interpolate_dir)/Makefile
-	(cd $(math_interpolate_dir) && $(MAKE) test)
+	cd $(math_interpolate_dir) && $(MAKE) test
 
 test_rrdtool: make_rrdtool
-	(cd $(rrdtool_dir)/perl-shared && $(MAKE) CFLAGS="$(CFLAGS)" test)
+	cd $(rrdtool_dir)/perl-shared && $(MAKE) CFLAGS="$(CFLAGS)" test
 
-test_storable: make_storable
-	(cd $(storable_dir) && $(MAKE) CFLAGS="$(CFLAGS)" test)
+test_storable: $(storable_dir)/Makefile
+	cd $(storable_dir) && $(MAKE) OPTIMIZE="$(CFLAGS)" test
 
-install:
+install: $(INSTALL_LIB_TARGETS)
 
-install_modules: $(INSTALL_TARGETS)
+install_lib_rrdtool: make_rrdtool
+	cd $(rrdtool_dir)/src && $(MAKE) CFLAGS="$(CFLAGS)" install-libLTLIBRARIES
 
-install_digest_md5: make_digest_md5
-	(cd $(digest_md5_dir) && $(MAKE) install)
+install_modules: $(INSTALL_PERL_TARGETS)
 
-install_math_interpolate: make_math_interpolate
-	(cd $(math_interpolate_dir) && $(MAKE) install)
+install_perl_compress_zlib: make_compress_zlib
+	cd $(compress_zlib_dir) && $(MAKE) OPTIMIZE="$(CFLAGS)" install
 
-install_rrdtool: make_rrdtool
-	(cd $(rrdtool_dir)/perl-shared && $(MAKE) install)
+install_perl_data_dumper: $(data_dumper_dir)/Makefile
+	cd $(data_dumper_dir) && $(MAKE) OPTIMIZE="$(CFLAGS)" install
 
-install_storable: make_storable
-	(cd $(storable_dir) && $(MAKE) install)
+install_perl_digest_md5: $(digest_md5_dir)/Makefile
+	cd $(digest_md5_dir) && $(MAKE) OPTIMIZE="$(CFLAGS)" install
+
+install_perl_math_interpolate: $(math_interpolate_dir)/Makefile
+	cd $(math_interpolate_dir) && $(MAKE) OPTIMIZE="$(CFLAGS)" install
+
+install_perl_rrdtool: make_rrdtool
+	cd $(rrdtool_dir)/perl-shared && $(MAKE) OPTIMIZE="$(CFLAGS)" install
+
+install_perl_storable: $(storable_dir)/Makefile
+	cd $(storable_dir) && $(MAKE) OPTIMIZE="$(CFLAGS)" install
 
 clean: $(CLEAN_TARGETS)
 
+clean_compress_zlib: clean_rrdtool
+	@if test -r $(compress_zlib_dir)/Makefile; then 		\
+		echo 'cd $(compress_zlib_dir) && $(MAKE) clean';	\
+		(cd $(compress_zlib_dir) && $(MAKE) clean);		\
+	fi
+	
 clean_digest_md5:
 	@if test -r $(digest_md5_dir)/Makefile; then 			\
-		echo '(cd $(digest_md5_dir); $(MAKE) clean';		\
-		(cd $(digest_md5_dir); $(MAKE) clean);			\
+		echo 'cd $(digest_md5_dir) && $(MAKE) clean';		\
+		(cd $(digest_md5_dir) && $(MAKE) clean);		\
 	fi
 
 clean_math_interpolate:
 	@if test -r $(math_interpolate_dir)/Makefile; then 		\
-		echo '(cd $(math_interpolate_dir); $(MAKE) clean)';	\
-		(cd $(math_interpolate_dir); $(MAKE) clean);		\
+		echo 'cd $(math_interpolate_dir) && $(MAKE) clean';	\
+		(cd $(math_interpolate_dir) && $(MAKE) clean);		\
 	fi
 
 clean_rrdtool:
@@ -116,21 +166,23 @@ clean_rrdtool:
 
 clean_storable:
 	@if test -r $(storable_dir)/Makefile; then 			\
-		echo '(cd $(storable_dir); $(MAKE) clean)';		\
-		(cd $(storable_dir); $(MAKE) clean);			\
+		echo 'cd $(storable_dir) && $(MAKE) clean';		\
+		(cd $(storable_dir) && $(MAKE) clean);			\
 	fi
 
 distclean: $(DISTCLEAN_TARGETS)
+
+distclean_compress_zlib:	clean_compress_zlib
 
 distclean_digest_md5:		clean_digest_md5
 
 distclean_math_interpolate:	clean_math_interpolate
 
 distclean_rrdtool:		clean_rrdtool
-	(cd $(rrdtool_dir) && $(MAKE) distclean)
+	cd $(rrdtool_dir) && $(MAKE) distclean
 
 distclean_storable:		clean_storable
 
 Makefile: Makefile.in
-	(cd ..; ./config.status)
+	cd .. && CONFIG_FILES=packages/Makefile ./config.status
 	$(MAKE)

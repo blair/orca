@@ -7,7 +7,7 @@ use vars qw(@ISA $VERSION);
 
 require DynaLoader;
 
-$VERSION = 0.99031                                 ;
+$VERSION = 1.000072;
 
 bootstrap RRDs $VERSION;
 
@@ -72,7 +72,7 @@ created gif and results of the PRINT arguments.
 
  ($averages,$xsize,$ysize) = RRDs::graph ...
  print "Gifsize: ${xsize}x${ysize}\n";
- print "Averages: ", (join ", ", @averages);
+ print "Averages: ", (join ", ", @$averages);
 
 RRDs::fetch is the most complex of the pack regarding return values. There are
 4 values. Two normal integers, a pointer to an array and a pointer to a

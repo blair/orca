@@ -1,6 +1,6 @@
 #!./perl
 
-# $Id: retrieve.t,v 0.6 1998/06/04 16:08:33 ram Exp $
+# $Id: retrieve.t,v 0.6 1998/06/04 16:08:33 ram Exp ram $
 #
 #  Copyright (c) 1995-1998, Raphael Manfredi
 #  

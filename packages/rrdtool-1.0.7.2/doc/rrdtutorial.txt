@@ -5,7 +5,7 @@ RRDTUTORIAL(1)               rrdtool               RRDTUTORIAL(1)
 
 
 NNNNAAAAMMMMEEEE
-       rrdtutorial - Alex van den Bogaerdts RRD Tool tutorial
+       rrdtutorial - Alex van den Bogaerdts RRDtool tutorial
 
 DDDDEEEESSSSCCCCRRRRIIIIPPPPTTTTIIIIOOOONNNN
        RRDtool is written by Tobias Oetiker <oetiker@ee.ethz.ch>
@@ -61,7 +61,7 @@ TTTTUUUUTTTTOOOORRRRIIIIAAAALLLL
 
 
 
-10/May/99                  19990510.19                          1
+9/Aug/99                      1.0.7                             1
 
 
 
@@ -85,12 +85,12 @@ RRDTUTORIAL(1)               rrdtool               RRDTUTORIAL(1)
        bits) transfered from and to a network or a computer.
        RRDtool lets you create a database, store data in it,
        retrieve that data and create graphs in GIF format for
-       display on a web browser. Those GIF images are dependant
+       display on a web browser. Those GIF images are dependent
        on the data you collected and could be, for instance, an
        overview of the average network usage, or rather the peaks
        that occurred.  It can also be used to display tidal
        waves, solar radiation, power consumption, number of
-       visitors at an exibition, noise levels near an airport,
+       visitors at an exhibition, noise levels near an airport,
        temperature on your favorite holiday location, temperature
        in the fridge and whatever you imagination can come up
        with. You need a sensor to measure the data and be able to
@@ -122,12 +122,12 @@ RRDTUTORIAL(1)               rrdtool               RRDTUTORIAL(1)
        location and usage of the list.
 
        I suggest you take a moment to subscribe to the mailing
-       list right now by sending an email to <rrdtool-users-
+       list right now by sending an email to <rrd-users-
        request@list.ee.ethz.ch> with a subject of "subscribe". If
 
 
 
-10/May/99                  19990510.19                          2
+9/Aug/99                      1.0.7                             2
 
 
 
@@ -193,7 +193,7 @@ RRDTUTORIAL(1)               rrdtool               RRDTUTORIAL(1)
 
 
 
-10/May/99                  19990510.19                          3
+9/Aug/99                      1.0.7                             3
 
 
 
@@ -259,7 +259,7 @@ RRDTUTORIAL(1)               rrdtool               RRDTUTORIAL(1)
 
 
 
-10/May/99                  19990510.19                          4
+9/Aug/99                      1.0.7                             4
 
 
 
@@ -325,7 +325,7 @@ RRDTUTORIAL(1)               rrdtool               RRDTUTORIAL(1)
 
 
 
-10/May/99                  19990510.19                          5
+9/Aug/99                      1.0.7                             5
 
 
 
@@ -391,7 +391,7 @@ RRDTUTORIAL(1)               rrdtool               RRDTUTORIAL(1)
 
 
 
-10/May/99                  19990510.19                          6
+9/Aug/99                      1.0.7                             6
 
 
 
@@ -438,7 +438,7 @@ RRDTUTORIAL(1)               rrdtool               RRDTUTORIAL(1)
        when divided by 300 seconds, we get very small numbers. To
        be exact, the first value was 12 (12357-12345) and divided
        by 300 this makes 0.04 RRDtool displays this as 40 m which
-       means 40 mili (so: NOT meters).  What we did wrong was
+       means 40 milli (so: NOT meters).  What we did wrong was
        that we should have measured in meters, this would have
        been (12357000-12345000)/300 = 12000/300 = 40.
 
@@ -450,14 +450,14 @@ RRDTUTORIAL(1)               rrdtool               RRDTUTORIAL(1)
              --start 920804400 --end 920808000               \
              --vertical-label m/s                            \
              DEF:myspeed=test.rrd:speed:AVERAGE              \
-             CDEF:realspeed=myspeed,1000,*                   \
+             "CDEF:realspeed=myspeed,1000,*"                 \
              LINE2:realspeed#FF0000
 
        After viewing this GIF, you notice the "m" has
 
 
 
-10/May/99                  19990510.19                          7
+9/Aug/99                      1.0.7                             7
 
 
 
@@ -496,7 +496,7 @@ RRDTUTORIAL(1)               rrdtool               RRDTUTORIAL(1)
              --start 920804400 --end 920808000               \
              --vertical-label km/h                           \
              DEF:myspeed=test.rrd:speed:AVERAGE              \
-             CDEF:kmh=myspeed,3600,*                         \
+             "CDEF:kmh=myspeed,3600,*"                       \
              CDEF:fast=kmh,100,GT,kmh,0,IF                   \
              CDEF:good=kmh,100,GT,0,kmh,IF                   \
              HRULE:100#0000FF:"Maximum allowed"              \
@@ -523,7 +523,7 @@ RRDTUTORIAL(1)               rrdtool               RRDTUTORIAL(1)
 
 
 
-10/May/99                  19990510.19                          8
+9/Aug/99                      1.0.7                             8
 
 
 
@@ -545,10 +545,10 @@ RRDTUTORIAL(1)               rrdtool               RRDTUTORIAL(1)
              --start 920804400 --end 920808000               \
              --vertical-label km/h                           \
              DEF:myspeed=test.rrd:speed:AVERAGE              \
-             CDEF:kmh=myspeed,3600,*                         \
+             "CDEF:kmh=myspeed,3600,*"                       \
              CDEF:fast=kmh,100,GT,100,0,IF                   \
              CDEF:over=kmh,100,GT,kmh,100,-,0,IF             \
-             CDEF:good=kmh,0,kmh,100,GT,IF                   \
+             CDEF:good=kmh,100,GT,0,kmh,IF                   \
              HRULE:100#0000FF:"Maximum allowed"              \
              AREA:good#00FF00:"Good speed"                   \
              AREA:fast#550000:"Too fast"                     \
@@ -589,7 +589,7 @@ RRDTUTORIAL(1)               rrdtool               RRDTUTORIAL(1)
 
 
 
-10/May/99                  19990510.19                          9
+9/Aug/99                      1.0.7                             9
 
 
 
@@ -655,7 +655,7 @@ RRDTUTORIAL(1)               rrdtool               RRDTUTORIAL(1)
 
 
 
-10/May/99                  19990510.19                         10
+9/Aug/99                      1.0.7                            10
 
 
 
@@ -721,7 +721,7 @@ RRDTUTORIAL(1)               rrdtool               RRDTUTORIAL(1)
 
 
 
-10/May/99                  19990510.19                         11
+9/Aug/99                      1.0.7                            11
 
 
 
@@ -787,7 +787,7 @@ RRDTUTORIAL(1)               rrdtool               RRDTUTORIAL(1)
 
 
 
-10/May/99                  19990510.19                         12
+9/Aug/99                      1.0.7                            12
 
 
 
@@ -853,7 +853,7 @@ RRDTUTORIAL(1)               rrdtool               RRDTUTORIAL(1)
 
 
 
-10/May/99                  19990510.19                         13
+9/Aug/99                      1.0.7                            13
 
 
 
@@ -876,7 +876,7 @@ RRDTUTORIAL(1)               rrdtool               RRDTUTORIAL(1)
        Suggestion:
 
        Display in bytes per second and in bits per second. Make
-       the ethernet graphics go red if they are over four
+       the Ethernet graphics go red if they are over four
        megabits per second.
 
        CCCCoooonnnnssssoooolllliiiiddddaaaattttiiiioooonnnn FFFFuuuunnnnccccttttiiiioooonnnnssss
@@ -919,7 +919,7 @@ RRDTUTORIAL(1)               rrdtool               RRDTUTORIAL(1)
 
 
 
-10/May/99                  19990510.19                         14
+9/Aug/99                      1.0.7                            14
 
 
 
@@ -985,7 +985,7 @@ RRDTUTORIAL(1)               rrdtool               RRDTUTORIAL(1)
 
 
 
-10/May/99                  19990510.19                         15
+9/Aug/99                      1.0.7                            15
 
 
 
@@ -1051,7 +1051,7 @@ RRDTUTORIAL(1)               rrdtool               RRDTUTORIAL(1)
 
 
 
-10/May/99                  19990510.19                         16
+9/Aug/99                      1.0.7                            16
 
 
 
@@ -1084,7 +1084,7 @@ RRDTUTORIAL(1)               rrdtool               RRDTUTORIAL(1)
                    DEF:lined=all.rrd:d:AVERAGE LINE3:lined#000000:"Line D"
 
 
-       RRRRRRRRDDDD TTTToooooooollll uuuunnnnddddeeeerrrr tttthhhheeee MMMMiiiiccccrrrroooossssccccooooppppeeee
+       RRRRRRRRDDDDttttoooooooollll uuuunnnnddddeeeerrrr tttthhhheeee MMMMiiiiccccrrrroooossssccccooooppppeeee
 
 
        +o Line A is a counter so it should continuously increment
@@ -1117,7 +1117,7 @@ RRDTUTORIAL(1)               rrdtool               RRDTUTORIAL(1)
 
 
 
-10/May/99                  19990510.19                         17
+9/Aug/99                      1.0.7                            17
 
 
 
@@ -1183,7 +1183,7 @@ RRDTUTORIAL(1)               rrdtool               RRDTUTORIAL(1)
 
 
 
-10/May/99                  19990510.19                         18
+9/Aug/99                      1.0.7                            18
 
 
 
@@ -1249,7 +1249,7 @@ RRDTUTORIAL(1)               rrdtool               RRDTUTORIAL(1)
 
 
 
-10/May/99                  19990510.19                         19
+9/Aug/99                      1.0.7                            19
 
 
 
@@ -1315,7 +1315,7 @@ RRDTUTORIAL(1)               rrdtool               RRDTUTORIAL(1)
 
 
 
-10/May/99                  19990510.19                         20
+9/Aug/99                      1.0.7                            20
 
 
 
@@ -1381,7 +1381,7 @@ RRDTUTORIAL(1)               rrdtool               RRDTUTORIAL(1)
 
 
 
-10/May/99                  19990510.19                         21
+9/Aug/99                      1.0.7                            21
 
 
 
@@ -1432,7 +1432,7 @@ MMMMAAAAIIIILLLLIIIINNNNGGGGLLLLIIIISSSSTTTT
        didn't.
 
 SSSSEEEEEEEE AAAALLLLSSSSOOOO
-       The RRD Tool manpages
+       The RRDtool manpages
 
 AAAAUUUUTTTTHHHHOOOORRRR
        I hope you enjoyed the examples and their descriptions. If
@@ -1447,7 +1447,7 @@ AAAAUUUUTTTTHHHHOOOORRRR
 
 
 
-10/May/99                  19990510.19                         22
+9/Aug/99                      1.0.7                            22
 
 
 
@@ -1513,6 +1513,6 @@ RRDTUTORIAL(1)               rrdtool               RRDTUTORIAL(1)
 
 
 
-10/May/99                  19990510.19                         23
+9/Aug/99                      1.0.7                            23
 
 

@@ -4,18 +4,78 @@
 // This program logs many different system quantities to a log file
 // for later processing.
 //
-// Author: Blair Zajac <bzajac@geostaff.com>
+// Author: Blair Zajac <bzajac@geostaff.com>.
 //
 // Portions copied from percollator.se written by Adrian Cockroft.
 //
-// Version 1.7: Mar 25, 1999	Speed up by 20% and simplify count_proc.
-// Version 1.6: Feb 23, 1999	Print pvm.user_time and system_time correctly.
-// Version 1.5: Feb 23, 1999	Always write header to a new file.
-// Version 1.4: Feb 19, 1999	Handle missing HTTP/1.x in access log.
-// Version 1.3: Feb 18, 1999	On busy machines httpops5 will be enlarged.
-// Version 1.2: Feb 18, 1999	Output data on integral multiples of interval.
-// Version 1.1:	Feb 18, 1999	Integrate Squid log processing from SE 3.1.
-// Version 1.0:	Sep  9, 1998	Initial version.
+// Version 1.19: Oct 13, 1999	Prevent a division by zero in calculating the
+//				mean_disk_busy if the number of disks on the
+//				system is 0.
+// Version 1.18: Oct 12, 1999	Rename disk_runp.c?t?d? to disk_runp_c?t?d?
+//				to remove the .'s.
+// Version 1.17: Oct  8, 1999	Do not record mount point statistics for
+//				locally mounted /cdrom partitions.
+// Version 1.16: Oct  7, 1999	To keep backwards compatibility, define
+//				WATCH_WEB if WATCH_HTTPD is defined.
+//				If the COMPRESSOR environmental variable
+//				is defined, then when a new log file is opened
+//				for a new day, the just closed log file is
+//				compressed using the COMPRESSOR command in the
+//				following manner:
+//				system(sprintf("%s %s &", COMPRESSOR, log_file)
+//				COMPRESSOR should be set to something like
+//				"gzip -9", or "compress", or "bzip2 -9".
+// Version 1.15: Oct  5, 1999	kvm$mpid is a int not a long.  This caused
+//				problems on Solaris 7 hosts running a 64
+//				bit kernel.
+// Version 1.14: Oct  1, 1999	Rename disk.c?t?d? column names to
+//				disk_runp.c?t?d? to better reflect the data
+//				being recorded and to allow for more per disk
+//				information later.
+// Version 1.13: Sep 24, 1999	Fix a bug in the disk_mean calculation where
+//				it was being divided by the wrong disk_count.
+//				Now it should be much larger and in scale with
+//				disk_peak.  When WATCH_DISK is defined, now
+//				print each disk's run percent.  Add a new
+//				define WATCH_MOUNTS, which reports each local
+//				mount point's disk space and inode capacity,
+//				usage, available for non-root users and
+//				percent used.  This comes from Duncan Lawie
+//				tyger@hoopoes.com. Add some smarts so that if
+//				the number of interfaces, physical disks, or
+//				mounted partitions changes, then a new header
+//				is printed.  This will prevent column name and
+//				data mixups when the system configuration
+//				changes.
+// Version 1.12: Sep 14, 1999	Add the page scan rate as scanrate in
+//				measure_cpu.
+// Version 1.11: Aug 13, 1999	Add the number of CPUs as ncpus.  Move
+//				measure_disk and measure_ram sooner in the
+//				list of subsystems to handle.  Increase the
+//				number of characters for each network
+//				interface from four to five.  Add new disk
+//				reads, writes, Kbytes read, and Kbytes
+//				written per second.  Add number of bytes
+//				of free memory in bytes as freememK.
+// Version 1.10: Jul 28, 1999	Measure the process spawn rate if WATCH_CPU
+//				is defined and the user is root.
+// Version 1.9:  Jun  2, 1999	If WATCH_YAHOO is defined, then process the
+//				access log as a Yahoo! style access log.
+//				Restructure the code to handle different
+//				web server access log formats.
+// Version 1.8:  Jun  1, 1999	If the environmental variable WEB_SERVER is
+//				defined, use its value of the as the name
+//				of the process to count for the number of
+//				web servers on the system.  If WEB_SERVER
+//				is not defined, then count number of httpd's.
+// Version 1.7:  Mar 25, 1999	Simplify and speed up count_proc by 20%.
+// Version 1.6:  Feb 23, 1999	Print pvm.user_time and system_time correctly.
+// Version 1.5:  Feb 23, 1999	Always write header to a new file.
+// Version 1.4:  Feb 19, 1999	Handle missing HTTP/1.x in access log.
+// Version 1.3:  Feb 18, 1999	On busy machines httpops5 will be enlarged.
+// Version 1.2:  Feb 18, 1999	Output data on integral multiples of interval.
+// Version 1.1:	 Feb 18, 1999	Integrate Squid log processing from SE 3.1.
+// Version 1.0:	 Sep  9, 1998	Initial version.
 //
 
 // The default sampling interval in seconds.
@@ -25,16 +85,22 @@
 
 // Define the different parts of the system you want to examine.
 #ifdef WATCH_OS
-#define WATCH_CPU
-#define WATCH_MUTEX
-#define WATCH_NET
-#define WATCH_TCP
-#define WATCH_NFS
-#define WATCH_DISK
-#define WATCH_DNLC
-#define WATCH_INODE
-#define WATCH_RAM
-#define WATCH_PAGES
+#define WATCH_CPU		1
+#define WATCH_MUTEX		1
+#define WATCH_NET		1
+#define WATCH_TCP		1
+#define WATCH_NFS		1
+#define WATCH_MOUNTS		1
+#define WATCH_DISK		1
+#define WATCH_DNLC		1
+#define WATCH_INODE		1
+#define WATCH_RAM		1
+#define WATCH_PAGES		1
+#endif
+
+// Keep backwards compatibility with WATCH_HTTPD.
+#ifdef WATCH_HTTPD
+#define WATCH_WEB		1
 #endif
 
 #include <stdio.se>
@@ -54,9 +120,95 @@
 #include <tcp_class.se>
 #include <tcp_rules.se>
 
-#ifdef WATCH_HTTPD
+#ifdef WATCH_MOUNTS
+#include <mnt_class.se>
+#include <statvfs.se>
+#endif
+
+#if WATCH_CPU || WATCH_WEB
 #include <proc.se>
+
+#ifdef WATCH_CPU
+// This is the maximum pid on Solaris hosts.
+#define DEFAULT_MAXPID 30000
+#include <fcntl.se>
+#endif
+
+#ifdef WATCH_WEB
 #include <stat.se>
+
+// Define this macro which returns the size index for a file of a
+// particular size.  This saves the overhead of a function call.
+#define WWW_SIZE_INDEX(size, size_index)			\
+  if (size < 1024) {						\
+    size_index=0;		/* under 1KB   */		\
+  } else {							\
+    if (size < 10240) {						\
+      size_index=1;		/* under 10K   */		\
+    } else {							\
+      if (size < 102400) {					\
+        size_index=2;		/* under 100KB */		\
+      } else {							\
+        if (size < 1048576) {					\
+          size_index=3;		/* under 1MB   */		\
+        } else {						\
+          size_index=4;		/* over 1MB    */		\
+        }							\
+      }								\
+    }								\
+  }								\
+  dwnld_size[size_index]++;
+
+// Handle the reply code from the server.
+#define WWW_REPLY_CODE(word)					\
+  if (word != nil) {						\
+    if (word == "304") {					\
+      httpop_condgets++;					\
+    }								\
+    else {							\
+      first_byte = word;					\
+      if (first_byte[0] == '4' || first_byte[0] == '5') {	\
+        httpop_errors++;					\
+      }								\
+    }								\
+  }
+
+// Handle the method of the object served.  This define only works with
+// non-proxy servers.
+#define WWW_METHOD1(word)					\
+  if (word != nil) {						\
+    switch (word) {						\
+      case "get":						\
+      case "GET":						\
+        httpop_gets++;						\
+        break;							\
+      case "post":						\
+      case "POST":						\
+        httpop_posts++;						\
+        break;							\
+      case "head":						\
+      case "HEAD":						\
+        ishead = 1;						\
+        httpop_condgets++;					\
+        break;
+
+#ifdef WATCH_SQUID
+#define WWW_METHOD2						\
+    case "icp_query":						\
+    case "ICP_QUERY":						\
+      squid_icp_queries++;					\
+      break;
+#else
+#define WWW_METHOD2
+#endif
+
+#define WWW_METHOD_END						\
+      default:							\
+        break; 							\
+    }								\
+  }
+#define WWW_METHOD(word) WWW_METHOD1(word) WWW_METHOD2 WWW_METHOD_END
+#endif
 #endif
 
 // Put all rules here so they can be accessed by the handle functions.
@@ -94,77 +246,116 @@ ks_system_misc	kstat$misc;
 ks_system_misc	tmp_kstat_misc;
 
 // Put application globals here.
-string nodename;			// Name of machine running the script.
-string program_name;			// Name of this program.
-int    hz;				// Clock tick rate.
-int    page_size;			// Page size in bytes.
-long   boot_time;			// Boot time of the system.
-long   interval = SAMPLE_INTERVAL;	// Sampling interval. 
+string		nodename;			// Name of this machine.
+string		program_name;			// Name of this program.
+int		hz;				// Clock tick rate.
+int		page_size;			// Page size in bytes.
+long		boot_time;			// Boot time of the system.
+long		interval = SAMPLE_INTERVAL;	// Sampling interval. 
+
+#ifdef WATCH_CPU
+int		can_read_kernel = 0;		// If the kernel can be read.
+int		kvm$mpid;			// The last created PID.
+
+// These variables store the mpid before and after the standard interval.
+int		mpid_previous;
+int		mpid_current;
+ulonglong	mpid_then;
+ulonglong	mpid_now;
+
+// These variables store the mpid before and after 5 second intervals.
+int		mpid5_previous;
+int		mpid5_current;
+ulonglong	mpid5_then;
+ulonglong	mpid5_now;
+double		mpid5_rate;
+#endif
+
+#ifdef WATCH_MOUNTS
+mnttab_t	mnt$mnt;
+mnttab_t	tmp_mnt;
+#endif
 
 // Variables for handling the httpd access log.
-#ifdef WATCH_HTTPD
-ulong     log_file;
-string    log_name    = getenv("WEB_LOG");
-string    log_gateway = getenv("GATEWAY");
-uint      log_gatelen;
-stat_t    log_stat[1];
-ulong     log_ino;
-long      log_size;
+#ifdef WATCH_WEB
+string		www_search_url       = getenv("SEARCHURL");
+string		www_server_proc_name = getenv("WEB_SERVER");
+string		www_log_filename     = getenv("WEB_LOG");
+string		www_gateway          = getenv("GATEWAY");
+ulong		www_fd;
+uint		www_gatelen;
+stat_t		www_stat[1];
+ulong		www_ino;
+long		www_size;
 
-double    log_interval;			// Hi-res interval time.
-ulonglong log_then;
-ulonglong log_now;
+double		www_interval;			// Hi-res interval time.
+ulonglong	www_then;
+ulonglong	www_now;
 
-double    log5_interval;		// Actual hi-res 5 second interval.
-ulonglong log5_then;
-ulonglong log5_now;
+double		www5_interval;		// Actual hi-res 5 second interval.
+ulonglong	www5_then;
+ulonglong	www5_now;
 
-double    httpops;
-double    httpops5;
-double    gateops;
-double    dtmp;
+double		httpops;
+double		httpops5;
+double		gateops;
+double		dtmp;
 
-long      httpop_gets;
-long      httpop_condgets; // HEAD or code = 304 conditional get no data.
-long      httpop_posts;
-long      httpop_cgi_bins;
-long      httpop_searches;
-long      httpop_errors;
-string    search_url;
-long      dwnld_size[5]; // [0] < 1K, [1] < 10K, [2] < 100K, [3] < 1M, [4] >= 1M
-long      dwnld_totalz;  // total size counted from log
+long		httpop_gets;
+long		httpop_condgets; // HEAD or code = 304 conditional get no data.
+long		httpop_posts;
+long		httpop_cgi_bins;
+long		httpop_searches;
+long		httpop_errors;
+long		dwnld_size[5]; // [0] < 1K, [1] < 10K, [2] < 100K, [3] < 1M, [4] >= 1M
+long		dwnld_totalz;  // total size counted from log
 
+#if WATCH_PROXY || WATCH_SQUID || WATCH_YAHOO
+// If we're watching a Yahoo log, then take the transfer time to be the
+// processing time.
+double		www_dwnld_time_sum;	   // transfer time
+double		www_dwnld_time_by_size[5]; // mean transfer time by size bin
+#endif
 #if WATCH_PROXY || WATCH_SQUID
-double    prxy_squid_xfer_sum;		// transfer time
-double    prxy_squid_xfer_by_size[5];	// mean transfer time by size bin
-long      prxy_squid_indirect;		// number of hits that go via PROXY,SOCKS,parent
-long      prxy_squid_cache_hits;	// number of hits returned from cache
+long		prxy_squid_indirect;   // number of hits that go via PROXY,SOCKS,parent
+long		prxy_squid_cache_hits; // number of hits returned from cache
 #endif
 
 #ifdef WATCH_PROXY
-long      prxy_cache_writes;	// number of writes and updates to cache
-long      prxy_uncacheable;	// number of explicitly uncacheable httpops
-				// any extra is errors or incomplete ops
+long		prxy_cache_writes; // number of writes and updates to cache
+long		prxy_uncacheable;  // number of explicitly uncacheable httpops
+				   // any extra is errors or incomplete ops
 #endif
 
 #ifdef WATCH_SQUID
-long      squid_cache_misses;
-long      squid_icp_requests;
-long      squid_icp_queries;
-long      squid_client_http;
+long		squid_cache_misses;
+long		squid_icp_requests;
+long		squid_icp_queries;
+long		squid_client_http;
 #endif
 
 #endif
 
 // Variables for handling output.
-string col_comment[MAX_COLUMNS];	// Comments for each column.
-string col_data[MAX_COLUMNS];		// Data for each column.
-int    current_column;			// The current column.
+string		compress = getenv("COMPRESSOR"); // How to compress logs.
+ulong		ofile;				// File pointer to the logging file.
+string		col_comment[MAX_COLUMNS];	// Comments for each column.
+string		col_data[MAX_COLUMNS];		// Data for each column.
+int		current_column = 0;		// The current column.
+int		print_header = 1;		// Flag to flush header.
 
-// Reset the output data.
-reset_output()
+// Send the stored columns of information to the output.
+print_columns(string data[])
 {
-  current_column = 0;
+  int i;
+  for (i=0; i<current_column; i++) {
+    fprintf(ofile, "%s", data[i]);
+    if (i != current_column-1) {
+      fputc(' ', ofile);
+    }
+  }
+  fputc('\n', ofile);
+  fflush(ofile);
 }
 
 // Add one column of comments and data to the buffers.
@@ -181,64 +372,61 @@ put_output(string comment, string data)
   ++current_column;
 }
 
-print_columns(ulong fd, string data[])
-{
-  int i;
-  for (i=0; i<current_column; ++i) {
-    fprintf(fd, "%s", data[i]);
-    if (i != current_column-1) {
-      fputc(' ', fd);
-    }
+flush_output() {
+  if (print_header != 0) {
+    print_columns(col_comment);
+    print_header = 0;
   }
-  fputc('\n', fd);
-  fflush(fd);
+  print_columns(col_data);
+  current_column = 0;
 }
 
-/* returns output file - creates or appends to logfile if OUTDIR is set
-   returns stdout and writes header if no OUTDIR
-   starts new logfile each day
-*/
-ulong checkoutput(tm_t now) {
+// Sets ofile to the output file pointer.  Creates or appends to the
+// log file if OUTDIR is set, otherwise sets the file pointer to STDOUT.
+// It start a new log file each day.  It compresses the previous days
+// log file if the environmental variable COMPRESSOR is set.
+checkoutput(tm_t now) {
   string outdir = getenv("OUTDIR");
   string outname;
-  ulong  ofile;
   tm_t   then;
   char   tm_buf[32];
 
   if (outdir == nil) {
-    /* no output dir so use stdout */
+    // No output dir so use stdout.
     if (ofile == 0) {
-      /* first time, so print header and set ofile */
+      //  First time, so print header and set ofile.
       ofile = stdout;
-      print_columns(ofile, col_comment);
+      print_header = 1;
     }
-    return ofile;
+    return;
   }
-  /* maintain daily output logfiles in OUTDIR */
+  // Maintain daily output logfiles in OUTDIR.
   if (now.tm_yday != then.tm_yday) {
-    /* first time or day has changed, start new logfile */
+    // First time or day has changed, start new logfile.
     if (ofile != 0) {
-      /* close existing output file */
+      // Close and optionally compress the existing output file.
       fclose(ofile);
+      if (compress != nil) {
+        system(sprintf(compress, outname));
+      }
     }
     strftime(tm_buf, sizeof(tm_buf), "%Y-%m-%d", now);
     outname = sprintf("%s/percol-%s", outdir, tm_buf);
-    ofile = fopen(outname, "a"); /* open for append either way */
+    // Open for append either way.
+    ofile = fopen(outname, "a");
     if (ofile == 0) {
       perror("can't open output logfile");
       exit(1);
     }
     // Always write header.
-    print_columns(ofile, col_comment);
+    print_header = 1;
     then = now;
   }
-  return ofile;
 }
 
 int main(int argc, string argv[])
 {
   utsname_t u[1];
-  ulong     ofile;	// File pointer to the logging file.
   long      now;
   long      sleep_till;	// Time to sleep to.
   tm_t      tm_now;
@@ -259,24 +447,28 @@ int main(int argc, string argv[])
     default:
       fprintf(stderr, "usage: se [Defines] %s [interval]\n", program_name);
       fprintf(stderr, "%s can use the following environmental variables:\n", program_name);
+      fprintf(stderr, "   setenv OUTDIR      /var/orcallator/logs - log file directory, default stdout\n");
+      fprintf(stderr, "   setenv WEB_SERVER  apache - string to search for number of web servers\n");
       fprintf(stderr, "   setenv WEB_LOG     /ns-home/httpd-80/logs/access - location of web server log\n");
       fprintf(stderr, "   setenv GATEWAY     some.where.com - special address to monitor\n");
-      fprintf(stderr, "   setenv OUTDIR      /ns-home/docs/orcallator/logs - default stdout\n");
       fprintf(stderr, "   setenv SEARCHURL   srch.cgi - match for search scripts, default is search.cgi\n");
+      fprintf(stderr, "   setenv COMPRESSOR  \"gzip -9\" - compress previous day logs using this command\n");
       fprintf(stderr, "Defines:\n");
-      fprintf(stderr, "   -DWATCH_HTTPD watch httpd access log\n");
-      fprintf(stderr, "   -DWATCH_PROXY use WEB_LOG as a NCSA style proxy log\n");
-      fprintf(stderr, "   -DWATCH_SQUID use WEB_LOG as a Squid log\n");
-      fprintf(stderr, "   -DWATCH_OS    includes all of the below:\n");
-      fprintf(stderr, "   -DWATCH_CPU   watch the cpu load, run queue, etc\n");
-      fprintf(stderr, "   -DWATCH_MUTEX watch the number of mutex spins\n");
-      fprintf(stderr, "   -DWATCH_NET   watch all Ethernet interfaces\n");
-      fprintf(stderr, "   -DWATCH_TCP   watch all the TCP/IP stack\n");
-      fprintf(stderr, "   -DWATCH_NFS   watch NFS requests\n");
-      fprintf(stderr, "   -DWATCH_DNLC  watch the directory name lookup cache\n");
-      fprintf(stderr, "   -DWATCH_INODE watch the inode cache\n");
-      fprintf(stderr, "   -DWATCH_RAM   watch memory usage\n");
-      fprintf(stderr, "   -DWATCH_PAGES watch where pages are allocated\n");
+      fprintf(stderr, "   -DWATCH_WEB    watch web server access logs\n");
+      fprintf(stderr, "   -DWATCH_PROXY  use WEB_LOG as a NCSA style proxy log\n");
+      fprintf(stderr, "   -DWATCH_SQUID  use WEB_LOG as a Squid log\n");
+      fprintf(stderr, "   -DWATCH_OS     includes all of the below:\n");
+      fprintf(stderr, "   -DWATCH_CPU    watch the cpu load, run queue, etc\n");
+      fprintf(stderr, "   -DWATCH_MUTEX  watch the number of mutex spins\n");
+      fprintf(stderr, "   -DWATCH_NET    watch all Ethernet interfaces\n");
+      fprintf(stderr, "   -DWATCH_TCP    watch all the TCP/IP stack\n");
+      fprintf(stderr, "   -DWATCH_NFS    watch NFS requests\n");
+      fprintf(stderr, "   -DWATCH_MOUNTS watch usage of mount points\n");
+      fprintf(stderr, "   -DWATCH_DISK   watch disk read/write usage\n");
+      fprintf(stderr, "   -DWATCH_DNLC   watch the directory name lookup cache\n");
+      fprintf(stderr, "   -DWATCH_INODE  watch the inode cache\n");
+      fprintf(stderr, "   -DWATCH_RAM    watch memory usage\n");
+      fprintf(stderr, "   -DWATCH_PAGES  watch where pages are allocated\n");
       exit(1);
       break;
   }
@@ -284,7 +476,7 @@ int main(int argc, string argv[])
   // Initialize the various structures.
   initialize();
 
-  // Run forever.  If WATCH_HTTPD is defined, then have measure_httpd()
+  // Run forever.  If WATCH_WEB is defined, then have measure_web()
   // do the sleeping while it is watching the access log file until the
   // next update time for the whole operating system.  Also, collect the
   // data from the access log file before printing any output.
@@ -292,45 +484,105 @@ int main(int argc, string argv[])
     // Calculate the next time to sleep to that is an integer multiple of
     // the interval time.  Make sure that at least half of the interval
     // passes before waking up.
-    now = time(0);
+    now        = time(0);
     sleep_till = (now/interval)*interval;
-    while (now + interval*0.5 > sleep_till) {
+    while (sleep_till < now + interval*0.5) {
       sleep_till += interval;
     }
 
-#ifdef WATCH_HTTPD
-    measure_httpd(sleep_till);
+#ifdef WATCH_WEB
+    measure_web(sleep_till);
 #else
-    while (now < sleep_till) {
-      sleep(sleep_till - now);
-      now = time(0);
-    }
+    sleep_till_and_count_new_proceses(sleep_till);
 #endif
-
-    // Reset the output.
-    reset_output();
 
     // Get the current time.
     now    = time(0);
     tm_now = localtime(&now);
 
-    handle_os(now, tm_now);
+    measure_os(now, tm_now);
 
-#ifdef WATCH_HTTPD
+#ifdef WATCH_WEB
     put_httpd();
 #endif
 
-    // Get a filedescriptor to write to.  Maintains daily output files.
-    ofile = checkoutput(tm_now);
+    // Get a file descriptor to write to.  Maintains daily output files.
+    checkoutput(tm_now);
 
     // Print the output.
-    print_columns(ofile, col_data);
+    flush_output();
   }
   return 0;
 }
 
 initialize()
 {
+#ifdef WATCH_CPU
+  int i;
+#endif
+
+  // Get the command to compress the log files.
+  if (compress == nil || compress == "") {
+    compress = nil;
+  }
+  else {
+    compress = sprintf("%s %%s &", compress);
+  }
+
+#ifdef WATCH_CPU
+  // Initialize the process spawning rate measurement variables.
+  // Determine if the kernel can be read to measure the last pid.
+  i = open("/dev/kmem", O_RDONLY);
+  if (i != -1) {
+    close(i);
+    can_read_kernel = 1;
+    mpid_previous   = kvm$mpid;
+    mpid_then       = gethrtime();
+    mpid_current    = mpid_previous;
+
+    mpid5_then      = mpid_then;
+    mpid5_previous  = mpid_previous;
+    mpid5_current   = mpid_previous;
+    mpid5_rate      = 0;
+  }
+#endif
+
+#ifdef WATCH_WEB
+  // Initialize those variables that were not set with environmental
+  // variables.
+  if (www_search_url == nil || www_search_url == "") {
+    www_search_url = "search.cgi";
+  }
+
+  if (www_server_proc_name == nil || www_server_proc_name == "") {
+    www_server_proc_name = "httpd";
+  }
+
+  if (www_gateway == nil || www_gateway == "" ) {
+    www_gateway = "NoGatway";
+    www_gatelen = 0;
+  }
+  else {
+    www_gatelen = strlen(www_gateway);
+  }
+
+  // Initialize the web server watching variables.  Move the file pointer
+  // to the end of the web access log and note the current time.
+  if (www_log_filename != nil) {
+    www_fd = fopen(www_log_filename, "r");
+    if (www_fd != 0) {
+      stat(www_log_filename, www_stat);
+      www_ino  = www_stat[0].st_ino;
+      www_size = www_stat[0].st_size;
+      // Move to the end of the file.
+      fseek(www_fd, 0, 2);
+    }
+  }
+
+  www_then  = gethrtime();
+  www5_then = www_then;
+#endif
+
   // Sleep to give the disks a chance to update.
   sleep(DISK_UPDATE_RATE);
 
@@ -343,39 +595,12 @@ initialize()
   // Calculate the system boot time.
   boot_time = time(0) - (kstat$misc.clk_intr / hz);
 
-#ifdef WATCH_HTTPD
-  search_url = getenv("SEARCHURL");
-  if (search_url == nil) {
-    search_url = "search.cgi";
-  }
-
-  if (log_gateway == nil) {
-    log_gateway = "NoGatway";
-    log_gatelen = 0;
-  }
-  else {
-    log_gatelen = strlen(log_gateway);
-  }
-
-  log_file = fopen(log_name, "r");
-  if (log_file != 0) {
-    stat(log_name, log_stat);
-    log_ino  = log_stat[0].st_ino;
-    log_size = log_stat[0].st_size;
-    // Move to the end of the file.
-    fseek(log_file, 0, 2);
-  }
-
-  log_then  = gethrtime();
-  log5_then = log_then;
-#endif
-
   // Perform the first measurement of the system.
-  measure_os();
+  _measure_os();
 }
 
 // Measure the system statistics all at once.
-measure_os()
+_measure_os()
 {
   tmp_lrcpu       = lr_cpu$cpu;
   tmp_mutex       = lr_mutex$m;
@@ -397,62 +622,67 @@ measure_os()
   tmp_kstat_misc  = kstat$misc;
 }
 
-handle_os(long now, tm_t tm_now)
+measure_os(long now, tm_t tm_now)
 {
   // Measure the system now.
-  measure_os();
+  _measure_os();
 
   // Take care of miscellaneous measurements.
-  handle_misc(now, tm_now);
+  measure_misc(now, tm_now);
 
   // Take care of cpu.
 #ifdef WATCH_CPU
-  handle_cpu();
+  measure_cpu();
 #endif
 
   // Take care of mutexes.
 #ifdef WATCH_MUTEX
-  handle_mutex();
+  measure_mutex();
 #endif
 
-  // Take care of the network.
-#ifdef WATCH_NET
-  handle_net();
-#endif
-
-  // Take care of TCP/IP.
-#ifdef WATCH_TCP
-  handle_tcp();
-#endif
-
-  // Take care of NFS.
-#ifdef WATCH_NFS
-  handle_nfs();
+  // Take care of mount pointes.
+#ifdef WATCH_MOUNTS
+  measure_mounts();
 #endif
 
   // Take care of the disks.
 #ifdef WATCH_DISK
-  handle_disk();
-#endif
-
-  // Take care of DNLC.
-#ifdef WATCH_DNLC
-  handle_dnlc();
-#endif
-
-  // Take care of the inode cache.
-#ifdef WATCH_INODE
-  handle_inode();
+  measure_disk();
 #endif
 
   // Take care of ram.
 #ifdef WATCH_RAM
-  handle_ram();
+  measure_ram();
+#endif
+
+  // Take care of the network.
+#ifdef WATCH_NET
+  measure_net();
+#endif
+
+  // Take care of TCP/IP.
+#ifdef WATCH_TCP
+  measure_tcp();
+#endif
+
+  // Take care of NFS.
+#ifdef WATCH_NFS
+  measure_nfs();
+#endif
+
+  // Take care of DNLC.
+#ifdef WATCH_DNLC
+  measure_dnlc();
+#endif
+
+  // Take care of the inode cache.
+#ifdef WATCH_INODE
+  measure_inode();
 #endif
 
   // Take care of page allocations.
 #ifdef WATCH_PAGES
-  handle_pages();
+  measure_pages();
 #endif
 }
 
@@ -469,7 +699,7 @@ char state_char(int state) {
   }
 }
 
-handle_misc(long now, tm_t tm_now)
+measure_misc(long now, tm_t tm_now)
 {
   long   uptime;
   char   states[12];
@@ -493,69 +723,153 @@ handle_misc(long now, tm_t tm_now)
 
   put_output(" timestamp",  sprintf("%10d", now));
   put_output("locltime",    tm_buf);
-  put_output("  uptime",    sprintf("%8d", uptime));
   put_output("DNnsrkcmdit", states);
+  put_output("  uptime",    sprintf("%8d", uptime));
+}
+
+sleep_till_and_count_new_proceses(long sleep_till)
+{
+  long   now;
+#ifdef WATCH_CPU
+  long   sleep_till1;
+  int    mpid5_diff;
+  double mpid5_interval;
+  double rate;
+#endif
+
+  now = time(0);
+  while (now < sleep_till) {
+#ifdef WATCH_CPU
+    if (can_read_kernel != 0) {
+      // Sleep at least 5 seconds to make a measurement.
+      sleep_till1 = now + 5;
+      while (now < sleep_till1) {
+        sleep(sleep_till1 - now);
+        now = time(0);
+      }
+
+      // Measure the 5 second process creation rate.
+      mpid5_current  = kvm$mpid;
+      mpid5_now      = gethrtime();
+      mpid5_interval = (mpid5_now - mpid5_then) * 0.000000001;
+      mpid5_then     = mpid5_now;
+      if (mpid5_current >= mpid5_previous) {
+        mpid5_diff = mpid5_current - mpid5_previous;
+      }
+      else {
+        mpid5_diff = mpid5_current + DEFAULT_MAXPID - mpid5_previous;
+      }
+      rate = mpid5_diff/mpid5_interval;
+      if (rate > mpid5_rate) {
+        mpid5_rate = rate;
+      }
+      mpid5_previous = mpid5_current;
+
+      // Now take these results to measure the long interval rate.
+      // Because the mpid may flip over DEFAULT_MAXPID more than once
+      // in the long interval time span, use the difference between
+      // the previous and current mpid over a 5 second interval to
+      // calculate the long interval difference.
+      mpid_current += mpid5_diff;
+      mpid_now      = mpid5_now;   
+    }
+    else {
+      sleep(sleep_till - now);
+    }
+#else
+    sleep(sleep_till - now);
+#endif
+    now = time(0);
+  }
 }
 
 #ifdef WATCH_CPU
-handle_cpu()
+measure_cpu()
 {
   p_vmstat pvm;
+  double   mpid_interval;
+  double   mpid_rate;
 
   pvm = vmglobal_total();
 
   // In SE 3.0 user_time and system_time are int and in SE 3.1 they are
   // double, so cast everything to double using + 0.0.
-  put_output(" usr%",  sprintf("%5.1f", pvm.user_time + 0.0));
-  put_output(" sys%",  sprintf("%5.1f", pvm.system_time + 0.0));
-  put_output(" 1load", sprintf("%6.2f", tmp_kstat_misc.avenrun_1min/256.0));
-  put_output(" 5load", sprintf("%6.2f", tmp_kstat_misc.avenrun_5min/256.0));
-  put_output("15load", sprintf("%6.2f", tmp_kstat_misc.avenrun_15min/256.0));
-  put_output(" 1runq", sprintf("%6.2f", tmp_kstat_misc.avenrun_1min/256.0));
-  put_output(" 5runq", sprintf("%6.2f", tmp_kstat_misc.avenrun_5min/256.0));
-  put_output("15runq", sprintf("%6.2f", tmp_kstat_misc.avenrun_15min/256.0));
-  put_output("#proc",  sprintf("%5lu",  tmp_kstat_misc.nproc));
+  put_output(" usr%",    sprintf("%5.1f", pvm.user_time + 0.0));
+  put_output(" sys%",    sprintf("%5.1f", pvm.system_time + 0.0));
+  put_output(" 1runq",   sprintf("%6.2f", tmp_kstat_misc.avenrun_1min/256.0));
+  put_output(" 5runq",   sprintf("%6.2f", tmp_kstat_misc.avenrun_5min/256.0));
+  put_output("15runq",   sprintf("%6.2f", tmp_kstat_misc.avenrun_15min/256.0));
+  put_output("#proc",    sprintf("%5lu",  tmp_kstat_misc.nproc));
+  put_output("scanrate", sprintf("%8.3f", pvm.scan));
+
+  // Calculate the rate of new process spawning.
+  if (can_read_kernel != 0) {
+    mpid_interval = (mpid_now - mpid_then) * 0.000000001;
+    mpid_rate     = (mpid_current - mpid_previous) / mpid_interval;
+    put_output("#proc/s",   sprintf("%7.3f", mpid_rate));
+    put_output("#proc/p5s", sprintf("%9.4f", mpid5_rate));
+
+    // Reset counters.
+    mpid_then     = mpid_now;
+    mpid_previous = mpid_current;
+    mpid5_rate    = 0;
+  }
 }
 #endif
 
 #ifdef WATCH_MUTEX
-handle_mutex()
+measure_mutex()
 {
   put_output(" smtx",    sprintf("%5d", tmp_mutex.smtx));
   put_output("smtx/cpu", sprintf("%8d", tmp_mutex.smtx/tmp_mutex.ncpus));
+  put_output("ncpus",    sprintf("%5d", tmp_mutex.ncpus));
 }
 #endif
 
 #ifdef WATCH_NET
-handle_net()
+measure_net()
 {
-  int   i;
+  int previous_count = -1;
+  int current_count;
+  int i;
 
-  for (i=0; i<tmp_nr.net_count; ++i) {
-    put_output(sprintf("%4sIpkt/s", tmp_nr.names[i]),
-	       sprintf("%10.3f", GLOBAL_net[i].ipackets));
-    put_output(sprintf("%4sOpkt/s", tmp_nr.names[i]),
-	       sprintf("%10.3f", GLOBAL_net[i].opackets));
-    put_output(sprintf("%4sInKB/s", tmp_nr.names[i]),
-	       sprintf("%10.3f", GLOBAL_net[i].ioctets/1024.0));
-    put_output(sprintf("%4sOuKB/s", tmp_nr.names[i]),
-	       sprintf("%10.3f", GLOBAL_net[i].ooctets/1024.0));
-    put_output(sprintf("%4sIErr/s", tmp_nr.names[i]),
-	       sprintf("%10.3f", GLOBAL_net[i].ierrors));
-    put_output(sprintf("%4sOErr/s", tmp_nr.names[i]),
-	       sprintf("%10.3f", GLOBAL_net[i].oerrors));
-    put_output(sprintf("%4sColl%%", tmp_nr.names[i]),
-	       sprintf("%9.3f", GLOBAL_net[i].collpercent));
-    put_output(sprintf("%4sNoCP/s", tmp_nr.names[i]),
-	       sprintf("%10.3f", GLOBAL_net[i].nocanput));
-    put_output(sprintf("%4sDefr/s", tmp_nr.names[i]),
-	       sprintf("%10.3f", GLOBAL_net[i].defer));
+  current_count = 0;
+  for (i=0; i<tmp_nr.net_count; i++) {
+    // Skip unused interfaces.
+//    if (GLOBAL_net[i].up == 0) {
+//      continue;
+//    }
+    ++current_count;
+    put_output(sprintf("%5sIpkt/s", tmp_nr.names[i]),
+	       sprintf("%11.3f", GLOBAL_net[i].ipackets));
+    put_output(sprintf("%5sOpkt/s", tmp_nr.names[i]),
+	       sprintf("%11.3f", GLOBAL_net[i].opackets));
+    put_output(sprintf("%5sInKB/s", tmp_nr.names[i]),
+	       sprintf("%11.3f", GLOBAL_net[i].ioctets/1024.0));
+    put_output(sprintf("%5sOuKB/s", tmp_nr.names[i]),
+	       sprintf("%11.3f", GLOBAL_net[i].ooctets/1024.0));
+    put_output(sprintf("%5sIErr/s", tmp_nr.names[i]),
+	       sprintf("%11.3f", GLOBAL_net[i].ierrors));
+    put_output(sprintf("%5sOErr/s", tmp_nr.names[i]),
+	       sprintf("%11.3f", GLOBAL_net[i].oerrors));
+    put_output(sprintf("%5sColl%%", tmp_nr.names[i]),
+	       sprintf("%10.3f", GLOBAL_net[i].collpercent));
+    put_output(sprintf("%5sNoCP/s", tmp_nr.names[i]),
+	       sprintf("%11.3f", GLOBAL_net[i].nocanput));
+    put_output(sprintf("%5sDefr/s", tmp_nr.names[i]),
+	       sprintf("%11.3f", GLOBAL_net[i].defer));
+  }
+
+  // If the number of up interfaces changes, then print new headers.
+  if (current_count != previous_count) {
+    print_header = 1;
+    previous_count = current_count;
   }
 }
 #endif
 
 #ifdef WATCH_TCP
-handle_tcp()
+measure_tcp()
 {
   put_output("tcp_Iseg/s", sprintf("%10.3f", tmp_tcp.InDataSegs));
   put_output("tcp_Oseg/s", sprintf("%10.3f", tmp_tcp.OutDataSegs));
@@ -575,7 +889,7 @@ handle_tcp()
 #endif
 
 #ifdef WATCH_NFS
-handle_nfs()
+measure_nfs()
 {
   put_output("nfs_call/s", sprintf("%10.3f", tmp_lrpcc.calls));
   put_output("nfs_timo/s", sprintf("%10.3f", tmp_lrpcc.timeouts));
@@ -583,30 +897,142 @@ handle_nfs()
 }
 #endif
 
+#ifdef WATCH_MOUNTS
+measure_mounts()
+{
+  statvfs_t vfs_array[1];
+  statvfs_t vfs;
+  string    comment_fmt;
+  string    kbytes_fmt;
+  string    inode_fmt;
+  string    percent_fmt;
+  ulong     kbytes_used;
+  ulong     inodes_used;
+  double    block_factor;
+  int       comment_length;
+  int       previous_count = -1;
+  int       current_count;
+
+  current_count = 0;
+  // Traverse the mount table to find mounted ufs/vxfs file systems.
+  for (mnt$mnt.number$=0; mnt$mnt.number$ != -1; mnt$mnt.number$++) {
+    tmp_mnt = mnt$mnt;
+    if (tmp_mnt.mnt_fstype == "ufs" || tmp_mnt.mnt_fstype == "vxfs") {
+      // Skip locally mounted /cdrom partitions.
+      if (tmp_mnt.mnt_mountp =~ "^/cdrom/") {
+        continue;
+      }
+      if (statvfs(tmp_mnt.mnt_mountp, vfs_array) == -1) {
+        continue;
+      }
+      vfs = vfs_array[0];
+      ++current_count;
+
+      // Generate the format strings for the comment and for the data.
+      comment_fmt    = sprintf("mnt%%c_%s", tmp_mnt.mnt_mountp);
+      comment_length = strlen(comment_fmt) - 1;
+      kbytes_fmt     = sprintf("%%%d.0f",   comment_length);
+      inode_fmt      = sprintf("%%%dld",    comment_length);
+      percent_fmt    = sprintf("%%%d.3f",   comment_length);
+
+      // Calculate the number of 1 kilobyte blocks on the disk.
+      block_factor = vfs.f_frsize/1024;
+
+      // Capital letters refer to the disk usage in kilobytes.  Lower case
+      // letters refer to inode usage.
+      // C - Capacity of the disk.
+      // U - Used capacity.
+      // A - Available capacity for non-root users.
+      // P - Percent used.
+      kbytes_used = vfs.f_blocks - vfs.f_bfree;
+      inodes_used = vfs.f_files  - vfs.f_ffree;
+
+      put_output(sprintf(comment_fmt, 'C'),
+                 sprintf(kbytes_fmt, block_factor*vfs.f_blocks));
+      put_output(sprintf(comment_fmt, 'U'),
+                 sprintf(kbytes_fmt, block_factor*kbytes_used));
+      put_output(sprintf(comment_fmt, 'A'),
+                 sprintf(kbytes_fmt, block_factor*vfs.f_bavail));
+      put_output(sprintf(comment_fmt, 'P'),
+                 sprintf(percent_fmt,
+                         100.0*kbytes_used/(vfs.f_blocks + vfs.f_bavail - vfs.f_bfree)));
+
+      put_output(sprintf(comment_fmt, 'c'),
+                 sprintf(inode_fmt, vfs.f_files));
+      put_output(sprintf(comment_fmt, 'u'),
+                 sprintf(inode_fmt, inodes_used));
+      put_output(sprintf(comment_fmt, 'a'),
+                 sprintf(inode_fmt, vfs.f_favail));
+      put_output(sprintf(comment_fmt, 'p'),
+                 sprintf(percent_fmt,
+                         100.0*inodes_used/(vfs.f_files + vfs.f_favail - vfs.f_ffree)));
+
+    }
+  }
+
+  // If the number of mounted filesystems changes, then print new headers.
+  if (current_count != previous_count) {
+    print_header = 1;
+    previous_count = current_count;
+  }
+}
+#endif
+
 #ifdef WATCH_DISK
-handle_disk()
+measure_disk()
 {
   double mean_disk_busy;
   double peak_disk_busy;
+  double total_reads;
+  double total_writes;
+  double total_readk;
+  double total_writek;
+  int    previous_count = -1;
   int    i;
 
   mean_disk_busy = 0.0;
   peak_disk_busy = 0.0;
-  for (i=0; i < GLOBAL_disk[0].disk_count; i++) {
+  total_reads    = 0.0;
+  total_writes   = 0.0;
+  total_readk    = 0.0;
+  total_writek   = 0.0;
+  for (i=0; i<GLOBAL_disk_count; i++) {
+    put_output(sprintf("disk_runp_c%dt%dd%d",
+               GLOBAL_disk[i].info.controller,
+               GLOBAL_disk[i].info.target,
+               GLOBAL_disk[i].info.device),
+               sprintf("%16.5f", GLOBAL_disk[i].run_percent));
+    total_reads     += GLOBAL_disk[i].reads;
+    total_writes    += GLOBAL_disk[i].writes;
+    total_readk     += GLOBAL_disk[i].kreads;
+    total_writek    += GLOBAL_disk[i].kwrites;
     mean_disk_busy += GLOBAL_disk[i].run_percent;
     if (GLOBAL_disk[i].run_percent > peak_disk_busy) {
       peak_disk_busy = GLOBAL_disk[i].run_percent;
     }
   }
-  mean_disk_busy = mean_disk_busy/GLOBAL_disk[0].disk_count;
+  if (GLOBAL_disk_count != 0) {
+    mean_disk_busy = mean_disk_busy/GLOBAL_disk_count;
+  }
 
   put_output("disk_peak", sprintf("%9.3f", peak_disk_busy));
   put_output("disk_mean", sprintf("%9.3f", mean_disk_busy));
+  put_output("disk_rd/s", sprintf("%9.1f", total_reads));
+  put_output("disk_wr/s", sprintf("%9.1f", total_writes));
+  put_output("disk_rK/s", sprintf("%9.1f", total_readk));
+  put_output("disk_wK/s", sprintf("%9.1f", total_writek));
+
+  // If the number of disks has changed, say due to a add_drv, then print
+  // new headers.
+  if (previous_count != GLOBAL_disk_count) {
+    print_header   = 1;
+    previous_count = GLOBAL_disk_count;
+  }
 }
 #endif
 
 #ifdef WATCH_DNLC
-handle_dnlc()
+measure_dnlc()
 {
   put_output("dnlc_ref/s", sprintf("%10.3f", tmp_lrdnlc.refrate));
   put_output("dnlc_hit%",  sprintf("%9.3f",  tmp_lrdnlc.hitrate));
@@ -614,7 +1040,7 @@ handle_dnlc()
 #endif
 
 #ifdef WATCH_INODE
-handle_inode()
+measure_inode()
 {
   put_output("inod_ref/s", sprintf("%10.3f", tmp_lrinode.refrate));
   put_output("inod_hit%",  sprintf("%9.3f",  tmp_lrinode.hitrate));
@@ -623,16 +1049,17 @@ handle_inode()
 #endif
 
 #ifdef WATCH_RAM
-handle_ram()
+measure_ram()
 {
   put_output("swap_avail", sprintf("%10ld", GLOBAL_pvm[0].swap_avail));
   put_output("page_rstim", sprintf("%10d",  tmp_lrram.restime));
+  put_output("  freememK", sprintf("%10d",  GLOBAL_pvm[0].freemem));
   put_output("free_pages", sprintf("%10d",  (GLOBAL_pvm[0].freemem*1024)/page_size));
 }
 #endif
 
 #ifdef WATCH_PAGES
-handle_pages()
+measure_pages()
 {
   put_output("pp_kernel", sprintf("%9lu", tmp_kstat_pages.pp_kernel));
   put_output("pagesfree", sprintf("%9lu", tmp_kstat_pages.pagesfree));
@@ -642,241 +1069,257 @@ handle_pages()
 }
 #endif
 
-#ifdef WATCH_HTTPD
-/* breakdown access log format */
+#ifdef WATCH_WEB
+// Breakdown access log format.
 accesslog(string buf) {
-	int	size_index;
-	string	word;
-	int	z;
-	int	ishead;
-#if WATCH_PROXY || WATCH_SQUID
-	double	xf;
-#ifdef WATCH_SQUID
-	string logtag;
-	string request;
-#endif
-#endif
-	ishead = 0;
-	word = strtok(buf," ");
-	if (word == nil) {
-		return;
-	}
-#ifdef WATCH_SQUID
-	/* word contains unix time in seconds.milliseconds */
-	word = strtok(nil, " ");	/* elapsed request time in ms */
-	xf = atof(word)/1000.0;
-	prxy_squid_xfer_sum += xf;
-#ifdef DINKY
-	printf("time: %s %f total %f\n", word, xf, xfer_sum);
-#endif
-	word = strtok(nil, " ");	/* client IP address */
-	logtag = strtok(nil, "/");	/* Log tag */
-	word = strtok(nil, " ");	/* reply code */
-	if (word != nil) {
-                if (strstr(word,"304") != nil) {
-                        httpop_condgets++;
-                }
-                if (strncmp(word, "4", 1) == 0 || strncmp(word, "5", 1) == 0) {
-                        httpop_errors++;
-                }
-        }
-        word = strtok(nil, " ");        /* size sent to client */
-        z = atoi(word);
-        request = strtok(nil, " ");     /* Request method */
-        word = strtok(nil, " ");         /* URL */
-        if (word != nil) {
-                if (strstr(word,"cgi-bin") != nil) {
-                        httpop_cgi_bins++;
-                }
-                if (strstr(word, search_url) != nil) {
-                        httpop_searches++;
-                }
-        }
-        word = strtok(nil, " ");        /* optional user ident */
-        word = strtok(nil, "/");        /* Hierarchy */
-	if (word != nil) {
-		if (strstr(word, "DIRECT") == nil) {
-			prxy_squid_indirect++;
-		}
-	}
-        word = strtok(nil, " ");        /* Hostname */
-        word = strtok(nil, " ");        /* content-type */
+  int     z;
+  int     size_index;
+  int     ishead;
+  string  word;
+  char    first_byte[1];
 
-	/* process the collected data */
-	if (strstr(logtag, "TCP") != nil) {
-		squid_client_http++;
-	}
-	if (strstr(logtag, "UDP") != nil) {
-		squid_icp_requests++;
-	}
-	if (strstr(logtag, "HIT") != nil) {
-		prxy_squid_cache_hits++;
-	}
-	if (strstr(logtag, "MISS") != nil) {
-		squid_cache_misses++;
-	}
-	switch(request) {
-                case "GET":
-                        httpop_gets++;
-                        break;
-                case "POST":
-                        httpop_posts++;
-                        break;
-                case "HEAD":
-                        ishead = 1;
-                        httpop_condgets++;
-                        break;
-		case "ICP_QUERY":
-			squid_icp_queries++;
-                default: break;
-        }
-        if (ishead == 0) {      /* don't add size if its a HEAD */
-                dwnld_totalz += z;
-        }
-        if (z < 1024) {
-                size_index=0;           /* under 1K */
-        } else {
-                if (z < 10240) {
-                        size_index=1; /* under 10K */
-                } else {
-                        if (z < 102400) {
-                                size_index=2; /* under 100K */
-                        } else {
-                                if (z < 1048576) {
-                                        size_index=3; /* < 1MB */
-                                } else {
-                                        size_index=4; /* >= 1MB */
-                                }
-                        }
-                }
-        }
-        dwnld_size[size_index]++;
-        prxy_squid_xfer_by_size[size_index] += xf;
+#if WATCH_PROXY || WATCH_SQUID || WATCH_YAHOO
+  double  xf;
+#ifdef WATCH_SQUID
+  string  logtag;
+  string  request;
+#endif
+#ifdef WATCH_YAHOO
+  string  arg;
+  ulong   ptr;
+  ulong   tmp;
+  ulong   ulong_xf;
+#endif
+#endif
+
+  ishead = 0;
+#ifdef WATCH_YAHOO
+  // Make sure that the input line has at least 32 bytes of data plus a new
+  // line, for a total length of 33.
+  if (strlen(buf) < 33) {
+    return;
+  }
+  word = strtok(buf,"\05");
+#else
+  word = strtok(buf," ");
+#endif
+  if (word == nil) {
+    return;
+  }
+
+#ifdef WATCH_SQUID
+  // Word contains unix time in seconds.milliseconds.
+  word                = strtok(nil, " ");	// Elapsed request time in ms
+  xf                  = atof(word)/1000.0;
+  www_dwnld_time_sum += xf;
+#ifdef DINKY
+  printf("time: %s %f total %f\n", word, xf, xfer_sum);
+#endif
+  word    = strtok(nil, " ");			// Client IP address
+  logtag  = strtok(nil, "/");			// Log tag
+  word    = strtok(nil, " ");			// Reply code
+  WWW_REPLY_CODE(word)
+  word    = strtok(nil, " ");			// Size sent to client
+  z       = atoi(word);
+  request = strtok(nil, " ");			// Request method
+  word    = strtok(nil, " ");			// URL
+  if (word != nil) {
+    if (word =~ "cgi-bin") {
+      httpop_cgi_bins++;
+    }
+    if (word =~ www_search_url) {
+      httpop_searches++;
+    }
+  }
+  word = strtok(nil, " ");			// Optional user ident
+  word = strtok(nil, "/");			// Hierarchy
+  if (word != nil) {
+    if (word =~ "DIRECT") {
+      prxy_squid_indirect++;
+    }
+  }
+  word = strtok(nil, " ");			// Hostname
+  word = strtok(nil, " ");			// Content-type
+
+  // Process the collected data.
+  if (logtag =~ "TCP") {
+    squid_client_http++;
+  }
+  if (logtag =~ "UDP") {
+    squid_icp_requests++;
+  }
+  if (logtag =~ "HIT") {
+    prxy_squid_cache_hits++;
+  }
+  if (logtag =~ "MISS") {
+    squid_cache_misses++;
+  }
+  WWW_METHOD(request)
+
+  // Do not add size if its a HEAD.
+  if (ishead == 0) {
+    dwnld_totalz += z;
+  }
+
+  WWW_SIZE_INDEX(z, size_index)
+  www_dwnld_time_by_size[size_index] += xf;
+
+#elif WATCH_YAHOO
+  // Yahoo log format.  Fields in square brackets will only appear in the
+  // log file if the data actually exists (ie. you will never see a null
+  // Referrer field).  Further, fields labelled here with "(CONFIG)" will
+  // only appear if they are enabled via the YahooLogOptions configuration
+  // directive.
+  //
+  //     IP Address		(8 hex digits)
+  //     Timestamp		(time_t as 8 hex digits)
+  //     Processing Time	(in microseconds, as 8 hex digits)
+  //     Bytes Sent		(8 hex digits)
+  //     URL
+  //     [^Er referrer]  (CONFIG)
+  //     [^Em method]    (CONFIG)
+  //     [^Es status_code]
+  //     ^Ed signature
+  //     \n
+
+  // Ignore the IP address and timestamp.  Get the processing time, the
+  // number of bytes sent and the URL.  For each portion of the line, split
+  // it up into separate pieces.
+  if (sscanf(word, "%8lx%8lx%8x%8x", &tmp, &tmp, &ulong_xf, &z) != 4) {
+    return;
+  }
+
+  xf = ulong_xf/1000000.0;
+  WWW_SIZE_INDEX(z, size_index)
+  www_dwnld_time_sum                 += xf;
+  www_dwnld_time_by_size[size_index] += xf;
+
+  if (word =~ "cgi-bin") {
+    httpop_cgi_bins++;
+  }
+  if (word =~ www_search_url) {
+    httpop_searches++;
+  }
+
+  for (;;) {
+    word = strtok(nil, "\05");
+    if (word == nil) {
+      break;
+    }
+    first_byte = word;
+    ptr        = &word + 1;
+    arg        = ((string) ptr);
+    ptr = 0;
+    switch (first_byte[0]) {
+      case 'm':
+        WWW_METHOD(arg)
+        ptr = 1;
+        break;
+      case 's':
+        WWW_REPLY_CODE(arg)
+        break;
+      default:
+        break;
+    }
+  }
+
+  // If no method was seen, then assume it was a GET.
+  if (ptr == 0) {
+    httpop_gets++;
+  }
+
+  // Do not add size if its a HEAD.
+  if (ishead == 0) {
+    dwnld_totalz += z;
+  }
+  
 #else	/* common or netscape proxy formats */
-	strtok(nil, " ");	/* - */
-	strtok(nil, " ");	/* - */
-	strtok(nil, " [");	/* date */
-	strtok(nil, " ");	/* zone] */
-	word = strtok(nil, " \"");	/* GET or POST */
-	switch (word) {
-		case "get":
-		case "GET":
-			httpop_gets++; 
-			break;
-		case "post":
-		case "POST":
-			httpop_posts++;
-			break;
-		case "head":
-		case "HEAD":
-			ishead = 1;
-			httpop_condgets++;
-			break;
-		default:
-			break; 
-	}
-	word = strtok(nil, " ");	/* URL */
-	if (word != nil) {
-		if (strstr(word,"cgi-bin") != nil) {
-			httpop_cgi_bins++;
-		}
-		if (strstr(word, search_url) != nil) {
-			httpop_searches++;
-		}
-	}
-	// Sometimes HTTP/1.x is not listed in the access log.  Skip it
-	// if it does exist.  Load the error/success code.
-	word = strtok(nil, " ");
-	if (word != nil) {
-		if (strstr(word, "HTTP") != nil || strstr(word, "http") != nil) {
-			word = strtok(nil, " ");
-		}
-	}
-	if (word != nil) {
-		if (strstr(word,"304") != nil) {
-			httpop_condgets++;
-		}
-		else {
-			if (strncmp(word, "4", 1) == 0 || strncmp(word, "5", 1) == 0) {
-				httpop_errors++;
-			}
-		}
-	}
-	word = strtok(nil, " ");	// bytes transferred
-	if (word != nil) {
-		z = atoi(word);
-		if (ishead == 0) {	// don't add size if its a HEAD
-			dwnld_totalz += z;
-		}
-		if ((z % 1024) == z) {
-			size_index=0;		/* under 1K */
-		} else {
-			if ((z % 10240) == z) {
-				size_index=1; /* under 10K */
-			} else {
-				if ((z % 102400) == z) {
-					size_index=2; /* under 100K */
-				} else {
-					if ((z % 1048576) == z) {
-						size_index=3; /* < 1MB */
-					} else {
-						size_index=4; /* >= 1MB */
-					}
-				}
-			}
-		}
-		dwnld_size[size_index]++;
-	}
+  strtok(nil, " ");		// -
+  strtok(nil, " ");		// -
+  strtok(nil, " [");		// date
+  strtok(nil, " ");		// zone]
+  word = strtok(nil, " \"");	// GET or POST
+  WWW_METHOD(word)
+  word = strtok(nil, " ");	// URL
+  if (word != nil) {
+    if (word =~ "cgi-bin") {
+      httpop_cgi_bins++;
+    }
+    if (word =~ www_search_url) {
+      httpop_searches++;
+    }
+  }
+  // Sometimes HTTP/1.x is not listed in the access log.  Skip it
+  // if it does exist.  Load the error/success code.
+  word = strtok(nil, " ");
+  if (word != nil && (word =~ "HTTP" || word =~ "http")) {
+    word = strtok(nil, " ");
+  }
+  WWW_REPLY_CODE(word)
+  word = strtok(nil, " ");	// Bytes transferred.
+  if (word != nil) {
+    z = atoi(word);
+    if (ishead == 0) {		// Do not add size if its a HEAD.
+      dwnld_totalz += z;
+    }
+    WWW_SIZE_INDEX(z, size_index)
+  }
 #ifdef WATCH_PROXY
-	word = strtok(nil, " ");	/* status from server */
-	word = strtok(nil, " ");	/* length from server */
-	word = strtok(nil, " ");	/* length from client POST  */
-	word = strtok(nil, " ");	/* length POSTed to remote */
-	word = strtok(nil, " ");	/* client header req */
-	word = strtok(nil, " ");	/* proxy header resp */
-	word = strtok(nil, " ");	/* proxy header req */
-	word = strtok(nil, " ");	/* server header resp */
-	word = strtok(nil, " ");	/* transfer total secs */
-        word = strtok(nil, " ");        /* route */
-        if (word != nil) {	/* - DIRECT PROXY(host.domain:port) SOCKS */
-                if (strncmp(word, "PROXY", 5) == 0 ||
-                         strncmp(word, "SOCKS", 5) == 0) {
-                         prxy_squid_indirect++;
-		}
-	}
-        word = strtok(nil, " ");        /* client finish status */
-        word = strtok(nil, " ");        /* server finish status */
-        word = strtok(nil, " ");        /* cache finish status */
-	/* - ERROR HOST-NOT-AVAILABLE = error or incomplete op
-	WRITTEN REFRESHED CL-MISMATCH(content length mismatch) = cache_writes
-	NO-CHECK UP-TO-DATE = cache_hits
-	DO-NOT-CACHE NON-CACHEABLE = uncacheable */
-        if (word != nil) { 
-		switch(word) {
-			case "WRITTEN":
-			case "REFRESHED":
-			case "CL-MISMATCH": prxy_cache_writes++;
-					break;
-			case "NO-CHECK":
-			case "UP-TO-DATE":  prxy_squid_cache_hits++;
-					break;
-			case "DO-NOT-CACHE":
-			case "NON-CACHEABLE": prxy_uncacheable++;
-					break;
-			default: break;
-		}
-        }
-        word = strtok(nil, " [");       /* [transfer total time x.xxx */
-        if (word != nil) {
-                xf = atof(word);
-		prxy_squid_xfer_by_size[size_index] += xf;
-		prxy_squid_xfer_sum += xf;
-	}
+  word = strtok(nil, " ");	// status from server
+  word = strtok(nil, " ");	// length from server
+  word = strtok(nil, " ");	// length from client POST
+  word = strtok(nil, " ");	// length POSTed to remote
+  word = strtok(nil, " ");	// client header req
+  word = strtok(nil, " ");	// proxy header resp
+  word = strtok(nil, " ");	// proxy header req
+  word = strtok(nil, " ");	// server header resp
+  word = strtok(nil, " ");	// transfer total secs
+  word = strtok(nil, " ");	// route
+
+  // - DIRECT PROXY(host.domain:port) SOCKS
+  if (word != nil) {  
+    if (strncmp(word, "PROXY", 5) == 0 ||
+        strncmp(word, "SOCKS", 5) == 0) {
+      prxy_squid_indirect++;
+    }
+  }
+  word = strtok(nil, " ");	// client finish status
+  word = strtok(nil, " ");	// server finish status
+  word = strtok(nil, " ");	// cache finish status
+  // ERROR HOST-NOT-AVAILABLE = error or incomplete op
+  // WRITTEN REFRESHED CL-MISMATCH(content length mismatch) = cache_writes
+  // NO-CHECK UP-TO-DATE = cache_hits
+  // DO-NOT-CACHE NON-CACHEABLE = uncacheable
+  if (word != nil) { 
+    switch(word) {
+      case "WRITTEN":
+      case "REFRESHED":
+      case "CL-MISMATCH":
+        prxy_cache_writes++;
+        break;
+      case "NO-CHECK":
+      case "UP-TO-DATE":
+        prxy_squid_cache_hits++;
+        break;
+      case "DO-NOT-CACHE":
+      case "NON-CACHEABLE":
+        prxy_uncacheable++;
+        break;
+      default:
+        break;
+    }
+  }
+  word = strtok(nil, " [");		// [transfer total time x.xxx
+  if (word != nil) {
+    xf = atof(word);
+    www_dwnld_time_sum                 += xf;
+    www_dwnld_time_by_size[size_index] += xf;
+  }
 #endif
 #endif
 }
 
-measure_httpd(long sleep_till)
+measure_web(long sleep_till)
 {
   double lastops = 0.0;
   char   buf[BUFSIZ];
@@ -895,19 +1338,21 @@ measure_httpd(long sleep_till)
 
   for (i=0; i<5; i++) {
     dwnld_size[i] = 0;
-#if WATCH_PROXY || WATCH_SQUID
-    prxy_squid_xfer_by_size[i] = 0.0;
+#if WATCH_PROXY || WATCH_SQUID || WATCH_YAHOO
+    www_dwnld_time_by_size[i] = 0.0;
 #endif
   }
   dwnld_totalz = 0;
 
+#if WATCH_PROXY || WATCH_SQUID || WATCH_YAHOO
+  www_dwnld_time_sum      = 0.0;
+#endif
 #if WATCH_PROXY || WATCH_SQUID
-  prxy_squid_xfer_sum   = 0.0;
-  prxy_squid_indirect   = 0;
-  prxy_squid_cache_hits = 0;
+  prxy_squid_indirect     = 0;
+  prxy_squid_cache_hits   = 0;
 #ifdef WATCH_PROXY
-  prxy_cache_writes      = 0;
-  prxy_uncacheable       = 0;
+  prxy_cache_writes       = 0;
+  prxy_uncacheable        = 0;
 #else
   squid_cache_misses      = 0;
   squid_icp_requests      = 0;
@@ -916,14 +1361,20 @@ measure_httpd(long sleep_till)
 #endif
 #endif
 
-  if (log_name != nil) {
-    while (time(0) < sleep_till) {
+  if (www_log_filename != nil) {
+    now = time(0);
+    while (now < sleep_till) {
+#ifdef WATCH_CPU
+      sleep_till_and_count_new_proceses(now + 5);
+#else
       sleep(5);
-      if (log_file != 0) {
-        while (fgets(buf, BUFSIZ, log_file) != nil) {
+#endif
+      now = time(0);
+      if (www_fd != 0) {
+        while (fgets(buf, BUFSIZ, www_fd) != nil) {
           httpops += 1.0;
-          if (log_gatelen > 0) {
-            if (strncmp(buf, log_gateway, log_gatelen) == 0) {
+          if (www_gatelen > 0) {
+            if (strncmp(buf, www_gateway, www_gatelen) == 0) {
               gateops += 1.0;
             }
           }
@@ -932,19 +1383,19 @@ measure_httpd(long sleep_till)
       }
 
       /* see if the file has been switched or truncated */
-      stat(log_name, log_stat);
-      if (log_ino != log_stat[0].st_ino || log_size > log_stat[0].st_size) {
-        if (log_file != 0) {
-          fclose(log_file); /* close the old log */
+      stat(www_log_filename, www_stat);
+      if (www_ino != www_stat[0].st_ino || www_size > www_stat[0].st_size) {
+        if (www_fd != 0) {
+          fclose(www_fd); /* close the old log */
         }
         /* log file has changed, open the new one */
-        log_file = fopen(log_name, "r");
-        if (log_file != 0) {
-          log_ino = log_stat[0].st_ino;
-          while(fgets(buf, BUFSIZ, log_file) != nil) {
+        www_fd = fopen(www_log_filename, "r");
+        if (www_fd != 0) {
+          www_ino = www_stat[0].st_ino;
+          while(fgets(buf, BUFSIZ, www_fd) != nil) {
             httpops += 1.0;
-            if (log_gatelen > 0) {
-              if (strncmp(buf, log_gateway, log_gatelen) == 0) {
+            if (www_gatelen > 0) {
+              if (strncmp(buf, www_gateway, www_gatelen) == 0) {
                 gateops += 1.0;
               }
             }
@@ -953,30 +1404,27 @@ measure_httpd(long sleep_till)
         }
       }
 
-      log5_now      = gethrtime();
-      log5_interval = (log5_now - log5_then) * 0.000000001;
-      log5_then     = log5_now;
-      dtmp          = (httpops - lastops)/log5_interval;
+      www5_now      = gethrtime();
+      www5_interval = (www5_now - www5_then) * 0.000000001;
+      www5_then     = www5_now;
+      dtmp          = (httpops - lastops)/www5_interval;
       if (dtmp > httpops5) {
         httpops5 = dtmp;
       }
       lastops = httpops;
 
       // Remember size for next time.
-      log_size = log_stat[0].st_size;
+      www_size = www_stat[0].st_size;
     }
   }
   else {
-    now = time(0);
-    while (now < sleep_till) {
-      sleep(sleep_till - now);
-      now = time(0);
-    }
+    sleep_till_and_count_new_proceses(sleep_till);
+    www5_now = gethrtime();
   }
 
-  log_now      = gethrtime();
-  log_interval = (log_now - log_then) * 0.000000001;
-  log_then     = log_now;
+  www_now      = www5_now;
+  www_interval = (www_now - www_then) * 0.000000001;
+  www_then     = www_now;
 
   // Use dtmp to get percentages.
   if (httpops == 0.0) {
@@ -986,13 +1434,13 @@ measure_httpd(long sleep_till)
     dtmp = 100.0 / httpops;
   }
 
-#if WATCH_PROXY || WATCH_SQUID
-  for (i=0; i<5; ++i) {
+#if WATCH_PROXY || WATCH_SQUID || WATCH_YAHOO
+  for (i=0; i<5; i++) {
     if (dwnld_size[i] == 0) {
-      prxy_squid_xfer_by_size[i] = 0.0;
+      www_dwnld_time_by_size[i] = 0.0;
     }
     else {
-      prxy_squid_xfer_by_size[i] = prxy_squid_xfer_by_size[i]/dwnld_size[i];
+      www_dwnld_time_by_size[i] = www_dwnld_time_by_size[i]/dwnld_size[i];
     }
   }
 #endif
@@ -1000,7 +1448,7 @@ measure_httpd(long sleep_till)
 
 int count_proc(string name)
 {
-  int count;
+  int        count;
   prpsinfo_t p;
 
   count = 0;
@@ -1014,37 +1462,44 @@ int count_proc(string name)
 
 put_httpd()
 {
-  put_output("#httpds",   sprintf("%7d",   count_proc("httpd")));
-  put_output("httpop/s",  sprintf("%8.2f", httpops/log_interval));
-  put_output("http/p5s",  sprintf("%8.2f", httpops5));
-  put_output("cndget/s",  sprintf("%8.2f", httpop_condgets/log_interval));
-  put_output("search/s",  sprintf("%8.3f", httpop_searches/log_interval));
-  put_output("   cgi/s",  sprintf("%8.3f", httpop_cgi_bins/log_interval));
-  put_output(" htErr/s",  sprintf("%8.3f", httpop_errors/log_interval));
-  put_output(" httpb/s",  sprintf("%8.0f", dwnld_totalz/log_interval));
-  put_output("  %to1KB",  sprintf("%8.2f", dtmp*dwnld_size[0]));
-  put_output(" %to10KB",  sprintf("%8.2f", dtmp*dwnld_size[1]));
-  put_output("%to100KB",  sprintf("%8.2f", dtmp*dwnld_size[2]));
-  put_output("  %to1MB",  sprintf("%8.2f", dtmp*dwnld_size[3]));
-  put_output("%over1MB",  sprintf("%8.2f", dtmp*dwnld_size[4]));
-  put_output(log_gateway, sprintf("%8.2f", gateops/log_interval));
+  put_output("#httpds",    sprintf("%7d",   count_proc(www_server_proc_name)));
+  put_output("httpop/s",   sprintf("%8.2f", httpops/www_interval));
+  put_output("http/p5s",   sprintf("%8.2f", httpops5));
+  put_output("cndget/s",   sprintf("%8.2f", httpop_condgets/www_interval));
+  put_output("search/s",   sprintf("%8.3f", httpop_searches/www_interval));
+  put_output("   cgi/s",   sprintf("%8.3f", httpop_cgi_bins/www_interval));
+  put_output(" htErr/s",   sprintf("%8.3f", httpop_errors/www_interval));
+  put_output(" httpb/s",   sprintf("%8.0f", dwnld_totalz/www_interval));
+  put_output("  %to1KB",   sprintf("%8.2f", dtmp*dwnld_size[0]));
+  put_output(" %to10KB",   sprintf("%8.2f", dtmp*dwnld_size[1]));
+  put_output("%to100KB",   sprintf("%8.2f", dtmp*dwnld_size[2]));
+  put_output("  %to1MB",   sprintf("%8.2f", dtmp*dwnld_size[3]));
+  put_output("%over1MB",   sprintf("%8.2f", dtmp*dwnld_size[4]));
+  put_output(www_gateway,  sprintf("%8.2f", gateops/www_interval));
 #if WATCH_PROXY || WATCH_SQUID
-  put_output("  %indir",  sprintf("%8.2f", dtmp * prxy_squid_indirect));
-  put_output("%cch_hit",  sprintf("%8.2f", dtmp * prxy_squid_cache_hits));
+  put_output("  %indir",   sprintf("%8.2f", dtmp * prxy_squid_indirect));
+  put_output("%cch_hit",   sprintf("%8.2f", dtmp * prxy_squid_cache_hits));
 #ifdef WATCH_PROXY
-  put_output("%cch_wrt",  sprintf("%8.2f", dtmp * prxy_cache_writes));
-  put_output("%cch_unc",  sprintf("%8.2f", dtmp * prxy_uncacheable));
+  put_output("%cch_wrt",   sprintf("%8.2f", dtmp * prxy_cache_writes));
+  put_output("%cch_unc",   sprintf("%8.2f", dtmp * prxy_uncacheable));
 #else
-  put_output("%cch_mis",  sprintf("%8.2f", dtmp * squid_cache_misses));
-  put_output("%cch_req",  sprintf("%8.2f", dtmp * squid_icp_requests));
-  put_output("%cch_qry",  sprintf("%8.2f", dtmp * squid_icp_queries));
+  put_output("%cch_mis",   sprintf("%8.2f", dtmp * squid_cache_misses));
+  put_output("%cch_req",   sprintf("%8.2f", dtmp * squid_icp_requests));
+  put_output("%cch_qry",   sprintf("%8.2f", dtmp * squid_icp_queries));
 #endif
-  put_output("   xfr_t",  sprintf("%8.2f", 0.01 * dtmp * prxy_squid_xfer_sum));
-  put_output("  xfr1_t",  sprintf("%8.2f", prxy_squid_xfer_by_size[0]));
-  put_output(" xfr10_t",  sprintf("%8.2f", prxy_squid_xfer_by_size[1]));
-  put_output("xfr100_t",  sprintf("%8.2f", prxy_squid_xfer_by_size[2]));
-  put_output(" xfr1M_t",  sprintf("%8.2f", prxy_squid_xfer_by_size[3]));
-  put_output("xfro1M_t",  sprintf("%8.2f", prxy_squid_xfer_by_size[4]));
+  put_output("   xfr_t",   sprintf("%8.2f", 0.01 * dtmp * www_dwnld_time_sum));
+  put_output("  xfr1_t",   sprintf("%8.2f", www_dwnld_time_by_size[0]));
+  put_output(" xfr10_t",   sprintf("%8.2f", www_dwnld_time_by_size[1]));
+  put_output("xfr100_t",   sprintf("%8.2f", www_dwnld_time_by_size[2]));
+  put_output(" xfr1M_t",   sprintf("%8.2f", www_dwnld_time_by_size[3]));
+  put_output("xfro1M_t",   sprintf("%8.2f", www_dwnld_time_by_size[4]));
+#elif WATCH_YAHOO
+  put_output("   wprc_t",  sprintf("%9.5f", 0.01 * dtmp * www_dwnld_time_sum));
+  put_output("  wprc1_t",  sprintf("%9.5f", www_dwnld_time_by_size[0]));
+  put_output(" wprc10_t",  sprintf("%9.5f", www_dwnld_time_by_size[1]));
+  put_output("wprc100_t",  sprintf("%9.5f", www_dwnld_time_by_size[2]));
+  put_output(" wprc1M_t",  sprintf("%9.5f", www_dwnld_time_by_size[3]));
+  put_output("wprco1M_t",  sprintf("%9.5f", www_dwnld_time_by_size[4]));
 #endif
 }
 #endif

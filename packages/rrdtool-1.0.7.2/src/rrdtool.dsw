@@ -3,7 +3,7 @@ Microsoft Developer Studio Workspace File, Format Version 6.00
 
 ###############################################################################
 
-Project: "gd"="..\gd1.2\gd.dsp" - Package Owner=<4>
+Project: "cgilib"="..\cgilib-0.4\cgilib.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -11,6 +11,36 @@ Package=<5>
 
 Package=<4>
 {{{
+}}}
+
+###############################################################################
+
+Project: "gd"="..\gd1.3\gd.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name png
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "png"="..\libpng-1.0.3\png.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name zlib
+    End Project Dependency
 }}}
 
 ###############################################################################
@@ -23,11 +53,47 @@ Package=<5>
 
 Package=<4>
 {{{
+    Begin Project Dependency
+    Project_Dep_Name gd
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "rrd_cgi"=".\rrd_cgi.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name cgilib
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name rrd
+    End Project Dependency
 }}}
 
 ###############################################################################
 
 Project: "rrdtool"=".\rrdtool.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name rrd
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "zlib"="..\zlib-1.1.3\zlib.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{

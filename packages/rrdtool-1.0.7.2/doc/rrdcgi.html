@@ -1,0 +1,292 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>rrdcgi - create web pages containing RRD graphs based on templates
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+<!--
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<UL>
+
+		<LI><A HREF="#Pass_1">Pass 1</A>
+		<LI><A HREF="#Pass_2">Pass 2</A>
+		<LI><A HREF="#Pass_3">Pass 3</A>
+	</UL>
+
+	<LI><A HREF="#EXAMPLE">EXAMPLE</A>
+	<LI><A HREF="#EXAMPLE_2">EXAMPLE 2</A>
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+</UL>
+-->
+<!-- INDEX END -->
+
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+rrdcgi - create web pages containing RRD graphs based on templates
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+#!/path/to/<STRONG>rrdcgi</STRONG> 
+ 
+[<STRONG>--goodfor</STRONG>|<STRONG>-g</STRONG>&nbsp;<EM>seconds</EM>]
+
+[<STRONG>--filter</STRONG>]
+
+[<STRONG>--refresh</STRONG>|<STRONG>-r</STRONG>]
+
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+<STRONG>rrdcgi</STRONG> is a sort of very limited script interpreter. Its purpose is to run as a
+cgi-program and parse a web page template containing special
+&lt;RRD:: tags. <STRONG>rrdcgi</STRONG> will interpret and act according to these tags. In the end it will printout
+a web page including the necessary CGI headers.
+
+
+<P>
+
+<STRONG>rrdcgi</STRONG> parses the contents of the template in 2 steps. In each step it looks only
+for a subset of tags. This allows to nest tags. 
+
+
+<P>
+
+The argument parser uses the same semantics as you are used from your c
+shell.
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item__goodfor_g">--goodfor|-g seconds
+
+</A></STRONG><DD>
+Specify the number of seconds this page should remain valid. This will
+prompt the rrdcgi to output a Last-Modified and a Expire header.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__filter">--filter
+
+</A></STRONG><DD>
+Assume that rrdcgi is being run as a filter and not as a cgi.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__refresh_r">--refresh|-r
+
+</A></STRONG><DD>
+If the <STRONG>--goodfor</STRONG> flag is specified, then <STRONG>--refresh</STRONG> will cause rrdcgi to output a Refresh header with the value of the <STRONG>--goodfor</STRONG> value.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H2><A NAME="Pass_1">Pass 1
+
+</A></H2>
+<DL>
+<DT><STRONG><A NAME="item_RRD">RRD::CV name
+
+</A></STRONG><DD>
+Inserts the CGI variable of the given name.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_RRD">RRD::CV::QUOTE name
+
+</A></STRONG><DD>
+Inserts the CGI variable of the given name but quotes it, ready for use as
+an argument in another RRD:: tag. So even when there are spaces in the
+value of the CGI variable it will still be considered as one argument.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_RRD">RRD::CV::PATH name
+
+</A></STRONG><DD>
+Inserts the CGI variable of the given name, quotes it and makes sure the it
+starts neither with a '/' nor contains '..'. This is to make sure that no
+problematic pathnames can be introduced through the CGI interface.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H2><A NAME="Pass_2">Pass 2
+
+</A></H2>
+<DL>
+<DT><STRONG><A NAME="item_RRD">RRD::INCLUDE filename
+
+</A></STRONG><DD>
+Include the contents of the given file into the page returned from the cgi
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H2><A NAME="Pass_3">Pass 3
+
+</A></H2>
+<DL>
+<DT><STRONG><A NAME="item_RRD">RRD::GRAPH rrdgraph arguments
+
+</A></STRONG><DD>
+This tag creates the RRD graph defined in its argument and then gets
+replaced by an appropriate &lt;IMG&gt; tag referring to the graph. The <STRONG>--lazy</STRONG> option in RRD graph can be used to make sure that graphs are only
+regenerated when they are out of date. The arguments to the <STRONG>RRD::GRAPH</STRONG> tag work as described in the <STRONG>rrdgraph</STRONG> manual page.
+
+
+<P>
+
+Use the <STRONG>--lazy</STRONG> option in your RRD::GRAPH tags, to reduce the load on your server. This
+option makes sure that graphs are only regenerated when the old ones are
+out of date.
+
+
+<P>
+
+If you do not specify your own <STRONG>--imginfo</STRONG> format, the following will be used:
+
+
+<P>
+
+<PRE> &lt;IMG SRC=&quot;%s&quot; WIDTH=&quot;%lu&quot; HEIGHT=&quot;%lu&quot;&gt;
+</PRE>
+
+<P>
+
+Note that <CODE>%s</CODE> stands for the filename part of the graph
+generated, all directories given in the GIF file argument will get dropped.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_RRD">RRD::PRINT number
+
+</A></STRONG><DD>
+If the preceding  <STRONG>RRD::GRAPH</STRONG> tag contained and <STRONG>PRINT</STRONG> arguments, then you can access their output with this tag. The <EM>number</EM> argument refers to the number of the <STRONG>PRINT</STRONG> argument. This first <STRONG>PRINT</STRONG> has <EM>number</EM> 0.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="EXAMPLE">EXAMPLE
+
+</A></H1>
+The example below creates a web pages with a single RRD graph.
+
+
+<P>
+
+<PRE> #!/usr/local/bin/rrdcgi
+ &lt;HTML&gt;
+ &lt;HEAD&gt;&lt;TITLE&gt;RRDCGI Demo&lt;/TITLE&gt;&lt;/HEAD&gt;
+ &lt;BODY&gt;
+ &lt;H1&gt;RRDCGI Example Page&lt;/H1&gt;
+ &lt;P&gt;
+ &lt;RRD::GRAPH demo.gif --lazy --title=&quot;Temperatures&quot;
+          DEF:cel=demo.rrd:exhaust:AVERAGE
+          LINE2:cel#00a000:&quot;D. Celsius&quot;&gt;
+</PRE>
+
+<P>
+
+<PRE> &lt;/P&gt;
+ &lt;/BODY&gt;
+ &lt;/HTML&gt;
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="EXAMPLE_2">EXAMPLE 2
+
+</A></H1>
+This script is slightly more elaborate, it allows you to run it from a form
+which sets RRD_NAME. RRD_NAME is then used to select which RRD you want to
+use a source for your graph.
+
+
+<P>
+
+<PRE> #!/usr/local/bin/rrdcgi
+ &lt;HTML&gt;
+ &lt;HEAD&gt;&lt;TITLE&gt;RRDCGI Demo&lt;/TITLE&gt;&lt;/HEAD&gt;
+ &lt;BODY&gt;
+ &lt;H1&gt;RRDCGI Example Page for &lt;RRD::CV RRD_NAME&gt;&lt;/H1&gt;
+ &lt;H2&gt;Selection&lt;/H2&gt;
+ &lt;FORM&gt;&lt;INPUT NAME=RRD_NAME TYPE=RADIO VALUE=roomA&gt; Room A,
+       &lt;INPUT NAME=RRD_NAME TYPE=RADIO VALUE=roomB&gt; Room B.
+       &lt;INPUT TYPE=SUBMIT&gt;&lt;/FORM&gt;
+ &lt;H2&gt;Graph&lt;/H2&gt;
+ &lt;P&gt;
+ &lt;RRD::GRAPH &lt;RRD::CV::PATH RRD_NAME&gt;.gif --lazy 
+          --title &quot;Temperatures for &quot;&lt;RRD::CV::QUOTE RRD_NAME&gt;
+          DEF:cel=&lt;RRD::CV::PATH RRD_NAME&gt;.rrd:exhaust:AVERAGE
+          LINE2:cel#00a000:&quot;D. Celsius&quot;&gt;
+</PRE>
+
+<P>
+
+<PRE> &lt;/P&gt;
+ &lt;/BODY&gt;
+ &lt;/HTML&gt;
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHOR">AUTHOR
+
+</A></H1>
+Tobias Oetiker &lt;<A HREF="MAILTO:oetiker@ee.ethz.ch">oetiker@ee.ethz.ch</A>&gt;
+
+
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

@@ -12,7 +12,7 @@ S<[B<RRA:>I<CF>B<:>I<xff>B<:>I<steps>B<:>I<rows>]>
 
 =head1 DESCRIPTION
 
-The create function of the rrd tool lets you set up new
+The create function of the RRDtool lets you set up new
 Round Robin Database (B<RRD>) files. 
 The file is created at its final, full size and filled
 with I<*UNKNOWN*> data.
@@ -25,15 +25,14 @@ The name of the B<RRD> you want to create. B<RRD> files should end
 with the extension F<.rrd>. However, B<rrdtool> will accept any
 filename.
 
-=item B<--start>|B<-b> I<start time> (default: current time)
+=item B<--start>|B<-b> I<start time> (default: now - 10s)
 
 Specifies the time in seconds since 1970-01-01 UTC when the first
 value should be added to the B<RRD>. B<rrdtool> will not accept
 any data timed before or at the time specified.
 
-Negative input is treated as current time minus the specified number
-of seconds. See also AT-STYLE TIME SPECIFICATION section in the
-I<rrdfetch> documentation for alternative ways to specify time.
+See also AT-STYLE TIME SPECIFICATION section in the
+I<rrdfetch> documentation for more ways to specify time.
 
 =item B<--step>|B<-s> I<step> (default: 300 seconds)
 
@@ -71,9 +70,13 @@ I<min> and I<max> are optional entries defining the expected range of
 the data supplied by this data source. If I<min> and/or I<max> are
 defined, any value outside the defined range will be regarded as
 I<*UNKNOWN*>. If you do not know or care about min and max, set them
-to U for unknown. Note that min and max always refere to the processed values
+to U for unknown. Note that min and max always refer to the processed values
 of the DS. For a traffic-B<COUNTER> type DS this would be the max and min
 data-rate expected from the device.
+
+I<If information on minimal/maximal expected values is available,
+always set the min and/or max properties. This will help RRDtool in
+doing a simple sanity check on the data supplied when running update.>
 
 =item B<RRA:>I<CF>B<:>I<xff>B<:>I<steps>B<:>I<rows>
 
@@ -119,4 +122,4 @@ average temperature, respectively.
 
 =head1 AUTHOR
 
-Tobias Oetiker <oetiker@ee.ethz.ch>
+Tobias Oetiker E<lt>oetiker@ee.ethz.chE<gt>

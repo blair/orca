@@ -9,38 +9,47 @@ Planning and Inspiration
 
 Debugging and code contributions
 
-	Jeff R. Allen <jeff.allen@acm.org> (autoconfigure, portability)  
-	Philippe.Simonet <Philippe.Simonet@swisscom.com> (NT porting)
-	Wrolf Courtney <wrolf@concentric.net> (HP-UX)
-	Dan Dunn <dandunn@computer.org>
-	Russ Wright <wright@LBL.Gov>
-	Simon Leinen <simon@switch.ch>
-	Jost.Krieger <Jost.Krieger@ruhr-uni-bochum.de>
-	Blair Zajac <bzajac@geostaff.com>
-	Andrew Turner <turner@mint.net> (LAST and TOTAL consolidators)
 	Andreas Kroomaa <andre@ml.ee>
-        Oleg Cherevko <olwi@icyb.kiev.ua>
-	Otmar Lendl <O.Lendl@Austria.EU.net> (core dump fix)
-        Tom Crawley <Tom.Crawley@hi.riotinto.com.au> (GCC&HP configuration)
-        Jeremy Fischer <jeremy@pobox.com> (Makefile changes & RPM builds)
+	Andrew Turner <turner@mint.net> (LAST consolidator)
+	Blair Zajac <bzajac@geostaff.com>
+	Dan Dunn <dandunn@computer.org>
+	Hermann Hueni <hueni@glue.ch> (SunOS porting)
+	Jeff R. Allen <jeff.allen@acm.org> (autoconfigure, portability)  
+	Jost.Krieger <Jost.Krieger@ruhr-uni-bochum.de>
+	Otmar Lendl <O.Lendl@Austria.EU.net> (lots of bugfixes)
+	Philippe.Simonet <Philippe.Simonet@swisscom.com> (NT porting)
+	Russ Wright <rwwright@home.com>
+	Simon Leinen <simon@switch.ch>
+	Wrolf Courtney <wrolf@concentric.net> (HP-UX)
         Alan Lichty <alan_lichty@eli.net>
+        Alex van den Bogaerdt <alex@ergens.op.het.net> (rrd_resize.c and more)
+        Jeremy Fischer <jeremy@pobox.com> (Makefile changes & RPM builds)
+        Oleg Cherevko <olwi@icyb.kiev.ua>
         Steen Linden <Steen.Linden@ebone.net>
-        Alex van den Bogaerdt <alex@ergens.op.het.net> (rrd_resize.c)
+        Tom Crawley <Tom.Crawley@hi.riotinto.com.au> (GCC&HP configuration)
 
 Documentation
 
-        Russ Wright <rwwright@home.com>
-        Wrolf Courtney <wrolf@concentric.net>      
+	Alan Lichty <alan_lichty@eli.net>
+	Alex van den Bogaerdt <alex@ergens.op.het.net>
         Amos Shapira <amos@gezernet.co.il>
         Kai Siering <kai.siering@mediaways.net>
-	Alex van den Bogaerdt <alex@ergens.op.het.net>
-	Alan Lichty <alan_lichty@eli.net>
+        Russ Wright <rwwright@home.com>
+        Wrolf Courtney <wrolf@concentric.net>      
+	Tobias Weingartner <weingart@cs.ualberta.ca>
+
+Internet Resources
+        LAN Services AG (www.lan.ch) for the http://rrdtool.eu.org domain reflector
 
 Further I would like to note, that rrdtool would not exist without
 the following free software products:
 
 	Perl by Larry Wall
 	gd library by Thomas Boutell
+	gifcode from David Koblas
+	libpng by Glenn Randers-Pehrson / Andreas Eric Dilger / Guy Eric Schalnat
+	cgilib by Martin Schulze
+	zlib by Jean-loup Gailly and Mark Adler
 	SNMP Perl-Module by Simon Leinen
 
 	and last but not least
@@ -50,5 +59,8 @@ the following free software products:
 I would also like to thank the Department of Electrical Engineering
 at the Swiss Federal Institute of Technology who allow me to
 use their network resources to publish rrdtool ...
+
+During Summer 1999 CAIDA (www.caida.org) has supported me in working full
+time on RRDtool ... A big thank you to them as well.
 
 Tobias Oetiker <oetiker@ee.ethz.ch>

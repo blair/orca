@@ -3,7 +3,7 @@
  */
 
 /*
- * $Id: Storable.xs,v 0.6.1.3 1998/07/03 11:36:09 ram Exp $
+ * $Id: Storable.xs,v 0.6.1.5 1999/09/14 20:12:29 ram Exp ram $
  *
  *  Copyright (c) 1995-1998, Raphael Manfredi
  *  
@@ -11,6 +11,13 @@
  *  as specified in the README file that comes with the distribution.
  *
  * $Log: Storable.xs,v $
+ * Revision 0.6.1.5  1999/09/14 20:12:29  ram
+ * patch5: integrated "thread-safe" patch from Murray Nesbitt
+ * patch5: try to avoid compilation warning on 64-bit CPUs
+ *
+ * Revision 0.6.1.4  1999/07/12  12:37:01  ram
+ * patch4: uses new internal PL_* naming convention.
+ *
  * Revision 0.6.1.3  1998/07/03  11:36:09  ram
  * patch3: fixed compatibility (wrt 0.5@9) for retrieval of blessed refs
  * patch3: increased store() throughput significantly
@@ -56,6 +63,11 @@
 #ifndef newRV_noinc
 #define newRV_noinc(sv)		((Sv = newRV(sv)), --SvREFCNT(SvRV(Sv)), Sv)
 #endif
+#ifndef ERRSV				/* Detects older perls (<= 5.004) */
+#define PL_sv_yes	sv_yes
+#define PL_sv_no	sv_no
+#define PL_sv_undef	sv_undef
+#endif
 #ifndef HvSHAREKEYS_off
 #define HvSHAREKEYS_off(hv)	/* Ignore */
 #endif
@@ -96,9 +108,9 @@
 #define SX_TIED_ARRAY  C(11)  /* Tied array forthcoming */
 #define SX_TIED_HASH   C(12)  /* Tied hash forthcoming */
 #define SX_TIED_SCALAR C(13)  /* Tied scalar forthcoming */
-#define SX_SV_UNDEF	C(14)	/* Perl's immortal sv_undef */
-#define SX_SV_YES	C(15)	/* Perl's immortal sv_yes */
-#define SX_SV_NO	C(16)	/* Perl's immortal sv_no */
+#define SX_SV_UNDEF	C(14)	/* Perl's immortal PL_sv_undef */
+#define SX_SV_YES	C(15)	/* Perl's immortal PL_sv_yes */
+#define SX_SV_NO	C(16)	/* Perl's immortal PL_sv_no */
 #define SX_ERROR	C(17)	/* Error */
 
 /*
@@ -155,16 +167,80 @@ struct extendable {
 typedef unsigned long stag_t;	/* Used by pre-0.6 binary format */
 
 /*
- * XXX multi-threading needs context for the following variables...
+ * The following "thread-safe" related defines were contributed by
+ * Murray Nesbitt <murray@activestate.com> and integrated by RAM, who
+ * only renamed things a little bit to ensure consistency with surrounding
+ * code.
+ *
+ * The patch itself is fairly inefficient since it performs a lookup in
+ * some hash table at the start of every routine. It has to do that in order
+ * to determine the proper context.
+ *
+ * The right solution, naturally, is to change all the signatures to propagate
+ * the context down the call chain and only fetch the per-thread context only
+ * once at the entry point before recursion begins. That's planned for some
+ * day, when Perl's threading model will be stabilized.
+ *
+ *		-- RAM, 14/09/1999
  */
-static HV *hseen;			/* which objects have been seen, store time */
-static AV *aseen;			/* which objects have been seen, retrieve time */
-static I32 tagnum;			/* incremented at store time for each seen object */
-static int netorder = 0;	/* true if network order used */
-static int forgive_me = -1;	/* whether to be forgiving... */
-static int canonical;		/* whether to store hashes sorted by key */
-struct extendable keybuf;	/* for hash key retrieval */
-struct extendable membuf;	/* for memory store/retrieve operations */
+
+#define MY_VERSION "Storable(" XS_VERSION ")"
+
+typedef struct {
+    HV *hseen;			/* which objects have been seen, store time */
+    AV *aseen;			/* which objects have been seen, retrieve time */
+    I32 tagnum;			/* incremented at store time for each seen object */
+    int netorder;		/* true if network order used */
+    int forgive_me;		/* whether to be forgiving... */
+    int canonical;		/* whether to store hashes sorted by key */
+    struct extendable keybuf;	/* for hash key retrieval */
+    struct extendable membuf;	/* for memory store/retrieve operations */
+} storable_cxt_t;
+
+#if defined(MULTIPLICITY) || defined(PERL_OBJECT) || defined(PERL_CAPI)
+
+#if (PATCHLEVEL == 4) && (SUBVERSION < 68)
+#define dPERINTERP_SV 									\
+	SV *perinterp_sv = perl_get_sv(MY_VERSION, FALSE)	\
+#else	/* >= perl5.004_68 */
+#define dPERINTERP_SV									\
+	SV *perinterp_sv = *hv_fetch(PL_modglobal,			\
+		MY_VERSION, sizeof(MY_VERSION)-1, TRUE)
+#endif	/* < perl5.004_68 */
+
+#define dPERINTERP_PTR(T,name)							\
+	T name = (T)(perinterp_sv && SvIOK(perinterp_sv)	\
+				? SvIVX(perinterp_sv) : NULL)
+#define dPERINTERP										\
+	dPERINTERP_SV;										\
+	dPERINTERP_PTR(storable_cxt_t *, PERINTERP)
+
+#define INIT_PERINTERP									\
+      dPERINTERP;										\
+      Newz(0,PERINTERP,1, storable_cxt_t);				\
+      sv_setiv(perinterp_sv, (IV)PERINTERP)
+
+#else /* !MULTIPLICITY && !PERL_OBJECT && !PERL_CAPI */
+
+static storable_cxt_t Context;
+#define dPERINTERP typedef int _interp_DBI_dummy
+#define PERINTERP (&Context)
+#define INIT_PERINTERP
+
+#endif /* MULTIPLICITY || PERL_OBJECT || PERL_CAPI */
+
+#define hseen           (PERINTERP->hseen)
+#define aseen           (PERINTERP->aseen)
+#define tagnum          (PERINTERP->tagnum)
+#define netorder        (PERINTERP->netorder)
+#define forgive_me      (PERINTERP->forgive_me)
+#define canonical       (PERINTERP->canonical)
+#define keybuf          (PERINTERP->keybuf)
+#define membuf          (PERINTERP->membuf)
+
+/*
+ * End of "thread-safe" related definitions.
+ */
 
 /*
  * key buffer handling
@@ -370,7 +446,7 @@ static char magicstr[] = "pst0";			/* Used as a magic number */
 	} while (0)
 
 #define STORE_SCALAR(pv, len) do {		\
-	if (len < LG_SCALAR) {				\
+	if (len <= LG_SCALAR) {				\
 		unsigned char clen = (unsigned char) len;	\
 		PUTMARK(SX_SCALAR);				\
 		PUTMARK(clen);					\
@@ -468,6 +544,7 @@ static int store_ref(f, sv)
 PerlIO *f;
 SV *sv;
 {
+	dPERINTERP;
 	TRACEME(("store_ref (0x%lx)", (unsigned long) sv));
 
 	PUTMARK(SX_REF);
@@ -490,6 +567,7 @@ static int store_scalar(f, sv)
 PerlIO *f;
 SV *sv;
 {
+	dPERINTERP;
 	IV iv;
 	char *pv;
 	STRLEN len;
@@ -504,7 +582,7 @@ SV *sv;
 	 */
 
 	if (!(flags & SVf_OK)) {			/* !SvOK(sv) */
-		if (sv == &sv_undef) {
+		if (sv == &PL_sv_undef) {
 			TRACEME(("immortal undef"));
 			PUTMARK(SX_SV_UNDEF);
 		} else {
@@ -539,17 +617,17 @@ SV *sv;
 	 * value is false.
 	 *
 	 * The test for a read-only scalar with both POK and NOK set is meant
-	 * to quickly detect &sv_yes and &sv_no without having to pay the address
-	 * comparison for each scalar we store.
+	 * to quickly detect &PL_sv_yes and &PL_sv_no without having to pay the
+	 * address comparison for each scalar we store.
 	 */
 
 #define SV_MAYBE_IMMORTAL (SVf_READONLY|SVf_POK|SVf_NOK)
 
 	if ((flags & SV_MAYBE_IMMORTAL) == SV_MAYBE_IMMORTAL) {
-		if (sv == &sv_yes) {
+		if (sv == &PL_sv_yes) {
 			TRACEME(("immortal yes"));
 			PUTMARK(SX_SV_YES);
-		} else if (sv == &sv_no) {
+		} else if (sv == &PL_sv_no) {
 			TRACEME(("immortal no"));
 			PUTMARK(SX_SV_NO);
 		} else {
@@ -561,8 +639,8 @@ SV *sv;
 
 		/*
 		 * Will come here from below with pv and len set if double & netorder,
-		 * or from above if it was readonly, POK and NOK but neither &sv_yes
-		 * nor &sv_no.
+		 * or from above if it was readonly, POK and NOK but neither &PL_sv_yes
+		 * nor &PL_sv_no.
 		 */
 	string:
 
@@ -647,6 +725,7 @@ static int store_array(f, av)
 PerlIO *f;
 AV *av;
 {
+	dPERINTERP;
 	SV **sav;
 	I32 len = av_len(av) + 1;
 	I32 i;
@@ -712,6 +791,7 @@ static int store_hash(f, hv)
 PerlIO *f;
 HV *hv;
 {
+	dPERINTERP;
 	I32 len = HvKEYS(hv);
 	I32 i;
 	int ret = 0;
@@ -878,6 +958,7 @@ static int store_tied(f, sv)
 PerlIO *f;
 SV *sv;
 {
+	dPERINTERP;
 	MAGIC *mg;
 	int ret = 0;
 	int svt = SvTYPE(sv);
@@ -946,6 +1027,7 @@ static int store_other(f, sv)
 PerlIO *f;
 SV *sv;
 {
+	dPERINTERP;
 	STRLEN len;
 	static char buf[80];
 
@@ -1061,6 +1143,7 @@ static int store(f, sv)
 PerlIO *f;
 SV *sv;
 {
+	dPERINTERP;
 	SV **svh;
 	int ret;
 	int type;
@@ -1072,11 +1155,21 @@ SV *sv;
 	 * If object has already been stored, do not duplicate data.
 	 * Simply emit the SX_OBJECT marker followed by its tag data.
 	 * The tag is always written in network order.
+	 *
+	 * NOTA BENE, for 64-bit machines: the "*svh" below does not yield a
+	 * real pointer, rather a tag number (watch the insertion code below).
+	 * That means it pobably safe to assume it is well under the 32-bit limit,
+	 * and makes the truncation safe.
+	 *		-- RAM, 14/09/1999
 	 */
 
 	svh = hv_fetch(hseen, (char *) &sv, sizeof(sv), FALSE);
 	if (svh) {
+#if PTRSIZE <= 4
 		I32 tagval = htonl((I32) (*svh));
+#else
+		I32 tagval = htonl((I32) ((unsigned long) (*svh) & 0xffffffff));
+#endif
 		TRACEME(("object 0x%lx seen as #%d.", (unsigned long) sv, tagval));
 		PUTMARK(SX_OBJECT);
 		WRITE(&tagval, sizeof(I32));
@@ -1091,9 +1184,13 @@ SV *sv;
 	 * cast the tagnum to a SV pointer and store that in the hash.  This
 	 * means that we must clean up the hash manually afterwards, but gives
 	 * us a 15% throughput increase.
+	 *
+	 * The (IV) cast below is for 64-bit machines, to avoid warnings from
+	 * the compiler. Please, let me know if it does not work.
+	 *		-- RAM, 14/09/1999
 	 */
 
-	if (!hv_store(hseen, (char *) &sv, sizeof(sv), (SV*) (tagnum++), 0))
+	if (!hv_store(hseen, (char *) &sv, sizeof(sv), (SV*) (IV) (tagnum++), 0))
 		return -1;
 	TRACEME(("recorded 0x%lx as object #%d", (unsigned long) sv, tagnum));
 
@@ -1154,6 +1251,7 @@ static int magic_write(f, use_network_order)
 PerlIO *f;
 int use_network_order;
 {
+	dPERINTERP;
 	char buf[256];	/* Enough room for 256 hexa digits */
 	unsigned char c;
 
@@ -1200,6 +1298,7 @@ PerlIO *f;
 SV *sv;
 int use_network_order;
 {
+	dPERINTERP;
 	int status;
 
 	netorder = use_network_order;	/* Global, not suited for multi-thread */
@@ -1271,7 +1370,7 @@ int use_network_order;
 
 		hv_iterinit(hseen);
 		while (he = hv_iternext(hseen))
-			HeVAL(he) = &sv_undef;
+			HeVAL(he) = &PL_sv_undef;
 	}
 	hv_undef(hseen);		/* Free seen object table */
 	sv_free((SV *) hseen);	/* Free HV */
@@ -1288,6 +1387,7 @@ int use_network_order;
  */
 static SV *mbuf2sv()
 {
+	dPERINTERP;
 	return newSVpv(mbase, MBUF_SIZE());
 }
 
@@ -1300,10 +1400,11 @@ static SV *mbuf2sv()
 SV *mstore(sv)
 SV *sv;
 {
+	dPERINTERP;
 	TRACEME(("mstore"));
 	MBUF_INIT(0);
 	if (!do_store(0, sv, FALSE))		/* Not in network order */
-		return &sv_undef;
+		return &PL_sv_undef;
 
 	return mbuf2sv();
 }
@@ -1317,10 +1418,11 @@ SV *sv;
 SV *net_mstore(sv)
 SV *sv;
 {
+	dPERINTERP;
 	TRACEME(("net_mstore"));
 	MBUF_INIT(0);
 	if (!do_store(0, sv, TRUE))	/* Use network order */
-		return &sv_undef;
+		return &PL_sv_undef;
 
 	return mbuf2sv();
 }
@@ -1363,6 +1465,7 @@ SV *sv;
 static SV *retrieve_ref(f)
 PerlIO *f;
 {
+	dPERINTERP;
 	SV *rv;
 	SV *sv;
 
@@ -1418,6 +1521,7 @@ PerlIO *f;
 static SV *retrieve_tied_array(f)
 PerlIO *f;
 {
+	dPERINTERP;
 	SV *tv;
 	SV *sv;
 
@@ -1448,6 +1552,7 @@ PerlIO *f;
 static SV *retrieve_tied_hash(f)
 PerlIO *f;
 {
+	dPERINTERP;
 	SV *tv;
 	SV *sv;
 
@@ -1477,6 +1582,7 @@ PerlIO *f;
 static SV *retrieve_tied_scalar(f)
 PerlIO *f;
 {
+	dPERINTERP;
 	SV *tv;
 	SV *sv;
 
@@ -1509,6 +1615,7 @@ PerlIO *f;
 static SV *retrieve_lscalar(f)
 PerlIO *f;
 {
+	dPERINTERP;
 	STRLEN len;
 	SV *sv;
 
@@ -1555,6 +1662,7 @@ PerlIO *f;
 static SV *retrieve_scalar(f)
 PerlIO *f;
 {
+	dPERINTERP;
 	int len;
 	SV *sv;
 
@@ -1610,6 +1718,7 @@ PerlIO *f;
 static SV *retrieve_integer(f)
 PerlIO *f;
 {
+	dPERINTERP;
 	SV *sv;
 	IV iv;
 
@@ -1634,6 +1743,7 @@ PerlIO *f;
 static SV *retrieve_netint(f)
 PerlIO *f;
 {
+	dPERINTERP;
 	SV *sv;
 	int iv;
 
@@ -1663,6 +1773,7 @@ PerlIO *f;
 static SV *retrieve_double(f)
 PerlIO *f;
 {
+	dPERINTERP;
 	SV *sv;
 	double nv;
 
@@ -1687,6 +1798,7 @@ PerlIO *f;
 static SV *retrieve_byte(f)
 PerlIO *f;
 {
+	dPERINTERP;
 	SV *sv;
 	int siv;
 
@@ -1710,6 +1822,7 @@ PerlIO *f;
  */
 static SV *retrieve_undef()
 {
+	dPERINTERP;
 	SV* sv;
 
 	TRACEME(("retrieve_undef"));
@@ -1727,7 +1840,8 @@ static SV *retrieve_undef()
  */
 static SV *retrieve_sv_undef()
 {
-	SV *sv = &sv_undef;
+	dPERINTERP;
+	SV *sv = &PL_sv_undef;
 
 	TRACEME(("retrieve_sv_undef"));
 
@@ -1742,7 +1856,8 @@ static SV *retrieve_sv_undef()
  */
 static SV *retrieve_sv_yes()
 {
-	SV *sv = &sv_yes;
+	dPERINTERP;
+	SV *sv = &PL_sv_yes;
 
 	TRACEME(("retrieve_sv_yes"));
 
@@ -1757,7 +1872,8 @@ static SV *retrieve_sv_yes()
  */
 static SV *retrieve_sv_no()
 {
-	SV *sv = &sv_no;
+	dPERINTERP;
+	SV *sv = &PL_sv_no;
 
 	TRACEME(("retrieve_sv_no"));
 
@@ -1789,6 +1905,7 @@ static SV *retrieve_other()
 static SV *retrieve_array(f)
 PerlIO *f;
 {
+	dPERINTERP;
 	I32 len;
 	I32 i;
 	AV *av;
@@ -1841,6 +1958,7 @@ PerlIO *f;
 static SV *retrieve_hash(f)
 PerlIO *f;
 {
+	dPERINTERP;
 	I32 len;
 	I32 size;
 	I32 i;
@@ -1915,6 +2033,7 @@ PerlIO *f;
 static SV *old_retrieve_array(f)
 PerlIO *f;
 {
+	dPERINTERP;
 	I32 len;
 	I32 i;
 	AV *av;
@@ -1976,6 +2095,7 @@ PerlIO *f;
 static SV *old_retrieve_hash(f)
 PerlIO *f;
 {
+	dPERINTERP;
 	I32 len;
 	I32 size;
 	I32 i;
@@ -2010,12 +2130,12 @@ PerlIO *f;
 		if (c == SX_VL_UNDEF) {
 			TRACEME(("(#%d) undef value", i));
 			/*
-			 * Due to a bug in hv_store(), it's not possible to pass &sv_undef
-			 * to hv_store() as a value, otherwise the associated key will
-			 * not be creatable any more. -- RAM, 14/01/97
+			 * Due to a bug in hv_store(), it's not possible to pass
+			 * &PL_sv_undef to hv_store() as a value, otherwise the
+			 * associated key will not be creatable any more. -- RAM, 14/01/97
 			 */
 			if (!sv_h_undef)
-				sv_h_undef = newSVsv(&sv_undef);
+				sv_h_undef = newSVsv(&PL_sv_undef);
 			sv = SvREFCNT_inc(sv_h_undef);
 		} else if (c == SX_VALUE) {
 			TRACEME(("(#%d) value", i));
@@ -2101,7 +2221,7 @@ static SV *(*sv_retrieve[])() = {
 	retrieve_other,			/* SX_ERROR */
 };
 
-static SV *(**sv_retrieve_vtbl)();	/* One of the above -- XXX for threads*/
+static SV *(**sv_retrieve_vtbl)();	/* One of the above -- XXX for threads */
 
 #define RETRIEVE(x)	(*sv_retrieve_vtbl[(x) >= SX_ERROR ? SX_ERROR : (x)])
 
@@ -2111,7 +2231,7 @@ static SV *(**sv_retrieve_vtbl)();	/* One of the above -- XXX for threads*/
  * Make sure the stored data we're trying to retrieve has been produced
  * on an ILP compatible system with the same byteorder. It croaks out in
  * case an error is detected. [ILP = integer-long-pointer sizes]
- * Returns null if error is detected, &sv_undef otherwise.
+ * Returns null if error is detected, &PL_sv_undef otherwise.
  *
  * Note that there's no byte ordering info emitted when network order was
  * used at store time.
@@ -2119,6 +2239,7 @@ static SV *(**sv_retrieve_vtbl)();	/* One of the above -- XXX for threads*/
 static SV *magic_check(f)
 PerlIO *f;
 {
+	dPERINTERP;
 	char buf[256];
 	char byteorder[256];
 	int c;
@@ -2165,7 +2286,7 @@ magic_ok:
 	TRACEME(("binary image version is %d", version));
 
 	if (netorder = (use_network_order & 0x1))
-		return &sv_undef;				/* No byte ordering info */
+		return &PL_sv_undef;			/* No byte ordering info */
 
 	sprintf(byteorder, "%lx", (unsigned long) BYTEORDER);
 	GETMARK(c);
@@ -2187,7 +2308,7 @@ magic_ok:
 	if ((int) c != sizeof(char *))
 		croak("Pointer integer size is not compatible");
 
-	return &sv_undef;	/* OK */
+	return &PL_sv_undef;	/* OK */
 }
 
 /*
@@ -2200,6 +2321,7 @@ magic_ok:
 static SV *retrieve(f)
 PerlIO *f;
 {
+	dPERINTERP;
 	int type;
 	SV **svh;
 	SV *sv;
@@ -2348,6 +2470,7 @@ first_time:		/* Will disappear when support for old format is dropped */
 static SV *do_retrieve(f)
 PerlIO *f;
 {
+	dPERINTERP;
 	SV *sv;
 
 	TRACEME(("do_retrieve"));
@@ -2359,6 +2482,8 @@ PerlIO *f;
 
 	if (!magic_check(f))
 		croak("Magic number checking on perl storable failed");
+
+	TRACEME(("data stored in %s format", netorder ? "net order" : "native"));
 
 	/*
 	 * If retrieving an old binary version, the sv_retrieve_vtbl variable is
@@ -2380,7 +2505,7 @@ PerlIO *f;
 
 	if (!sv) {
 		TRACEME(("retrieve ERROR"));
-		return &sv_undef;	/* Something went wrong, return undef */
+		return &PL_sv_undef;	/* Something went wrong, return undef */
 	}
 
 	TRACEME(("retrieve got %s(0x%lx)",
@@ -2424,6 +2549,7 @@ PerlIO *f;
 SV *mretrieve(sv)
 SV *sv;
 {
+	dPERINTERP;
 	struct extendable mcommon;			/* Temporary save area for global */
 	SV *rsv;							/* Retrieved SV pointer */
 
@@ -2449,19 +2575,31 @@ SV *sv;
 SV *dclone(sv)
 SV *sv;
 {
+	dPERINTERP;
 	int size;
 
 	TRACEME(("dclone"));
 
 	MBUF_INIT(0);
 	if (!do_store(0, sv, FALSE))		/* Not in network order! */
-		return &sv_undef;				/* Error during store */
+		return &PL_sv_undef;			/* Error during store */
 
 	size = MBUF_SIZE();
 	TRACEME(("dclone stored %d bytes", size));
 
 	MBUF_INIT(size);
 	return do_retrieve(0);
+}
+
+/*
+ * init_perinterp
+ *
+ * Called once per "thread" (interpreter) to initialize some global context.
+ */
+static void init_perinterp() {
+    INIT_PERINTERP;
+    netorder = 0;	/* true if network order used */
+    forgive_me = -1;	/* whether to be forgiving... */
 }
 
 /*
@@ -2482,6 +2620,9 @@ SV *sv;
 MODULE = Storable	PACKAGE = Storable
 
 PROTOTYPES: ENABLE
+
+BOOT:
+    init_perinterp();
 
 int
 pstore(f,obj)

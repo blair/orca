@@ -1,6 +1,6 @@
 #!./perl
 
-# $Id: store.t,v 0.6 1998/06/04 16:08:35 ram Exp $
+# $Id: store.t,v 0.6 1998/06/04 16:08:35 ram Exp ram $
 #
 #  Copyright (c) 1995-1998, Raphael Manfredi
 #  

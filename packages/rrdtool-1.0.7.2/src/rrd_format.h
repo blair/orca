@@ -1,5 +1,5 @@
 /*****************************************************************************
- * RRDTOOL 0.99.31 Copyright Tobias Oetiker, 1997, 1998, 1999
+ * RRDtool  Copyright Tobias Oetiker, 1997, 1998, 1999
  *****************************************************************************
  * rrd_format.h  RRD Database Format header
  *****************************************************************************/
@@ -22,12 +22,18 @@
 
 #if defined(WIN32) || defined(_HPUX_SOURCE)
 #define DNAN          ((double)fmod(0.0,0.0))    
+#define DINF	      ((double)log(0.0))
 #else
 
 #define DNAN          ((double)(0.0/0.0))     /* we use a DNAN to
 					       * represent the UNKNOWN
 					       * */
+#define DINF          ((double)(1.0/0.0))     /* we use a DINF to
+					       * represent a value at the upper or
+					       * lower border of the graph ...
+					       * */
 #endif
+
 
 typedef double       rrd_value_t;         /* the data storage type is
 					   * double */
@@ -268,6 +274,7 @@ typedef struct rrd_t {
     pdp_prep_t       *pdp_prep;           /* pdp data prep area */  
     cdp_prep_t       *cdp_prep;           /* cdp prep area */
     rra_ptr_t        *rra_ptr;            /* list of rra pointers */
+    rrd_value_t      *rrd_value;          /* list of rrd values */
 } rrd_t;
 
 /****************************************************************************

@@ -15,6 +15,7 @@
        *** This is beta software -- use at your own risks ***
 
 The Storable extension brings persistency to your data.
+This extension is NOT thread-safe and should not be used by threaded perls.
 
 You may recursively store to disk any data structure, no matter
 how complex and circular it is, provided it contains only SCALAR,
@@ -136,7 +137,7 @@ To compile this extension, run:
 
 There is an embeded POD manual page in Storable.pm.
 
-Raphael Manfredi <Raphael_Manfredi@grenoble.hp.com>
+Raphael Manfredi <Raphael_Manfredi@pobox.com>
 
 Thanks to:
 

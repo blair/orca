@@ -1,3 +1,26 @@
+Tue Sep 14 22:13:28 MEST 1999   Raphael Manfredi <Raphael_Manfredi@pobox.com>
+
+. Description:
+
+	Integrated "thread-safe" patch from Murray Nesbitt.
+	Note that this may not be very efficient for threaded code,
+	see comment in the code.
+
+	Try to avoid compilation warning on 64-bit CPUs. Can't test it,
+	since I don't have access to such machines.
+
+Mon Jul 12 14:37:19 METDST 1999   Raphael Manfredi <Raphael_Manfredi@pobox.com>
+
+. Description:
+
+	changed my e-mail to pobox.
+
+	mentionned it is not thread-safe.
+
+	updated version number.
+
+	uses new internal PL_* naming convention.
+
 Fri Jul  3 13:38:16 METDST 1998   Raphael Manfredi <Raphael_Manfredi@grenoble.hp.com>
 
 . Description:

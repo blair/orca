@@ -1,54 +1,468 @@
-# things that the GNU standards document suggests all makefiles
-# should have.
-SHELL = /bin/sh
-.SUFFIXES:
-.SUFFIXES: .c .o .pl .pm .pod .html .man
+# Makefile.in generated automatically by automake 1.4 from Makefile.am
 
-# variables we got from configure
-# (you can mess with these, if you want)
+# Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
+# This Makefile.in is free software; the Free Software Foundation
+# gives unlimited permission to copy and/or distribute it,
+# with or without modifications, as long as this notice is preserved.
 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY, to the extent permitted by law; without
+# even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+# PARTICULAR PURPOSE.
+
+#AUTOMAKE_OPTIONS   = foreign
+#
+#ACLOCAL_M4	   = $(top_srcdir)/config/aclocal.m4
+#AUTOHEADER = @AUTOHEADER@ --localdir=$(top_srcdir)/config
+
+
+SHELL = @SHELL@
+
+srcdir = @srcdir@
+top_srcdir = @top_srcdir@
+VPATH = @srcdir@
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+
+bindir = @bindir@
+sbindir = @sbindir@
+libexecdir = @libexecdir@
+datadir = @datadir@
+sysconfdir = @sysconfdir@
+sharedstatedir = @sharedstatedir@
+localstatedir = @localstatedir@
+libdir = @libdir@
+infodir = @infodir@
+mandir = @mandir@
+includedir = @includedir@
+oldincludedir = /usr/include
+
+DESTDIR =
+
+pkgdatadir = $(datadir)/@PACKAGE@
+pkglibdir = $(libdir)/@PACKAGE@
+pkgincludedir = $(includedir)/@PACKAGE@
+
+top_builddir = ..
+
+ACLOCAL = @ACLOCAL@
+AUTOCONF = @AUTOCONF@
+AUTOMAKE = @AUTOMAKE@
+AUTOHEADER = @AUTOHEADER@
+
+INSTALL = @INSTALL@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@ $(AM_INSTALL_PROGRAM_FLAGS)
+INSTALL_DATA = @INSTALL_DATA@
+INSTALL_SCRIPT = @INSTALL_SCRIPT@
+transform = @program_transform_name@
+
+NORMAL_INSTALL = :
+PRE_INSTALL = :
+POST_INSTALL = :
+NORMAL_UNINSTALL = :
+PRE_UNINSTALL = :
+POST_UNINSTALL = :
+build_alias = @build_alias@
+build_triplet = @build@
+host_alias = @host_alias@
+host_triplet = @host@
+target_alias = @target_alias@
+target_triplet = @target@
 CC = @CC@
-AR = ar
-CFLAGS_EXTRA = @CFLAGS_EXTRA@
 CFLAGS = @CFLAGS@
-CFLAGS_ALL = $(CFLAGS) $(CFLAGS_EXTRA) -I.. -I../gd1.2 -DHAVE_CONFIG_H \
-                 -DWANT_AT_STYLE_TIMESPEC
+COMP_PERL = @COMP_PERL@
+CPP = @CPP@
+LIBTOOL = @LIBTOOL@
+PERL = @PERL@
+RANLIB = @RANLIB@
+
+CGI_LIB_DIR = $(top_srcdir)/@CGI_LIB_DIR@
+GD_LIB_DIR = $(top_srcdir)/@GD_LIB_DIR@
+PNG_LIB_DIR = $(top_srcdir)/@PNG_LIB_DIR@
+ZLIB_LIB_DIR = $(top_srcdir)/@ZLIB_LIB_DIR@
+
+INCLUDES = -I$(CGI_LIB_DIR) -I$(GD_LIB_DIR) -I$(PNG_LIB_DIR) -I$(ZLIB_LIB_DIR)
+
+#COMPILE   = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) $(CFLAGS_EXTRA)
+#LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) $(CFLAGS_EXTRA)
+#LINK      = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(CFLAGS_EXTRA) $(LDFLAGS) -o $@
+
+RRD_C_FILES =  	gdpng.c			getopt.c		getopt1.c		gifsize.c		parsetime.c		pngsize.c		rrd_create.c		rrd_diff.c		rrd_dump.c		rrd_error.c		rrd_fetch.c		rrd_format.c		rrd_graph.c		rrd_last.c		rrd_open.c		rrd_resize.c		rrd_restore.c		rrd_tune.c		rrd_update.c		getopt.h      ntconfig.h    parsetime.h   rrd_format.h  rrd_tool.h
+
+
+# Build two libraries.  One is a public one that gets installed in
+# $prefix/lib.  Libtool does not create an archive of the PIC compiled
+# objects for this library type.  The second library is a private one
+# meant to build the RRDs.so for perl-shared.  In this case libtool
+# creates a ./.lib/*.al file that contains the PIC compiled object
+# files.
+
+RRD_LIBS =  	$(CGI_LIB_DIR)/librrd_cgi.la		$(GD_LIB_DIR)/librrd_gd.la		$(PNG_LIB_DIR)/librrd_png.la		$(ZLIB_LIB_DIR)/librrd_z.la
+
+
+lib_LTLIBRARIES = librrd.la
+noinst_LTLIBRARIES = librrd_private.la
+
+librrd_la_SOURCES = $(RRD_C_FILES)
+librrd_private_la_SOURCES = $(RRD_C_FILES)
+
+librrd_la_LIBADD = $(RRD_LIBS)
+librrd_private_la_LIBADD = $(RRD_LIBS)
+librrd_la_LDFLAGS = -version-info 0:0:0
+
+bin_PROGRAMS = rrdcgi rrdtool
+
+rrdcgi_SOURCES = rrd_cgi.c
+rrdcgi_LDADD = librrd.la
+
+rrdtool_SOURCES = rrd_tool.c
+rrdtool_LDADD = librrd.la
+
+EXTRA_DIST = rrdtool.dsp rrdtool.dsw
+mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
+CONFIG_HEADER = ../config/config.h
+CONFIG_CLEAN_FILES = 
+LTLIBRARIES =  $(lib_LTLIBRARIES) $(noinst_LTLIBRARIES)
+
+
+DEFS = @DEFS@ -I. -I$(srcdir) -I../config
+CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
-LIBS = -L../gd1.2 -lgd @LIBS@
-LIBS_DEPEND = ../gd1.2/libgd.a
+LIBS = @LIBS@
+librrd_la_DEPENDENCIES =  $(CGI_LIB_DIR)/librrd_cgi.la \
+$(GD_LIB_DIR)/librrd_gd.la $(PNG_LIB_DIR)/librrd_png.la \
+$(ZLIB_LIB_DIR)/librrd_z.la
+librrd_la_OBJECTS =  gdpng.lo getopt.lo getopt1.lo gifsize.lo \
+parsetime.lo pngsize.lo rrd_create.lo rrd_diff.lo rrd_dump.lo \
+rrd_error.lo rrd_fetch.lo rrd_format.lo rrd_graph.lo rrd_last.lo \
+rrd_open.lo rrd_resize.lo rrd_restore.lo rrd_tune.lo rrd_update.lo
+librrd_private_la_LDFLAGS = 
+librrd_private_la_DEPENDENCIES =  $(CGI_LIB_DIR)/librrd_cgi.la \
+$(GD_LIB_DIR)/librrd_gd.la $(PNG_LIB_DIR)/librrd_png.la \
+$(ZLIB_LIB_DIR)/librrd_z.la
+librrd_private_la_OBJECTS =  gdpng.lo getopt.lo getopt1.lo gifsize.lo \
+parsetime.lo pngsize.lo rrd_create.lo rrd_diff.lo rrd_dump.lo \
+rrd_error.lo rrd_fetch.lo rrd_format.lo rrd_graph.lo rrd_last.lo \
+rrd_open.lo rrd_resize.lo rrd_restore.lo rrd_tune.lo rrd_update.lo
+PROGRAMS =  $(bin_PROGRAMS)
 
-###
-### Things you might NOT want to play with ... 
-###
+rrdcgi_OBJECTS =  rrd_cgi.o
+rrdcgi_DEPENDENCIES =  librrd.la
+rrdcgi_LDFLAGS = 
+rrdtool_OBJECTS =  rrd_tool.o
+rrdtool_DEPENDENCIES =  librrd.la
+rrdtool_LDFLAGS = 
+COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+CCLD = $(CC)
+LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(LDFLAGS) -o $@
+DIST_COMMON =  Makefile.am Makefile.in
 
-HEADERS = rrd_tool.h rrd_format.h getopt.h parsetime.h
 
-SRCLIB = rrd_fetch.c rrd_create.c rrd_dump.c rrd_graph.c rrd_tune.c\
-	rrd_open.c rrd_diff.c rrd_last.c rrd_update.c rrd_format.c rrd_error.c\
-	getopt.c getopt1.c parsetime.c rrd_resize.c
+PACKAGE = @PACKAGE@
+VERSION = @VERSION@
 
-SRC = $(SRCLIB) rrd_tool.c
+DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-OBJ = $(SRC:.c=.o)
-OBJLIB = $(SRCLIB:.c=.o)
+TAR = tar
+GZIP_ENV = --best
+SOURCES = $(librrd_la_SOURCES) $(librrd_private_la_SOURCES) $(rrdcgi_SOURCES) $(rrdtool_SOURCES)
+OBJECTS = $(librrd_la_OBJECTS) $(librrd_private_la_OBJECTS) $(rrdcgi_OBJECTS) $(rrdtool_OBJECTS)
 
-all: rrdtool librrd.a
+all: all-redirect
+.SUFFIXES:
+.SUFFIXES: .S .c .lo .o .s
+$(srcdir)/Makefile.in: Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
+	cd $(top_srcdir) && $(AUTOMAKE) --gnu --include-deps src/Makefile
 
-rrdtool: $(OBJ) $(LIBS_DEPEND)
-	$(CC) -o rrdtool $(OBJ) $(LDFLAGS) $(LIBS)
+Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status
+	cd $(top_builddir) \
+	  && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= $(SHELL) ./config.status
 
-librrd.a: $(OBJLIB)
-	$(AR) rc librrd.a $(OBJLIB)
-	@RANLIB@ librrd.a
 
-rrdtool.pure: $(OBJ) $(LIBS_DEPEND)
-	purify $(CC) -o rrdtool.pure $(OBJ) $(LDFLAGS) $(LIBS)
+mostlyclean-libLTLIBRARIES:
 
-clean:  
-	-rm *.o *.a
+clean-libLTLIBRARIES:
+	-test -z "$(lib_LTLIBRARIES)" || rm -f $(lib_LTLIBRARIES)
 
-realclean: clean
-	-rm rrdtool rrdtool.pure
+distclean-libLTLIBRARIES:
 
-.c.o:	$(HEADERS)
-	$(CC) $(CFLAGS_ALL) -c $<
+maintainer-clean-libLTLIBRARIES:
+
+install-libLTLIBRARIES: $(lib_LTLIBRARIES)
+	@$(NORMAL_INSTALL)
+	$(mkinstalldirs) $(DESTDIR)$(libdir)
+	@list='$(lib_LTLIBRARIES)'; for p in $$list; do \
+	  if test -f $$p; then \
+	    echo "$(LIBTOOL)  --mode=install $(INSTALL) $$p $(DESTDIR)$(libdir)/$$p"; \
+	    $(LIBTOOL)  --mode=install $(INSTALL) $$p $(DESTDIR)$(libdir)/$$p; \
+	  else :; fi; \
+	done
+
+uninstall-libLTLIBRARIES:
+	@$(NORMAL_UNINSTALL)
+	list='$(lib_LTLIBRARIES)'; for p in $$list; do \
+	  $(LIBTOOL)  --mode=uninstall rm -f $(DESTDIR)$(libdir)/$$p; \
+	done
+
+mostlyclean-noinstLTLIBRARIES:
+
+clean-noinstLTLIBRARIES:
+	-test -z "$(noinst_LTLIBRARIES)" || rm -f $(noinst_LTLIBRARIES)
+
+distclean-noinstLTLIBRARIES:
+
+maintainer-clean-noinstLTLIBRARIES:
+
+.c.o:
+	$(COMPILE) -c $<
+
+.s.o:
+	$(COMPILE) -c $<
+
+.S.o:
+	$(COMPILE) -c $<
+
+mostlyclean-compile:
+	-rm -f *.o core *.core
+
+clean-compile:
+
+distclean-compile:
+	-rm -f *.tab.c
+
+maintainer-clean-compile:
+
+.c.lo:
+	$(LIBTOOL) --mode=compile $(COMPILE) -c $<
+
+.s.lo:
+	$(LIBTOOL) --mode=compile $(COMPILE) -c $<
+
+.S.lo:
+	$(LIBTOOL) --mode=compile $(COMPILE) -c $<
+
+mostlyclean-libtool:
+	-rm -f *.lo
+
+clean-libtool:
+	-rm -rf .libs _libs
+
+distclean-libtool:
+
+maintainer-clean-libtool:
+
+librrd.la: $(librrd_la_OBJECTS) $(librrd_la_DEPENDENCIES)
+	$(LINK) -rpath $(libdir) $(librrd_la_LDFLAGS) $(librrd_la_OBJECTS) $(librrd_la_LIBADD) $(LIBS)
+
+librrd_private.la: $(librrd_private_la_OBJECTS) $(librrd_private_la_DEPENDENCIES)
+	$(LINK)  $(librrd_private_la_LDFLAGS) $(librrd_private_la_OBJECTS) $(librrd_private_la_LIBADD) $(LIBS)
+
+mostlyclean-binPROGRAMS:
+
+clean-binPROGRAMS:
+	-test -z "$(bin_PROGRAMS)" || rm -f $(bin_PROGRAMS)
+
+distclean-binPROGRAMS:
+
+maintainer-clean-binPROGRAMS:
+
+install-binPROGRAMS: $(bin_PROGRAMS)
+	@$(NORMAL_INSTALL)
+	$(mkinstalldirs) $(DESTDIR)$(bindir)
+	@list='$(bin_PROGRAMS)'; for p in $$list; do \
+	  if test -f $$p; then \
+	    echo " $(LIBTOOL)  --mode=install $(INSTALL_PROGRAM) $$p $(DESTDIR)$(bindir)/`echo $$p|sed 's/$(EXEEXT)$$//'|sed '$(transform)'|sed 's/$$/$(EXEEXT)/'`"; \
+	    $(LIBTOOL)  --mode=install $(INSTALL_PROGRAM) $$p $(DESTDIR)$(bindir)/`echo $$p|sed 's/$(EXEEXT)$$//'|sed '$(transform)'|sed 's/$$/$(EXEEXT)/'`; \
+	  else :; fi; \
+	done
+
+uninstall-binPROGRAMS:
+	@$(NORMAL_UNINSTALL)
+	list='$(bin_PROGRAMS)'; for p in $$list; do \
+	  rm -f $(DESTDIR)$(bindir)/`echo $$p|sed 's/$(EXEEXT)$$//'|sed '$(transform)'|sed 's/$$/$(EXEEXT)/'`; \
+	done
+
+rrdcgi: $(rrdcgi_OBJECTS) $(rrdcgi_DEPENDENCIES)
+	@rm -f rrdcgi
+	$(LINK) $(rrdcgi_LDFLAGS) $(rrdcgi_OBJECTS) $(rrdcgi_LDADD) $(LIBS)
+
+rrdtool: $(rrdtool_OBJECTS) $(rrdtool_DEPENDENCIES)
+	@rm -f rrdtool
+	$(LINK) $(rrdtool_LDFLAGS) $(rrdtool_OBJECTS) $(rrdtool_LDADD) $(LIBS)
+
+tags: TAGS
+
+ID: $(HEADERS) $(SOURCES) $(LISP)
+	list='$(SOURCES) $(HEADERS)'; \
+	unique=`for i in $$list; do echo $$i; done | \
+	  awk '    { files[$$0] = 1; } \
+	       END { for (i in files) print i; }'`; \
+	here=`pwd` && cd $(srcdir) \
+	  && mkid -f$$here/ID $$unique $(LISP)
+
+TAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) $(LISP)
+	tags=; \
+	here=`pwd`; \
+	list='$(SOURCES) $(HEADERS)'; \
+	unique=`for i in $$list; do echo $$i; done | \
+	  awk '    { files[$$0] = 1; } \
+	       END { for (i in files) print i; }'`; \
+	test -z "$(ETAGS_ARGS)$$unique$(LISP)$$tags" \
+	  || (cd $(srcdir) && etags $(ETAGS_ARGS) $$tags  $$unique $(LISP) -o $$here/TAGS)
+
+mostlyclean-tags:
+
+clean-tags:
+
+distclean-tags:
+	-rm -f TAGS ID
+
+maintainer-clean-tags:
+
+distdir = $(top_builddir)/$(PACKAGE)-$(VERSION)/$(subdir)
+
+subdir = src
+
+distdir: $(DISTFILES)
+	@for file in $(DISTFILES); do \
+	  d=$(srcdir); \
+	  if test -d $$d/$$file; then \
+	    cp -pr $$/$$file $(distdir)/$$file; \
+	  else \
+	    test -f $(distdir)/$$file \
+	    || ln $$d/$$file $(distdir)/$$file 2> /dev/null \
+	    || cp -p $$d/$$file $(distdir)/$$file || :; \
+	  fi; \
+	done
+gdpng.lo gdpng.o : gdpng.c ../libpng-1.0.3/png.h ../zlib-1.1.3/zlib.h \
+	../zlib-1.1.3/zconf.h ../libpng-1.0.3/pngconf.h ../gd1.3/gd.h
+getopt.lo getopt.o : getopt.c ../config/config.h
+getopt1.lo getopt1.o : getopt1.c ../config/config.h getopt.h
+gifsize.lo gifsize.o : gifsize.c
+parsetime.lo parsetime.o : parsetime.c rrd_tool.h ../config/config.h \
+	parsetime.h getopt.h rrd_format.h ../gd1.3/gd.h
+pngsize.lo pngsize.o : pngsize.c ../libpng-1.0.3/png.h \
+	../zlib-1.1.3/zlib.h ../zlib-1.1.3/zconf.h \
+	../libpng-1.0.3/pngconf.h
+rrd_cgi.o: rrd_cgi.c rrd_tool.h ../config/config.h parsetime.h getopt.h \
+	rrd_format.h ../gd1.3/gd.h ../cgilib-0.4/cgi.h
+rrd_create.lo rrd_create.o : rrd_create.c rrd_tool.h ../config/config.h \
+	parsetime.h getopt.h rrd_format.h ../gd1.3/gd.h
+rrd_diff.lo rrd_diff.o : rrd_diff.c rrd_tool.h ../config/config.h \
+	parsetime.h getopt.h rrd_format.h ../gd1.3/gd.h
+rrd_dump.lo rrd_dump.o : rrd_dump.c rrd_tool.h ../config/config.h \
+	parsetime.h getopt.h rrd_format.h ../gd1.3/gd.h
+rrd_error.lo rrd_error.o : rrd_error.c rrd_tool.h ../config/config.h \
+	parsetime.h getopt.h rrd_format.h ../gd1.3/gd.h
+rrd_fetch.lo rrd_fetch.o : rrd_fetch.c rrd_tool.h ../config/config.h \
+	parsetime.h getopt.h rrd_format.h ../gd1.3/gd.h
+rrd_format.lo rrd_format.o : rrd_format.c rrd_tool.h ../config/config.h \
+	parsetime.h getopt.h rrd_format.h ../gd1.3/gd.h
+rrd_graph.lo rrd_graph.o : rrd_graph.c rrd_tool.h ../config/config.h \
+	parsetime.h getopt.h rrd_format.h ../gd1.3/gd.h \
+	../gd1.3/gdlucidan10.h ../gd1.3/gdlucidab12.h
+rrd_last.lo rrd_last.o : rrd_last.c rrd_tool.h ../config/config.h \
+	parsetime.h getopt.h rrd_format.h ../gd1.3/gd.h
+rrd_open.lo rrd_open.o : rrd_open.c rrd_tool.h ../config/config.h \
+	parsetime.h getopt.h rrd_format.h ../gd1.3/gd.h
+rrd_resize.lo rrd_resize.o : rrd_resize.c rrd_tool.h ../config/config.h \
+	parsetime.h getopt.h rrd_format.h ../gd1.3/gd.h
+rrd_restore.lo rrd_restore.o : rrd_restore.c rrd_tool.h \
+	../config/config.h parsetime.h getopt.h rrd_format.h \
+	../gd1.3/gd.h
+rrd_tool.o: rrd_tool.c rrd_tool.h ../config/config.h parsetime.h \
+	getopt.h rrd_format.h ../gd1.3/gd.h
+rrd_tune.lo rrd_tune.o : rrd_tune.c rrd_tool.h ../config/config.h \
+	parsetime.h getopt.h rrd_format.h ../gd1.3/gd.h
+rrd_update.lo rrd_update.o : rrd_update.c rrd_tool.h ../config/config.h \
+	parsetime.h getopt.h rrd_format.h ../gd1.3/gd.h
+
+info-am:
+info: info-am
+dvi-am:
+dvi: dvi-am
+check-am: all-am
+check: check-am
+installcheck-am:
+installcheck: installcheck-am
+install-exec-am: install-libLTLIBRARIES install-binPROGRAMS
+install-exec: install-exec-am
+
+install-data-am:
+install-data: install-data-am
+
+install-am: all-am
+	@$(MAKE) $(AM_MAKEFLAGS) install-exec-am install-data-am
+install: install-am
+uninstall-am: uninstall-libLTLIBRARIES uninstall-binPROGRAMS
+uninstall: uninstall-am
+all-am: Makefile $(LTLIBRARIES) $(PROGRAMS)
+all-redirect: all-am
+install-strip:
+	$(MAKE) $(AM_MAKEFLAGS) AM_INSTALL_PROGRAM_FLAGS=-s install
+installdirs:
+	$(mkinstalldirs)  $(DESTDIR)$(libdir) $(DESTDIR)$(bindir)
+
+
+mostlyclean-generic:
+
+clean-generic:
+
+distclean-generic:
+	-rm -f Makefile $(CONFIG_CLEAN_FILES)
+	-rm -f config.cache config.log stamp-h stamp-h[0-9]*
+
+maintainer-clean-generic:
+mostlyclean-am:  mostlyclean-libLTLIBRARIES \
+		mostlyclean-noinstLTLIBRARIES mostlyclean-compile \
+		mostlyclean-libtool mostlyclean-binPROGRAMS \
+		mostlyclean-tags mostlyclean-generic
+
+mostlyclean: mostlyclean-am
+
+clean-am:  clean-libLTLIBRARIES clean-noinstLTLIBRARIES clean-compile \
+		clean-libtool clean-binPROGRAMS clean-tags \
+		clean-generic mostlyclean-am
+
+clean: clean-am
+
+distclean-am:  distclean-libLTLIBRARIES distclean-noinstLTLIBRARIES \
+		distclean-compile distclean-libtool \
+		distclean-binPROGRAMS distclean-tags distclean-generic \
+		clean-am
+	-rm -f libtool
+
+distclean: distclean-am
+
+maintainer-clean-am:  maintainer-clean-libLTLIBRARIES \
+		maintainer-clean-noinstLTLIBRARIES \
+		maintainer-clean-compile maintainer-clean-libtool \
+		maintainer-clean-binPROGRAMS maintainer-clean-tags \
+		maintainer-clean-generic distclean-am
+	@echo "This command is intended for maintainers to use;"
+	@echo "it deletes files that may require special tools to rebuild."
+
+maintainer-clean: maintainer-clean-am
+
+.PHONY: mostlyclean-libLTLIBRARIES distclean-libLTLIBRARIES \
+clean-libLTLIBRARIES maintainer-clean-libLTLIBRARIES \
+uninstall-libLTLIBRARIES install-libLTLIBRARIES \
+mostlyclean-noinstLTLIBRARIES distclean-noinstLTLIBRARIES \
+clean-noinstLTLIBRARIES maintainer-clean-noinstLTLIBRARIES \
+mostlyclean-compile distclean-compile clean-compile \
+maintainer-clean-compile mostlyclean-libtool distclean-libtool \
+clean-libtool maintainer-clean-libtool mostlyclean-binPROGRAMS \
+distclean-binPROGRAMS clean-binPROGRAMS maintainer-clean-binPROGRAMS \
+uninstall-binPROGRAMS install-binPROGRAMS tags mostlyclean-tags \
+distclean-tags clean-tags maintainer-clean-tags distdir info-am info \
+dvi-am dvi check check-am installcheck-am installcheck install-exec-am \
+install-exec install-data-am install-data install-am install \
+uninstall-am uninstall all-redirect all-am all installdirs \
+mostlyclean-generic distclean-generic clean-generic \
+maintainer-clean-generic clean mostlyclean distclean maintainer-clean
+
+
+# Tell versions [3.59,3.63) of GNU make to not export all variables.
+# Otherwise a system limit (for SysV at least) may be exceeded.
+.NOEXPORT:

@@ -1,47 +1,44 @@
 @SET_MAKE@
 
-SUBDIRS 	= packages lib src docs
+SUBDIRS 	= packages lib src @ORCALLATOR_SUBDIR@ docs
 PREFIX		= @prefix@
+MAKE_RRDTOOL	= @MAKE_RRDTOOL@
 ORCALLATOR_DIR	= @ORCALLATOR_DIR@
 RRD_DIR		= @RRD_DIR@
 CFLAGS		= @CFLAGS@
 
-all:	configure Makefile
-	@for dir in $(SUBDIRS); do				\
-		echo "cd $$dir && $(MAKE) CFLAGS=$(CFLAGS)";	\
-		(cd $$dir && $(MAKE) CFLAGS="$(CFLAGS)");	\
+all:	configure config/PerlHead1 config/PerlHead2 Makefile
+	@for dir in $(SUBDIRS); do					\
+		echo "cd $$dir && $(MAKE) CFLAGS=$(CFLAGS)";		\
+		(cd $$dir && $(MAKE) CFLAGS="$(CFLAGS)");		\
 	done
 
-test:
-	(cd packages; $(MAKE) CFLAGS="$(CFLAGS)" test)
+test:	configure Makefile
 
-migrate:
-	(cd src; $(MAKE) migrate)
+upgrade:
+	cd src && $(MAKE) upgrade_installation
 
-install:
+install: $(INSTALL_RRDTOOL)
 	./config/mkinstalldirs $(ORCALLATOR_DIR)
-	./config/mkinstalldirs $(RRD_DIR)
+	./config/mkinstalldirs $(RRD_DIR)/orcallator
 	@for dir in $(SUBDIRS); do			\
 		echo "cd $$dir && $(MAKE) install";	\
 		(cd $$dir && $(MAKE) install);		\
 	done
 
-modules:
-	(cd packages && $(MAKE) CFLAGS="$(CFLAGS)" modules)
-
 test_modules:
-	(cd packages && $(MAKE) CFLAGS="$(CFLAGS)" test_modules)
+	cd packages && $(MAKE) CFLAGS="$(CFLAGS)" test_modules
 
 install_modules:
-	(cd packages && $(MAKE) CFLAGS="$(CFLAGS)" install_modules)
+	cd packages && $(MAKE) CFLAGS="$(CFLAGS)" install_modules
 
-clean:
+clean:	$(CLEAN_RRDTOOL)
 	@for dir in $(SUBDIRS); do			\
 		echo "cd $$dir && $(MAKE) clean";	\
 		(cd $$dir && $(MAKE) clean);		\
 	done
 
-distclean:
+distclean: $(DISTCLEAN_RRDTOOL)
 	@for dir in $(SUBDIRS); do			\
 		echo "cd $$dir && $(MAKE) distclean";	\
 		(cd $$dir && $(MAKE) distclean);	\
@@ -49,9 +46,19 @@ distclean:
 	$(RM) config/PerlHead1 config/PerlHead2
 	$(RM) config.cache config.log config.status Makefile
 
+to-autoconf:
+	aclocal -I config --output=config/aclocal.m4
+	autoconf --localdir=config
+
 configure: configure.in
-	autoconf
+	$(MAKE) to-autoconf
 	./config.status
 
 Makefile: Makefile.in
-	./config.status
+	CONFIG_FILES=Makefile ./config.status
+
+config/PerlHead1: config/PerlHead1.in
+	CONFIG_FILES=config/PerlHead1 ./config.status
+
+config/PerlHead2: config/PerlHead2.in
+	CONFIG_FILES=config/PerlHead2 ./config.status

@@ -1,0 +1,82 @@
+## Process this file with automake to produce Makefile.in
+
+# build the following subdirectories
+SUBDIRS = cgilib-0.4 config gd1.3 zlib-1.1.3 libpng-1.0.3 src doc examples contrib
+
+# the following files are not mentioned in any other Makefile
+EXTRA_DIST = COPYRIGHT CHANGES NT-BUILD-TIPS.txt TODO CONTRIBUTORS  \
+ perl-piped/MANIFEST perl-piped/README perl-piped/rrdpl.ds? \
+ perl-piped/RRDp.pm perl-piped/Makefile.PL  perl-piped/t/base.t \
+ perl-shared/MANIFEST perl-shared/README perl-shared/RRDs.xs \
+ perl-shared/ntmake.pl perl-shared/Makefile.PL perl-shared/t/base.t \
+ perl-shared/rrdpl.ds? perl-shared/RRDs.pm
+
+#
+
+CLEANFILES = config.cache
+
+# lets schedule the perl stuff for installation
+install-data-local:
+	$(INSTALL) -d -m 755 $(prefix)/lib/perl/auto/RRDs
+	$(INSTALL) -m 644 perl-piped/RRDp.pm $(prefix)/lib/perl
+	$(INSTALL) -m 644 perl-shared/RRDs.pm $(prefix)/lib/perl
+	$(INSTALL) -m 644 perl-shared/blib/arch/auto/RRDs/RRDs.bs $(prefix)/lib/perl/auto/RRDs
+	$(INSTALL) -m 755 perl-shared/blib/arch/auto/RRDs/RRDs.so $(prefix)/lib/perl/auto/RRDs
+
+
+# use relaxed rules when building dists
+AUTOMAKE_OPTIONS= foreign
+
+# where we keep local rules for automake
+ACLOCAL_M4= 	$(top_srcdir)/config/aclocal.m4
+AUTOHEADER = @AUTOHEADER@ --localdir=$(top_srcdir)/config
+AUTOCONF = @AUTOCONF@ --localdir=$(top_srcdir)/config
+
+# rules for building the perl module
+perl_piped: perl-piped/Makefile
+	cd perl-piped && $(MAKE)  OPTIMIZE="$(CFLAGS)"
+
+perl-piped/Makefile: perl-piped/Makefile.PL
+	cd perl-piped && $(PERL) Makefile.PL
+
+perl_shared: perl-shared/Makefile
+	cd perl-shared && $(MAKE) OPTIMIZE="$(CFLAGS)"
+
+perl-shared/Makefile: perl-shared/Makefile.PL
+	cd perl-shared && $(PERL) Makefile.PL
+
+# add the following to the all target
+all-local:	@COMP_PERL@
+
+# add to install
+
+#to-autoconf:
+#	aclocal -I config -I config/libtool --output=config/aclocal.m4
+#	automake --foreign
+#	autoconf --localdir=config
+#	autoheader --localdir=config
+#	./configure
+
+to-docs: to-versync
+	(cd doc && $(MAKE) clean && $(MAKE))
+#to-autoconf
+to-versync: 
+	perl -i -p -e '"$(VERSION)" =~ /(\d+)\.(\d+)\.(\d+)/; $$v=sprintf("%1d.%02d0%02d1" ,$${1},$${2},$${3}); s|VERSION\s*=\s*[\d.]+|VERSION = $$v|' perl-*/RRD?.pm
+	perl -i -p -e 's|RRDtool\s+\d+\.\d+\.\d+|RRDtool $(VER)|' src/*.[ch]
+
+to-dist: to-docs dist
+	mv $(PACKAGE)-$(VERSION).tar.gz archive
+
+to-scp: to-dist
+	scp CHANGES oetiker@tardis.ee.ethz.ch:/home/oetiker/public_html/webtools/rrdtool/pub/
+	scp archive/$(PACKAGE)-$(VERSION).tar.gz oetiker@tardis.ee.ethz.ch:/home/oetiker/public_html/webtools/rrdtool/pub/$(ARCHIVE)
+	scp CHANGES tobi@ipn.caida.org:/ipn/web/Tools/RRDtool/pub/
+	scp archive/$(PACKAGE)-$(VERSION).tar.gz tobi@ipn.caida.org:/ipn/web/Tools/RRDtool/pub/
+
+site-perl-inst:
+	cd perl-piped && $(MAKE) install
+	cd perl-shared && $(MAKE) install
+
+clean-local:
+	cd perl-piped && $(MAKE) clean
+	cd perl-shared && $(MAKE) clean

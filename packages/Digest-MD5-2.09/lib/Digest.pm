@@ -53,8 +53,8 @@ Digest:: - Modules that calculate message digests
 
 The C<Digest::> modules calculate digests, also called "fingerprints"
 or "hashes", of some data, called a message.  The digest is some small
-fixed size string.  The actual size depend of the algorithm used.  The
-message is simply a sequence of arbitrary bytes.
+fixed size string.  The actual size of the digest depend of the
+algorithm used.  The message is simply a sequence of arbitrary bytes.
 
 An important property of the digest algorithms is that the digest is
 I<likely> to change if the message change in some way.  Another
@@ -85,7 +85,7 @@ A twice as long string of (lowercase) hexadecimal digits.
 
 A string of portable printable characters.  This is the base64 encoded
 representation of the digest with any trailing padding removed.  The
-string will be about 30% longer than the binary version. The
+string will be about 30% longer than the binary version.
 L<MIME::Base64> tells you more about this encoding.
 
 =back
@@ -125,7 +125,8 @@ identifiers, e.g. "SHA-1".
 
 If new() is called as a instance method (i.e. $ctx->new) it will just
 reset the state the object to the state of a newly created object.  No
-new object is created in this case.
+new object is created in this case, and the return value is the
+reference to the object (i.e. $ctx).
 
 =item $ctx->reset
 

@@ -1,5 +1,5 @@
 /*****************************************************************************
- * RRDTOOL 0.99.31 Copyright Tobias Oetiker, 1997,1998, 1999
+ * RRDtool  Copyright Tobias Oetiker, 1997,1998, 1999
  *****************************************************************************
  * rrd_tool.h   Common Header File
  *****************************************************************************
@@ -22,6 +22,14 @@ extern "C" {
 #endif
 #endif
 
+#ifdef MUST_DISABLE_SIGFPE
+#include <signal.h>
+#endif
+
+#ifdef MUST_DISABLE_FPMASK
+#include <floatingpoint.h>
+#endif
+    
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
@@ -50,9 +58,8 @@ extern int getrusage(int, struct rusage *);
 #endif /* __svr4__ && __sun__ */
 #endif
 
-#ifdef WANT_AT_STYLE_TIMESPEC
 #include "parsetime.h"
-#endif
+int proc_start_end (struct time_value *,  struct time_value *, time_t *, time_t *);
 
 #ifndef WIN32
 
@@ -67,7 +74,8 @@ int isnan(double value);
 
 #include <float.h>        /* for _isnan  */
 #define isnan _isnan
-
+#define finite _finite
+#define isinf(a) (_fpclass(a) == _FPCLASS_NINF || _fpclass(a) == _FPCLASS_PINF)
 #endif
 
 /* local include files -- need to be after the system ones */
@@ -91,6 +99,7 @@ int    rrd_graph(int argc, char **argv, char ***prdata, int *xsize, int *ysize);
 int    rrd_fetch(int argc, char **argv, 
 		 time_t *start, time_t *end, unsigned long *step, 
 		 unsigned long *ds_cnt, char ***ds_namv, rrd_value_t **data);
+int    rrd_restore(int argc, char **argv);
 int    rrd_dump(int argc, char **argv);
 int    rrd_tune(int argc, char **argv);
 time_t rrd_last(int argc, char **argv);
@@ -102,7 +111,11 @@ void rrd_clear_error(void);
 int  rrd_test_error(void);
 char *rrd_get_error(void);
 int  LockRRD(FILE *);
-
+int GifSize(FILE *, long *, long *);
+int PngSize(FILE *, long *, long *);
+int PngSize(FILE *, long *, long *);
+#include <gd.h>
+void gdImagePng(gdImagePtr im, FILE *out);
 int rrd_create_fn(char *file_name, rrd_t *rrd);
 int rrd_fetch_fn(char *filename, enum cf_en cf_idx,
 		 time_t *start,time_t *end,
@@ -114,6 +127,7 @@ void rrd_free(rrd_t *rrd);
 void rrd_init(rrd_t *rrd);
 
 int  rrd_open(char *file_name, FILE **in_file, rrd_t *rrd, int rdwr);
+int readfile(char *file, char **buffer, int skipfirst);
 
 
 #define RRD_READONLY    0

@@ -1,6 +1,6 @@
     <HTML> 
 	<HEAD> 
-	    <TITLE>rrdtutorial - Alex van den Bogaerdts RRD Tool tutorial
+	    <TITLE>rrdtutorial - Alex van den Bogaerdts RRDtool tutorial
 
 </TITLE> 
 	</HEAD>
@@ -34,7 +34,7 @@
 		<LI><A HREF="#Consolidation_Functions">Consolidation Functions</A>
 		<LI><A HREF="#Let_s_review_what_you_now_should">Let's review what you now should know.</A>
 		<LI><A HREF="#Data_Source_Types">Data Source Types</A>
-		<LI><A HREF="#RRD_Tool_under_the_Microscope">RRD Tool under the Microscope</A>
+		<LI><A HREF="#RRDtool_under_the_Microscope">RRDtool under the Microscope</A>
 		<LI><A HREF="#Counter_Wraps">Counter Wraps</A>
 		<LI><A HREF="#Data_Resampling">Data Resampling</A>
 	</UL>
@@ -51,7 +51,7 @@
 <H1><A NAME="NAME">NAME
 
 </A></H1>
-rrdtutorial - Alex van den Bogaerdts RRD Tool tutorial
+rrdtutorial - Alex van den Bogaerdts RRDtool tutorial
 
 
 <P>
@@ -150,12 +150,12 @@ many other things. Most likely you will start to use the RRDtool to store
 and process data collected via SNMP. The data will most likely be bytes (or
 bits) transfered from and to a network or a computer. RRDtool lets you
 create a database, store data in it, retrieve that data and create graphs
-in GIF format for display on a web browser. Those GIF images are dependant
+in GIF format for display on a web browser. Those GIF images are dependent
 on the data you collected and could be, for instance, an overview of the
 average network usage, or rather the peaks that occurred. It can also be
 used to display tidal waves, solar radiation, power consumption, number of
-visitors at an exibition, noise levels near an airport, temperature on your
-favorite holiday location, temperature in the fridge and whatever you
+visitors at an exhibition, noise levels near an airport, temperature on
+your favorite holiday location, temperature in the fridge and whatever you
 imagination can come up with. You need a sensor to measure the data and be
 able to feed the numbers to RRDtool. Many devices have such a sensor.
 
@@ -190,9 +190,9 @@ location and usage of the list.
 <P>
 
 I suggest you take a moment to subscribe to the mailing list right now by
-sending an email to <A
-HREF="MAILTO:<rrdtool-users-request@list.ee.ethz.ch>"><rrdtool-users-request@list.ee.ethz.ch></A>
-with a subject of ``subscribe''. If you ever want to leave this list, you
+sending an email to &lt;<A
+HREF="MAILTO:rrd-users-request@list.ee.ethz.ch">rrd-users-request@list.ee.ethz.ch</A>
+&gt; with a subject of ``subscribe''. If you ever want to leave this list, you
 write an email to the same address but now with a subject of
 ``unsubscribe''.
 
@@ -533,7 +533,7 @@ When looking at the image, you notice that the horizontal axis displays
 displays the range we entered. We provided kilometers and when divided by
 300 seconds, we get very small numbers. To be exact, the first value was 12
 (12357-12345) and divided by 300 this makes 0.04 RRDtool displays this as
-40 m which means 40 mili (so: NOT meters). What we did wrong was that we
+40 m which means 40 milli (so: NOT meters). What we did wrong was that we
 should have measured in meters, this would have been
 (12357000-12345000)/300 = 12000/300 = 40.
 
@@ -551,7 +551,7 @@ file !
       --start 920804400 --end 920808000               \
       --vertical-label m/s                            \
       DEF:myspeed=test.rrd:speed:AVERAGE              \
-      CDEF:realspeed=myspeed,1000,*                   \
+      &quot;CDEF:realspeed=myspeed,1000,*&quot;                 \
       LINE2:realspeed#FF0000
 </PRE>
 
@@ -595,7 +595,7 @@ Now let's create this GIF, and add some more magic ...
       --start 920804400 --end 920808000               \
       --vertical-label km/h                           \
       DEF:myspeed=test.rrd:speed:AVERAGE              \
-      CDEF:kmh=myspeed,3600,*                         \
+      &quot;CDEF:kmh=myspeed,3600,*&quot;                       \
       CDEF:fast=kmh,100,GT,kmh,0,IF                   \
       CDEF:good=kmh,100,GT,0,kmh,IF                   \
       HRULE:100#0000FF:&quot;Maximum allowed&quot;              \
@@ -665,10 +665,10 @@ I will not explain how it works, but look at the following GIF:
       --start 920804400 --end 920808000               \
       --vertical-label km/h                           \
       DEF:myspeed=test.rrd:speed:AVERAGE              \
-      CDEF:kmh=myspeed,3600,*                         \
+      &quot;CDEF:kmh=myspeed,3600,*&quot;                       \
       CDEF:fast=kmh,100,GT,100,0,IF                   \
       CDEF:over=kmh,100,GT,kmh,100,-,0,IF             \
-      CDEF:good=kmh,0,kmh,100,GT,IF                   \
+      CDEF:good=kmh,100,GT,0,kmh,IF                   \
       HRULE:100#0000FF:&quot;Maximum allowed&quot;              \
       AREA:good#00FF00:&quot;Good speed&quot;                   \
       AREA:fast#550000:&quot;Too fast&quot;                     \
@@ -1068,7 +1068,7 @@ Suggestion:
 
 <P>
 
-Display in bytes per second and in bits per second. Make the ethernet
+Display in bytes per second and in bits per second. Make the Ethernet
 graphics go red if they are over four megabits per second.
 
 
@@ -1277,7 +1277,7 @@ Let's try them all:
 
 <P>
 <HR>
-<H2><A NAME="RRD_Tool_under_the_Microscope">RRD Tool under the Microscope
+<H2><A NAME="RRDtool_under_the_Microscope">RRDtool under the Microscope
 
 </A></H2>
 <UL>
@@ -1668,7 +1668,7 @@ you read this and other documentation and they didn't.
 <H1><A NAME="SEE_ALSO">SEE ALSO
 
 </A></H1>
-The RRD Tool manpages
+The RRDtool manpages
 
 
 <P>
@@ -1686,8 +1686,10 @@ whole lot more.
 
 <P>
 
-Alex van den Bogaerdt <A
-HREF="MAILTO:<alex@ergens.op.het.net>"><alex@ergens.op.het.net></A>
+Alex van den Bogaerdt
+&lt;<A HREF="MAILTO:alex@ergens.op.het.net">alex@ergens.op.het.net</A>&gt;
+
+
 
 
 <P>

@@ -3,7 +3,7 @@ package Digest::SHA1;
 use strict;
 use vars qw($VERSION @ISA @EXPORT_OK);
 
-$VERSION = '1.01';  # $Date: 1999/04/26 09:24:25 $
+$VERSION = '1.02';  # $Date: 1999/08/05 22:58:42 $
 
 require Exporter;
 *import = \&Exporter::import;
@@ -102,6 +102,8 @@ in L<Digest>.
 =head1 SEE ALSO
 
 L<Digest>, L<Digest::HMAC_SHA1>, L<Digest::MD5>
+
+http://www.itl.nist.gov/fipspubs/fip180-1.htm
 
 =head1 COPYRIGHT
 

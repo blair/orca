@@ -9,6 +9,9 @@ int main(int argc, char **argv)
 {
 	FILE *in;
 	FILE *out;
+	char outFn[20];
+	int useStdinStdout=0;
+
 	/* Declare our image pointer */
 	gdImagePtr im = 0;
 	int i;
@@ -20,15 +23,22 @@ int main(int argc, char **argv)
 	int write = 0;
 	/* C programs always get at least one argument; we want at
 		least one more (the image), more in practice. */
-	if (argc < 2) {
+	if (argc < 2 || !strcmp(argv[1], "--help")) {
 		no = 1;	
 		goto usage;
 	}
+
 	/* The last argument should be the image. Open the file. */
-	in = fopen(argv[argc-1], "rb");	
+	if (strcmp("-", argv[argc-1])==0) { /* - is synonymous with STDIN */
+	  useStdinStdout = 1;
+	  in = stdin;
+	} else {
+	  in = fopen(argv[argc-1], "rb");	
+	}
 	if (!in) {
 		fprintf(stderr,
 			"Error: can't open file %s.\n", argv[argc-1]);
+		exit(1);
 	}
 	/* Now load the image. */	
 	im = gdImageCreateFromGif(in);
@@ -36,13 +46,17 @@ int main(int argc, char **argv)
 	/* If the load failed, it must not be a GIF file. */
 	if (!im) {
 		fprintf(stderr,
-			"Error: %s is not a valid gif file.\n", argv[1]);
+			"Error: %s is not a valid gif file.\n", argv[argc-1]);
 		exit(1);	
 	}
 	/* Consider each argument in turn. */
 	for (i=1; (i < (argc-1)); i++) {
 		/* -i turns on and off interlacing. */
-		if (!strcmp(argv[i], "-i")) {
+		if (!strcmp(argv[i], "--help")) { 
+		  /* Every program should use this for help! :) */
+		  no = 1;
+		  goto usage;
+		} else if (!strcmp(argv[i], "-i")) {
 			if (i == (argc-2)) {
 				fprintf(stderr, 
 				"Error: -i specified without y or n.\n");
@@ -126,33 +140,46 @@ usage:
 	if (no) {
 		/* If the command failed, output an explanation. */
 		fprintf(stderr, 
-	"Usage: webgif [-i y|n ] [-l] [-t index|off ] [-d] gifname.gif\n");
-		fprintf(stderr, 
-	"Where -i controls interlace (specify y or n for yes or no),\n");
-		fprintf(stderr, 
-	"-l outputs a table of color indexes, -t sets the specified\n");
-		fprintf(stderr, 
-	"color index (0-255 or none) to be the transparent color, and\n");
-		fprintf(stderr,
-	"-d reports the dimensions and other characteristics of the image.\n");
-		fprintf(stderr, 
-	"Note: you may wish to pipe to \"more\" when using the -l option.\n");
+"Usage: webgif [-i y|n ] [-l] [-t index|off ] [-d] gifname.gif\n"
+
+"  -i [y|n]   Turns on/off interlace\n"
+"  -l         Prints the table of color indexes\n"
+"  -t [index] Set the transparent color to the specified index (0-255 or none)\n"
+"  -d         Reports the dimensions and other characteristics of the image.\n"
+"\n"
+"If you specify '-' as the input file, stdin/stdout will be used input/output.\n"
+);
 	} 
 	if (write) {
-		/* Open a temporary file. */
-		out = fopen("temp.tmp", "wb");
-		if (!out) {
-			fprintf(stderr,
-				"Unable to write to temp.tmp -- exiting\n");
-			exit(1);
-		}
-		/* Write the new gif. */
-		gdImageGif(im, out);
-		fclose(out);
-		/* Erase the old gif. */
-		unlink(argv[argc-1]);
-		/* Rename the new to the old. */
-		rename("temp.tmp", argv[argc-1]);
+	  if (useStdinStdout) {
+	    out = stdout;
+	  } else {
+	    /* Open a temporary file. */
+
+	    /* "temp.tmp" is not good temporary filename. */
+	    sprintf(outFn, "webgif.tmp%d", getpid());
+	    out = fopen(outFn, "wb"); 
+
+	    if (!out) {
+	      fprintf(stderr,
+		      "Unable to write to %s -- exiting\n", outFn);
+	      exit(1);
+	    }
+	  }
+
+	  /* Write the new gif. */
+	  gdImageGif(im, out);
+
+	  if (!useStdinStdout) {
+	    fclose(out);
+	    /* Erase the old gif. */
+	    unlink(argv[argc-1]);
+	    /* Rename the new to the old. */
+	    if (rename(outFn, argv[argc-1])!=0) {
+	      perror("rename");
+	      exit(1);
+	    }
+	  }
 	}
 	/* Delete the image from memory. */
 	if (im) {

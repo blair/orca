@@ -1,0 +1,12 @@
+README
+MANIFEST
+MANIFEST.NOXSUB
+Changes
+Todo
+Makefile.PL
+Dumper.pm
+Dumper.pm.NOXSUB
+Dumper.xs
+Dumper.html
+t/dumper.t
+t/overload.t

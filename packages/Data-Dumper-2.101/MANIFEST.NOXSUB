@@ -1,0 +1,12 @@
+README
+MANIFEST
+MANIFEST.XSUB
+Changes
+Todo
+Makefile.PL
+Dumper.pm
+Dumper.pm.XSUB
+Dumper.xs.XSUB
+Dumper.html
+t/dumper.t
+t/overload.t

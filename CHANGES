@@ -1,3 +1,381 @@
+Thu Oct 14 14:44:00 PDT 1999
+
+	Release Orca 0.24.
+
+Thu Oct 14 12:17:29 PDT 1999
+
+	Back down to RRDtool 1.0.7 with only my filename length patch
+	applied per Tobi.
+
+	Revamp the INSTALL, NEWS, and other files to get a release out.
+
+	Up the version number of the included RRDs package to 1.000072
+	since it contains some patches specifically for Orca.
+
+Wed Oct 13 12:40:29 PDT 1999
+
+	Orcallator.se 1.19 prevents a division by zero in calculating
+	the mean_disk_busy if the number of disks on the system is 0.
+
+	Move the URL http://www.geocities.com/~bzking/orcallator-docs/
+	to http://www.geocities.com/~bzking/docs/orcallator.html.
+
+	In cases where there are a large number of data sources in a
+	single image, then the list of available colors is expired.
+	Now reuse the colors.
+
+	Make sure plots are displayed in each subgroup's HTML files in
+	the order they appear in the configuration file.
+
+Tue Oct 12 10:27:44 PDT 1999
+
+	Update orcallator.cfg to remove the maximum and average disk busy
+	plot and add a plot that displays the run percent for each disk.
+
+	Orcallator 1.18 now renames disk_runp.c?t?d? to disk_runp_c?t?d?.
+
+Mon Oct 11 14:31:38 PDT 1999
+
+	Update orcallator.cfg to plot the disk space and inode usage
+	for all locally mounted filesystems.
+
+	Apply a patch to RRDtool that increases the maximum filename
+	length for generated image files from 255 to 1024.
+
+	Rename &strip_key_name to &escape_name.
+
+Fri Oct  8 14:23:37 PDT 1999
+
+	Save even more space in Orca generated HTML and image filenames.
+	On large directories, up to 10% disk space can be saved alone
+	in filenames according to du.  Also, if generated filenames are
+	longer than 235 characters, then compute a MD5 hash of the name,
+	trim the name down to 210 characters, and append the MD5 hash.
+
+	Orcallator.se 1.17 now skips locally mounted /cdrom filesystems.
+
+	Increase the number of default known colors to 11.
+
+Wed Oct  6 17:59:05 PDT 1999
+
+	Orcallator.se 1.16 now compresses its log files after it has
+	completed a day's log using the command in the COMPRESSOR
+	environmental variable.  start_orcallator now passed this
+	environmental variable to orcallator.se.
+
+Wed Oct  6 15:19:09 PDT 1999
+
+	Have configure.in look for bzip2, bunzip2, gzip, gunzip, compress,
+	and uncompress.  Define the COMPRESSOR and UNCOMPRESSOR_PIPE as
+	the best compression tool to use and add these names to the list
+	of names being substituted.  This only gets defined if both a
+	compress and uncompression tool is used.
+
+	To keep backwards compatibility in orcallator.se, define WATCH_WEB
+	if WATCH_HTTPD is defined.
+
+Tue Oct  5 14:54:59 PDT 1999
+
+	Update orcallator.se to 1.15.  kvm$mpid is a int not a long.
+	This caused problems on Solaris 7 hosts running a 64 bit kernel.
+
+Fri Oct  1 12:15:47 PDT 1999
+
+	Update orcallator.se to 1.14.  Rename disk.c?t?d? column names
+	to disk_runp.c?t?d? to better reflect the data being recorded
+	and to allow for more per disk information later.
+
+	Install the latest RRDtool patch.
+
+Thu Sep 29 19:19:23 PDT 1999
+
+	Add some more space between a plot's legend and the minimum,
+	maximum, etc information for a particular piece of data.
+
+	Allow mathematical expressions in plots where the first data
+	contains a regular expression.
+
+Fri Sep 24 11:50:33 PDT 1999
+
+	Many fixes and improvements to orcallator.se.  Fix a bug in the
+	disk_mean calculation where it was being divided by the wrong
+	disk_count.  Now it should be much larger and in scale with
+	disk_peak.  When WATCH_DISK is defined, now print each disk's
+	run percent.  Add a new define WATCH_MOUNTS, which reports each
+	mount point's disk space and inode capacity, usage, available
+	for non-root users and percent used.  This comes from Duncan
+	Lawie tyger@hoopoes.com.  Add some smarts so that if the number
+	of interfaces, physical disk, or mounted partitions changes,
+	then a new header is printed.  This will prevent column name
+	and data mixups when the system configuration changes.
+
+Mon Sep 20 11:18:21 PDT 1999
+
+	Include Storable 0.6.5.
+
+Tue Sep 14 15:54:38 PDT 1999
+
+	Add the page scan rate to orcallator.se as column scanrate.
+
+Tue Sep  7 12:21:52 PDT 1999
+
+	Update the archive URLs for the orca-* mailing lists.
+
+Thu Sep  2 11:03:19 PDT 1999
+
+	Include and require RRDtool 1.0.7.
+
+	Make some more minor changes to have Orca run with Perl 5.004_01.
+
+Tue Aug 24 11:32:34 PDT 1999
+
+	Include and require Math::Interpolate 1.05.
+
+Thu Aug 19 14:13:16 PDT 1999
+
+	No longer include Compress::Zlib, which was to be used to read in
+	compressed source data files without spawning a separate process.
+	Now it seems easier to just call gunzip -c.
+
+Wed Aug 18 11:10:21 PDT 1999
+
+	Read in .gz files using gunzip, .Z files using uncompress,
+	and .bz2 files with bunzip2.
+
+	Clean up some bugs where the RRDs::graph -r option would always
+	be used.
+
+	Plots can now take a logarithmic option which specified that
+	the Y axis will have a logarithmic scale.
+
+Tue Aug 17 11:50:34 PDT 1999
+
+	Include and require Math::Interpolate 1.04.
+
+Mon Aug 16 12:11:48 PDT 1999
+
+	Add locking on a particular configuration file.  Make a directory
+	using the configuration filename.
+
+	Include and require RRDtool 1.0.6.
+
+Fri Aug 13 17:10:23 PDT 1999
+
+	Install librrd.so on Solaris hosts in $libdir so that
+	orcallator.se can attach to it.
+
+Fri Aug 13 15:35:21 PDT 1999
+
+	Include and require RRDtool 1.0.5.
+
+Mon Aug  9 10:32:42 PDT 1999
+
+	Include and require RRDtool 1.0.4.
+
+Fri Aug  6 09:29:14 PDT 1999
+
+	Include Digest::MD5 2.09 but continue to only require 2.00.
+
+Thu Aug  5 20:58:32 PDT 1999
+
+	Make sure start_orcallator looks to see if SE is defined.  If it
+	is not, then print a message stating where to find the SE toolkit.
+
+Fri Jul 30 09:12:20 PDT 1999
+
+	Update orcallator.cfg to plot the new process spawn rate.
+
+	Include and require RRDtool 1.0.3.
+
+Thu Jul 29 10:36:20 PDT 1999
+
+	To fix the problem of too long HTML and image file names,
+	shorten the names as they get passed through strip_key_name.
+	Now orcallator -> o, orca -> o, _times_ -> _X_, _percent_ ->
+	_pct_, _number_ -> _num_.  The upgrade_installation will perform
+	these renames on a list of directories.
+
+	Since orcallator is only one of many different data gatherers,
+	move it into its own directory.
+
+Wed Jul 28 10:10:53 PDT 1999
+
+	If WATCH_CPU is defined and if the user can read /dev/kmem then
+	orcallator.se will now measure the process spawn rate over a 5
+	minute interval and also record the maximum rate measured over
+	a 5 second interval.
+
+	Add a href field for a plot in the configuration file.	This,
+	if defined, lets you make a particular target type be a HREF to
+	read something about that target type.
+
+	Include Digest::MD5 2.08 but continue to only require 2.00.
+
+Fri Jul 23 13:41:36 PDT 1999
+
+	Include and require RRDtool 1.0.1.
+
+Thu Jul 22 17:06:45 PDT 1999
+
+	Use a blessed reference to an array for the Orca::DataFile,
+	Orca::HTMLFile, Orca::ImageFile, Orca::OpenFileHash,
+	Orca::RRDFile, and Orca::OpenFileHash classes.
+
+Mon Jul 19 12:57:56 PDT 1999
+
+	On a fresh install make sure to mkdir RRD_DIR/orcallator.
+
+	Change the tag name data_dir to rrd_dir to make it clearer what
+	kind of data is being loaded.
+
+	Integrate building of Compress::Zlib into the Makefile structure.
+	Make use of the Zlib 1.1.3 library included with RRDtool for
+	Compress::Zlib.
+
+Fri Jul 16 11:12:02 PDT 1999
+
+	Include and require RRDtool 1.0.0 and Compress::Zlib 1.05.
+
+	Update the colors in orcallator.cfg.  In all plots, make one
+	plot use area.
+
+Thu Jul 15 11:35:52 PDT 1999
+
+	As noted by Bob Hoekstra <Bob_Hoekstra@merck.com>, orcallator.se
+	was outputting the same information for ??load as for ??runq.
+	Orcallator.se no longer generates that data and orcallator.cfg
+	no longer generates plots for it.
+
+Wed Jul 14 11:04:09 PDT 1999
+
+	Switch to use PNGs instead of GIFs.  They take up 1/3 less space
+	than GIFs and at least 10% less time to generate.
+
+	Revamp the INSTALL document to reflect the new * -> _times_
+	change and add some documentation of the file descriptor limit.
+
+	Uncompress and read .Z and .gz compressed input files on the fly.
+
+Wed Jul 14 10:22:13 PDT 1999
+
+	Include and require RRDtool 0.99.52.
+
+Tue Jul 13 12:34:29 PDT 1999
+
+	Include Storable 0.604 but continue to only require 0.603.
+
+Thu Jul  8 16:22:45 PDT 1999
+
+	Include and require RRDtool 0.99.50.
+
+Wed Jul  7 13:26:55 PDT 1999
+
+	Rename the migrate_to_orcallator script to upgrade_installation.
+
+	Per Vadim Shulkin <vadim.shulkin@csfb.com> request, replace the
+	* in all generated filenames with _times_.  Put this rename in
+	the new upgrade_installation script.
+
+Tue Jul  6 18:14:20 PDT 1999
+
+	Include and require RRDtool 0.99.49.
+
+Sun Jul  4 16:57:28 PDT 1999
+
+	Include and require RRDtool 0.99.47.
+
+Fri Jul  2 18:16:21 PDT 1999
+
+	Include and require RRDtool 0.99.46.
+
+Tue Jun 29 13:18:57 PDT 1999
+
+	Add a new option for each plot named base that allows the base
+	for each plot to be either 1000 or 1024.  This allows for plotting
+	of memory or network type of datas.
+
+	Use the new base option in the number of bytes of available swap
+	space plots.
+
+	Include and require RRDtool 0.99.45.
+
+	Make use of RRDtool's 0.99.45 capability to place the SI number
+	suffix to numbers appearing in the legend using the GPRINT
+	command.
+
+Mon Jun 28 11:16:46 PDT 1999
+
+	Now only print found filenames if the verbose level is above one.
+	Orca was generating too much output.
+
+	When creating all the HTML files, do not write directly to the
+	new filename, instead write to a temporary filename and when
+	the file is closed, then rename it to the final name.  This lets
+	the user view existing HTML files even when the new HTML files
+	are being updated.
+
+	Include RRDtool 0.99.41 but continue to only require 0.99.29.
+
+Tue Jun 22 10:54:39 PDT 1999
+
+	Include RRDtool 0.99.40 but continue to only require 0.99.29.
+
+Thu Jun 10 09:39:36 PDT 1999
+
+	When 80% of a host's processes are web serving processes, plotting
+	the total system and number of httpd's together on the same plot
+	makes sense.  However, for people running a tiny web server with
+	only a few processes, this does not make sense, so a separate
+	plot is created.  Noted by Paul Company <paul.company@plpt.com>.
+
+Tue Jun  8 10:57:39 PDT 1999
+
+	Make the table of contents in INSTALL consistent with the contents
+	of the file.
+
+Mon Jun  7 13:01:05 PDT 1999
+
+	Include RRDtool 0.99.32 but continue to only require 0.99.29.
+
+Thu Jun  3 13:27:09 PDT 1999
+
+	Fix a bug in Orca::SourceDataFile::add_plots where it was
+	dereferencing an undef.
+
+	Since orcallator.se may watch many different types of web
+	server logs, move some of the common code into CPP defines.
+	Defines are preferred over functions since the function call
+	overhead in SE is larger than having the code inlined.
+
+	Have orcallator.se watch Yahoo! style web access logs if
+	-DWATCH_YAHOO is passed on the command line.
+
+	If any of the environmental variables used by orcallator.se were
+	defined then the value was used, even if the length was zero.
+	Now the length of the variable must be non-zero for the value
+	to be used, otherwise the default value is used.
+
+Wed Jun  2 12:11:44 PDT 1999
+
+	Optimize orcallator.se slightly when it determines the size bin
+	for a particular file served.
+
+	Change the define WATCH_HTTPD in orcallator.se to WATCH_WEB to
+	be consistent with the other WEB_* defines and environmental
+	variables.
+
+Tue Jun  1 21:53:15 PDT 1999
+
+	For orcallator.se, if the WEB_SERVER environmental variable
+	is set, then the value of of WEB_SERVER is used to count the
+	number of web server processes.  If WEB_SERVER is not defined
+	it defaults to httpd.
+
+Fri May 28 17:39:36 PDT 1999
+
+	Add to the plot title the type of the plot, i.e. 'Yearly',
+	in every GIF.  Requested by Tom Murray <murray@reston.wcom.net>.
+
 Thu May 27 10:53:02 PDT 1999
 
 	Release version 0.23.
@@ -25,11 +403,11 @@ Wed May 26 12:10:42 PDT 1999
 
 	Include RRDtool 0.99.31 but continue to only require 0.99.29.
 
-	Add a new quarterly plot that shows the last 100 days.  This is
+	Add a new quarterly plot that shows the last 100 days.	This is
 	a nice transition between the monthly and yearly plots.
 
 	Change the number of days shown in the yearly plot from 500 to
-	428, which is one year and two months.  Reducing the number
+	428, which is one year and two months.	Reducing the number
 	of days from 500 by at least one day will speed up the GIF
 	generation time because by default the plot portion of the GIFs
 	are 500 pixels wide.
@@ -44,24 +422,29 @@ Thu May 20 10:59:26 PDT 1999
 
 	Put a closing ) in a error message in RRDtool 0.99.29.1.
 
-	Fix a bug in queue_data where it was sending data to
-	rrd_update that was already in the RRD file.
+	Fix a bug in queue_data where it was sending data to rrd_update
+	that was already in the RRD file.
 
 Wed May 19 10:43:48 PDT 1999
 
-	Restructured the code so each Orca::SourceDataFile has only
-	one anonymous subroutine to read in all the valued from a single
+	Remove the load_state and save_state subroutines and replace
+	them with an object-oriented Orca::State class for saving
+	information between Orca invocations.  Use the Storable class
+	to save information instead of a text based method.
+
+	Restructured the code so each Orca::SourceDataFile has only one
+	anonymous subroutine to read in all the valued from a single
 	line of the source data file.  This sped Orca up slightly.
 
-	Add a -r option to Orca to have it not create any HTML or
-	GIF files and only update the RRD files.
+	Add a -r option to Orca to have it not create any HTML or GIF
+	files and only update the RRD files.
 
-	Fix a bug where if the number of columns changed in from one
-	source file to the next source file in a files group, the
-	column index used to get a particular value is the old index
-	for the old file and not the new index for the new file.  This
-	fix involved having the Orca::SourceDataFile object run the
-	anonymous subroutines to pick the correct data from a line
+	Fix a bug where if the number of columns changed in from
+	one source file to the next source file in a files group,
+	the column index used to get a particular value is the old
+	index for the old file and not the new index for the new file.
+	This fix involved having the Orca::SourceDataFile object run
+	the anonymous subroutines to pick the correct data from a line
 	instead of Orca::RRDFile.
 
 	Remove some unused methods: Orca::OpenFileHash::list,
@@ -107,7 +490,7 @@ Wed May 12 09:31:43 PDT 1999
 
 	The paths used to find input files are now passed through
 	the following regular expressions: s:^\\./:: and s:/\\./:/:g.
-	These remove unneccessary searches through the current directory.
+	These remove unnecessary searches through the current directory.
 
 	Perl_glob will only return found files and no other type.
 	It will also not follow any directories named `..'.

@@ -8,11 +8,11 @@ INSTALL		= @INSTALL@
 PERL_HEAD	= @PERL_HEAD@
 ORCALLATOR_DIR	= @ORCALLATOR_DIR@
 RRD_DIR		= @RRD_DIR@
-PERL_SCRIPTS	= orcallator_running orca orcallator_column
-SHELL_SCRIPTS	= restart_orcallator stop_orcallator start_orcallator
+PERL_SCRIPTS	= orca upgrade_installation
+SHELL_SCRIPTS	=
 TARGETS		= $(PERL_SCRIPTS) $(SHELL_SCRIPTS)
 
-all:		$(TARGETS) migrate_to_orcallator
+all:		$(TARGETS)
 
 install: all
 		$(MKDIR) $(bindir)
@@ -21,14 +21,14 @@ install: all
 			$(INSTALL) $$file $(bindir);		\
 		done
 
-migrate:	migrate_to_orcallator
-		./migrate_to_orcallator $(prefix) $(exec_prefix) $(bindir) $(libdir) $(ORCALLATOR_DIR) $(RRD_DIR)
+upgrade:	upgrade_installation
+		./upgrade_installation $(prefix) $(exec_prefix) $(bindir) $(libdir) $(ORCALLATOR_DIR) $(RRD_DIR)
 
 clean:
 		$(RM) $(TARGETS)
 
 distclean:	clean
-		$(RM) *.sh orcallator_running.pl Makefile
+		$(RM) *.sh orca.pl Makefile
 
 .SUFFIXES:	.pl .sh
 
@@ -41,21 +41,8 @@ distclean:	clean
 		chmod 0755 $@
 
 Makefile:	Makefile.in
-		(cd ..; ./config.status)
+		cd .. && CONFIG_FILES=src/Makefile ./config.status
 		$(MAKE)
 
-orcallator_running.pl:		orcallator_running.pl.in
-		(cd ..; ./config.status)
-		$(MAKE)
-
-restart_orcallator.sh:		restart_orcallator.sh.in
-		(cd ..; ./config.status)
-		$(MAKE)
-
-start_orcallator.sh:		start_orcallator.sh.in
-		(cd ..; ./config.status)
-		$(MAKE)
-
-stop_orcallator.sh:		stop_orcallator.sh.in
-		(cd ..; ./config.status)
-		$(MAKE)
+orca.pl:	orca.pl.in
+		cd .. && CONFIG_FILES=src/orca.pl ./config.status

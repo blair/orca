@@ -1,9 +1,122 @@
-New in version 0.23.
+New in Orca version 0.24.
+ 1) Installation notes.  Due to the way Orca generated image and HTML
+    files are named, read the INSTALL file.  Otherwise, you will have
+    some left over cruft that will waste disk space and you will have
+    to reload all of your source data files.
+ 2) Orca now runs under older Perls: Perl 5.004_01 or later.
+ 3) Switch to generate PNGs instead of GIFs.  They take up 1/3 less disk
+    space and are created at least 10% faster.  If you want Orca to
+    generate GIFs instead of PNGs, give it the -gifs flag.
+ 4) Read in .gz files using gunzip, .Z files using uncompress, and .bz2
+    files with bunzip2.
+ 5) Add to the plot title the type of the plot (i.e. 'Yearly') in
+    every image.
+ 6) Add a href field for a plot.  This, if defined, appends a HREF to a
+    target name letting you point the user to a page to get more
+    information.  The default orcallator.cfg has these added to point
+    to the new documentation web page
+    http://www.geocities.com/~bzking/docs/orcallator.html for all
+    orcallator.se recorded data.
+ 7) Add a new option named base that lets the user specify either a base
+    of 1000 or 1024 for autoscaling plots.  This is useful for memory
+    (base 1024) vs network (base 1000) measurements and is used in
+    generating correctly calculating the base to use in calculating
+    the Y axis.
+ 8) The word logarithmic can now be used for a plot to create a
+    logarithmic Y axis scale.
+ 9) Orca no longer lists all the source files it finds to shorten verbose
+    output.  This output is now generated if the verbose level is greater
+    than one.
+10) Do not overwrite existing HTML files when creating new versions until
+    the new version is finished.  This allows people to better view
+    existing pages until the new page is completely finished.
+11) All generated HTML and image filenames are now created using
+    a different set of mappings.  Now
+      orcallator -> o
+      orca       -> o
+      _times_    -> _X_
+      _percent_  -> _pct_
+      _number_   -> _num_.
+    All older installations of Orca will need to be renamed unless you
+    want to load in all your data again.  You can perform this renaming
+    on your files by running make upgrade, or if you have directories
+    that are not normally covered by the Orca install, run
+    src/upgrade_installation followed by the list of directories to search
+    in.  Pass the -n flag to upgrade_installation if you want to see
+    the renames that will be performed without actually performing them.
+12) New HTML and image filenames are shorter, which can save 10% in
+    disk space on a large installation according to du -k.  Also, now
+    plots containing arbitrary many data sources can be plotted without
+    exceeding the maximum file lengths.
+13) Add locking so that only one Orca can run on a single configuration
+    file at one time.
+14) Include and require RRDtool 1.0.7.2 and Math::Interpolate 1.05.
+    Include Data::Dumper 2.101, Digest::MD5 2.09, Storable 0.6.5, with
+    Orca.
+
+    These following changes are what's new in orcallator.se 1.19 since
+    version 1.7 which was included with Orca 0.23.  All of the changes
+    below are taken advantage of in the included orcallator.cfg and
+    start_orcallator files.
+
+15) Orcallator.se now has a web page describing the various measurements
+    it makes.  See http://www.geocities.com/~bzking/docs/orcallator.html.
+16) If the environmental variable WEB_SERVER is defined, use its value of
+    the as the name of the process to count for the number of web
+    servers on the system.  If WEB_SERVER is not defined, then count
+    number of httpd's.
+17) If the COMPRESSOR environmental variable is defined, then when a new
+    log file is opened for a new day, the just closed log file is
+    compressed using the COMPRESSOR command in the following manner:
+    system(sprintf("%s %s &", COMPRESSOR, log_file)
+    COMPRESSOR should be set to something like "gzip -9", or "compress",
+    or "bzip2 -9".  If the configure script finds both a compressor and
+    uncompressor tool, such as both gzip and gunzip, then start_orcallator
+    will inform orcallator.se to compress the log files at the end of a
+    day.
+18) New measurements.  The first column lists the define that must
+    be passed to the SE interpreter to obtain the measurement.  If you
+    use the WATCH_OS define, then all of these are now measured.
+    WATCH_MUTEX  - ncpus - number of CPUs on the system
+    WATCH_CPU    - #proc/s - 5 minute average process spawn rate if root
+    WATCH_CPU    - #proc/p5s - maximum 5 second process spawn rate if root
+    WATCH_CPU    - scanrate - page scan rate in pages per second
+    WATCH_DISK   - disk_runp_c\d+t\d+d\d+ - run percent for each disk
+    WATCH_DISK   - disk_rd/s - system wide read operations per second
+    WATCH_DISK   - disk_wr/s - system wide write operations per second
+    WATCH_DISK   - disk_rK/s - system wide kilobytes read per second
+    WATCH_DISK   - disk_wK/s - system wide kilobytes written per second
+    WATCH_RAM    - freememK - number of free kilobytes of memory on the system
+    WATCH_MOUNTS - mntC_* - capacity of disk in kilobytes
+    WATCH_MOUNTS - mntc_* - inode capacity of disk
+    WATCH_MOUNTS - mntU_* - used capacity of disk in kilobytes
+    WATCH_MOUNTS - mntu_* - used inode capacity of disk
+    WATCH_MOUNTS - mntA_* - available kilobytes for non-root users
+    WATCH_MOUNTS - mnta_* - available inodes for non-root users
+    WATCH_MOUNTS - mntP_* - percentage of kilobytes used for non-root users
+    WATCH_MOUNTS - mntp_* - percentage of inodes used for non-root users
+19) Add some smarts so that if the number of interfaces, physical
+    disks, or mounted partitions changes, then a new header is printed.
+    This will prevent column name and data mixups when the system
+    configuration changes.
+20) Prevent a division by zero in calculating the mean_disk_busy if the
+    number of disks on the system is 0.
+21) Fix a bug in the disk_mean calculation where it was being divided
+    by the wrong disk_count.  Now it should be much larger and in scale
+    with disk_peak.
+22) Increase the number of characters for each network interface from four
+    to five.
+23) If WATCH_YAHOO is defined, then process the access log as a Yahoo!
+    style access log.
+24) Restructure the code to handle different web server access log formats
+    easier.
+
+New in Orca version 0.23.
  1) Fix two important bugs in orcallator_running and start_orcallator
     which where using old PERCOLLATOR_DIR variables instead of the new
     ORCALLATOR_DIR.
 
-New in version 0.22.
+New in Orca version 0.22.
  1) Add a new command line option (-r) that tells Orca to only update
     the RRD data files and not to generate any HTML or GIF files.
     This is useful if you are loading in a large amount of data in several
@@ -20,10 +133,10 @@ New in version 0.22.
  4) A temporary fix: Skip and do not complain about input source data
     file lines containing the word timestamp in it.
  5) Removed some unused methods to make Orca smaller.
- 6) Added some more documentation to orcallater.cfg.
+ 6) Added some more documentation to orcallator.cfg.
  7) Make Orca slightly faster.
  
-New in version 0.21.
+New in Orca version 0.21.
  1) Every file containing the words percollator, percol and perc has
     been renamed to contain the word orcallator.  A new make target named
     migrate will change all filenames in an installed Orca directory to

@@ -141,7 +141,7 @@ of the created gif and results of the PRINT arguments.
 
 <PRE> ($averages,$xsize,$ysize) = RRDs::graph ...
  print &quot;Gifsize: ${xsize}x${ysize}\n&quot;;
- print &quot;Averages: &quot;, (join &quot;, &quot;, @averages);
+ print &quot;Averages: &quot;, (join &quot;, &quot;, @$averages);
 </PRE>
 
 <P>

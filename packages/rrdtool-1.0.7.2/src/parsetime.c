@@ -1,4 +1,4 @@
-/* 
+/*  
  *  parsetime.c - parse time for at(1)
  *  Copyright (C) 1993, 1994  Thomas Koenig
  *
@@ -8,6 +8,8 @@
  *  A lot of modifications and extensions 
  *  (including the new syntax being useful for RRDB)
  *  Copyright (C) 1999  Oleg Cherevko (aka Olwi Deer)
+ *
+ *  severe structural damage inflicted by Tobi Oetiker in 1999
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -45,12 +47,13 @@
  * TIME-REFERENCE ::= NOW | TIME-OF-DAY-SPEC [ DAY-SPEC-1 ] |
  *                        [ TIME-OF-DAY-SPEC ] DAY-SPEC-2
  *
- * TIME-OF-DAY-SPEC ::= NUMBER [(':'|'.') NUMBER] [am|pm] | # HH:MM HH.MM HH[MM]
+ * TIME-OF-DAY-SPEC ::= NUMBER (':') NUMBER [am|pm] | # HH:MM
  *                     'noon' | 'midnight' | 'teatime'
  *
  * DAY-SPEC-1 ::= NUMBER '/' NUMBER '/' NUMBER |  # MM/DD/[YY]YY
  *                NUMBER '.' NUMBER '.' NUMBER |  # DD.MM.[YY]YY
- *                NUMBER                          # DDMM[YY]YY
+ *                NUMBER                          # Seconds since 1970
+ *                NUMBER                          # YYYYMMDD
  *
  * DAY-SPEC-2 ::= MONTH-NAME NUMBER [NUMBER] |    # Month DD [YY]YY
  *                'yesterday' | 'today' | 'tomorrow' |
@@ -106,17 +109,10 @@
 
 /* System Headers */
 
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
-#include <ctype.h>
-#include <stdarg.h>
-
 /* Local headers */
 
-#include "parsetime.h"
+#include "rrd_tool.h"
+#include <stdarg.h>
 
 /* Structures and unions */
 
@@ -240,7 +236,7 @@ static char scc;	/* scanner - count of remaining arguments */
 static char *sct;	/* scanner - next char pointer in current argument */
 static int need;	/* scanner - need to advance to next argument */
 
-static char *sc_token;	/* scanner - token buffer */
+static char *sc_token=NULL;	/* scanner - token buffer */
 static size_t sc_len;   /* scanner - lenght of token buffer */
 static int sc_tokid;	/* scanner - token id */
 
@@ -264,6 +260,8 @@ void EnsureMemFree ()
  * should return TIME_OK (aka NULL) or pointer to the error message,
  * and should be called like this: try(func(args));
  *
+ * if the try is not successfull it will reset the token pointer ...
+ *
  * [NOTE: when try(...) is used as the only statement in the "if-true"
  *  part of the if statement that also has an "else" part it should be
  *  either enclosed in the curly braces (despite the fact that it looks
@@ -285,7 +283,6 @@ void EnsureMemFree ()
  */
 
 #define panic(e)	{ \
-			EnsureMemFree(); \
 			return (e); \
 			}
 
@@ -316,6 +313,33 @@ e ( char *fmt, ... )
   return( err );
 }
 
+/* Compare S1 and S2, ignoring case, returning less than, equal to or
+   greater than zero if S1 is lexiographically less than,
+   equal to or greater than S2.  -- copied from GNU libc*/
+static int
+mystrcasecmp (s1, s2)
+     const char *s1;
+     const char *s2;
+{
+  const unsigned char *p1 = (const unsigned char *) s1;
+  const unsigned char *p2 = (const unsigned char *) s2;
+  unsigned char c1, c2;
+
+  if (p1 == p2)
+    return 0;
+
+  do
+    {
+      c1 = tolower (*p1++);
+      c2 = tolower (*p2++);
+      if (c1 == '\0')
+	break;
+    }
+  while (c1 == c2);
+
+  return c1 - c2;
+}
+
 /*
  * parse a token, checking if it's something special to us
  */
@@ -325,12 +349,13 @@ parse_token(char *arg)
     int i;
 
     for (i=0; Specials[i].name != NULL; i++)
-	if (strcasecmp(Specials[i].name, arg) == 0)
+	if (mystrcasecmp(Specials[i].name, arg) == 0)
 	    return sc_tokid = Specials[i].value;
 
     /* not special - must be some random id */
     return sc_tokid = ID;
 } /* parse_token */
+
 
 
 /*
@@ -346,7 +371,7 @@ init_scanner(int argc, char **argv)
     while (argc-- > 0)
 	sc_len += strlen(*argv++);
 
-    sc_token = (char *) malloc(sc_len);
+    sc_token = (char *) malloc(sc_len*sizeof(char));
     if( sc_token == NULL )
       return "Failed to allocate memory";
     need_to_free = 1;
@@ -362,7 +387,7 @@ token()
     int idx;
 
     while (1) {
-	memset(sc_token, 0, sc_len);
+	memset(sc_token, '\0', sc_len);
 	sc_tokid = EOF;
 	idx = 0;
 
@@ -381,7 +406,7 @@ token()
 	 * we'll continue, which puts us up at the top of the while loop
 	 * to fetch the next argument in
 	 */
-	while (isspace(*sct) || *sct == '_' || *sct == ',' )
+	while (isspace((unsigned char)*sct) || *sct == '_' || *sct == ',' )
 	    ++sct;
 	if (!*sct) {
 	    need = 1;
@@ -394,16 +419,16 @@ token()
 
 	/* then see what it is
 	 */
-	if (isdigit(sc_token[0])) {
-	    while (isdigit(*sct))
+	if (isdigit((unsigned char)(sc_token[0]))) {
+	    while (isdigit((unsigned char)(*sct)))
 		sc_token[++idx] = *sct++;
-	    sc_token[++idx] = 0;
+	    sc_token[++idx] = '\0';
 	    return sc_tokid = NUMBER;
 	}
-	else if (isalpha(sc_token[0])) {
-	    while (isalpha(*sct))
+	else if (isalpha((unsigned char)(sc_token[0]))) {
+	    while (isalpha((unsigned char)(*sct)))
 		sc_token[++idx] = *sct++;
-	    sc_token[++idx] = 0;
+	    sc_token[++idx] = '\0';
 	    return parse_token(sc_token);
 	}
 	else switch(sc_token[0]) {
@@ -412,7 +437,10 @@ token()
 	    case '+': return sc_tokid = PLUS;
 	    case '-': return sc_tokid = MINUS;
 	    case '/': return sc_tokid = SLASH;
-	    default:  return sc_tokid = JUNK;
+	default:
+        /*OK, we did not make it ... */
+	    sct--;
+	    return sc_tokid = EOF;
 	}
     } /* while (1) */
 } /* token */
@@ -477,8 +505,8 @@ plus_minus(struct time_value *ptv, int doop)
 	     break;
 
         default:
-             if( delta < 25 ) /* it may be some other value but in the context
-			       * of RRD who needs less than 25 min deltas? */
+             if( delta < 6 ) /* it may be some other value but in the context
+			       * of RRD who needs less than 6 min deltas? */
                sc_tokid = MONTHS;
              else
 	       sc_tokid = MINUTES;
@@ -496,7 +524,7 @@ plus_minus(struct time_value *ptv, int doop)
 	    delta *= 7;
 	    /* FALLTHRU */
     case DAYS:
-	    ptv->tm.tm_mday += (op == PLUS) ? delta : -delta;
+      	    ptv->tm.tm_mday += (op == PLUS) ? delta : -delta;
 	    return TIME_OK;
     case HOURS:
 	    ptv->offset += (op == PLUS) ? delta*60*60 : -delta*60*60;
@@ -507,6 +535,9 @@ plus_minus(struct time_value *ptv, int doop)
     case SECONDS:
 	    ptv->offset += (op == PLUS) ? delta : -delta;
 	    return TIME_OK;
+    default: /*default unit is seconds */
+	ptv->offset += (op == PLUS) ? delta : -delta;
+	return TIME_OK;
     }
     panic(e("well-known time unit expected after %d", delta));
     /* NORETURN */
@@ -522,31 +553,38 @@ tod(struct time_value *ptv)
 {
     int hour, minute = 0;
     int tlen;
+    /* save token status in  case we must abort */
+    int scc_sv = scc; 
+    char *sct_sv = sct; 
+    int sc_tokid_sv = sc_tokid;
 
-    hour = atoi(sc_token);
     tlen = strlen(sc_token);
+    
+    /* first pick out the time of day - we assume a HH (COLON|DOT) MM time
+     */    
+    if (tlen > 2) {
+      return TIME_OK;
+    }
+    
+    hour = atoi(sc_token);
 
-    /* first pick out the time of day - if it's 4 digits, we assume
-     * a HHMM time, otherwise it's HH (COLON|DOT) MM time
-     */
     token();
-    if (sc_tokid == COLON || sc_tokid == DOT) {
+    if (sc_tokid == SLASH || sc_tokid == DOT) {
+      /* guess we are looking at a date */
+      scc = scc_sv;
+      sct = sct_sv;
+      sc_tokid = sc_tokid_sv;
+      sprintf (sc_token,"%d", hour);
+      return TIME_OK;
+    }
+    if (sc_tokid == COLON ) {
 	try(expect(NUMBER,
-            "Parsing HH%cMM syntax, expecting MM as number, got none",
-            sc_tokid == DOT ? '.' : ':' ));
+            "Parsing HH:MM syntax, expecting MM as number, got none"));
 	minute = atoi(sc_token);
 	if (minute > 59) {
-	    panic(e("parsing HH%cMM syntax, got MM = %d (>59!)",
-                     sc_tokid == DOT ? '.' : ':', minute ));
+	    panic(e("parsing HH:MM syntax, got MM = %d (>59!)", minute ));
 	}
 	token();
-    }
-    else if (tlen == 4) {
-	minute = hour%100;
-	if (minute > 59) {
-	    panic(e("parsing HHMM syntax, got MM = %d (>59!)", minute ));
-	}
-	hour = hour/100;
     }
 
     /* check if an AM or PM specifier was given
@@ -563,9 +601,14 @@ tod(struct time_value *ptv)
 			hour = 0;
 	}
 	token();
-    }
+    } 
     else if (hour > 23) {
-	panic(e("the time-of-day hour > 23"));
+      /* guess it was not a time then ... */
+      scc = scc_sv;
+      sct = sct_sv;
+      sc_tokid = sc_tokid_sv;
+      sprintf (sc_token,"%d", hour);
+      return TIME_OK;
     }
     ptv->tm.tm_hour = hour;
     ptv->tm.tm_min = minute;
@@ -615,7 +658,7 @@ assign_date(struct time_value *ptv, long mday, long mon, long year)
 static char *
 day(struct time_value *ptv)
 {
-    long mday, wday, mon, year = ptv->tm.tm_year;
+    long mday=0, wday, mon, year = ptv->tm.tm_year;
     int tlen;
 
     switch (sc_tokid) {
@@ -665,48 +708,49 @@ day(struct time_value *ptv)
 	    */
 
     case NUMBER:
-	    /* get numeric DDMM[YY]YY, MM/DD/[YY]YY, or DD.MM.[YY]YY
+	    /* get numeric <sec since 1970>, MM/DD/[YY]YY, or DD.MM.[YY]YY
 	     */
 	    tlen = strlen(sc_token);
 	    mon = atol(sc_token);
-	    token();
+            if (mon > 10*356*24*60*60) {
+		ptv->tm=*localtime(&mon);
+		token();
+		break;
+	    }
 
-	    if (sc_tokid == SLASH || sc_tokid == DOT) {
-		int sep;
-
+	    if (mon > 19700101 && mon < 24000101){ /*works between 1900 and 2400 */
+		char  cmon[3],cmday[3],cyear[5];
+		strncpy(cyear,sc_token,4);cyear[4]='\0';	      
+		year = atol(cyear);	      
+		strncpy(cmon,&(sc_token[4]),2);cmon[2]='\0';
+		mon = atol(cmon);
+		strncpy(cmday,&(sc_token[6]),2);cmday[2]='\0';
+		mday = atol(cmday);
+		token();
+	    } else { 
+	      token();
+	      
+	      if (mon <= 31 && (sc_tokid == SLASH || sc_tokid == DOT)) {
+		int sep;		    
 		sep = sc_tokid;
 		try(expect(NUMBER,"there should be %s number after '%c'",
 			   sep == DOT ? "month" : "day", sep == DOT ? '.' : '/'));
 		mday = atol(sc_token);
 		if (token() == sep) {
-		    try(expect(NUMBER,"there should be year number after '%c'",
-			       sep == DOT ? '.' : '/'));
-		    year = atol(sc_token);
-		    token();
+		  try(expect(NUMBER,"there should be year number after '%c'",
+			     sep == DOT ? '.' : '/'));
+		  year = atol(sc_token);
+		  token();
 		}
-
+		
 		/* flip months and days for european timing
 		 */
 		if (sep == DOT) {
-		    long x = mday;
-		    mday = mon;
-		    mon = x;
+		  long x = mday;
+		  mday = mon;
+		  mon = x;
 		}
-	    }
-	    else if (tlen == 6 || tlen == 8) {
-		if (tlen == 8) {
-		    year = (mon % 10000) - 1900;
-		    mon /= 10000;
-		}
-		else {
-		    year = mon % 100;
-		    mon /= 100;
-		}
-		mday = mon / 100;
-		mon %= 100;
-	    }
-	    else {
-		panic(e("can't parse your date as DDMM[YY]YY"));
+	      }
 	    }
 
 	    mon--;
@@ -715,13 +759,12 @@ day(struct time_value *ptv)
 	    }
 	    if(mday < 1 || mday > 31) {
 	        panic(e("I'm afraid that %d is not a valid day of the month",
-                         mday));
-	    }
-
+			mday));
+	    }	   
 	    try(assign_date(ptv, mday, mon, year));
 	    break;
     } /* case */
-  return TIME_OK;
+    return TIME_OK;
 } /* month */
 
 
@@ -752,7 +795,7 @@ parsetime(char *tspec, struct time_value *ptv)
     ptv->type = ABSOLUTE_TIME;
     ptv->offset = 0;
     ptv->tm = *localtime(&now);
-    ptv->tm.tm_isdst = -1; /* ?not needed? */
+    ptv->tm.tm_isdst = -1; /* mk time can figure this out for us ... */
 
     token();
     switch (sc_tokid) {
@@ -784,15 +827,21 @@ parsetime(char *tspec, struct time_value *ptv)
 	    }
 	    else
 	      if( sc_tokid != EOF ) {
-	 	panic(e("'now' can be followed only be +|- offset"));	
+	 	panic(e("if 'now' is followed by a token it must be +|- offset"));	
 	      }
 	    };
 	    break;
 
     /* Only absolute time specifications below */
     case NUMBER:
-	    try(tod(ptv));
-	    try(day(ptv));
+	    try(tod(ptv))
+	    if (sc_tokid != NUMBER) break;
+    /* fix month parsing */
+    case JAN: case FEB: case MAR: case APR: case MAY: case JUN:
+    case JUL: case AUG: case SEP: case OCT: case NOV: case DEC:
+    	    try(day(ptv));
+	    if (sc_tokid != NUMBER) break;
+	    try(tod(ptv))
 	    break;
 
 	    /* evil coding for TEATIME|NOON|MIDNIGHT - we've initialised
@@ -815,11 +864,11 @@ parsetime(char *tspec, struct time_value *ptv)
 	    }
 	    ptv->tm.tm_hour = hr;
 	    ptv->tm.tm_min = 0;
+	    ptv->tm.tm_sec = 0;
 	    token();
-	    /* fall through to month setting */
-	    /* FALLTHRU */
+	    break;
     default:
-	    try(day(ptv));
+    	    panic(e("unparsable time: %s%s",sc_token,sct));
 	    break;
     } /* ugly case statement */
 
@@ -843,7 +892,7 @@ parsetime(char *tspec, struct time_value *ptv)
 
     /* now we should be at EOF */
     if( sc_tokid != EOF ) {
-      panic(e("unparsable trailing text: '...%s%s'", sc_token, sct ));
+      panic(e("unparsable trailing text: '...%s%s'", sc_token, sct));
     }
 
     ptv->tm.tm_isdst = -1; /* for mktime to guess DST status */
@@ -853,5 +902,60 @@ parsetime(char *tspec, struct time_value *ptv)
 	/* when winter -> summer time correction eats a hour */
         panic(e("the specified time is incorrect (out of range?)"));
       }
+    EnsureMemFree();
     return TIME_OK;
 } /* parsetime */
+
+
+int proc_start_end (struct time_value *start_tv, 
+		    struct time_value *end_tv, 
+		    time_t *start, 
+		    time_t *end){
+    if (start_tv->type == RELATIVE_TO_END_TIME  && /* same as the line above */
+	end_tv->type == RELATIVE_TO_START_TIME) {
+	rrd_set_error("the start and end times cannot be specified "
+		      "relative to each other");
+	return -1;
+    }
+
+    if (start_tv->type == RELATIVE_TO_START_TIME) {
+	rrd_set_error("the start time cannot be specified relative to itself");
+	return -1;
+    }
+
+    if (end_tv->type == RELATIVE_TO_END_TIME) {
+	rrd_set_error("the end time cannot be specified relative to itself");
+	return -1;
+    }
+
+    if( start_tv->type == RELATIVE_TO_END_TIME) {
+	struct tm tmtmp;
+	*end = mktime(&(end_tv->tm)) + end_tv->offset;    
+	tmtmp = *localtime(end); /* reinit end including offset */
+	tmtmp.tm_mday += start_tv->tm.tm_mday;
+	tmtmp.tm_mon += start_tv->tm.tm_mon;
+	tmtmp.tm_year += start_tv->tm.tm_year;	
+	*start = mktime(&tmtmp) + start_tv->offset;
+    } else {
+	*start = mktime(&(start_tv->tm)) + start_tv->offset;
+    }
+    if (end_tv->type == RELATIVE_TO_START_TIME) {
+	struct tm tmtmp;
+	*start = mktime(&(start_tv->tm)) + start_tv->offset;
+	tmtmp = *localtime(start);
+	tmtmp.tm_mday += end_tv->tm.tm_mday;
+	tmtmp.tm_mon += end_tv->tm.tm_mon;
+	tmtmp.tm_year += end_tv->tm.tm_year;	
+	*end = mktime(&tmtmp) + end_tv->offset;
+    } else {
+	*end = mktime(&(end_tv->tm)) + end_tv->offset;
+    }    
+    return 0;
+} /* proc_start_end */
+
+
+
+
+
+
+

@@ -1,4 +1,4 @@
-/* $Id: MD2.xs,v 1.8 1999/03/05 21:13:03 gisle Exp $ */
+/* $Id: MD2.xs,v 1.9 1999/07/28 10:33:47 gisle Exp $ */
 
 /* 
  * This library is free software; you can redistribute it and/or
@@ -322,10 +322,12 @@ addfile(self, fh)
 	unsigned char buffer[4096];
 	int  n;
     CODE:
-	/* Process blocks until EOF */
-        while ( (n = PerlIO_read(fh, buffer, sizeof(buffer)))) {
-	    MD2Update(context, buffer, n);
-	}
+        if (fh) {
+	    /* Process blocks until EOF */
+            while ( (n = PerlIO_read(fh, buffer, sizeof(buffer)))) {
+	        MD2Update(context, buffer, n);
+	    }
+        }
 	XSRETURN(1);  /* self */
 
 void

@@ -3,7 +3,7 @@ package MD5;  # legacy stuff
 use strict;
 use vars qw($VERSION @ISA);
 
-$VERSION = '2.00';  # $Date: 1998/10/23 11:19:27 $
+$VERSION = '2.01';  # $Date: 1999/08/05 23:17:54 $
 
 require Digest::MD5;
 @ISA=qw(Digest::MD5);
@@ -40,11 +40,11 @@ The C<MD5> module is B<depreciated>.  Use C<Digest::MD5> instead.
 
 The current C<MD5> module is just a wrapper around the C<Digest::MD5>
 module.  It is provided so that legacy code that rely on the old
-interface get the speed benefit of the new module.
+interface still work and get the speed benefit of the new module.
 
-In addition to the methods provided by C<Digest::MD5> this module
-provide the class methods MD5->hash() and MD5->hexhash() that
-basically do the same as the md5() and md5_hex() functions provided
+In addition to the methods provided for C<Digest::MD5> objects, this
+module provide the class methods MD5->hash() and MD5->hexhash() that
+basically do the same as the md5() and md5_hex() functions provided by
 C<Digest::MD5>.
 
 =head1 SEE ALSO

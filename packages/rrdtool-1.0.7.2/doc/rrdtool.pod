@@ -25,6 +25,8 @@ functionality of the Round Robin Database Tool (rrdtool). For a more
 detailed description of how to use the individual functions of the
 B<rrdtool> check the corresponding man page.
 
+For an introduction to the usage of rrdtool make sure you check L<rrdtutorial>.
+
 =head2 FUNCTIONS
 
 While the man pages talk of command line switches you have to set in order to
@@ -37,34 +39,48 @@ things quickly. Check the section on L<"Remote Control"> further down.
 
 =item B<create>
 
-Set up a new Round Robin Database (RRD). Check rrdcreate
+Set up a new Round Robin Database (RRD). Check L<rrdcreate>.
 
 =item B<update>
 
-Store new data values into an RRD. Check rrdupdate
+Store new data values into an RRD. Check L<rrdupdate>.
 
 =item B<graph>
 
 Create a graph from data stored in one or several RRD. Apart from
-generating graphs, data can also be extracted to stdout. Check rrdgraph
+generating graphs, data can also be extracted to stdout. Check L<rrdgraph>.
 
 =item B<dump>
 
-Dump the contents of an RRD in plain ASCII. This is manly used for
-debugging. Check rrddump
+Dump the contents of an RRD in plain ASCII. In connection with 
+restore you can use it to transport an rrd from one architecture to another.
+Check L<rrddump>.
+
+=item B<restore>
+
+Restore an RRD in XML format to a binary rrd ... Check L<rrdrestore>
 
 =item B<fetch>
 
 Get data for a certain time period from a RRD. The graph function
-uses fetch to retrieve its data from an rrd. Check rrdfetch
+uses fetch to retrieve its data from an rrd. Check L<rrdfetch>.
 
 =item B<tune>
 
-Alter setup of an RRD
+Alter setup of an RRD. Check L<rrdtune>.
 
 =item B<last>
 
-Find last update time of an RRD
+Find last update time of an RRD. Check L<rrdlast>.
+
+=item B<rrdresize>
+
+Change the size of individual RRAs ... Dangerous! Check L<rrdresize>.
+
+=item B<rrdcgi>
+
+This is a standalone tool for producing rrd graphs on the fly. Check
+L<rrdcgi>.
 
 =back
 
@@ -146,7 +162,7 @@ written to the B<RRA>.
 The B<rrdtool> also allows one to generate reports in numerical and
 graphical form based on the data stored in one or several
 B<RRD>s. The graphing feature is fully configurable. Size, color and
-contents of the graph can be defined freely. Check rrdgraph
+contents of the graph can be defined freely. Check L<rrdgraph>
 for more information on this.
 
 =back

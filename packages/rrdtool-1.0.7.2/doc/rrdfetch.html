@@ -95,22 +95,23 @@ match is possible.
 
 <P>
 
-<DT><STRONG><A NAME="item__start_s">--start|-s start (default -24*3600)
+<DT><STRONG><A NAME="item__start_s">--start|-s start (default end-1day)
 
 </A></STRONG><DD>
 when should the data begin. A time in seconds since epoch (1970-01-01) is
-required. Negative numbers are relative to the end time. By default one day
-worth of data will be fetched. See also AT-STYLE TIME SPECIFICATION section
-for alternative ways to specify start time.
+required. Negative numbers are relative to the current time. By default one
+day worth of data will be fetched. See also AT-STYLE TIME SPECIFICATION
+section for a detailed explanation on ways to specify start time.
 
 
 <P>
 
-<DT><STRONG><A NAME="item__end_e">--end|-e end (default current time)
+<DT><STRONG><A NAME="item__end_e">--end|-e end (default now)
 
 </A></STRONG><DD>
 when should the data end. Time in seconds since epoch. See also AT-STYLE
-TIME SPECIFICATION section for alternative ways to specify end time.
+TIME SPECIFICATION section for a detailed explanation of how to specify end
+time.
 
 
 <P>
@@ -121,11 +122,11 @@ TIME SPECIFICATION section for alternative ways to specify end time.
 <H2><A NAME="AT_STYLE_TIME_SPECIFICATION">AT-STYLE TIME SPECIFICATION
 
 </A></H2>
-The rrdtool does also understand at-style time specification. The
-specification is called ``at-style'' after unix command <CODE>at(1)</CODE>
+Apart from the traditional <EM>Seconds since epoch</EM>, rrdtool does also understand at-style time specification. The
+specification is called ``at-style'' after Unix command <CODE>at(1)</CODE>
 that has moderately complex ways to specify time to run your job at. The
-at-style specification consists of two parts: <STRONG>TIME REFERENCE</STRONG>
-specification and <STRONG>TIME OFFSET</STRONG> specification.
+at-style specification consists of two parts: <STRONG>TIME REFERENCE</STRONG> specification and <STRONG>TIME
+OFFSET</STRONG> specification.
 
 
 <P>
@@ -142,18 +143,18 @@ come first, when omitted, it defaults to <STRONG>now</STRONG>. On its own part, 
 
 <P>
 
-<EM>Time-of-day</EM> can be specified as <STRONG>HH:MM</STRONG>, <STRONG>HH.MM</STRONG>, <STRONG>HHMM</STRONG>, or just <STRONG>HH</STRONG>, you can suffix it with <STRONG>am</STRONG> or <STRONG>pm</STRONG> or use 24-hours clock. The few special times of day are understood as well,
-these include <STRONG>midnight</STRONG> (00:00), <STRONG>noon</STRONG> (12:00) and british
+<EM>Time-of-day</EM> can be specified as <STRONG>HH:MM</STRONG>, <STRONG>HH.MM</STRONG>, or just <STRONG>HH</STRONG>, you can suffix it with <STRONG>am</STRONG> or <STRONG>pm</STRONG> or use 24-hours clock. The few special times of day are understood as well,
+these include <STRONG>midnight</STRONG> (00:00), <STRONG>noon</STRONG> (12:00) and British
 <STRONG>teatime</STRONG> (16:00).
 
 
 <P>
 
 The <EM>day</EM> can be specified as <EM>month-name</EM>  <EM>day-of-the-month</EM>
-and optional 2- or 4-digit <EM>year</EM> number (e.g. March 8 1999). Alternatively, you can use <EM>day-of-week-name</EM> (e.g. Monday), or one of the words: <STRONG>yesterday</STRONG>, <STRONG>today</STRONG>, <STRONG>tomorrow</STRONG>. You can also specify <EM>day</EM> as a full date in several numerical formats; these include: <STRONG>MM/DD/[YY]YY</STRONG>, <STRONG>DD.MM.[YY]YY</STRONG>, <STRONG>DDMM[YY]YY</STRONG>
+and optional 2- or 4-digit <EM>year</EM> number (e.g. March 8 1999). Alternatively, you can use <EM>day-of-week-name</EM> (e.g. Monday), or one of the words: <STRONG>yesterday</STRONG>, <STRONG>today</STRONG>, <STRONG>tomorrow</STRONG>. You can also specify <EM>day</EM> as a full date in several numerical formats; these include: <STRONG>MM/DD/[YY]YY</STRONG>, <STRONG>DD.MM.[YY]YY</STRONG>, <STRONG>YYYYMMDD</STRONG>
 (<EM>NOTE1</EM>: this is different from the original <CODE>at(1)</CODE> behavior, which
 interprets a single-number date as MMDD[YY]YY)
-<EM>NOTE2</EM>: if you specify <EM>day</EM> this way, the <EM>time-of-day</EM> is REQUIRED to be present in front of it.
+<EM>NOTE2</EM>: if you specify <EM>day</EM> this way, the <EM>time-of-day</EM> is REQUIRED to be present.
 
 
 <P>
@@ -176,7 +177,7 @@ Month and weekday names can be used in their naturally abbreviated form
 <H2><A NAME="TIME_OFFSET_SPECIFICATION">TIME OFFSET SPECIFICATION
 
 </A></H2>
-Time offset specification is used to add (or substract) certain time
+Time offset specification is used to add (or subtract) certain time
 interval to (from) the time reference moment. It consists of <EM>sign</EM>
 (<STRONG>+</STRONG>&nbsp;or&nbsp;<STRONG>-</STRONG>) and <EM>amount</EM>. The following time units can be used to specify the <EM>amount</EM>: <STRONG>years</STRONG>, <STRONG>months</STRONG>, <STRONG>weeks</STRONG>, <STRONG>days</STRONG>,
 <STRONG>hours</STRONG>, <STRONG>minutes</STRONG>, <STRONG>seconds</STRONG>, these can be used in singular or plural form, and abbreviated naturally
@@ -201,7 +202,7 @@ results, e.g. 'May&nbsp;31&nbsp;-1month' = 'Apr&nbsp;31' (meaningless) = 'May&nb
 (after <CODE>mktime(3)</CODE> normalization); in the EET timezone '3:30am
 Mar 29 1999 -1 day' yields '3:30am Mar 28 1999' (Sunday) which is invalid
 time/date combination (because of 3am -&gt; 4am DST forward clock
-ajustment, see the below example). On the other hand, hours, minutes, and
+adjustment, see the below example). On the other hand, hours, minutes, and
 seconds are well defined time intervals, and these are guaranteed to always
 produce time offsets exactly as specified (e.g. for EET timezone, '8:00&nbsp;Mar&nbsp;27&nbsp;1999&nbsp;+2&nbsp;days' =
 '8:00&nbsp;Mar&nbsp;29&nbsp;1999', but since there is 1-hour DST forward clock adjustment takes place around 3:00&nbsp;Mar&nbsp;28&nbsp;1999, the actual time interval between
@@ -212,7 +213,7 @@ produce time offsets exactly as specified (e.g. for EET timezone, '8:00&nbsp;Mar
 <P>
 
 <EM>NOTE4</EM>: The single-letter abbreviation for both <STRONG>months</STRONG> and <STRONG>minutes</STRONG>
-is <STRONG>m</STRONG>. To disambiguiate, the parser tries to read your mind&nbsp;:)
+is <STRONG>m</STRONG>. To disambiguate, the parser tries to read your mind&nbsp;:)
 by applying the following two heuristics:
 
 
@@ -242,7 +243,7 @@ absolute value is below 25 it is assumed that <STRONG>m</STRONG> means <STRONG>m
 <EM>Final NOTES</EM>: Time specification is case-insensitive. Whitespace can be inserted freely
 or omitted altogether, there are, however, cases when whitespace is
 required (e.g., 'midnight&nbsp;Thu'). In this case you should either quote the whole phrase to prevent it from
-bieng taken apart by your shell or use '_' (underscore) or ',' (comma)
+being taken apart by your shell or use '_' (underscore) or ',' (comma)
 which also count as whitespace (e.g., midnight_Thu or midnight,Thu)
 
 
@@ -276,7 +277,12 @@ NOTE3 above)
 
 <P>
 
-<EM>12am 010101</EM> -- start of the new millenium
+<EM>12/31/99 11:59pm</EM> -- 1 minute to the year 2000 for imperialists
+
+
+<P>
+
+<EM>12am 01/01/01</EM> -- start of the new millennium
 
 
 <P>
@@ -287,6 +293,16 @@ NOTE3 above)
 <P>
 
 <EM>start+6hours</EM> or <EM>s+6h</EM> -- 6 hours after start time (may be used as end time specification)
+
+
+<P>
+
+<EM>931225537</EM> -- 18:45 July 5th, 1999 (yes, seconds since 1970 are valid as well)
+
+
+<P>
+
+<EM>19970703 12:45</EM> -- 12:45 July 3th, 1997 (not quote standard, but I love this ...)
 
 
 <P>

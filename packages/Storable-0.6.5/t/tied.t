@@ -1,6 +1,6 @@
 #!./perl
 
-# $Id: tied.t,v 0.6 1998/06/04 16:08:40 ram Exp $
+# $Id: tied.t,v 0.6 1998/06/04 16:08:40 ram Exp ram $
 #
 #  Copyright (c) 1995-1998, Raphael Manfredi
 #  

@@ -93,7 +93,7 @@
 .nr % 0
 .rr F
 .\}
-.TH FMRTG 1 "perl 5.005, patch 02" "7/Dec/98" "User Contributed Perl Documentation"
+.TH FMRTG 1 "perl 5.005, patch 02" "8/Dec/98" "User Contributed Perl Documentation"
 .UC
 .if n .hy 0
 .if n .na
@@ -237,21 +237,30 @@ here.
 I have used only version version 5.005_02 of Perl with FMRTG.  Because
 FMRTG makes very heavy use of references, it may or may not work
 with older versions of Perl.  I welcome feedback if FMRTG works with
-older Perls.  FMRTG also requires Math::IntervalSearch module which is
-included with the Math::Interpolate module.  Both modules are available
-for download from a CPAN (Comprehensive Perl Archive Network) site near
-your at
+older Perls.
 .PP
-.Vb 1
-\& http://www.perl.com/CPAN/authors/id/B/BZ/BZAJAC/Math-Interpolate-1.00.tar.gz
-.Ve
-or from my FTP site:
+FMRTG also requires several other Perl modules.  These are:
 .PP
-.Vb 1
-\&  ftp://ftp.gps.caltech.edu/pub/blair/Perl/Math-Interpolate-1.00.tar.gz
+.Vb 4
+\&  Math::IntervalSearch
+\&   Version 1.00 or greater.
+\&   ftp://ftp.gps.caltech.edu/pub/blair/Perl/Math-Interpolate-1.00.tar.gz
+\&   http://www.perl.com/CPAN/authors/id/B/BZ/BZAJAC/Math-Interpolate-1.00.tar.gz
 .Ve
-Once you have downloaded the Math-Interpolate-1.00.tar.gz file, uncompress
-and install it using the following commands:
+.Vb 3
+\&  Digest::MD5
+\&   Version 2.00 or greater.
+\&   http://www.perl.com/CPAN/authors/id/authors/id/GAAS/Digest-MD5-2.00.tar.gz
+.Ve
+.Vb 3
+\&  RRD
+\&   Version 19981122.22 or greater.
+\&   http://ee-staff.ethz.ch/~oetiker/webtools/mrtg/3.0/
+.Ve
+The modules can be installed into your Perl tree with the following
+commands:
+.PP
+Math::Interval:
 .PP
 .Vb 6
 \&  % gunzip -c Math-Interpolate-1.00.tar.gz | tar xvf -
@@ -261,13 +270,17 @@ and install it using the following commands:
 \&  % make test
 \&  % make install
 .Ve
-The final component required by FMRTG is the RRD Perl library that comes
-with RRD.  Here, get RRD from:
+Digest::MD5
 .PP
-.Vb 1
-\&  http://ee-staff.ethz.ch/~oetiker/webtools/mrtg/3.0
+.Vb 6
+\&  % gunzip -c Digest-MD5-2.00.tar.gz | tar xvf -
+\&  % cd Digest-MD5-2.00
+\&  % perl Makefile.PL
+\&  % make
+\&  % make test
+\&  % make install
 .Ve
-Get the most recent distribution and following the following steps:
+RRD:
 .PP
 .Vb 9
 \&  % gunzip -c mrtg-199?????.??.tar.gz | tar xvf -

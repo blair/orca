@@ -10,7 +10,7 @@ require 5.005;
 $| = 1;
 
 use Carp;
-use MD5 1.7;
+use Digest::MD5 2.00 qw(md5);
 use Math::IntervalSearch 1.00 qw(interval_search);
 use Data::Dumper;
 $Data::Dumper::Indent   = 1;
@@ -18,10 +18,7 @@ $Data::Dumper::Purity   = 1;
 $Data::Dumper::Deepcopy = 1;
 
 # This is the version of this code.
-my $VERSION = 0.10;
-
-# Create an MD5 context for use.
-my $md5 = MD5->new;
+my $VERSION = 0.11;
 
 # The number of seconds in one day.
 my $day_seconds = 24*60*60;
@@ -858,7 +855,7 @@ sub flush_data {
 package MRTG::SourceDataFile;
 
 use Carp;
-use MD5;
+use Digest::MD5 qw(md5);
 use vars qw(@ISA);
 
 @ISA = qw(MRTG::DataFile);
@@ -993,7 +990,7 @@ sub get_column_names {
   if ($line) {
     $self->{_first_line} = 1;
     my @line = split(' ', $line);
-    my $cache_key = $md5->hexhash(join("\200", @line));
+    my $cache_key = md5(join("\200", @line));
     unless (defined $first_line_cache{$cache_key}) {
       $first_line_cache{$cache_key} = \@line;
     }
@@ -1056,8 +1053,8 @@ sub add_plots {
   # group, and column description.  Use an MD5 hash instead of a very long
   # key.
   my @column_description = @{$self->{_column_description}};
-  my $plot_key = join("\200", $files_key, $group, @column_description);
-  my $cache_key = $md5->hexhash($plot_key);
+  my $plot_key  = join("\200", $files_key, $group, @column_description);
+  my $cache_key = md5($plot_key);
   if (defined $all_rrds_cache{$cache_key}) {
     $self->{_all_rrd_ref} = $all_rrds_cache{$cache_key};
     $self->{_my_rrd_hash} = $my_rrds_cache{$cache_key};
@@ -1281,7 +1278,7 @@ sub add_plots {
     for (my $j=0; $j<@column_commands; ++$j) {
 
       my $expr      = "sub {\n  return @{$column_commands[$j]};\n}\n";
-      my $expr_hash = $md5->hexhash($expr);
+      my $expr_hash = md5($expr);
 
       my $choose_data_sub;
       my $data_name = join('_', @{$plot->{data}[$j]});
@@ -2441,9 +2438,9 @@ sub check_config {
       }
     }
 
-    # Check that the date_source is either column followed by a column name
-    # or file_mtime for the file modification time.  If a column_name is used,
-    # then the date_format is required.
+    # Check that the date_source is either column_name followed by a column
+    # name or file_mtime for the file modification time.  If a column_name
+    # is used, then the date_format is required.
     my $date_source = $config_files->{$files_key}{date_source}[0];
     if ($date_source eq 'column_name') {
       unless (@{$config_files->{$files_key}{date_source}} == 2) {
@@ -2927,19 +2924,27 @@ here.
 I have used only version version 5.005_02 of Perl with FMRTG.  Because
 FMRTG makes very heavy use of references, it may or may not work
 with older versions of Perl.  I welcome feedback if FMRTG works with
-older Perls.  FMRTG also requires Math::IntervalSearch module which is
-included with the Math::Interpolate module.  Both modules are available
-for download from a CPAN (Comprehensive Perl Archive Network) site near
-your at
+older Perls.
 
- http://www.perl.com/CPAN/authors/id/B/BZ/BZAJAC/Math-Interpolate-1.00.tar.gz
+FMRTG also requires several other Perl modules.  These are:
 
-or from my FTP site:
+  Math::IntervalSearch
+   Version 1.00 or greater.
+   ftp://ftp.gps.caltech.edu/pub/blair/Perl/Math-Interpolate-1.00.tar.gz
+   http://www.perl.com/CPAN/authors/id/B/BZ/BZAJAC/Math-Interpolate-1.00.tar.gz
 
-  ftp://ftp.gps.caltech.edu/pub/blair/Perl/Math-Interpolate-1.00.tar.gz
+  Digest::MD5
+   Version 2.00 or greater.
+   http://www.perl.com/CPAN/authors/id/authors/id/GAAS/Digest-MD5-2.00.tar.gz
 
-Once you have downloaded the Math-Interpolate-1.00.tar.gz file, uncompress
-and install it using the following commands:
+  RRD
+   Version 19981122.22 or greater.
+   http://ee-staff.ethz.ch/~oetiker/webtools/mrtg/3.0/
+
+The modules can be installed into your Perl tree with the following
+commands:
+
+Math::Interval:
 
   % gunzip -c Math-Interpolate-1.00.tar.gz | tar xvf -
   % cd Math-Interpolate-1.00
@@ -2948,12 +2953,16 @@ and install it using the following commands:
   % make test
   % make install
 
-The final component required by FMRTG is the RRD Perl library that comes
-with RRD.  Here, get RRD from:
+Digest::MD5
 
-  http://ee-staff.ethz.ch/~oetiker/webtools/mrtg/3.0
+  % gunzip -c Digest-MD5-2.00.tar.gz | tar xvf -
+  % cd Digest-MD5-2.00
+  % perl Makefile.PL
+  % make
+  % make test
+  % make install
 
-Get the most recent distribution and following the following steps:
+RRD:
 
   % gunzip -c mrtg-199?????.??.tar.gz | tar xvf -
   % cd mrtg-199?????.??

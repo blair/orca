@@ -51,20 +51,27 @@ REQUIREMENTS
     I have used only version version 5.005_02 of Perl with FMRTG.
     Because FMRTG makes very heavy use of references, it may or may
     not work with older versions of Perl. I welcome feedback if
-    FMRTG works with older Perls. FMRTG also requires
-    Math::IntervalSearch module which is included with the
-    Math::Interpolate module. Both modules are available for
-    download from a CPAN (Comprehensive Perl Archive Network) site
-    near your at
+    FMRTG works with older Perls.
 
-     http://www.perl.com/CPAN/authors/id/B/BZ/BZAJAC/Math-Interpolate-1.00.tar.gz
+    FMRTG also requires several other Perl modules. These are:
 
-    or from my FTP site:
+      Math::IntervalSearch
+       Version 1.00 or greater.
+       ftp://ftp.gps.caltech.edu/pub/blair/Perl/Math-Interpolate-1.00.tar.gz
+       http://www.perl.com/CPAN/authors/id/B/BZ/BZAJAC/Math-Interpolate-1.00.tar.gz
 
-      ftp://ftp.gps.caltech.edu/pub/blair/Perl/Math-Interpolate-1.00.tar.gz
+      Digest::MD5
+       Version 2.00 or greater.
+       http://www.perl.com/CPAN/authors/id/authors/id/GAAS/Digest-MD5-2.00.tar.gz
 
-    Once you have downloaded the Math-Interpolate-1.00.tar.gz file,
-    uncompress and install it using the following commands:
+      RRD
+       Version 19981122.22 or greater.
+       http://ee-staff.ethz.ch/~oetiker/webtools/mrtg/3.0/
+
+    The modules can be installed into your Perl tree with the
+    following commands:
+
+    Math::Interval:
 
       % gunzip -c Math-Interpolate-1.00.tar.gz | tar xvf -
       % cd Math-Interpolate-1.00
@@ -73,13 +80,16 @@ REQUIREMENTS
       % make test
       % make install
 
-    The final component required by FMRTG is the RRD Perl library
-    that comes with RRD. Here, get RRD from:
+    Digest::MD5
 
-      http://ee-staff.ethz.ch/~oetiker/webtools/mrtg/3.0
+      % gunzip -c Digest-MD5-2.00.tar.gz | tar xvf -
+      % cd Digest-MD5-2.00
+      % perl Makefile.PL
+      % make
+      % make test
+      % make install
 
-    Get the most recent distribution and following the following
-    steps:
+    RRD:
 
       % gunzip -c mrtg-199?????.??.tar.gz | tar xvf -
       % cd mrtg-199?????.??

@@ -1,4 +1,18 @@
+Tue Dec  8 12:12:07 PST 1998
+
+	Update the sample FMRTG configuration files to work properly with
+	the configuration options in FMRTG.
+
+	Switch from MD5 to Digest::MD5, since it is faster.
+
+	Update the documentation to reflect the above changes.
+
+	Update the code documentation in fmrtg for date_source.
+
+	Add some more documentation to the percollator/start_percol script.
+
+	Version 0.11.
+
 Fri Dec  4 14:34:13 PST 1998
 
 	Version 0.10.
-

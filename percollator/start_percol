@@ -2,9 +2,12 @@
 
 # This script runs percollator.se with the proper options for our site.
 
-# Set these variables.
-AWK=/usr/publib/bin/gawk
-STATSDIR=/usr/public/geocities/performance
+# Set these variables.  AWK is where your best version of awk lives.  This
+# should be preferably gawk, then nawk, and finall awk.  STATSDIR is the
+# base directory for the statistics.  Underneath STATSDIR is a bin/ and
+# stats_percollator/ directory.
+AWK=/usr/public/bin/gawk
+STATSDIR=/home/bzajac/Code/MRTG/bzajac/percollator
 
 # Get the real hostname without any trailing .*.
 uname=`/usr/bin/uname -n | /usr/bin/cut -d. -f1`

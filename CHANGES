@@ -179,7 +179,7 @@ Sun Aug 11 20:12:38 PDT 2002 <blair@orcaware.com> Blair Zajac
 	      match each regular expression in a global integer array,
 	      count_procs_results.
 	* orcallator/start_orcallator.sh.in:
-	  Set WEB_SERVER to httpd and and set WEB_SERVER_SECURE to
+	  Set WEB_SERVER to httpd and and WEB_SERVER_SECURE to
 	  httpsd and export them both into the environment for
 	  orcallator.se to use.  Add documentation for these two
 	  variables.
@@ -188,7 +188,7 @@ Wed Aug  7 19:57:45 PDT 2002 <blair@orcaware.com> Blair Zajac
 
 	* Makefile.in: Restructure the 'all' and 'install' rules so
 	  that if make fails in one subdirectory, then the top level
-	  make fail fail immediately.  Previously, all subdirectories
+	  'make fail' fails immediately.  Previously, all subdirectories
 	  would be built, regardless if there was a failure in any one
 	  subdirectory.  Do not do this for 'clean' and 'distclean',
 	  because they should always clean up as much as they can,

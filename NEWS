@@ -95,9 +95,9 @@ included orcallator.cfg and start_orcallator files.
     stat()ed but then fopen() failed.  Problem noted by Jeremy McCarty
     <jeremy@nd.edu>.
 
-10) In orcallator.se, in check_output_log_filename(), stat() was was
-    being passed a stat_t by value, instead of a pointer to a stat_t.
-    Only the return value from stat() was being used, so this bug had
+10) In orcallator.se, in check_output_log_filename(), stat() was being
+    passed a stat_t by value, instead of a pointer to a stat_t.  Only
+    the return value from stat() was being used, so this bug had
     no effect upon the logic of the code.  Problem noted by Richard
     Pettit <richp@setoolkit.com>.
 

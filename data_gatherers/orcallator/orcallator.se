@@ -8,6 +8,11 @@
 //
 // Portions copied from percollator.se written by Adrian Cockroft.
 //
+// Version 1.39:   Feb 18, 2003 Burkhardt Schopp
+//                              B.Schopp@gmx.de
+//                              Modified struct RawDisk long_name object to
+//                              48 characters to handle T3 disks names.
+//
 // Version 1.38:   Jan 14, 2003 Additions by Sean O'Neill
 //                              Added several new variables for Orca to collect
 //                              and graph including:
@@ -612,7 +617,7 @@ long		squid_client_http;
 // kstat$disk interface.  Global data shared between function calls.
 struct RawDisk {
   // Exposed interface that matches kstat.
-  char		long_name[16];
+  char		long_name[48];
   char		short_name[8];
   double	reads;
   double	kreads;

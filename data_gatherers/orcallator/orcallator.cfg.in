@@ -691,7 +691,7 @@ href			http://www.orcaware.com/orca/docs/orcallator.html#disk_system_wide_transf
 plot {
 title			%g Disk Run Percent
 source			orcallator
-data			disk_runp_((?:c\d+t\d+d\d+)|(?:c\d+d\d+)|(?:[ms]d\d+))
+data			disk_runp_((?:c\d+t\d+d\d+)|(?:c\d+d\d+)|(?:[ms]d\d+)|(?:c\d+t([A-Z0-9]{32})d\d+))
 line_type		line2
 legend			$1
 y_legend		Run Percent

@@ -904,9 +904,9 @@ sub create_html_files {
         }
       }
 
-      # At this point the HTML files for this set of of images have been
-      # opened.  Now create the summary HTML file that contains only the
-      # images for a particular plot for a particular subgroup.
+      # At this point the HTML files for this set of images have been
+      # opened.  Now create the summary HTML file that contains only
+      # the images for a particular plot for a particular subgroup.
       my $with_subgroup_name   = name_to_fsname($image->name, 5);
       my $legend_with_subgroup = replace_subgroup_name($image->plot_ref->{title},
                                                        $image->subgroup_name);
@@ -1185,11 +1185,11 @@ Orca is similar to but substantially different from other tools that
 record and display hourly, daily, monthly, and yearly data, such as
 MRTG and Cricket.  To see these other tools, examine
 
-  http://ee-staff.ethz.ch/~oetiker/webtools/mrtg/mrtg.html
+  http://people.ee.ethz.ch/~oetiker/webtools/mrtg/mrtg.html
 
 and
 
-  http://www.munitions.com/~jra/cricket/
+  http://cricket.sourceforge.net/
 
 =head1 INDEX
 
@@ -1223,7 +1223,7 @@ This is an index of this manual:
 
 A static example of Orca is at
 
-  http://www.gps.caltech.edu/~blair/orca/orca-example/
+  http://www.orcaware.com/orca/orca-example/
 
 Please inform me of any other sites using Orca and I will include them
 here.
@@ -1342,7 +1342,7 @@ Please direct all Orca comments and bugs to one of the above mailing
 lists.
 
 If you wish to contact the author of Orca, Blair Zajac, directly,
-please email me at blair@gps.caltech.edu.
+please email me at blair@orcaware.com.
 
 =head1 RECOGNIZED SIGNALS
 
@@ -2017,7 +2017,7 @@ an appropriate value to the result.
 
 =item B<DERIVE>
 
-will store the the derivative of the line going from the last to the
+will store the derivative of the line going from the last to the
 current value of the data source. This can be useful for gauges, for
 example, to measure the rate of people entering or leaving a
 room. Internally, derive works exactly like COUNTER but without

@@ -4,10 +4,57 @@
 // This program logs many different system quantities to a log file
 // for later processing.
 //
-// Author: Blair Zajac <blair@gps.caltech.edu>.
+// Author: Blair Zajac <blair@orcaware.com>.
 //
 // Portions copied from percollator.se written by Adrian Cockroft.
 //
+// Version 1.28:   Oct  2, 2001	No changes, bump version number to 1.28.
+// Version 1.28b7: Sep 29, 2001	Change the output log filename format from
+//				percol-%Y-%m-%d to percol-%Y-%m-%d-XXX, where
+//				XXX is a number starting at 0 that is
+//				incremented anytime the number of output
+//				columns changes or type of data stored in a
+//				column changes.  This is in addition to the
+//				creation of a new log filename when a new day
+//				starts.  Whenever the program needs to create
+//				a new log file for any reason, it will search
+//				for the smallest XXX so that there are no log
+//				files named percol-%Y-%m-%d-XXX{,.Z,.gz,.bz2}.
+//				If the COMPRESSOR environmental is set and any
+//				uncompressed files are found while looking for
+//				the smallest XXX, they are compressed with the
+//				COMPRESSOR command.
+// Version 1.28b6: Sep 28, 2001	Instead of outputting the number of CPUs only
+//				when WATCH_MUTEX is defined, output it when
+//				either WATCH_CPU or WATCH_MUTEX is defined.
+//				Only declare and update tmp_mutex if
+//				WATCH_MUTEX defined.
+// Version 1.28b5: Sep 28, 2001	Add three parameters that vmstat outputs,
+//				#runque, vmstat's `r' column, which is the
+//				number of processes in the run queue waiting
+//				to run on a CPU, #waiting, vmstat's `b' column,
+//				which is the number of processes blocked for
+//				resources (I/O, paging), and #swpque, vmstat's
+//				`w', the number of processes runnable but
+//				swapped out.  Increase MAX_COLUMNS from 512 to
+//				2048.  Check [wr]lentime to see if an EMC disk
+//				is using a fake disk for control.  EMC disks
+//				have a fake disk which commands are run over to
+//				configure the disk array or to get stats from;
+//				they are not real data transfers.  They can
+//				cause 1000 MB/sec writes to appear in the
+//				stats.  I still get them but not as often with
+//				this bit of code in.  If the I/O which occurred
+//				in the last five minutes is not greater than
+//				1/100sec then it is not a valid measurement
+//				anyway.  What happens is that we can have a
+//				small I/O, say 1024 bytes, in a 1/100sec =
+//				1024*100/sec.  I am thinking of making it
+//				wlentime+rlentime > 2 since I am still getting
+//				fake write spikes.  Make sure to define
+//				HAVE_EMC_DISK_CONTROL to enable this check.
+//				Patch contributed by Damon
+//				Atkins <Damon.Atkins@nabaus.com.au>.
 // Version 1.28b4: Mar 27, 2001	Recoded measure_disk() to access the RAWDISK
 //				interface to sys_kstat device information to
 //				allow the activity on Sun's A1000 and Clariion
@@ -142,8 +189,8 @@
 
 // The default sampling interval in seconds.
 #define SAMPLE_INTERVAL		300
-// The maximum number of colums of data.
-#define MAX_COLUMNS		512
+// The maximum number of columns of data.
+#define MAX_COLUMNS		2048
 
 // Define the different parts of the system you want to examine.
 #ifdef WATCH_OS
@@ -179,6 +226,7 @@
 #include <unistd.se>
 #include <string.se>
 #include <time.se>
+#include <stat.se>
 #include <kstat.se>
 #include <utsname.se>
 
@@ -206,7 +254,6 @@
 #endif
 
 #ifdef WATCH_WEB
-#include <stat.se>
 
 // Define this macro which returns the size index for a file of a
 // particular size.  This saves the overhead of a function call.
@@ -282,7 +329,9 @@
 lr_cpu_t	lr_cpu$cpu;
 lr_cpu_t	tmp_lrcpu;
 lr_mutex_t	lr_mutex$m;
+#ifdef WATCH_MUTEX 
 lr_mutex_t	tmp_mutex;
+#endif
 lr_net_t	lr_net$nr;
 lr_net_t	tmp_nr;
 lr_tcp_t	lr_tcp$tcp;
@@ -415,7 +464,7 @@ long		squid_client_http;
 // RAWDISK BEGIN
 #ifdef USE_RAWDISK
 #include <sys_kstat.se>
-// This extention accesses the sys_kstat.se interface to the kstat IO
+// This extension accesses the sys_kstat.se interface to the kstat IO
 // queues to extract info on drives not available in the kstat.se
 // kstat$disk interface.  Global data shared between function calls.
 struct RawDisk {
@@ -470,11 +519,11 @@ raw_disk_map() {
   // already identified how many physical devices are present and they
   // are listed first we limit our self to mapping the first
   // RAW_disk_count device name.
-  for (i=0; i<RAW_disk_count; i++) {
+  for (i=0; i<RAW_disk_count; ++i) {
     strcpy(long_name,GLOBAL_disk_info[i].long_name);
     if (long_name[0] == 'c' && strchr(long_name, 's') == nil) {
       strcpy(short_name,GLOBAL_disk_info[i].short_name);
-      for (j=0; j<RAW_disk_count;j++) {
+      for (j=0; j<RAW_disk_count; ++j) {
         if (strcmp(RAW_disk[j].short_name, short_name) == 0) {
           strcpy(RAW_disk[j].long_name, long_name);
           break;
@@ -537,7 +586,7 @@ raw_disk_update() {
           short_name[0] != 'n' &&
           strchr(short_name,',') == nil) {
         // Try to locate device.
-        for (rdisk=0; rdisk<RAW_disk_count;rdisk++) {
+        for (rdisk=0; rdisk<RAW_disk_count; ++rdisk) {
           if (strcmp(RAW_disk[rdisk].short_name, short_name) == 0) {
             break;
           }
@@ -662,22 +711,17 @@ string		compress = getenv("COMPRESSOR"); // How to compress logs.
 ulong		ofile;				// File pointer to the logging file.
 string		col_comment[MAX_COLUMNS];	// Comments for each column.
 string		col_data[MAX_COLUMNS];		// Data for each column.
+string		col_previous_comment[MAX_COLUMNS]; // Previous comments.
 int		current_column = 0;		// The current column.
+int		previous_number_columns = -1;	// Number columns printed last.
 int		print_header = 1;		// Flag to flush header.
 
-// Send the stored columns of information to the output.
-print_columns(string data[])
-{
-  int i;
-  for (i=0; i<current_column; i++) {
-    fprintf(ofile, "%s", data[i]);
-    if (i != current_column-1) {
-      fputc(' ', ofile);
-    }
-  }
-  fputc('\n', ofile);
-  fflush(ofile);
-}
+// This is a list of the extensions the compress programs add to the
+// compress filename.
+#define NUMBER_COMPRESS_SUFFIXES 3
+string		compression_suffixes[NUMBER_COMPRESS_SUFFIXES] = {".Z",
+                                                                  ".gz",
+                                                                  ".bz2"};
 
 // Add one column of comments and data to the buffers.
 put_output(string comment, string data)
@@ -690,58 +734,139 @@ put_output(string comment, string data)
 
   col_comment[current_column] = comment;
   col_data[current_column]    = data;
-  ++current_column;
+  current_column++;
 }
 
-flush_output() {
+// Send the stored columns of information to the output.
+print_columns(string data[])
+{
+  int i;
+  for (i=0; i<current_column; ++i) {
+    fprintf(ofile, "%s", data[i]);
+    if (i != current_column-1) {
+      fputc(' ', ofile);
+    }
+  }
+  fputc('\n', ofile);
+  fflush(ofile);
+}
+
+// Flush all of the stored output.
+print_output() {
   if (print_header != 0) {
     print_columns(col_comment);
     print_header = 0;
   }
   print_columns(col_data);
-  current_column = 0;
+
+  // Save the current number of columns stored and the column names so
+  // that the next set can be compared with to determine if the
+  // headers should be printed again.
+  col_previous_comment    = col_comment;
+  previous_number_columns = current_column - 1;
+  current_column          = 0;
 }
 
 // Sets ofile to the output file pointer.  Creates or appends to the
 // log file if OUTDIR is set, otherwise sets the file pointer to STDOUT.
 // It start a new log file each day.  It compresses the previous days
 // log file if the environmental variable COMPRESSOR is set.
-checkoutput(tm_t now) {
-  string outdir = getenv("OUTDIR");
-  string outname;
+check_output_log_filename(tm_t now) {
+  string output_directory = getenv("OUTDIR");
+  string output_filename;
+  string compressed_filename;
+  stat_t log_file_stat;
   tm_t   then;
   char   tm_buf[32];
+  int    file_number;
+  int    need_new_log_file;
+  int    exists;
+  int    result;
+  int    i;
 
-  if (outdir == nil) {
-    // No output dir so use stdout.
+  if (output_directory == nil) {
+    // No output directory so use stdout.
     if (ofile == 0) {
       //  First time, so print header and set ofile.
-      ofile = stdout;
+      ofile        = stdout;
       print_header = 1;
     }
     return;
   }
-  // Maintain daily output logfiles in OUTDIR.
-  if (now.tm_yday != then.tm_yday) {
-    // First time or day has changed, start new logfile.
-    if (ofile != 0) {
-      // Close and optionally compress the existing output file.
-      fclose(ofile);
-      if (compress != nil) {
-        system(sprintf(compress, outname));
+
+  // Check if a new output log is needed.  This happens when the day
+  // changes, if the number of columns changes or if the column
+  // comments change since the last measurement.
+  if (now.tm_yday             != then.tm_yday ||
+      previous_number_columns != (current_column - 1)) {
+    need_new_log_file = 1;
+  } else {
+    need_new_log_file = 0;
+    for (i=0; i<current_column; ++i) {
+      if (col_comment[i] != col_previous_comment[i]) {
+        need_new_log_file = 1;
+        break;
       }
     }
+  }
+
+  // Maintain daily output log files in OUTDIR.
+  if (need_new_log_file != 0) {
+    // Close and optionally compress the existing output file.  The
+    // first time through ofile will be 0.
+    if (ofile != 0) {
+      if (fclose(ofile) != 0) {
+        perror("cannot close output log file");
+      }
+      if (compress != nil) {
+        system(sprintf(compress, output_filename));
+      }
+    }
+
+    // Get the new filename.  Check for already existing uncompressed
+    // log filenames and compressed log filenames.
+    file_number = 0;
     strftime(tm_buf, sizeof(tm_buf), "%Y-%m-%d", now);
-    outname = sprintf("%s/percol-%s", outdir, tm_buf);
-    // Open for append either way.
-    ofile = fopen(outname, "a");
+    while (1 == 1) {
+      exists          = 0;
+      output_filename = sprintf("%s/percol-%s-%03d", output_directory,
+                                                     tm_buf,
+                                                     file_number);
+      result          = stat(output_filename, log_file_stat);
+      if (result != -1) {
+        exists = 1;
+        if (compress != nil) {
+          system(sprintf(compress, output_filename));
+        }
+      } else {
+        for (i=0; i<NUMBER_COMPRESS_SUFFIXES; ++i) {
+          compressed_filename = sprintf("%s%s", output_filename,
+                                                compression_suffixes[i]);
+          result              = stat(compressed_filename, log_file_stat);
+          if (result != -1) {
+            exists = 1;
+            break;
+          }
+        }
+      }
+
+      if (exists != 0) {
+        file_number++;
+      } else {
+        break;
+      }
+    }
+
+    // Open the file for appending.
+    ofile = fopen(output_filename, "a");
     if (ofile == 0) {
-      perror("can't open output logfile");
+      perror("cannot open output log file");
       exit(1);
     }
-    // Always write header.
+
+    // Always write a new header.
     print_header = 1;
-    then = now;
+    then         = now;
   }
 }
 
@@ -816,7 +941,7 @@ int main(int argc, string argv[])
 #ifdef WATCH_WEB
     measure_web(sleep_till);
 #else
-    sleep_till_and_count_new_proceses(sleep_till);
+    sleep_till_and_count_new_processes(sleep_till);
 #endif
 
     // Get the current time.
@@ -830,10 +955,10 @@ int main(int argc, string argv[])
 #endif
 
     // Get a file descriptor to write to.  Maintains daily output files.
-    checkoutput(tm_now);
+    check_output_log_filename(tm_now);
 
     // Print the output.
-    flush_output();
+    print_output();
   }
   return 0;
 }
@@ -929,7 +1054,9 @@ initialize()
 _measure_os()
 {
   tmp_lrcpu         = lr_cpu$cpu;
+#ifdef WATCH_MUTEX 
   tmp_mutex         = lr_mutex$m;
+#endif
   tmp_nr            = lr_net$nr;
   tmp_lrtcp         = lr_tcp$tcp;
 #ifdef WATCH_TCP
@@ -975,7 +1102,14 @@ measure_os(long now, tm_t tm_now)
   measure_mutex();
 #endif
 
-  // Take care of mount pointes.
+  // If the CPUs or mutexes are being monitored, then output the
+  // number online CPUs on the system.  The GLOBAL_pvm_ncpus variable
+  // is used after it has been updated in _measure_os().
+#if defined(WATCH_CPU) || defined (WATCH_MUTEX)
+  put_output("ncpus", sprintf("%5d", GLOBAL_pvm_ncpus));
+#endif
+
+  // Take care of mount points.
 #ifdef WATCH_MOUNTS
   measure_mounts();
 #endif
@@ -1069,7 +1203,7 @@ measure_misc(long now, tm_t tm_now)
   put_output("  uptime",    sprintf("%8d", uptime));
 }
 
-sleep_till_and_count_new_proceses(long sleep_till)
+sleep_till_and_count_new_processes(long sleep_till)
 {
   long   now;
 #ifdef WATCH_CPU
@@ -1134,8 +1268,9 @@ measure_cpu()
 
   pvm = vmglobal_total();
 
-  // In SE 3.0 user_time and system_time are int and in SE 3.1 they are
-  // double, so cast everything to double using + 0.0.
+  // In SE 3.0 and below user_time and system_time are int and in SE
+  // 3.1 and above they are double, so cast everything to double using
+  // + 0.0.
   put_output(" usr%",    sprintf("%5.1f", pvm.user_time + 0.0));
   put_output(" sys%",    sprintf("%5.1f", pvm.system_time + 0.0));
   put_output(" wio%",    sprintf("%5.1f", pvm.wait_time + 0.0));
@@ -1144,6 +1279,9 @@ measure_cpu()
   put_output(" 5runq",   sprintf("%6.2f", tmp_kstat_misc.avenrun_5min/256.0));
   put_output("15runq",   sprintf("%6.2f", tmp_kstat_misc.avenrun_15min/256.0));
   put_output("#proc",    sprintf("%5lu",  tmp_kstat_misc.nproc));
+  put_output(" #runque", sprintf("%8.2f", pvm.runque + 0.0));
+  put_output("#waiting", sprintf("%8.2f", pvm.waiting + 0.0));
+  put_output(" #swpque", sprintf("%8.2f", pvm.swpque + 0.0));
   put_output("scanrate", sprintf("%8.3f", pvm.scan + 0.0));
 
   // Calculate the rate of new process spawning.
@@ -1165,8 +1303,7 @@ measure_cpu()
 measure_mutex()
 {
   put_output(" smtx",    sprintf("%5d", tmp_mutex.smtx));
-  put_output("smtx/cpu", sprintf("%8d", tmp_mutex.smtx/tmp_mutex.ncpus));
-  put_output("ncpus",    sprintf("%5d", tmp_mutex.ncpus));
+  put_output("smtx/cpu", sprintf("%8d", tmp_mutex.smtx/GLOBAL_pvm_ncpus));
 }
 #endif
 
@@ -1178,12 +1315,12 @@ measure_net()
   int i;
 
   current_count = 0;
-  for (i=0; i<tmp_nr.net_count; i++) {
+  for (i=0; i<tmp_nr.net_count; ++i) {
     // Skip unused interfaces.
 //  if (GLOBAL_net[i].up == 0) {
 //    continue;
 //  }
-    ++current_count;
+    current_count++;
     put_output(sprintf("%5sIpkt/s", tmp_nr.names[i]),
 	       sprintf("%11.3f", GLOBAL_net[i].ipackets));
     put_output(sprintf("%5sOpkt/s", tmp_nr.names[i]),
@@ -1294,7 +1431,7 @@ measure_mounts()
       }
 
       // Skip snapshot file systems to avoid output format changes as
-      // they are mounted and umounted.
+      // they are mounted and unmounted.
       if (tmp_mnt.mnt_mountp =~ "^/snapshots/") {
         continue;
       }
@@ -1303,7 +1440,7 @@ measure_mounts()
         continue;
       }
       vfs = vfs_array[0];
-      ++current_count;
+      current_count++;
 
       // Generate the format strings for the comment and for the data.
       comment_fmt    = sprintf("mnt%%c_%s", tmp_mnt.mnt_mountp);
@@ -1377,7 +1514,7 @@ measure_disk()
   disk_count     = 0;
 
 #ifdef USE_RAWDISK
-  for (i=0; i<RAW_disk_count; i++) {
+  for (i=0; i<RAW_disk_count; ++i) {
     // Block the listing of tape drives for now.
     if (RAW_disk[i].short_name[1] == 't' && RAW_disk[i].short_name[0] == 's') {
       continue;
@@ -1389,28 +1526,66 @@ measure_disk()
     disk_count++;
     put_output(sprintf("disk_runp_%s", RAW_disk[i].long_name),
                sprintf("%16.5f", RAW_disk[i].run_percent));
-    total_reads    += RAW_disk[i].reads;
-    total_writes   += RAW_disk[i].writes;
-    total_readk    += RAW_disk[i].kreads;
-    total_writek   += RAW_disk[i].kwrites;
-    mean_disk_busy += RAW_disk[i].run_percent;
-    if (RAW_disk[i].run_percent > peak_disk_busy) {
-       peak_disk_busy = RAW_disk[i].run_percent;
+
+    // Comments from Damon Atkins <Damon.Atkins@nabaus.com.au>.  Check
+    // [wr]lentime to see if an EMC is using a fake disk for control.
+    // EMC disks have a fake disk which commands are run over to
+    // configure the disk array or to get stats from; they are not
+    // real data transfers.  They cause 1000 MB/sec writes to appear
+    // in the stats.  I still get them but not as often with this bit
+    // of code in.  If the I/O which occurred in the last five minutes
+    // is not greater than 1/100sec then it is not a valid measurement
+    // anyway.  What happens is that we can have a small I/O, say 1024
+    // bytes, in a 1/100sec = 1024*100/sec.  I am thinking of making
+    // it wlentime+rlentime>2 since I am still getting fake write
+    // spikes.
+#ifdef HAVE_EMC_DISK_CONTROL
+    if ((pioGLOB_old_wlentime[i] + pioGLOB_old_rlentime[i]) > 1) {
+#endif
+      total_reads    += RAW_disk[i].reads;
+      total_writes   += RAW_disk[i].writes;
+      total_readk    += RAW_disk[i].kreads;
+      total_writek   += RAW_disk[i].kwrites;
+      mean_disk_busy += RAW_disk[i].run_percent;
+      if (RAW_disk[i].run_percent > peak_disk_busy) {
+         peak_disk_busy = RAW_disk[i].run_percent;
+      }
+#ifdef HAVE_EMC_DISK_CONTROL
     }
+#endif
   }
 #else
-  for (i=0; i<GLOBAL_disk_count; i++) {
+  for (i=0; i<GLOBAL_disk_count; ++i) {
     disk_count++;
     put_output(sprintf("disk_runp_%s", GLOBAL_disk[i].info.long_name),
                sprintf("%16.5f", GLOBAL_disk[i].run_percent));
-    total_reads    += GLOBAL_disk[i].reads;
-    total_writes   += GLOBAL_disk[i].writes;
-    total_readk    += GLOBAL_disk[i].kreads;
-    total_writek   += GLOBAL_disk[i].kwrites;
-    mean_disk_busy += GLOBAL_disk[i].run_percent;
-    if (GLOBAL_disk[i].run_percent > peak_disk_busy) {
-      peak_disk_busy = GLOBAL_disk[i].run_percent;
+
+    // Comments from Damon Atkins <Damon.Atkins@nabaus.com.au>.  Check
+    // [wr]lentime to see if an EMC is using a fake disk for control.
+    // EMC disks have a fake disk which commands are run over to
+    // configure the disk array or to get stats from; they are not
+    // real data transfers.  They cause 1000 MB/sec writes to appear
+    // in the stats.  I still get them but not as often with this bit
+    // of code in.  If the I/O which occurred in the last five minutes
+    // is not greater than 1/100sec then it is not a valid measurement
+    // anyway.  What happens is that we can have a small I/O, say 1024
+    // bytes, in a 1/100sec = 1024*100/sec.  I am thinking of making
+    // it wlentime+rlentime>2 since I am still getting fake write
+    // spikes.
+#ifdef HAVE_EMC_DISK_CONTROL
+    if ((pioGLOB_old_wlentime[i] + pioGLOB_old_rlentime[i]) > 1) {
+#endif
+      total_reads    += GLOBAL_disk[i].reads;
+      total_writes   += GLOBAL_disk[i].writes;
+      total_readk    += GLOBAL_disk[i].kreads;
+      total_writek   += GLOBAL_disk[i].kwrites;
+      mean_disk_busy += GLOBAL_disk[i].run_percent;
+      if (GLOBAL_disk[i].run_percent > peak_disk_busy) {
+        peak_disk_busy = GLOBAL_disk[i].run_percent;
+      }
+#ifdef HAVE_EMC_DISK_CONTROL
     }
+#endif
   }
 #endif
 
@@ -1601,7 +1776,7 @@ accesslog(string buf) {
   /*
    * Yahoo log format.  Fields in square brackets will only appear in the
    * log file if the data actually exists (i.e. you will never see a null
-   * Referrer field).  Further, fields labelled here with "(CONFIG)" will
+   * Referrer field).  Further, fields labeled here with "(CONFIG)" will
    * only appear if they are enabled via the YahooLogOptions configuration
    * directive.
    *
@@ -1670,7 +1845,7 @@ accesslog(string buf) {
     dwnld_totalz += z;
   }
 
-#else	/* common or netscape proxy formats */
+#else	/* common or Netscape proxy formats */
   strtok(nil, " ");		/* -.           */
   strtok(nil, " ");		/* -.           */
   strtok(nil, " [");		/* date.        */
@@ -1792,7 +1967,7 @@ measure_web(long sleep_till)
   httpop_errors   = 0;
   httpop_searches = 0;
 
-  for (i=0; i<5; i++) {
+  for (i=0; i<5; ++i) {
     dwnld_size[i] = 0;
 #if WATCH_PROXY || WATCH_SQUID || WATCH_YAHOO
     www_dwnld_time_by_size[i] = 0.0;
@@ -1821,7 +1996,7 @@ measure_web(long sleep_till)
     now = time(0);
     while (now < sleep_till) {
 #ifdef WATCH_CPU
-      sleep_till_and_count_new_proceses(now + 5);
+      sleep_till_and_count_new_processes(now + 5);
 #else
       sleep(5);
 #endif
@@ -1909,7 +2084,7 @@ measure_web(long sleep_till)
     }
   }
   else {
-    sleep_till_and_count_new_proceses(sleep_till);
+    sleep_till_and_count_new_processes(sleep_till);
     www5_now = gethrtime();
   }
 
@@ -1928,7 +2103,7 @@ measure_web(long sleep_till)
   }
 
 #if WATCH_PROXY || WATCH_SQUID || WATCH_YAHOO
-  for (i=0; i<5; i++) {
+  for (i=0; i<5; ++i) {
     if (dwnld_size[i] == 0) {
       www_dwnld_time_by_size[i] = 0.0;
     }

@@ -63,17 +63,17 @@ $self->[$i_bottom]
 <table cellpadding=0 border=0>
   <tr>
     <td width=350 valign=center>
-      <a href="http://www.gps.caltech.edu/~blair/orca/">
+      <a href="http://www.orcaware.com/orca/">
         <img width=186 height=45 border=0 src="orca.gif" alt="Orca Home Page"></a>
       <br>
       <font FACE="Arial,Helvetica" size=2>
         Orca-$ORCA_VERSION by
-        <a href="http://www.gps.caltech.edu/~blair/">Blair Zajac</a>
-        <a href="mailto:blair\@blair.gps.caltech.edu">blair\@gps.caltech.edu</a>.
+        <a href="http://www.orcaware.com/">Blair Zajac</a>
+        <a href="mailto:blair\@orcaware.com">blair\@orcaware.com</a>.
       </font>
     </td>
     <td width=120 valign=center>
-      <a href="http://ee-staff.ethz.ch/~oetiker/webtools/rrdtool">
+      <a href="http://people.ee.ethz.ch/~oetiker/webtools/rrdtool/">
         <img width=120 height=34 border=0 src="rrdtool.gif" alt="RRDTool Home Page"></a>
     </td>
   </tr>

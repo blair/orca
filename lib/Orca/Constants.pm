@@ -20,7 +20,7 @@ $VERSION = substr q$Revision: 0.01 $, 10;
 # IS_WIN32		If Orca is running on a Windows platform.
 use vars         qw($ORCA_VERSION $ORCA_RRD_VERSION);
 push(@EXPORT_OK, qw($ORCA_VERSION $ORCA_RRD_VERSION DAY_SECONDS IS_WIN32));
-$ORCA_VERSION        =  '0.263';
+$ORCA_VERSION        =  '0.264';
 $ORCA_RRD_VERSION    =  19990222;
 sub DAY_SECONDS      () { 24*60*60 };
 sub IS_WIN32         () { $^O eq 'MSWin32' };
@@ -46,12 +46,12 @@ BEGIN {
   @RRA_ROW_COUNTS =   ( 2400,  1488,   1200,  1098);
 }
 
-# Define all of the the different possible plots to create.  This
-# structure allows allows the user via the configuration file to turn
-# off particular plots to create, such the monthly one.  In addition
-# to the plot types that are structured in the RRD via its RRA's,
-# there is an additional hourly plot that is listed before the daily
-# plot and an additional quarterly plot (100 days) created between the
+# Define all of the different possible plots to create.  This
+# structure allows the user via the configuration file to turn off
+# particular plots to create, such the monthly one.  In addition to
+# the plot types that are structured in the RRD via its RRA's, there
+# is an additional hourly plot that is listed before the daily plot
+# and an additional quarterly plot (100 days) created between the
 # monthly and yearly plots.  The quarterly plot is updated daily.
 #
 # For each plot type, the first value in the array reference is the

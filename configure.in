@@ -5,6 +5,9 @@ AC_INIT(src/orca.pl.in)
 AC_CONFIG_AUX_DIR(config)
 AC_CANONICAL_SYSTEM
 
+# Minimum Autoconf version required.
+AC_PREREQ(2.13)
+
 # Remember the command line arguments to configure for use when
 # configure is run again.  Also create the command line options for
 # RRD configure.
@@ -28,14 +31,14 @@ DATA_DUMPER_DIR=Data-Dumper-2.101
 DATA_DUMPER_VER=2.101
 DATE_PARSE_DIR=TimeDate-1.10
 DATE_PARSE_VER=2.20
-DIGEST_MD5_DIR=Digest-MD5-2.13
-DIGEST_MD5_VER=2.13
+DIGEST_MD5_DIR=Digest-MD5-2.16
+DIGEST_MD5_VER=2.16
 MATH_INTERPOLATE_DIR=Math-Interpolate-1.05
 MATH_INTERPOLATE_VER=1.05
 RRDTOOL_DIR=rrdtool-1.0.33
 RRDTOOL_VER=1.000331
-STORABLE_DIR=Storable-1.0.11
-STORABLE_VER=1.011
+STORABLE_DIR=Storable-1.0.13
+STORABLE_VER=1.012
 TIME_HIRES_DIR=Time-HiRes-01.20
 TIME_HIRES_VER=1.20
 
@@ -62,9 +65,6 @@ config_dir="$cwd/config"
 if test ! -d $config_dir; then
   AC_MSG_ERROR([*** Cannot find config directory.])
 fi
-
-# Minimum Autoconf version required.
-AC_PREREQ(2.13)
 
 # Define the directories where the source orcallator and RRD data files
 # will be installed.
@@ -222,7 +222,7 @@ case "$target" in
     AC_MSG_WARN([*** If you know a better PS command than])
     AC_MSG_WARN([***   '$PS_SELF'])
     AC_MSG_WARN([*** to get process information for your host,])
-    AC_MSG_WARN([*** please email the command the the output from])
+    AC_MSG_WARN([*** please email the command and the output from])
     AC_MSG_WARN([*** ./config/config.guess to])
     AC_MSG_WARN([*** orca-developers@yahoogroups.com])
     ;;

@@ -3,7 +3,7 @@ gather data for it.
 
 Please email submissions to the FAQ to orca-users@yahoogroups.com.
 
-Version: 1.06 May 10, 2001
+Version: 1.07 May 24, 2001
 
 General
 -------
@@ -45,11 +45,13 @@ Solaris/Orcallator.se
        line 285"?
  3.10) Why do I get the error "Fatal: member: XXXXX vanished!: Near
        line YYY"?
- 3.11) Why don't I get plots for my Veritas filesystems?
- 3.12) Why don't I get plots for my RSM filesystems?
- 3.13) Why don't I get any Interface Bits Per Second data for my qe
+ 3.11) What do I do when I get the message "Fatal: subscript: 2 out of
+       range for: GLOBAL_net[2]: Near line 178"?
+ 3.12) Why don't I get plots for my Veritas filesystems?
+ 3.13) Why don't I get plots for my RSM filesystems?
+ 3.14) Why don't I get any Interface Bits Per Second data for my qe
        board?
- 3.14) Orcallator.se core dumps.
+ 3.15) Orcallator.se core dumps.
 
 General
 -------
@@ -289,14 +291,35 @@ Solaris/Orcallator.se
        If a particular define does not fix the problem, then don't run
        SE with it.
 
- 3.11) Why don't I get plots for my Veritas filesystems?
+ 3.11) What do I do when I get the message "Fatal: subscript: 2 out of
+       range for: GLOBAL_net[2]: Near line 178"?
+
+       Try adding the following string "-DMAX_IF=XYZ" where XYZ is
+       larger than the total number of interfaces you have on the
+       system to se's command line.
+
+       For example, if you had 9 separate interfaces on the system,
+       then you could edit start_orcallator like this:
+
+         --- start_orcallator.sh.in.FCS  Sat Oct 28 15:04:33 2000
+         +++ start_orcallator.sh.in      Thu May 24 08:55:39 2001
+         @@ -31,6 +31,7 @@
+          #SE_PATCHES="$SE_PATCHES -DLE_PATCH"
+          #SE_PATCHES="$SE_PATCHES -DHME_PATCH"
+          #SE_PATCHES="$SE_PATCHES -DHME_PATCH_IFSPEED"
+         +SE_PATCHES="$SE_PATCHES -DMAX_IF=10"
+ 
+          # Check if the SE executable was found upon configure.
+          if test -z "$SE"; then
+
+ 3.12) Why don't I get plots for my Veritas filesystems?
 
        Version 1.13 or later of orcallator.se should be able to
        generate filesystem statistics for Veritas filesystems.  The
        first thing to try is to upgrade to the latest SE and
        orcallator.se release.
 
- 3.12) Why don't I get plots for my RSM filesystems?
+ 3.13) Why don't I get plots for my RSM filesystems?
 
        I don't think orcallator.se records data from RSM disks.
 
@@ -313,7 +336,7 @@ Solaris/Orcallator.se
        have access to a system with RSM on it, this is something
        that somebody else will need to take on.  Hint, hint...
 
- 3.13) Why don't I get any Interface Bits Per Second data for my qe
+ 3.14) Why don't I get any Interface Bits Per Second data for my qe
        board?
 
        Most likely you are either running Solaris 7 or older or
@@ -361,7 +384,7 @@ Solaris/Orcallator.se
                case NETIF_BF:
                  kstat$bf.number$ = number$ - (if_max[NETIF_QE] + 1);
 
- 3.14) Orcallator.se core dumps.
+ 3.15) Orcallator.se core dumps.
 
        Some of the SE include files can cause core dumps if there are
        oddities on the system.  Apply the following patches:

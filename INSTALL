@@ -142,10 +142,10 @@ Outline:
     Name			Required Version	Included With Orca
     ----------------------------------------------------------------------
     Data::Dumper		2.101 or greater	2.101
-    Digest::MD5			2.13 or greater		2.13
+    Digest::MD5			2.16 or greater		2.16
     Math::IntervalSearch	1.05 or greater		1.05
     RRDs			1.0.33 or greater	1.0.33
-    Storable			1.0.11 or greater	1.0.11
+    Storable			1.0.13 or greater	1.0.13
 
     All five of these modules are included with the Orca distribution
     in the packages directory.  When you configure Orca in step 3),
@@ -173,10 +173,10 @@ Outline:
 
     Digest::MD5
 
-      http://www.perl.com/CPAN/authors/id/G/GA/GAAS/Digest-MD5-2.13.tar.gz
+      http://www.perl.com/CPAN/authors/id/G/GA/GAAS/Digest-MD5-2.16.tar.gz
 
-      % gunzip -c Digest-MD5-2.13.tar.gz | tar xvf -
-      % cd Digest-MD5-2.13
+      % gunzip -c Digest-MD5-2.16.tar.gz | tar xvf -
+      % cd Digest-MD5-2.16
       % perl Makefile.PL
       % make
       % make test
@@ -213,10 +213,10 @@ Outline:
 
     Storable
 
-      http://www.perl.com/CPAN/authors/id/R/RA/RAM/Storable-1.0.11.tar.gz
+      http://www.perl.com/CPAN/authors/id/R/RA/RAM/Storable-1.0.13.tar.gz
 
-      % gunzip -c Storable-1.0.11.tar.gz | tar xvf -
-      % cd Storable-1.0.11
+      % gunzip -c Storable-1.0.13.tar.gz | tar xvf -
+      % cd Storable-1.0.13
       % perl Makefile.PL
       % make
       % make test

@@ -1,7 +1,7 @@
 # Orca configuration file for orcallator files.
 
 # Require at least this version of Orca.
-require			Orca 0.263
+require			Orca 0.264
 
 # base_dir is prepended to the paths find_files, html_dir, rrd_dir,
 # and state_file only if the path does not match the regular
@@ -61,7 +61,7 @@ generate_yearly_plot	1
 #   generated RRD data files.
 
 group orcallator {
-find_files		@ORCALLATOR_DIR@/(.*)/(?:(?:orcallator)|(?:percol))-\d{4}-\d{2}-\d{2}(?:\.(?:Z|gz|bz2))?
+find_files		@ORCALLATOR_DIR@/(.*)/(?:(?:orcallator)|(?:percol))-\d{4}-\d{2}-\d{2}(?:-\d{3,})?(?:\.(?:Z|gz|bz2))?
 column_description	first_line
 date_source		column_name timestamp
 interval		300
@@ -103,8 +103,8 @@ legend			5 minute average
 legend			15 minute average
 y_legend		Number Processes
 data_min		0
-data_max		100
-href			http://www.gps.caltech.edu/~blair/orca/docs/orcallator.html#processes_in_run_queue
+data_max		1000
+href			http://www.orcaware.com/orca/docs/orcallator.html#processes_in_run_queue
 }
 
 plot {
@@ -128,7 +128,23 @@ data_max		100
 plot_min		0
 plot_max		100
 rigid_min_max		1
-href			http://www.gps.caltech.edu/~blair/orca/docs/orcallator.html#cpu_usage
+href			http://www.orcaware.com/orca/docs/orcallator.html#cpu_usage
+}
+
+plot {
+title			%g Processes in Run Queue/Waiting/Swapped
+source			orcallator
+data			#runque
+data			#waiting
+data			#swpque
+line_type		area
+line_type		stack
+line_type		stack
+legend			# processes in run queue
+legend			# processes waiting for IO
+legend			# processes swapped
+y_legend		Number Processes
+data_min		0
 }
 
 plot {
@@ -143,7 +159,7 @@ legend			Peak 5 second
 y_legend		New processes/s
 data_min		0
 data_max		100000
-href			http://www.gps.caltech.edu/~blair/orca/docs/orcallator.html#new_process_spawn_rate
+href			http://www.orcaware.com/orca/docs/orcallator.html#new_process_spawn_rate
 }
 
 plot {
@@ -160,7 +176,7 @@ data_min		0
 data_max		10000
 color			0000ff
 color			00ff00
-href			http://www.gps.caltech.edu/~blair/orca/docs/orcallator.html#number_system_processes
+href			http://www.orcaware.com/orca/docs/orcallator.html#number_system_processes
 }
 
 plot {
@@ -172,7 +188,7 @@ legend			Number web servers
 y_legend		Number Processes
 data_min		0
 data_max		10000
-href			http://www.gps.caltech.edu/~blair/orca/docs/orcallator.html#number_web_server_processes
+href			http://www.orcaware.com/orca/docs/orcallator.html#number_web_server_processes
 }
 
 plot {
@@ -188,7 +204,7 @@ y_legend		Hits/s
 data_min		0
 color			00ff00
 color			0000ff
-href			http://www.gps.caltech.edu/~blair/orca/docs/orcallator.html#web_server_hit_rate
+href			http://www.orcaware.com/orca/docs/orcallator.html#web_server_hit_rate
 }
 
 plot {
@@ -215,7 +231,7 @@ data_max		100
 plot_min		0
 plot_max		100
 rigid_min_max		1
-href			http://www.gps.caltech.edu/~blair/orca/docs/orcallator.html#web_server_file_size
+href			http://www.orcaware.com/orca/docs/orcallator.html#web_server_file_size
 }
 
 plot {
@@ -226,7 +242,7 @@ line_type		area
 legend			Bytes/s
 y_legend		Bytes/s
 data_min		0
-href			http://www.gps.caltech.edu/~blair/orca/docs/orcallator.html#web_server_data_transfer_rate
+href			http://www.orcaware.com/orca/docs/orcallator.html#web_server_data_transfer_rate
 }
 
 plot {
@@ -237,7 +253,7 @@ line_type		area
 legend			HTTP errors/s
 y_legend		Errors/s
 data_min		0
-href			http://www.gps.caltech.edu/~blair/orca/docs/orcallator.html#web_server_error_rate
+href			http://www.orcaware.com/orca/docs/orcallator.html#web_server_error_rate
 }
 
 # Interface bits per second for 10 Mbit interfaces.
@@ -253,14 +269,14 @@ legend			Output
 y_legend		Bits/s
 data_min		0
 data_max		10000000
-href			http://www.gps.caltech.edu/~blair/orca/docs/orcallator.html#interface_bits_per_second
+href			http://www.orcaware.com/orca/docs/orcallator.html#interface_bits_per_second
 }
 
 # Interface bits per second for 100 Mbit interfaces.
 plot {
 title			%g Interface Bits Per Second: $1
 source			orcallator
-data			1024 * 8 * ((?:(?:be)|(?:hme))\d+)InKB/s
+data			1024 * 8 * ((?:(?:be)|(?:dfme)|(?:eri)|(?:hme))\d+)InKB/s
 data			1024 * 8 * $1OuKB/s
 line_type		area
 line_type		line1
@@ -269,14 +285,14 @@ legend			Output
 y_legend		Bits/s
 data_min		0
 data_max		100000000
-href			http://www.gps.caltech.edu/~blair/orca/docs/orcallator.html#interface_bits_per_second
+href			http://www.orcaware.com/orca/docs/orcallator.html#interface_bits_per_second
 }
 
 # Interface bits per second for 1 Gbit interfaces.
 plot {
 title			%g Interface Bits Per Second: $1
 source			orcallator
-data			1024 * 8 * (v?ge\d+)InKB/s
+data			1024 * 8 * ((?:(?:v?ge)|(?:skge))\d+)InKB/s
 data			1024 * 8 * $1OuKB/s
 line_type		area
 line_type		line1
@@ -285,7 +301,7 @@ legend			Output
 y_legend		Bits/s
 data_min		0
 data_max		1000000000
-href			http://www.gps.caltech.edu/~blair/orca/docs/orcallator.html#interface_bits_per_second
+href			http://www.orcaware.com/orca/docs/orcallator.html#interface_bits_per_second
 }
 
 plot {
@@ -301,7 +317,7 @@ y_legend		Packets/s
 data_min		0
 data_max		100000
 flush_regexps		1
-href			http://www.gps.caltech.edu/~blair/orca/docs/orcallator.html#interface_packets_per_second
+href			http://www.orcaware.com/orca/docs/orcallator.html#interface_packets_per_second
 }
 
 plot {
@@ -316,7 +332,7 @@ legend			Output
 y_legend		Errors/s
 data_min		0
 flush_regexps		1
-href			http://www.gps.caltech.edu/~blair/orca/docs/orcallator.html#interface_errors_per_second
+href			http://www.orcaware.com/orca/docs/orcallator.html#interface_errors_per_second
 }
 
 plot {
@@ -328,7 +344,7 @@ legend			$1
 y_legend		Defers/s
 data_min		0
 flush_regexps		1
-href			http://www.gps.caltech.edu/~blair/orca/docs/orcallator.html#interface_deferred_packet_rate
+href			http://www.orcaware.com/orca/docs/orcallator.html#interface_deferred_packet_rate
 }
 
 plot {
@@ -341,7 +357,7 @@ y_legend		Percent
 data_min		0
 data_max		200
 flush_regexps		1
-href			http://www.gps.caltech.edu/~blair/orca/docs/orcallator.html#interface_collisions
+href			http://www.orcaware.com/orca/docs/orcallator.html#interface_collisions
 }
 
 plot {
@@ -353,7 +369,7 @@ legend			$1
 y_legend		Nocanput/s
 data_min		0
 flush_regexps		1
-href			http://www.gps.caltech.edu/~blair/orca/docs/orcallator.html#interface_nocanput_rate
+href			http://www.orcaware.com/orca/docs/orcallator.html#interface_nocanput_rate
 }
 
 plot {
@@ -368,7 +384,7 @@ legend			Output
 y_legend		Bits/s
 data_min		0
 data_max		1000000000
-href			http://www.gps.caltech.edu/~blair/orca/docs/orcallator.html#TCP_bits_per_second
+href			http://www.orcaware.com/orca/docs/orcallator.html#TCP_bits_per_second
 }
 
 plot {
@@ -383,7 +399,7 @@ legend			Output
 y_legend		Segments/s
 data_min		0
 data_max		20000
-href			http://www.gps.caltech.edu/~blair/orca/docs/orcallator.html#TCP_segments_per_second
+href			http://www.orcaware.com/orca/docs/orcallator.html#TCP_segments_per_second
 }
 
 plot {
@@ -398,7 +414,7 @@ legend			Duplicate received
 y_legend		Percent
 data_min		0
 data_max		200
-href			http://www.gps.caltech.edu/~blair/orca/docs/orcallator.html#TCP_retransmission_duplicate_received_percentage
+href			http://www.orcaware.com/orca/docs/orcallator.html#TCP_retransmission_duplicate_received_percentage
 }
 
 plot {
@@ -413,7 +429,7 @@ legend			Output - active
 y_legend		New Connections/s
 data_min		0
 data_max		10000
-href			http://www.gps.caltech.edu/~blair/orca/docs/orcallator.html#TCP_new_connection_rate
+href			http://www.orcaware.com/orca/docs/orcallator.html#TCP_new_connection_rate
 }
 
 plot {
@@ -425,7 +441,7 @@ legend			# open connections
 y_legend		Number Open TCP Connections
 data_min		0
 data_max		50000
-href			http://www.gps.caltech.edu/~blair/orca/docs/orcallator.html#TCP_number_open_connections
+href			http://www.orcaware.com/orca/docs/orcallator.html#TCP_number_open_connections
 }
 
 plot {
@@ -436,7 +452,7 @@ line_type		area
 legend			Number TCP resets/s
 y_legend		Resets/s
 data_min		0
-href			http://www.gps.caltech.edu/~blair/orca/docs/orcallator.html#TCP_reset_rate
+href			http://www.orcaware.com/orca/docs/orcallator.html#TCP_reset_rate
 }
 
 plot {
@@ -447,7 +463,7 @@ line_type		area
 legend			TCP attempt fails/s
 y_legend		TCP Attempt Fails/s
 data_min		0
-href			http://www.gps.caltech.edu/~blair/orca/docs/orcallator.html#TCP_attempt_fail_rate
+href			http://www.orcaware.com/orca/docs/orcallator.html#TCP_attempt_fail_rate
 }
 
 plot {
@@ -461,7 +477,7 @@ legend			TCP listen drop Q0
 legend			TCP half open drops
 y_legend		TCP Listen Drops/s
 data_min		0
-href			http://www.gps.caltech.edu/~blair/orca/docs/orcallator.html#TCP_listen_drop_rate
+href			http://www.orcaware.com/orca/docs/orcallator.html#TCP_listen_drop_rate
 }
 
 plot {
@@ -475,7 +491,7 @@ legend			Sleeps on mutex
 legend			Sleeps on mutex/cpu
 y_legend		Sleeps on Mutex/s
 data_min		0
-href			http://www.gps.caltech.edu/~blair/orca/docs/orcallator.html#sleeps_mutex_rate
+href			http://www.orcaware.com/orca/docs/orcallator.html#sleeps_mutex_rate
 }
 
 plot {
@@ -497,7 +513,7 @@ line_type		stack
 legend			NFS server calls/s
 y_legend		NFS Server Calls/s
 data_min		0
-href			http://www.gps.caltech.edu/~blair/orca/docs/orcallator.html#NFS_server_call_rate
+href			http://www.orcaware.com/orca/docs/orcallator.html#NFS_server_call_rate
 }
 
 plot {
@@ -515,7 +531,7 @@ line_type		stack
 line_type		stack
 y_legend		NFS Server Calls/s
 data_min		0
-href			http://www.gps.caltech.edu/~blair/orca/docs/orcallator.html#NFS_server_call_distribution
+href			http://www.orcaware.com/orca/docs/orcallator.html#NFS_server_call_distribution
 }
 
 plot {
@@ -526,7 +542,7 @@ line_type		area
 legend			NFS client calls/s
 y_legend		NFS Client Calls/s
 data_min		0
-href			http://www.gps.caltech.edu/~blair/orca/docs/orcallator.html#NFS_client_call_rate
+href			http://www.orcaware.com/orca/docs/orcallator.html#NFS_client_call_rate
 }
 
 plot {
@@ -540,7 +556,7 @@ legend			NFS timeouts
 legend			Bad transmits
 y_legend		Count/s
 data_min		0
-href			http://www.gps.caltech.edu/~blair/orca/docs/orcallator.html#NFS_timeouts_bad_transmits_rate
+href			http://www.orcaware.com/orca/docs/orcallator.html#NFS_timeouts_bad_transmits_rate
 }
 
 plot {
@@ -554,7 +570,7 @@ legend			Reads/s
 legend			Writes/s
 y_legend		Ops/s
 data_min		0
-href			http://www.gps.caltech.edu/~blair/orca/docs/orcallator.html#disk_system_wide_reads_writes_per_second
+href			http://www.orcaware.com/orca/docs/orcallator.html#disk_system_wide_reads_writes_per_second
 }
 
 plot {
@@ -568,20 +584,20 @@ legend			Read transfer rate
 legend			Write transfer rate
 y_legend		Bytes/s
 data_min		0
-href			http://www.gps.caltech.edu/~blair/orca/docs/orcallator.html#disk_system_wide_transfer_rate
+href			http://www.orcaware.com/orca/docs/orcallator.html#disk_system_wide_transfer_rate
 }
 
 plot {
 title			%g Disk Run Percent
 source			orcallator
-data			disk_runp_((?:c\d+t\d+d\d+)|(?:md\d+))
+data			disk_runp_((?:c\d+t\d+d\d+)|(?:[ms]d\d+))
 line_type		line2
 legend			$1
 y_legend		Run Percent
 data_min		0
 data_max		100
 plot_min		0
-href			http://www.gps.caltech.edu/~blair/orca/docs/orcallator.html#disk_run_percent
+href			http://www.orcaware.com/orca/docs/orcallator.html#disk_run_percent
 }
 
 plot {
@@ -595,7 +611,7 @@ data_min		0
 data_max		100
 plot_min		0
 plot_max		100
-href			http://www.gps.caltech.edu/~blair/orca/docs/orcallator.html#disk_space_percent_usage
+href			http://www.orcaware.com/orca/docs/orcallator.html#disk_space_percent_usage
 }
 
 plot {
@@ -609,7 +625,7 @@ data_min		0
 data_max		100
 plot_min		0
 plot_max		100
-href			http://www.gps.caltech.edu/~blair/orca/docs/orcallator.html#disk_inode_percent_usage
+href			http://www.orcaware.com/orca/docs/orcallator.html#disk_inode_percent_usage
 }
 
 plot {
@@ -624,7 +640,7 @@ legend			Inode cache
 y_legend		Percent
 data_min		0
 data_max		100
-href			http://www.gps.caltech.edu/~blair/orca/docs/orcallator.html#cache_hit_percentages
+href			http://www.orcaware.com/orca/docs/orcallator.html#cache_hit_percentages
 }
 
 plot {
@@ -638,7 +654,7 @@ legend			DNLC
 legend			Inode cache
 y_legend		References/s
 data_min		0
-href			http://www.gps.caltech.edu/~blair/orca/docs/orcallator.html#cache_reference_rate
+href			http://www.orcaware.com/orca/docs/orcallator.html#cache_reference_rate
 }
 
 plot {
@@ -649,7 +665,7 @@ line_type		area
 legend			Inode w/page steals/s
 y_legend		Steals/s
 data_min		0
-href			http://www.gps.caltech.edu/~blair/orca/docs/orcallator.html#inode_steal_rate
+href			http://www.orcaware.com/orca/docs/orcallator.html#inode_steal_rate
 }
 
 plot {
@@ -661,7 +677,7 @@ legend			Free physical memory
 y_legend		Bytes
 base			1024
 data_min		0
-href			http://www.gps.caltech.edu/~blair/orca/docs/orcallator.html#memory_free
+href			http://www.orcaware.com/orca/docs/orcallator.html#memory_free
 }
 
 plot {
@@ -672,7 +688,7 @@ line_type		area
 legend			Page scan rate
 y_legend		Pages/s
 data_min		0
-href			http://www.gps.caltech.edu/~blair/orca/docs/orcallator.html#page_scan_rate
+href			http://www.orcaware.com/orca/docs/orcallator.html#page_scan_rate
 }
 
 plot {
@@ -683,7 +699,7 @@ line_type		area
 legend			Page residence time
 y_legend		Seconds
 data_min		0
-href			http://www.gps.caltech.edu/~blair/orca/docs/orcallator.html#page_residence_time
+href			http://www.orcaware.com/orca/docs/orcallator.html#page_residence_time
 }
 
 plot {
@@ -695,7 +711,7 @@ legend			Available swap space
 y_legend		Bytes
 base			1024
 data_min		0
-href			http://www.gps.caltech.edu/~blair/orca/docs/orcallator.html#available_swap_space
+href			http://www.orcaware.com/orca/docs/orcallator.html#available_swap_space
 }
 
 plot {
@@ -719,7 +735,7 @@ plot_min		0
 color			00ff00
 color			ff0000
 color			0000ff
-href			http://www.gps.caltech.edu/~blair/orca/docs/orcallator.html#page_usage
+href			http://www.orcaware.com/orca/docs/orcallator.html#page_usage
 }
 
 plot {
@@ -734,5 +750,5 @@ legend			IO
 y_legend		Number Of Pages
 data_min		0
 plot_min		0
-href			http://www.gps.caltech.edu/~blair/orca/docs/orcallator.html#pages_locked_IO
+href			http://www.orcaware.com/orca/docs/orcallator.html#pages_locked_IO
 }

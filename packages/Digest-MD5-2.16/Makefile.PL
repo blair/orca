@@ -12,9 +12,7 @@ WriteMakefile(
     @extra,
     'dist'         => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
 );
-exit;
 
-#--------------
 
 
 sub free_u32_alignment
@@ -35,6 +33,10 @@ sub free_u32_alignment
 #include <stdio.h>
 #include "EXTERN.h"
 #include "perl.h"
+
+#ifdef printf
+ #undef printf
+#endif
 
 int main(int argc, char** argv, char** env)
 {

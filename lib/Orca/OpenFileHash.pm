@@ -212,6 +212,16 @@ sub get_fd {
   }
 }
 
+sub is_pipe {
+  my ($self, $fid) = @_;
+
+  if (defined (my $ref = $self->[I_HASH]{$fid})) {
+    return $ref->[I_FID_IS_PIPE];
+  } else {
+    return;
+  }
+}
+
 sub is_open {
   defined $_[0]->[I_HASH]{$_[1]};
 }

@@ -524,11 +524,18 @@ sub add_plots {
     # not changing the original plot structure.  Look through each
     # element of each data and look for names appearing in the column
     # description array.  If there is a match for this file, then
-    # convert the element to an index the @_ array where the data will
-    # be pulled from.  If there is not a match, then see if the
-    # element matches a name from one of the other column names from
-    # the same group.  In this case the data argument for this file
-    # will not be used.
+    # convert the element to index the @_ array where the data will be
+    # pulled from.  If there is not a match, then see if the element
+    # matches a name from one of the other column names from the same
+    # group.  In this case the data argument for this file will not be
+    # used.
+
+    # To allow data gathering program to send unknown values to Orca,
+    # check if any of the substituted values equals 'U' and return
+    # immediately the value 'U' to pass to RRDtool.  Keep track of the
+    # substituted values.
+    my %substituted_values;
+
     my @datas;
     foreach my $one_data (@{$plot->{data}}) {
       push(@datas, [@$one_data]);
@@ -540,8 +547,9 @@ sub add_plots {
         my $element = $datas[$j][$k];
         my $pos;
         if (defined ($pos = $column_description{$element})) {
-          $datas[$j][$k]  = "\$_[$pos]";
           $match_one_data = 1;
+          $datas[$j][$k]  = "\$_[$pos]";
+          $substituted_values{"\$_[$pos]"} = 1;
         } elsif (defined $group_column_names[$group_index]{$element}) {
           my $m = $old_i + 1;
           if ($required) {
@@ -580,10 +588,14 @@ sub add_plots {
     for (my $j=0; $j<@datas; ++$j) {
       my $data_expression;
       if (defined $datas[$j]) {
-        $data_expression = "@{$datas[$j]}";
-        my $sub_expr     = "sub { $data_expression }";
-        my $sub_expr_md5 = md5($data_expression);
-        my $eval_result  = $choose_data_sub_cache{$sub_expr_md5};
+        my $sub_expr = "sub {\n";
+        foreach my $s (sort keys %substituted_values) {
+          $sub_expr .= "  if (!defined($s) || $s eq 'U') {    return 'U';\n  }\n";
+        }
+        $data_expression  = "@{$datas[$j]}";
+        $sub_expr        .= "  $data_expression;\n}";
+        my $sub_expr_md5  = md5($data_expression);
+        my $eval_result   = $choose_data_sub_cache{$sub_expr_md5};
         unless (defined $eval_result) {
           $eval_result = 1;
           my $test_value;
@@ -802,13 +814,14 @@ sub load_new_data {
   # Try to get a file descriptor to open the file.  Skip the first
   # line if the first line is used for column descriptions.
 
-  my $opened_new_fd = !$fd;
+  my $opened_new_fd = 0;
   unless ($fd) {
     unless ($fd = $open_file_cache->open($fid, $file_mtime)) {
       warn "$0: warning: cannot open `$sfile_fids[$fid]' for reading: $!\n";
       return 0;
     }
     <$fd> if $self->[I_FIRST_LINE];
+    $opened_new_fd = 1;
   }
 
   my $date_column_index = $self->[I_DATE_COLUMN_INDEX];
@@ -893,16 +906,17 @@ sub load_new_data {
   # close the descriptor, reopen it and read all the rest of the data.
   # If neither of these cases is true, then close the file if the file
   # should be reopened next time.
-  if ($file_status == -1 or ($file_status == 2 and !$opened_new_fd)) {
+  if ($file_status == 2 and !$opened_new_fd) {
     $open_file_cache->close($fid) or
       warn "$0: warning: cannot close `$sfile_fids[$fid]' for reading: $!\n";
-    if ($file_status != -1) {
-      # Setting the last_read_time to -1 will force load_new_data to
-      # read it.
-      $self->[I_LAST_READ_TIME] = -1;
-      $number_added += $self->load_new_data;
-    }
-  } elsif ($close_once_done or $self->[I_REOPEN]) {
+    # Setting the last_read_time to -1 will force load_new_data to
+    # read it.
+    $self->[I_LAST_READ_TIME] = -1;
+    $number_added += $self->load_new_data;
+  } elsif ($file_status == -1 or
+           $close_once_done   or
+           $self->[I_REOPEN]  or
+           $open_file_cache->is_pipe($fid)) {
     $open_file_cache->close($fid) or
       warn "$0: warning: cannot close `$sfile_fids[$fid]' for reading: $!\n";
   }

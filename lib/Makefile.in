@@ -51,8 +51,8 @@ install: all
 	    $(INSTALL) -m 0644 $$f $(libdir)/$$d; \
 	  done \
 	done
-	@echo 'cd ..; svnversion . 2>/dev/null'
-	@current_rev="`cd ..; svnversion . 2>/dev/null`"; \
+	@echo "cd ..; sh -c 'svnversion .' 2>/dev/null || true"
+	@current_rev="`cd ..; sh -c 'svnversion .' 2>/dev/null || true`"; \
 	if test "$$current_rev" != "" && \
            test "$$current_rev" != "exported"; then \
 	  echo "Found good svnversion for `cd ..; pwd`: $$current_rev"; \

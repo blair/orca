@@ -440,17 +440,6 @@ AC_SUBST(CLEAN_TIME_HIRES)
 AC_SUBST(DISTCLEAN_TIME_HIRES)
 AC_SUBST(PERL_USE_TIME_HIRES)
 
-# Build the RRDtool library if it is needed.
-if test "$orca_cv_perl_rrds" = no; then
-  command="(cd packages/$RRDTOOL_DIR; ./configure $RRD_CONFIGURE_COMMAND_LINE)"
-  echo ""
-  echo "Running configure in packages/$RRDTOOL_DIR to create RRDtool and RRDs.pm."
-  echo ""
-  echo $command
-  echo ""
-  eval $command
-fi
-
 # Define the INSTALL and MKDIR variables to point to the scripts in
 # the config directory.
 INSTALL="$config_dir/install-sh -c"
@@ -487,6 +476,18 @@ else
   AC_MSG_RESULT([none found])
 fi
 AC_SUBST(RCX_D_CONTAINING_DIR)
+
+# Build the RRDtool library if it is needed.
+if test "$orca_cv_perl_rrds" = no; then
+  command="(cd packages/$RRDTOOL_DIR; ./configure $RRD_CONFIGURE_COMMAND_LINE)"
+  echo ""
+  echo "Running configure in packages/$RRDTOOL_DIR to create RRDtool and RRDs.pm."
+  echo ""
+  echo $command
+  echo ""
+  eval $command
+  echo ""
+fi
 
 #--------------------------------------------------------------------
 #       Generate the Makefiles and shell scripts with the
@@ -525,31 +526,25 @@ AC_OUTPUT(Makefile
           orca/orca.pl
          )
 
-echo
+echo ""
 echo "----------------------------------------------------------------"
 echo "You have now successfully configured Orca."
-echo
+echo ""
+echo "If you find Orca useful, please make a contribution to Orca's"
+echo "author.  Go to"
+echo ""
+echo "    http://www.orcaware.com/orca/#happy_blair"
+echo ""
+echo "and choose your preferred method of sending happiness :)"
+echo "Choices include making a donation or picking an item from"
+echo "my family's Amazon.com wish list."
+echo ""
 echo "Type 'make' to compile the software and use 'make install' to "
-echo "install everything to: $prefix."
-echo
-echo "If you find Orca useful, make my wife and me happy.  Go to"
-echo "http://www.orcaware.com/wish_list.html and pick an item from our"
-echo "Amazon.com wish list."
-echo
+echo "install everything into $prefix."
+echo ""
+echo "Thank you and enjoy Orca,"
 echo "Blair Zajac <blair@orcaware.com>"
 echo "----------------------------------------------------------------"
-
-echo $ECHO_N "ordering CD from http://www.orcaware.com/wish_list.html $ECHO_C" 1>&6
-sleep 1
-echo $ECHO_N ".$ECHO_C" 1>&6
-sleep 1
-echo $ECHO_N ".$ECHO_C" 1>&6
-sleep 1
-echo $ECHO_N ".$ECHO_C" 1>&6
-sleep 1
-echo $ECHO_N ".$ECHO_C" 1>&6
-sleep 1
-AC_MSG_RESULT([ just kidding ;-)])
 
 case "$target" in
   *-solaris*)

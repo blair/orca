@@ -48,7 +48,7 @@ use vars qw(@ISA @EXPORT $VERSION @tz_local);
 
 @ISA = qw(Exporter);
 @EXPORT = qw(tz2zone tz_local_offset tz_offset tz_name);
-$VERSION = "2.20";
+$VERSION = "2.22";
 
 # Parts stolen from code by Paul Foley <paul@ascent.com>
 
@@ -84,8 +84,9 @@ sub tz2zone (;$$$)
 		    ( [^\d+\-,] {3,} )?
 		    /x
 	    ) {
-		$TZ = $isdst ? $4 : $1;
-		$tzn_cache{$TZ} = [ $1, $4 ];
+		my $dsttz = defined($4) ? $4 : $1;
+		$TZ = $isdst ? $dsttz : $1;
+		$tzn_cache{$TZ} = [ $1, $dsttz ];
 	} else {
 		$tzn_cache{$TZ} = [ $TZ, $TZ ];
 	}
@@ -149,6 +150,7 @@ CONFIG: {
 
 	my @dstZone = (
 	#   "ndt"  =>   -2*3600-1800,	 # Newfoundland Daylight   
+	    "brst" =>   -2*3600,         # Brazil Summer Time (East Daylight)
 	    "adt"  =>   -3*3600,  	 # Atlantic Daylight   
 	    "edt"  =>   -4*3600,  	 # Eastern Daylight
 	    "cdt"  =>   -5*3600,  	 # Central Daylight
@@ -160,6 +162,7 @@ CONFIG: {
 	    "mest" =>   +2*3600,  	 # Middle European Summer   
 	    "sst"  =>   +2*3600,  	 # Swedish Summer
 	    "fst"  =>   +2*3600,  	 # French Summer
+            "cest" =>   +2*3600,         # Central European Daylight
             "eest" =>   +3*3600,         # Eastern European Summer
 	    "wadt" =>   +8*3600,  	 # West Australian Daylight
 	    "kdt"  =>  +10*3600,	 # Korean Daylight
@@ -176,14 +179,18 @@ CONFIG: {
 	    "wet"       =>   0,  	 # Western European
 	    "wat"       =>  -1*3600,	 # West Africa
 	    "at"        =>  -2*3600,	 # Azores
+	    "fnt"	=>  -2*3600,	 # Brazil Time (Extreme East - Fernando Noronha)
+	    "brt"	=>  -3*3600,	 # Brazil Time (East Standard - Brasilia)
 	# For completeness.  BST is also British Summer, and GST is also Guam Standard.
 	#   "bst"       =>  -3*3600,	 # Brazil Standard
 	#   "gst"       =>  -3*3600,	 # Greenland Standard
 	#   "nft"       =>  -3*3600-1800,# Newfoundland
 	#   "nst"       =>  -3*3600-1800,# Newfoundland Standard
+	    "mnt"	=>  -4*3600,	 # Brazil Time (West Standard - Manaus)
 	    "ewt"       =>  -4*3600,	 # U.S. Eastern War Time
 	    "ast"       =>  -4*3600,	 # Atlantic Standard
 	    "est"       =>  -5*3600,	 # Eastern Standard
+	    "act"	=>  -5*3600,	 # Brazil Time (Extreme West - Acre)
 	    "cst"       =>  -6*3600,	 # Central Standard
 	    "mst"       =>  -7*3600,	 # Mountain Standard
 	    "pst"       =>  -8*3600,	 # Pacific Standard

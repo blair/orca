@@ -1,10 +1,12 @@
+
 /****************************************************************************
- * RRDtool 1.0.33  Copyright Tobias Oetiker, 1997 - 2000
+ * RRDtool 1.0.40  Copyright Tobias Oetiker, 1997 - 2000
  ****************************************************************************
  * rrd__graph.c  make creates ne rrds
  ****************************************************************************/
 
 #include "rrd_tool.h"
+#include "rrd_graph.h"
 #include <gd.h>
 #include <gdlucidan10.h>
 #include <gdlucidab12.h>
@@ -14,6 +16,14 @@
 #include <fcntl.h>
 #endif
 
+#ifdef HAVE_TIME_H
+#include <time.h>
+#endif
+
+#ifdef HAVE_LOCALE_H
+#include <locale.h>
+#endif
+    
 #define SmallFont gdLucidaNormal10
 #define LargeFont gdLucidaBold12
 
@@ -25,57 +35,6 @@
 # define DPRINT(x)
 #endif
 
-#define DEF_NAM_FMT "%29[_A-Za-z0-9]"
-
-enum tmt_en {TMT_SECOND=0,TMT_MINUTE,TMT_HOUR,TMT_DAY,
-	     TMT_WEEK,TMT_MONTH,TMT_YEAR};
-
-enum grc_en {GRC_CANVAS=0,GRC_BACK,GRC_SHADEA,GRC_SHADEB,
-	     GRC_GRID,GRC_MGRID,GRC_FONT,GRC_FRAME,GRC_ARROW,__GRC_END__};
-
-
-enum gf_en {GF_PRINT=0,GF_GPRINT,GF_COMMENT,GF_HRULE,GF_VRULE,GF_LINE1,
-	    GF_LINE2,GF_LINE3,GF_AREA,GF_STACK, GF_DEF, GF_CDEF };
-
-enum op_en {OP_NUMBER=0,OP_VARIABLE,OP_INF,OP_PREV,OP_NEGINF,
-	    OP_UNKN,OP_NOW,OP_TIME,OP_LTIME,OP_ADD,OP_MOD,
-            OP_SUB,OP_MUL,
-	    OP_DIV,OP_SIN, OP_DUP, OP_EXC, OP_POP,
-	    OP_COS,OP_LOG,OP_EXP,OP_LT,OP_LE,OP_GT,OP_GE,OP_EQ,OP_IF,
-	    OP_MIN,OP_MAX,OP_LIMIT, OP_FLOOR, OP_CEIL,
-	    OP_UN,OP_END};
-
-enum if_en {IF_GIF=0,IF_PNG=1};
-
-typedef struct rpnp_t {
-    enum op_en   op;
-    double val; /* value for a OP_NUMBER */
-    long ptr; /* pointer into the gdes array for OP_VAR */
-    double *data; /* pointer to the current value from OP_VAR DAS*/
-    long ds_cnt;   /* data source count for data pointer */
-    long step; /* time step for OP_VAR das */
-} rpnp_t;
- 
-
-typedef struct col_trip_t {
-    int red; /* red = -1 is no color */
-    int green;
-    int blue;
-    int i; /* color index assigned in gif image i=-1 is unasigned*/
-} col_trip_t;
-
-
-typedef struct xlab_t {
-    long         minsec;       /* minimum sec per pix */
-    enum tmt_en  gridtm;       /* grid interval in what ?*/
-    long         gridst;       /* how many whats per grid*/
-    enum tmt_en  mgridtm;      /* label interval in what ?*/
-    long         mgridst;      /* how many whats per label*/
-    enum tmt_en  labtm;        /* label interval in what ?*/
-    long         labst;        /* how many whats per label*/
-    long         precis;       /* label precision -> label placement*/
-    char         *stst;        /* strftime string*/
-} xlab_t;
 
 xlab_t xlab[] = {
     {0,        TMT_SECOND,30, TMT_MINUTE,5,  TMT_MINUTE,5,         0,"%H:%M"},
@@ -88,8 +47,8 @@ xlab_t xlab[] = {
     /*{300,      TMT_HOUR,3,    TMT_HOUR,12,   TMT_HOUR,12,    12*3600,"%a %p"},  this looks silly*/
     {600,      TMT_HOUR,6,    TMT_DAY,1,     TMT_DAY,1,      24*3600,"%a"},
     {1800,     TMT_HOUR,12,   TMT_DAY,1,     TMT_DAY,2,      24*3600,"%a"},
-    {3600,     TMT_DAY,1,     TMT_WEEK,1,     TMT_WEEK,1,    7*24*3600,"Week %W"},
-    {3*3600,   TMT_WEEK,1,      TMT_MONTH,1,     TMT_WEEK,2,    7*24*3600,"Week %W"},
+    {3600,     TMT_DAY,1,     TMT_WEEK,1,     TMT_WEEK,1,    7*24*3600,"Week %V"},
+    {3*3600,   TMT_WEEK,1,      TMT_MONTH,1,     TMT_WEEK,2,    7*24*3600,"Week %V"},
     {6*3600,   TMT_MONTH,1,   TMT_MONTH,1,   TMT_MONTH,1, 30*24*3600,"%b"},
     {48*3600,  TMT_MONTH,1,   TMT_MONTH,3,   TMT_MONTH,3, 30*24*3600,"%b"},
     {10*24*3600, TMT_YEAR,1,  TMT_YEAR,1,    TMT_YEAR,1, 365*24*3600,"%y"},
@@ -110,11 +69,6 @@ double yloglab[][12]= {{ 1e9, 1,  0,  0,  0,   0,  0,  0,  0,  0,  0,  0 },
 		       {  0,   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0 }};
 
 /* sensible y label intervals ...*/
-
-typedef struct ylab_t {
-    double   grid;    /* grid spacing */
-    int      lfac[4]; /* associated label spacing*/
-} ylab_t;
 
 ylab_t ylab[]= {
     {0.1, {1,2, 5,10}},
@@ -154,121 +108,6 @@ col_trip_t graph_col[] = { /* default colors */
 #define FMT_LEG_LEN 2000
 #endif
 
-typedef  struct graph_desc_t {
-    enum gf_en     gf;         /* graphing function */
-    char           vname[30];  /* name of the variable */
-    long           vidx;       /* gdes reference */
-    char           rrd[255];   /* name of the rrd_file containing data */
-    char           ds_nam[DS_NAM_SIZE]; /* data source name */
-    long           ds;         /* data source number */
-    enum cf_en     cf;         /* consolidation function */
-    col_trip_t     col;        /* graph color */
-    char           format[FMT_LEG_LEN+5]; /* format for PRINT AND GPRINT */
-    char           legend[FMT_LEG_LEN+5]; /* legend*/
-    gdPoint        legloc;     /* location of legend */   
-    double         yrule;      /* value for y rule line */
-    time_t         xrule;      /* value for x rule line */
-    rpnp_t         *rpnp;     /* instructions for CDEF function */
-
-    /* description of data fetched for the graph element */
-    time_t         start,end; /* timestaps for first and last data element */
-    unsigned long  step;      /* time between samples */
-    unsigned long  ds_cnt; /* how many data sources are there in the fetch */
-    long           data_first; /* first pointer to this data */
-    char           **ds_namv; /* name of datasources  in the fetch. */
-    rrd_value_t    *data; /* the raw data drawn from the rrd */
-    rrd_value_t    *p_data; /* processed data, xsize elments */
-
-} graph_desc_t;
-
-#define ALTYGRID          0x01  /* use alternative y grid algorithm */
-#define ALTAUTOSCALE      0x02  /* use alternative algorithm to find lower and upper bounds */
-#define ALTAUTOSCALE_MAX  0x04  /* use alternative algorithm to find upper bounds */
-#define NOLEGEND          0x08  /* use no legend */
-
-typedef struct image_desc_t {
-
-    /* configuration of graph */
-
-    char           graphfile[MAXPATH]; /* filename for graphic */
-    long           xsize,ysize;    /* graph area size in pixels */
-    col_trip_t     graph_col[__GRC_END__]; /* real colors for the graph */   
-    char           ylegend[200];   /* legend along the yaxis */
-    char           title[200];     /* title for graph */
-    int            draw_x_grid;      /* no x-grid at all */
-    int            draw_y_grid;      /* no x-grid at all */
-    xlab_t         xlab_user;      /* user defined labeling for xaxis */
-    char           xlab_form[200]; /* format for the label on the xaxis */
-
-    double         ygridstep;      /* user defined step for y grid */
-    int            ylabfact;       /* every how many y grid shall a label be written ? */
-
-    time_t         start,end;      /* what time does the graph cover */
-    unsigned long           step;           /* any preference for the default step ? */
-    rrd_value_t    minval,maxval;  /* extreme values in the data */
-    int            rigid;          /* do not expand range even with 
-				      values outside */
-    char*          imginfo;         /* construct an <IMG ... tag and return 
-				      as first retval */
-    int            lazy;           /* only update the gif if there is reasonable
-				      probablility that the existing one is out of date */
-    int            logarithmic;    /* scale the yaxis logarithmic */
-    enum if_en     imgformat;         /* image format */
-    
-    /* status information */
-    	    
-    long           xorigin,yorigin;/* where is (0,0) of the graph */
-    long           xgif,ygif;      /* total size of the gif */
-    int            interlaced;     /* will the graph be interlaced? */
-    double         magfact;        /* numerical magnitude*/
-    long         base;            /* 1000 or 1024 depending on what we graph */
-    char           symbol;         /* magnitude symbol for y-axis */
-    int            unitsexponent;    /* 10*exponent for units on y-asis */
-    int            extra_flags;    /* flags for boolean options */
-    /* data elements */
-
-    long  prt_c;                  /* number of print elements */
-    long  gdes_c;                  /* number of graphics elements */
-    graph_desc_t   *gdes;          /* points to an array of graph elements */
-
-} image_desc_t;
-
-/* Prototypes */
-int xtr(image_desc_t *,time_t);
-int ytr(image_desc_t *, double);
-enum gf_en gf_conv(char *);
-enum if_en if_conv(char *);
-enum tmt_en tmt_conv(char *);
-enum grc_en grc_conv(char *);
-int im_free(image_desc_t *);
-void auto_scale( image_desc_t *,  double *, char **, double *);
-void si_unit( image_desc_t *);
-void expand_range(image_desc_t *);
-void reduce_data( enum cf_en,  unsigned long,  time_t *, time_t *,  unsigned long *,  unsigned long *,  rrd_value_t **);
-int data_fetch( image_desc_t *);
-long find_var(image_desc_t *, char *);
-long lcd(long *);
-int data_calc( image_desc_t *);
-int data_proc( image_desc_t *);
-time_t find_first_time( time_t,  enum tmt_en,  long);
-time_t find_next_time( time_t,  enum tmt_en,  long);
-void gator( gdImagePtr, int, int);
-int tzoffset(time_t);
-int print_calc(image_desc_t *, char ***);
-int leg_place(image_desc_t *);
-int horizontal_grid(gdImagePtr, image_desc_t *);
-int horizontal_log_grid(gdImagePtr, image_desc_t *);
-void vertical_grid( gdImagePtr, image_desc_t *);
-void axis_paint( image_desc_t *, gdImagePtr);
-void grid_paint( image_desc_t *, gdImagePtr);
-gdImagePtr MkLineBrush(image_desc_t *,long, enum gf_en);
-int lazy_check(image_desc_t *);
-int graph_paint(image_desc_t *, char ***);
-int gdes_alloc(image_desc_t *);
-int scan_for_col(char *, int, char *);
-int rrd_graph(int, char **, char ***, int *, int *);
-int bad_format(char *);
-rpnp_t * str2rpn(image_desc_t *,char *);
 
 /* translate time values into x coordinates */   
 /*#define xtr(x) (int)((double)im->xorigin \
@@ -348,6 +187,7 @@ enum gf_en gf_conv(char *string){
     conv_if(STACK,GF_STACK)
     conv_if(DEF,GF_DEF)
     conv_if(CDEF,GF_CDEF)
+    conv_if(XPORT,GF_XPORT)
     
     return (-1);
 }
@@ -356,6 +196,7 @@ enum if_en if_conv(char *string){
     
     conv_if(GIF,IF_GIF)
     conv_if(PNG,IF_PNG)
+    conv_if(GD,IF_GD)
 
     return (-1);
 }
@@ -526,6 +367,12 @@ expand_range(image_desc_t *im)
 #endif
 
     if (isnan(im->ygridstep)){
+	if(im->extra_flags & ALTYMRTG) { /* mrtg */
+ int  decimals = ceil(log10(max(fabs(im->maxval),fabs(im->minval))));
+ double scaledstep = ceil(25 * pow((double)10,-decimals) * im->maxval) * pow((double)10,decimals - 2);
+ im->minval = 0;
+ im->maxval = 4 * scaledstep;
+	} else
 	if(im->extra_flags & ALTAUTOSCALE) {
 	    /* measure the amplitude of the function. Make sure that
 	       graph boundaries are slightly higher then max/min vals
@@ -871,6 +718,20 @@ str2rpn(image_desc_t *im,char *expr){
 	    expr+=strlen(#VVV); \
 	}
 
+#define match_op_param(VV,VVV) \
+        else if (sscanf(expr, #VVV "(" DEF_NAM_FMT ")",vname) == 1) { \
+			int length = 0; \
+			if ((length = strlen(#VVV)+strlen(vname)+2, \
+				 expr[length] == ',' || expr[length] == '\0') ) { \
+				rpnp[steps].op = VV; \
+				if ((rpnp[steps].ptr = find_var(im,vname)) == -1) { \
+					im_free(im); \
+					rrd_set_error("unknown variable '%s'",vname); \
+					return NULL; \
+				} else { expr+=length; } \
+			} \
+	}
+
 	match_op(OP_ADD,+)
 	match_op(OP_SUB,-)
 	match_op(OP_MUL,*)
@@ -899,6 +760,7 @@ str2rpn(image_desc_t *im,char *expr){
 	match_op(OP_UN,UN)
 	match_op(OP_NEGINF,NEGINF)
 	match_op(OP_PREV,PREV)
+	match_op_param(OP_PREV_OTHER,PREV)
 	match_op(OP_INF,INF)
 	match_op(OP_NOW,NOW)
 	match_op(OP_LTIME,LTIME)
@@ -998,7 +860,8 @@ data_calc( image_desc_t *im){
 	   this will be the step size for the cdef created data source*/
 
 	for(rpi=0;im->gdes[gdi].rpnp[rpi].op != OP_END;rpi++){
-	    if(im->gdes[gdi].rpnp[rpi].op == OP_VARIABLE){
+	    if(im->gdes[gdi].rpnp[rpi].op == OP_VARIABLE ||
+		   im->gdes[gdi].rpnp[rpi].op == OP_PREV_OTHER){
 		long ptr = im->gdes[gdi].rpnp[rpi].ptr;
 		if ((steparray = rrd_realloc(steparray, (++stepcnt+1)*sizeof(*steparray)))==NULL){
 		  rrd_set_error("realloc steparray");
@@ -1053,6 +916,17 @@ data_calc( image_desc_t *im){
 	    return -1;
 	}
 	
+        /* move the data pointers to the correct period */
+        for(rpi=0;im->gdes[gdi].rpnp[rpi].op != OP_END;rpi++){
+            if(im->gdes[gdi].rpnp[rpi].op == OP_VARIABLE ||
+			   im->gdes[gdi].rpnp[rpi].op == OP_PREV_OTHER){
+              long ptr = im->gdes[gdi].rpnp[rpi].ptr;
+              if(im->gdes[gdi].start > im->gdes[ptr].start) {
+                im->gdes[gdi].rpnp[rpi].data += im->gdes[gdi].rpnp[rpi].ds_cnt;
+              }
+            }
+        }
+        
 	/* step through the new cdef results array and calculate the values */
 	for (now = im->gdes[gdi].start;
 	     now<=im->gdes[gdi].end;
@@ -1073,21 +947,28 @@ data_calc( image_desc_t *im){
 		    stack[++stptr] = im->gdes[gdi].rpnp[rpi].val;
 		    break;
 		case OP_VARIABLE:
-                    /* make sure we pull the correct value from the *.data array */
-		    /* adjust the pointer into the array acordingly. */
-		    if(now >  im->gdes[gdi].start &&
-		       now % im->gdes[gdi].rpnp[rpi].step == 0){
-			im->gdes[gdi].rpnp[rpi].data +=
-			    im->gdes[gdi].rpnp[rpi].ds_cnt;
-		    }
+		    /* go to the next value of the variable if necessary */
 		    stack[++stptr] =  *im->gdes[gdi].rpnp[rpi].data;
+		    if ( /* now >  im->gdes[gdi].start &&  */
+			now % im->gdes[gdi].rpnp[rpi].step == 0  ){
+		       im->gdes[gdi].rpnp[rpi].data += im->gdes[gdi].rpnp[rpi].ds_cnt;
+		    }
 		    break;
 		case OP_PREV:
-		    if (dataidx <= 0) {
-                       stack[++stptr] = DNAN;
-                    } else {
-                       stack[++stptr] = im->gdes[gdi].data[dataidx];
-                    }
+			if (dataidx <= 0) {
+				stack[++stptr] = DNAN;
+			} else {
+				stack[++stptr] = im->gdes[gdi].data[dataidx];
+			}
+			break;
+		case OP_PREV_OTHER:
+			if (dataidx <= 0) {
+				stack[++stptr] = DNAN;
+			} else {
+                            int rpi_ptr = im->gdes[gdi].rpnp[rpi].ptr;
+                            int ds_cnt = im->gdes[gdi].rpnp[rpi].ds_cnt;
+                            stack[++stptr] = im->gdes[rpi_ptr].data[dataidx*ds_cnt+rpi_ptr];
+			}
 		    break;
 		case OP_UNKN:
 		    stack[++stptr] = DNAN; 
@@ -1447,6 +1328,7 @@ data_proc( image_desc_t *im ){
 	    case GF_VRULE:
 	    case GF_DEF:	       
 	    case GF_CDEF:
+	    case GF_XPORT:
 		break;
 	    }
 	}
@@ -1708,6 +1590,7 @@ print_calc(image_desc_t *im, char ***prdata)
 	    }
 	    if (im->gdes[i].gf == GF_PRINT){
 		(*prdata)[prlines-2] = malloc((FMT_LEG_LEN+2)*sizeof(char));
+		(*prdata)[prlines-1] = NULL;
 		if (bad_format(im->gdes[i].format)) {
 			rrd_set_error("bad format for [G]PRINT in '%s'", im->gdes[i].format);
 			return -1;
@@ -1717,7 +1600,6 @@ print_calc(image_desc_t *im, char ***prdata)
 #else
 		sprintf((*prdata)[prlines-2],im->gdes[i].format,printval,si_symb);
 #endif
-		(*prdata)[prlines-1] = NULL;
 	    } else {
 		/* GF_GPRINT */
 
@@ -1745,6 +1627,7 @@ print_calc(image_desc_t *im, char ***prdata)
 	    break;
 	case GF_DEF:
 	case GF_CDEF:	    
+	case GF_XPORT:	    
 	    break;
 	}
     }
@@ -1969,6 +1852,7 @@ horizontal_grid(gdImagePtr gif, image_desc_t   *im)
     
     polyPoints[0].x=im->xorigin;
     polyPoints[1].x=im->xorigin+im->xsize;
+
     sgrid = (int)( im->minval / gridstep - 1);
     egrid = (int)( im->maxval / gridstep + 1);
     scaledstep = gridstep/im->magfact;
@@ -1976,7 +1860,7 @@ horizontal_grid(gdImagePtr gif, image_desc_t   *im)
 	polyPoints[0].y=ytr(im,gridstep*i);
 	if ( polyPoints[0].y >= im->yorigin-im->ysize
 	     && polyPoints[0].y <= im->yorigin) {
-	    if(i % labfact == 0){		
+	    if(i % labfact == 0){
 		if (i==0 || im->symbol == ' ') {
 		    if(scaledstep < 1){
 			if(im->extra_flags & ALTYGRID) {
@@ -2026,6 +1910,54 @@ horizontal_grid(gdImagePtr gif, image_desc_t   *im)
       } */
 
     return 1;
+}
+
+int
+horizontal_mrtg_grid(gdImagePtr gif, image_desc_t *im)
+{
+ int      i, xLeft, xRight, y;
+ double   scaledstep;
+ char     graph_label[100];
+ int      styleMajor[2];
+ int      decimals;
+ char     labfmt[64];
+
+ /* does the scale of this graph make it impossible to put lines
+    on it? If so, give up. */
+ if (isnan((im->maxval - im->minval) / im->magfact))
+  return 0;
+
+ styleMajor[0] = graph_col[GRC_MGRID].i;
+ styleMajor[1] = gdTransparent;
+
+ xLeft = im->xorigin;
+ xRight = im->xorigin + im->xsize;
+
+ decimals = ceil(log10(max(fabs(im->maxval),fabs(im->minval))));
+ scaledstep = ceil(25 * pow((double)10,-decimals) * im->maxval) * pow((double)10,decimals - 2) / im->magfact;
+
+ sprintf(labfmt,"%%4.%df",1 - (scaledstep > (double)10 || ceil(scaledstep) == scaledstep));
+ if (im->symbol != ' ' || im->unit)
+  strcat(labfmt," ");
+ if (im->symbol != ' ')
+  sprintf(labfmt + strlen(labfmt),"%c",im->symbol);
+ if (im->unit)
+  strcat(labfmt,im->unit);
+
+ for (i = 0; i <= 4; i++)
+  {y = im->yorigin - im->ysize * i / 4;
+   if (y >= im->yorigin-im->ysize && y <= im->yorigin)
+    {sprintf(graph_label,labfmt,scaledstep * i);
+     gdImageString(gif,SmallFont,(xLeft - (strlen(graph_label) * SmallFont->w) - 7),
+                                 y - SmallFont->h / 2 + 1,
+                                 (unsigned char *)graph_label,graph_col[GRC_FONT].i);
+     gdImageSetStyle(gif,styleMajor,2);
+     gdImageLine(gif,xLeft  - 2,y,xLeft  + 2,y,graph_col[GRC_MGRID].i);
+     gdImageLine(gif,xRight - 2,y,xRight + 2,y,graph_col[GRC_MGRID].i);		    
+     gdImageLine(gif,xLeft,     y,xRight,    y,gdStyled);
+    }	
+  } 
+ return 1;
 }
 
 /* logaritmic horizontal grid */
@@ -2294,6 +2226,10 @@ grid_paint(
       vertical_grid(gif, im);
     
     if (im->draw_y_grid == 1){
+	if (im->extra_flags & ALTYMRTG)
+	{res = horizontal_mrtg_grid(gif,im);
+	}
+	else
 	if(im->logarithmic){
 		res = horizontal_log_grid(gif,im);
 	} else {
@@ -2417,6 +2353,29 @@ MkLineBrush(image_desc_t *im,long cosel, enum gf_en typsel){
   }
   return brush;
 }
+
+void
+copyImage(gdImagePtr gif, char *image, int copy_white)
+{FILE *fi;
+ if ((fi = fopen(image,"rb")) != (FILE *)NULL)
+  {int i1, i2, c1, c2;
+   gdImagePtr img;
+   img = gdImageCreateFromGd(fi);		/* load image */
+   fclose(fi);
+   for (i1 = gdImageSX(img); --i1; )
+    for (i2 = gdImageSY(img); --i2; )
+     {c2 = gdImageGetPixel(img,i1,i2);	/* get pixel */
+      if (copy_white || img->red[c2] != 255 || img->green[c2] != 255 || img->blue[c2] != 255)
+       {if ((c1 = gdImageColorExact(gif,img->red[c2],img->green[c2],img->blue[c2])) < 0)
+         if ((c1 = gdImageColorAllocate(gif,img->red[c2],img->green[c2],img->blue[c2])) < 0)
+          c1 = gdImageColorClosest(gif,img->red[c2],img->green[c2],img->blue[c2]);
+        gdImageSetPixel(gif,i1,i2,c1);
+       }
+     }
+   gdImageDestroy(img);
+  }
+}
+
 /*****************************************************
  * lazy check make sure we rely need to create this graph
  *****************************************************/
@@ -2442,6 +2401,9 @@ int lazy_check(image_desc_t *im){
 	break;
     case IF_PNG:
 	size = PngSize(fd,&(im->xgif),&(im->ygif));
+	break;
+    case IF_GD:
+	size = 0; /* for now - GdSize(fd,&(im->xgif),&(im->ygif)); */
 	break;
     }
     fclose(fd);
@@ -2549,10 +2511,13 @@ graph_paint(image_desc_t *im, char ***calcpr)
 				     im->gdes[i].col.green,
 				     im->gdes[i].col.blue);
     
-    
     /* the actual graph is created by going through the individual
        graph elements and then drawing them */
-    
+
+  if (im->bkg_image)	/* background image added first */
+   copyImage(gif,im->bkg_image,1);
+  else
+   {
     back[0].x = 0;
     back[0].y = 0;
     back[1].x = back[0].x+im->xgif;
@@ -2563,6 +2528,7 @@ graph_paint(image_desc_t *im, char ***calcpr)
     back[3].y = back[2].y;
 
     gdImageFilledPolygon(gif,back,4,graph_col[GRC_BACK].i);
+   }
 
     canvas[0].x = im->xorigin;
     canvas[0].y = im->yorigin;
@@ -2592,6 +2558,7 @@ graph_paint(image_desc_t *im, char ***calcpr)
 	case GF_COMMENT:
 	case GF_HRULE:
 	case GF_VRULE:
+	case GF_XPORT:
 	  break;
 	case GF_LINE1:
 	case GF_LINE2:
@@ -2690,6 +2657,9 @@ graph_paint(image_desc_t *im, char ***calcpr)
 	}
     }
 
+  if (im->ovl_image)	/* overlay image added last */
+   copyImage(gif,im->ovl_image,0);
+
     if (strcmp(im->graphfile,"-")==0) {
 #ifdef WIN32
         /* Change translation mode for stdout to BINARY */
@@ -2708,6 +2678,9 @@ graph_paint(image_desc_t *im, char ***calcpr)
 	break;
     case IF_PNG:
 	gdImagePng(gif, fo);    
+	break;
+    case IF_GD:
+	gdImageGd(gif, fo);    
 	break;
     }
     if (strcmp(im->graphfile,"-") != 0)
@@ -2801,6 +2774,14 @@ rrd_graph(int argc, char **argv, char ***prdata, int *xsize, int *ysize)
 
     (*prdata)=NULL;
 
+#ifdef HAVE_TZSET
+    tzset();
+#endif
+#ifdef HAVE_SETLOCALE
+    setlocale(LC_TIME,"");
+#endif
+                                
+                                
     parsetime("end-24h", &start_tv);
     parsetime("now", &end_tv);
 
@@ -2829,6 +2810,10 @@ rrd_graph(int argc, char **argv, char ***prdata, int *xsize, int *ysize)
     im.gdes_c = 0;
     im.gdes = NULL;
     im.imgformat = IF_GIF; /* we default to GIF output */
+
+im.bkg_image = NULL; /* do not put anything to background per default */
+im.ovl_image = NULL; /* do not use anything as overlay per default */
+im.unit = 0; /* do not display unit if not set */
 
     for(i=0;i<DIM(graph_col);i++)
 	im.graph_col[i].red=-1;
@@ -2861,13 +2846,17 @@ rrd_graph(int argc, char **argv, char ***prdata, int *xsize, int *ysize)
 	    {"alt-autoscale-max", no_argument,    0,   259 },
 	    {"units-exponent",required_argument, 0,  260},
 	    {"step",       required_argument, 0,   261},
+	    {"alt-y-mrtg", no_argument,       0,   262 },
+	    {"background", required_argument, 0,  'B'},
+	    {"overlay",    required_argument, 0,  'O'},
+	    {"unit",       required_argument, 0,  'U'},
 	    {0,0,0,0}};
 	int option_index = 0;
 	int opt;
 
 	
 	opt = getopt_long(argc, argv, 
-			  "s:e:x:y:v:w:h:iu:l:rb:oc:t:f:a:z:g",
+			  "s:e:x:y:v:w:h:iu:l:rb:oc:t:f:a:zgB:O:U:",
 			  long_options, &option_index);
 
 	if (opt == EOF)
@@ -2891,6 +2880,9 @@ rrd_graph(int argc, char **argv, char ***prdata, int *xsize, int *ysize)
 	    break;
 	case 261:
 	    im.step =  atoi(optarg);
+	    break;
+	case 262:
+	    im.extra_flags |= ALTYMRTG;
 	    break;
 	case 's':
 	    if ((parsetime_error = parsetime(optarg, &start_tv))) {
@@ -3038,6 +3030,15 @@ rrd_graph(int argc, char **argv, char ***prdata, int *xsize, int *ysize)
 	    strncpy(im.title,optarg,150);
 	    im.title[150]='\0';
 	    break;
+	case 'B':
+	    im.bkg_image = optarg;
+	    break;
+	case 'O':
+	    im.ovl_image = optarg;
+	    break;
+	case 'U':
+	    im.unit = optarg;
+	    break;
 
 	case '?':
             if (optopt != 0)
@@ -3109,6 +3110,8 @@ rrd_graph(int argc, char **argv, char ***prdata, int *xsize, int *ysize)
 	*/
 	
 	switch(im.gdes[im.gdes_c-1].gf){
+	case GF_XPORT:
+	  break;
 	case GF_PRINT:
 	    im.prt_c++;
 	case GF_GPRINT:
@@ -3332,29 +3335,36 @@ rrd_graph(int argc, char **argv, char ***prdata, int *xsize, int *ysize)
 }
 
 int bad_format(char *fmt) {
-	char *ptr;
-
-	ptr = fmt;
-	while (*ptr != '\0') {
-		if (*ptr == '%') {ptr++;
-			if (*ptr == '\0') return 1;
-			while ((*ptr >= '0' && *ptr <= '9') || *ptr == '.') { 
-				ptr++;
-			}
-			if (*ptr == '\0') return 1;
-			if (*ptr == 'l') {
-				ptr++;
-				if (*ptr == '\0') return 1;
-				if (*ptr == 'e' || *ptr == 'f') { 
-					ptr++; 
-					} else { return 1; }
-			}
-			else if (*ptr == 's' || *ptr == 'S' || *ptr == '%') { ++ptr; }
-			else { return 1; }
-		} else {
-			++ptr;
-		}
-	}
-	return 0;
+     char *ptr;
+     int n=0;
+     ptr = fmt;
+     while (*ptr != '\0') {
+          if (*ptr++ == '%') {
+ 
+             /* line cannot end with percent char */
+             if (*ptr == '\0') return 1;
+ 
+             /* '%s', '%S' and '%%' are allowed */
+             if (*ptr == 's' || *ptr == 'S' || *ptr == '%') ptr++;
+     
+             /* or else '% 6.2lf' and such are allowed */
+             else {
+   
+                 /* optional padding character */
+                 if (*ptr == ' ' || *ptr == '+' || *ptr == '-') ptr++;
+    
+                 /* This should take care of 'm.n' with all three optional */
+                 while (*ptr >= '0' && *ptr <= '9') ptr++;
+                 if (*ptr == '.') ptr++;
+                 while (*ptr >= '0' && *ptr <= '9') ptr++;
+     
+                 /* Either 'le' or 'lf' must follow here */
+                 if (*ptr++ != 'l') return 1;
+                 if (*ptr == 'e' || *ptr == 'f') ptr++;
+                 else return 1;
+                 n++;
+             }
+          }
+      }
+      return (n!=1);
 }
-

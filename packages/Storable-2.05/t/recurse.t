@@ -1,32 +1,31 @@
 #!./perl
-
-# $Id: recurse.t,v 1.0.1.3 2001/02/17 12:28:33 ram Exp $
 #
 #  Copyright (c) 1995-2000, Raphael Manfredi
 #  
 #  You may redistribute only under the same terms as Perl 5, as specified
 #  in the README file that comes with the distribution.
 #  
-# $Log: recurse.t,v $
-# Revision 1.0.1.3  2001/02/17 12:28:33  ram
-# patch8: ensure blessing occurs ASAP, specially designed for hooks
-#
-# Revision 1.0.1.2  2000/11/05 17:22:05  ram
-# patch6: stress hook a little more with refs to lexicals
-#
-# Revision 1.0.1.1  2000/09/17 16:48:05  ram
-# patch1: added test case for store hook bug
-#
-# Revision 1.0  2000/09/01 19:40:42  ram
-# Baseline for first official release.
-#
 
-require 't/dump.pl';
+sub BEGIN {
+    if ($ENV{PERL_CORE}){
+	chdir('t') if -d 't';
+	@INC = ('.', '../lib', '../ext/Storable/t');
+    } else {
+	unshift @INC, 't';
+    }
+    require Config; import Config;
+    if ($ENV{PERL_CORE} and $Config{'extensions'} !~ /\bStorable\b/) {
+        print "1..0 # Skip: Storable was not built\n";
+        exit 0;
+    }
+    require 'st-dump.pl';
+}
+
 sub ok;
 
 use Storable qw(freeze thaw dclone);
 
-print "1..32\n";
+print "1..33\n";
 
 package OBJ_REAL;
 
@@ -141,7 +140,7 @@ my $x = freeze $real;
 ok 1, 1;
 
 my $y = thaw $x;
-ok 2, 1;
+ok 2, ref $y eq 'OBJ_REAL';
 ok 3, $y->[0] eq 'a';
 ok 4, $y->[1] == 1;
 
@@ -279,9 +278,43 @@ sub make {
 
 sub set_c2 { $_[0]->{c2} = $_[1] }
 
+#
+# Is the reference count of the extra references returned from a
+# STORABLE_freeze hook correct? [ID 20020601.005]
+#
+package Foo2;
+
+sub new {
+	my $self = bless {}, $_[0];
+	$self->{freezed} = "$self";
+	return $self;
+}
+
+sub DESTROY {
+	my $self = shift;
+	$::refcount_ok = 1 unless "$self" eq $self->{freezed};
+}
+
+package Foo3;
+
+sub new {
+	bless {}, $_[0];
+}
+
+sub STORABLE_freeze {
+	my $obj = shift;
+	return ("", $obj, Foo2->new);
+}
+
+sub STORABLE_thaw { } # Not really used
+
 package main;
+use vars qw($refcount_ok);
 
 my $o = CLASS_OTHER->make();
 my $c2 = CLASS_2->make($o);
 my $so = thaw freeze $o;
 
+$refcount_ok = 0;
+thaw freeze(Foo3->new);
+ok 33, $refcount_ok == 1;

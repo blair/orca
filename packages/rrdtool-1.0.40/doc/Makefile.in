@@ -84,9 +84,10 @@ TCL_SHLIB_LD = @TCL_SHLIB_LD@
 TCL_SHLIB_SUFFIX = @TCL_SHLIB_SUFFIX@
 TROFF = @TROFF@
 VERSION = @VERSION@
+ZLIB_CFLAGS = @ZLIB_CFLAGS@
 ZLIB_LIB_DIR = @ZLIB_LIB_DIR@
 
-SUFFIXES = .pod .1 .man .html .txt .pm .pdf
+SUFFIXES = .pod .1 .man .html .txt .pm .pdf .ps
 
 #AUTOMAKE_OPTIONS        =  foreign
 
@@ -94,7 +95,7 @@ SUFFIXES = .pod .1 .man .html .txt .pm .pdf
 
 CLEANFILES = *.1 *.html *.txt *-dircache *.pm *.pdf *~ core *itemcache *.rej *.orig
 
-POD = rrdtool.pod rrdlast.pod rrdcreate.pod rrdupdate.pod  rrdtutorial.es.pod 	cdeftutorial.pod rpntutorial.pod rrdgraph.pod  bin_dec_hex.pod 	rrdfetch.pod rrdrestore.pod rrddump.pod rrdtune.pod rrdresize.pod 	rrdcgi.pod rrdtutorial.pod rrdinfo.pod
+POD = rrdtool.pod rrdlast.pod rrdcreate.pod rrdupdate.pod  rrdtutorial.es.pod 	cdeftutorial.pod rpntutorial.pod rrdgraph.pod  bin_dec_hex.pod 	rrdfetch.pod rrdrestore.pod rrddump.pod rrdtune.pod rrdresize.pod 	rrdcgi.pod rrdtutorial.pod rrdinfo.pod rrdxport.pod
 
 
 PMP = RRDs.pm RRDp.pm
@@ -102,6 +103,7 @@ PMP = RRDs.pm RRDp.pm
 MAN = $(POD:.pod=.1) $(PMP:.pm=.1) 
 TXT = $(MAN:.1=.txt)
 HTML = $(POD:.pod=.html) $(PMP:.pm=.html) 
+PS = $(MAN:.1=.ps)
 PDF = $(MAN:.1=.pdf)
 
 # what should go into the distribution
@@ -117,6 +119,11 @@ iman_DATA = $(MAN)
 mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 CONFIG_HEADER = ../config/config.h
 CONFIG_CLEAN_FILES = 
+CFLAGS = @CFLAGS@
+COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+CCLD = $(CC)
+LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(LDFLAGS) -o $@
 DATA =  $(idoc_DATA) $(ihtml_DATA) $(iman_DATA)
 
 DIST_COMMON =  Makefile.am Makefile.in
@@ -130,7 +137,7 @@ TAR = gtar
 GZIP_ENV = --best
 all: all-redirect
 .SUFFIXES:
-.SUFFIXES: .1 .html .man .pdf .pm .pod .txt
+.SUFFIXES: .1 .html .man .pdf .pm .pod .ps .txt
 $(srcdir)/Makefile.in: Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
 	cd $(top_srcdir) && $(AUTOMAKE) --gnu --include-deps doc/Makefile
 
@@ -288,8 +295,11 @@ all-local: link txt man html
 .1.txt:
 	@NROFF@ -man -Tlp $< > $@
 
-.1.pdf:
-	@TROFF@ -man $< | ps2pdf - $@
+.1.ps:
+	@TROFF@ -man $< > $@
+
+.ps.pdf:
+	distill $<
 
 .pm.html .pod.html .pl.html:
 	pod2html --infile=$< --outfile=$@ --noindex --htmlroot=. --podpath=. --title=$*

@@ -98,7 +98,7 @@ $UNAME = "/usr/bin/uname";
 $nodename = `$UNAME -n`;
 chop($nodename);
 
-require 5.004;
+require 5.004_05;
 use Fcntl;
 use Getopt::Long;			# option handler
 use POSIX;				# useful functions

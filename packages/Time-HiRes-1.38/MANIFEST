@@ -1,9 +1,11 @@
-Changes
-MANIFEST
-Makefile.PL
-README
-TODO
-HiRes.pm
-HiRes.xs
-t/01test.t
-t/02export.t
+Changes			Time::HiRes extension
+hints/dynixptx.pl	Hints for Time::HiRes for named architecture
+hints/sco.pl		Hints for Time::HiRes for named architecture
+HiRes.pm		Time::HiRes extension
+t/HiRes.t		Test for Time::HiRes
+HiRes.xs		Time::HiRes extension
+Makefile.PL		Time::HiRes extension
+MANIFEST		Time::HiRes extension
+README			Time::HiRes extension
+TODO			Time::HiRes extension
+typemap			Time::HiRes extension

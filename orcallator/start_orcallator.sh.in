@@ -11,7 +11,7 @@ COMPRESSOR="@COMPRESSOR@"
 CUT=@CUT@
 EXPR=@EXPR@
 UNAME=@UNAME@
-ORCALLATOR_DIR=@ORCALLATOR_DIR@
+ORCALLATOR_DIR=@VAR_DIR@/orcallator
 SE=@SE@
 
 # WEB_LOG contains the location of the web server log file that

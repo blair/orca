@@ -106,6 +106,10 @@ Find last update time of an RRD. Check <A HREF="././rrdlast.html">the rrdlast ma
 <DD>
 Change the size of individual RRAs ... Dangerous! Check <A HREF="././rrdresize.html">the rrdresize manpage</A>.
 <P></P>
+<DT><STRONG><A NAME="item_xport"><STRONG>xport</STRONG></A></STRONG><BR>
+<DD>
+Export data retrieved from one or several RRD. Check <A HREF="././rrdxport.html">the rrdxport manpage</A>
+<P></P>
 <DT><STRONG><A NAME="item_rrdcgi"><STRONG>rrdcgi</STRONG></A></STRONG><BR>
 <DD>
 This is a standalone tool for producing rrd graphs on the fly. Check
@@ -132,11 +136,11 @@ interested to know the development of the data over the last year. You
 could do this by simply storing the data in 1 minute interval, for one
 year. While this would take considerable disk space it would also take
 a lot of time to analyze the data when you wanted to create a graph
-covering the whole year. <STRONG>rrdtool</STRONG> offers a solution to this of this
+covering the whole year. <STRONG>rrdtool</STRONG> offers a solution to this
 problem through its data consolidation feature. When setting up
 an Round Robin Database (<STRONG>RRD</STRONG>), you can define at which interval
 this consolidation should occur, and what consolidation function
-(<STRONG>CF</STRONG>) (average, minimum, maximum, total, last) should be used to
+(<STRONG>CF</STRONG>) (average, minimum, maximum, last) should be used to
 build the consolidated values (see rrdcreate). You can define any
 number of different consolidation setups within one <STRONG>RRD</STRONG>. They will
 all be maintained on the fly when new data is loaded into the <STRONG>RRD</STRONG>.
@@ -204,7 +208,7 @@ will not abort if possible, but follow the ERROR line with an OK line.</P>
 <P>
 <HR>
 <H1><A NAME="see also">SEE ALSO</A></H1>
-<P>rrdcreate, rrdupdate, rrdgraph, rrddump, rrdfetch, rrdtune, rrdlast</P>
+<P>rrdcreate, rrdupdate, rrdgraph, rrddump, rrdfetch, rrdtune, rrdlast, rrdxport</P>
 <P>
 <HR>
 <H1><A NAME="bugs">BUGS</A></H1>

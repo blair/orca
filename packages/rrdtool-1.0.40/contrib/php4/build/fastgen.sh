@@ -23,7 +23,7 @@
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 ##############################################################################
-# $Id: fastgen.sh,v 1.7 2000/06/11 10:33:39 sas Exp $ 
+# $Id: fastgen.sh,v 1.1.1.1 2002/02/26 10:21:21 oetiker Exp $ 
 #
 
 srcdir=$1

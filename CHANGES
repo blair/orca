@@ -1,4 +1,548 @@
-Tue Oct  2 18:18:29 PDT 2001
+Thu Nov  7 14:53:39 PST 2002 <blair@orcaware.com> Blair Zajac
+
+	* Release Orca version 0.27b3.
+
+Thu Nov  7 14:45:34 PST 2002 <blair@orcaware.com> Blair Zajac
+
+	* configure.in: Only print the warning about not using
+	  --with-*-log on solaris systems.
+
+Thu Nov  7 14:29:45 PST 2002 <blair@orcaware.com> Blair Zajac
+
+	* FAQ: Update all mailing list info to refer to the Mailman
+	  mailing lists on orcaware.com.
+	* NEWS: Ditto.
+	* README: Ditto.
+	* configure.in: Ditto.
+	* src/orca.pl.in: Ditto.
+
+Thu Nov  7 13:56:42 PST 2002 <blair@orcaware.com> Blair Zajac
+
+	* packages: Include Time::HiRes 1.38.
+	* configure.in: Ditto.
+	* configure: Ditto.
+	* NEWS: Ditto.
+
+Thu Nov  7 13:10:56 PST 2002 <blair@orcaware.com> Blair Zajac
+
+	* orcallator/start_orcallator.sh.in: Replace @ORCALLATOR_DIR@
+	  with @VAR_DIR@/orcallator.  Patch by Sean O'Neill
+	  <sean@seanoneill.info>.
+
+Wed Nov  6 22:02:41 PST 2002 <blair@orcaware.com> Blair Zajac
+
+	* lib/Orca/HTMLFile.pm: Print in each generated HTML file in
+	  an HTML comment the version of Orca, RRDtool and Perl that
+	  was used.
+
+Wed Nov  6 21:29:55 PST 2002 <blair@orcaware.com> Blair Zajac
+
+	* COMMITTERS: New file.
+	* HACKING: New file.
+
+Wed Nov  6 21:28:02 PST 2002 <blair@orcaware.com> Blair Zajac
+
+	* config/config.guess: Upgrade from
+	  ftp://ftp.gnu.org/gnu/config to version 2002-10-21.
+	* config/config.sub: Upgrade from ftp://ftp.gnu.org/gnu/config
+	  to version 2002-09-05.
+
+Wed Nov  6 20:56:32 PST 2002 <blair@orcaware.com> Blair Zajac
+
+	* src/orca.pl.in: Rename orca.gif to orca_logo.gif.  Rename
+	  rrdtool.gif to rrdtool_logo.gif.
+	* lib/Makefile.in: Ditto.
+	* lib/orca_logo.gif: Renamed from orca.gif.
+	* lib/orca_logo.gif.hex: Renamed from orca.gif.hex.
+	* lib/rrdtool_logo.gif: Renamed from rrdtool.gif.
+	* lib/rrdtool_logo.gif.hex: Renamed from rrdtool.gif.hex.
+	* lib/Orca/HTMLFile.pm: Ditto.
+
+Wed Nov  6 20:49:38 PST 2002 <blair@orcaware.com> Blair Zajac
+
+	* src/orca.pl.in: Add rothschild_image_logo.png as an
+	  additional file that is automatically created when Orca
+	  runs, the same as orca.gif and rrdtool.gif.
+	* lib/rothschild_image_logo.png: New PNG file.
+	* lib/rothschild_image_logo.psd: New Photoshop file.
+	* lib/Makefile.in: Generate rothschild_image_logo.png.hex from
+	  rothschild_image_logo.png.
+
+Wed Nov  6 20:00:33 PST 2002 <blair@orcaware.com> Blair Zajac
+
+	* src/orca.pl.in: Now require Perl version 5.005_03 instead of
+	  5.004_05.  Perl versions older than this are very broken and
+	  cannot even load Orca.  Additionally, CPAN modules are now
+	  requiring newer Perl features which the older ones do not
+	  support.
+	* NEWS: Ditto.
+	* INSTALL: Ditto.
+
+Tue Nov  5 09:48:48 PST 2002 <blair@orcaware.com> Blair Zajac
+
+	* packages: Include and require RRDtool 1.0.40.
+	* configure.in: Ditto.
+	* configure: Ditto.
+	* NEWS: Ditto.
+
+Sun Nov  3 09:25:50 PST 2002 <blair@orcaware.com> Blair Zajac
+
+	* packages: Include TimeDate 1.14.
+	* configure.in: Ditto.
+	* configure: Ditto.
+	* NEWS: Ditto.
+
+Thu Oct  3 00:28:49 PDT 2002 <blair@orcaware.com> Blair Zajac
+
+	* packages: Include and require Storable 2.05.
+	* configure.in: Ditto.
+	* configure: Ditto.
+	* INSTALL: Ditto.
+	* NEWS: Ditto.
+
+Sat Aug 24 20:39:35 PDT 2002 <blair@orcaware.com> Blair Zajac
+
+	* src/orca.pl.in: At the top of the `Available Targets' and
+	  `Available Data Sets' HTML pages, add a link back to the top
+	  so that the user does not have to use the browser's back
+	  button.  Add `<br /><br />' after any plots so that on the
+	  `All' plots, there is some vertical separation between the
+	  plots when viewed by the Opera browser.
+
+Thu Aug 22 21:24:43 PDT 2002 <blair@orcaware.com> Blair Zajac
+
+	* orcallator/orcallator.cfg.in: Add a match on ce\d+ for the
+	  Sun GigaSwift Gigabit Ethernet card.
+
+Sat Aug 17 14:54:03 PDT 2002 <blair@orcaware.com> Blair Zajac
+
+	* orcallator/orcallator.cfg.in: Remove the extra data line for
+	  the "Disk Run Percent" plot that I inadvertently added.
+
+Sat Aug 17 14:44:36 PDT 2002 <blair@orcaware.com> Blair Zajac
+
+	* config/config.guess: Upgrade from
+	  ftp://ftp.gnu.org/gnu/config to version 2002-07-23.
+	* config/config.sub: Upgrade from ftp://ftp.gnu.org/gnu/config
+	  to version 2002-07-03.
+
+Sat Aug 17 14:41:38 PDT 2002 <blair@orcaware.com> Blair Zajac
+
+	* configure.in: Just before configure exits, print a message
+	  pointing Orca users to the Make Blair Happy page.
+	* configure: Ditto.
+
+Sun Aug 11 20:12:38 PDT 2002 <blair@orcaware.com> Blair Zajac
+	* orcallator/orcallator.se:
+	  Upgrade to version 1.35.
+	    Add a new measurement, the number of secure web server
+	      processes on the system using the column name #httpsds.
+	      If the environmental variable WEB_SERVER_SECURE is
+	      defined, use its value as the regular expression to
+	      match on process names.  If WEB_SERVER_SECURE is not
+	      defined, then count the number of httpsd's.  New
+	      variable www_server_secure_proc_name to hold the regular
+	      expression.
+	    Increase the maximum number of disks that can be monitored
+	      using the RAWDISK code from 512 to 1024 by increasing
+	      MAX_RAWDISKS from 512 to 1024.
+	    Reformat and modify the usage message to fit the new
+	      WEB_SERVER_SECURE environmental variable.
+	    (count_procs): Renamed from count_proc.  Take a list of
+	      regular expressions to match instead of just one regular
+	      expression.  Return the number of process names that
+	      match each regular expression in a global integer array,
+	      count_procs_results.
+	* orcallator/start_orcallator.sh.in:
+	  Set WEB_SERVER to httpd and and set WEB_SERVER_SECURE to
+	  httpsd and export them both into the environment for
+	  orcallator.se to use.  Add documentation for these two
+	  variables.
+
+Wed Aug  7 19:57:45 PDT 2002 <blair@orcaware.com> Blair Zajac
+
+	* Makefile.in: Restructure the `all' and `install' rules so
+	  that if make fails in one subdirectory, then the top level
+	  make fail fail immediately.  Previously, all subdirectories
+	  would be built, regardless if there was a failure in any one
+	  subdirectory.  Do not do this for `clean' and `distclean',
+	  because they should always clean up as much as they can,
+	  regardless of any sub-make failures.
+	* configure.in: Rename all borp_* variables to orca_*.  Fix a
+	  spelling mistake for the variable orca_cv_perl_rrds which
+	  was preventing RRDtool from being built.
+
+Tue Jul 30 21:17:31 PDT 2002 <blair@orcaware.com> Blair Zajac
+
+	* orcallator/orcallator.cfg.in: Add a match on qfe\d+ for 100
+	  Mbit Ethernet cards.  Change html_page_header to say "Put
+	  your site's logo here".  Change html_top_title to read "Orca
+	  Host Status" instead of "Yahoo!/GeoCities Host Status".
+	  Remove <spacer></spacer>, which is not a valid HTML 4.01
+	  Transitional tag.
+
+Fri Jul 26 18:50:22 PDT 2002 <blair@orcaware.com> Blair Zajac
+
+	* packages: Include and require RRDtool 1.0.39.
+	* configure.in: Ditto.
+	* configure: Ditto.
+	* NEWS: Ditto.
+
+Mon Jul 22 22:18:04 PDT 2002 <blair@orcaware.com> Blair Zajac
+
+	* src/orca.pl.in: Make sure that the HTML output conforms to
+	  HTML 4.01 Transitional by no longer using the <spacer />
+	  HTML tag, instead of &nbsp;.  Validated with
+	  http://validator.w3.org/
+	* lib/Orca/HTMLFile.pm: Ditto.
+	* lib/Orca/Constants.pm: Bump version number to 0.265.
+
+Mon Jul 22 20:58:47 PDT 2002 <blair@orcaware.com> Blair Zajac
+
+	* packages: Include TimeDate 1.1301.
+	* configure.in: Ditto.
+	* configure: Ditto.
+	* NEWS: Ditto.
+
+Sun Jun 30 18:59:29 PDT 2002 <blair@orcaware.com> Blair Zajac
+
+	* packages: Include and require Storable 2.04.
+	* configure.in: Ditto.
+	* configure: Ditto.
+	* INSTALL: Ditto.
+	* NEWS: Ditto.
+
+Fri Jun 14 16:55:42 PDT 2002 <blair@orcaware.com> Blair Zajac
+
+	* config/config.guess: Upgrade from
+	  ftp://ftp.gnu.org/gnu/config to version 2002-05-29.
+	* config/config.sub: Upgrade from ftp://ftp.gnu.org/gnu/config
+	  to version 2002-05-28.
+
+Fri Jun  7 10:02:48 PDT 2002 <blair@orcaware.com> Blair Zajac
+
+	* packages: Include TimeDate 1.13.
+	* configure.in: Ditto.
+	* configure: Ditto.
+	* NEWS: Ditto.
+
+Wed Jun  5 11:04:07 PDT 2002 <blair@orcaware.com> Blair Zajac
+
+	* contrib/rotate_orca_graphs/rotate_orca_graphs.sh.in: On
+	  Solaris 2.6 and Solaris 2.8, /bin/sh's builtin test does not
+	  support the -e test.  Force using /bin/test whichs supports
+	  the -e test.  Problem noted by Marty Leisner.
+
+Mon Jun  3 10:38:51 PDT 2002 <blair@orcaware.com> Blair Zajac
+
+	* packages: Include TimeDate 1.12.
+	* configure.in: Ditto.
+	* configure: Ditto.
+	* NEWS: Ditto.
+
+Thu May 30 17:53:26 PDT 2002 <blair@orcaware.com> Blair Zajac
+
+	* src/orca.pl.in: Add the default plot_width and plot_height
+	  of 500 and 125 respectively, to the POD documentation.
+
+Tue May 28 13:35:27 PDT 2002 <blair@orcaware.com> Blair Zajac
+
+	* FAQ: Added an answer to the question: "Why do my Orca plots
+	  no longer contain any data after I change anything related
+	  to orcallator, such as the subsystems to measure, or when
+	  something changes on the system, such as mount points,
+	  ethernet devices, etc?"
+
+Mon May  6 10:38:16 PDT 2002 <blair@orcaware.com> Blair Zajac
+
+	* packages: Include and require Digest::MD5 2.20.
+	* configure.in: Ditto.
+	* configure: Ditto.
+	* INSTALL: Ditto.
+	* NEWS: Ditto.
+
+Thu May  2 10:02:56 PDT 2002 <blair@orcaware.com> Blair Zajac
+
+	* packages: Include and require Digest::MD5 2.19.
+	* configure.in: Ditto.
+	* configure: Ditto.
+	* INSTALL: Ditto.
+	* NEWS: Ditto.
+
+Wed May  1 10:49:13 PDT 2002 <blair@orcaware.com> Blair Zajac
+
+	* orcallator/orcallator.cfg.in: Add the qfe Ethernet device to
+	  the list of 100 Mbit Ethernet devices to plot data for.
+
+Thu Apr 25 12:23:57 PDT 2002 <blair@orcaware.com> Blair Zajac
+
+	* packages: Include and require Digest::MD5 2.17.
+	* configure.in: Ditto.
+	* configure: Ditto.
+	* INSTALL: Ditto.
+	* NEWS: Ditto.
+
+Thu Apr 18 18:39:19 PDT 2002 <blair@orcaware.com> Blair Zajac
+
+	* orcallator/start_orcallator.sh.in: Change the command to
+	  find existing orcallator.se processes to avoid nawk
+	  complaining that processes with extremeley long processes
+	  are exceeding some internal buffers.
+
+Sat Apr  6 20:17:13 PST 2002 <blair@orcaware.com> Blair Zajac
+
+	* packages: Upgrade from TimeDate 1.10 to TimeDate 1.11 which
+	  upgrades Date::Parse from 2.20 to 2.22.
+	* configure.in: Update to point to TimeDate 1.11.
+
+Sat Apr  6 20:01:35 PST 2002 <blair@orcaware.com> Blair Zajac
+
+	* configure.in: Set and replace POD2HTML, POD2MAN and POD2TEXT
+	  with the locations of pod2html, pod2man and pod2text
+	  respectively.  If one of the programs cannot be found, then
+	  the value : is used.  Require autoconf version 2.52.
+
+	* docs/Makefile.in: Use the new POD2HTML, POD2MAN and POD2TEXT
+	  variables to create the output manuals.
+
+	* Makefile.in: Change the command to create configure.in when
+	  running autoconf to use --include=config instead of
+	  --localdir=config to remove a warning from autoconf 2.52.
+	  Add autom4te.cache to the list of directories to be deleted
+	  using 'make distclean'.
+
+	* config/config.guess: Upgrade from
+	  ftp://ftp.gnu.org/gnu/config to version 2002-03-20.
+
+	* config/config.sub: Upgrade from ftp://ftp.gnu.org/gnu/config
+	  to version 2002-03-07.
+
+Mon Jan 14 15:11:36 PST 2002 <blair@orcaware.com> Blair Zajac
+
+	* orcallator/start_orcallator.sh.in: Instead of starting
+	  orcallator.se without telling it the measurement interval
+	  via the command line and letting it set the default
+	  measurment interval of 300, set the default interval in
+	  start_orcallator.sh.in to 300 and pass it to orcallator.se's
+	  command line.
+
+Sat Dec 15 19:55:19 PST 2001 <blair@orcaware.com> Blair Zajac
+
+	* config/config.guess: Upgrade from ftp://ftp.gnu.org/gnu/config .
+	* config/config.sub: Ditto.
+
+Thu Dec 13 14:12:07 PST 2001 <blair@orcaware.com> Blair Zajac
+
+	* src/orca.pl.in: Correct the documentation for the
+	  max_filename_length configuration file option to reflect
+	  that the default max_filename_length is 235.
+
+Sat Dec  1 12:35:46 PST 2001 <blair@orcaware.com> Blair Zajac
+
+	* packages: Include and require Storable 1.014.
+	* configure.in: Ditto.
+	* configure: Ditto.
+	* INSTALL: Ditto.
+	* NEWS: Ditto.
+
+Fri Nov 16 00:17:10 PST 2001 <blair@orcaware.com> Blair Zajac
+
+	* lib/Orca/HTMLFile.pm: Make the generated HTML compliant to
+	  HTML 4.01.  Make the output font for Blair Zajac's name and
+	  email address use "verdana,geneva,arial,helvetica" instead
+	  of "Arial,Helvetica" which does not work that well for
+	  Macintosh users.
+	* orcallator/orcallator.cfg.in: Ditto.
+
+Fri Nov 16 00:09:34 PST 2001 <blair@orcaware.com> Blair Zajac
+
+	* orcallator/orcallator.cfg.in: Replace @ORCALLATOR_DIR@ with
+	  @VAR_DIR@/orcallator to enable other data measurement tools
+	  to place their data under @VAR_DIR@.
+	* orcallator/start_orcallator.sh.in: Ditto.
+	* orcallator/orcallator_running.pl.in: Ditto.
+	* orcallator/Makefile.in: Remove @ORCALLATOR_DIR@ as it is not
+	  used.
+
+Fri Nov  9 10:04:28 PST 2001 <blair@orcaware.com> Blair Zajac
+
+	* FAQ: Add an answer to the question: "Why should I keep my
+	  compressed percol-* or orcallator-* files?"
+
+Thu Nov  8 10:49:58 PST 2001 <blair@orcaware.com> Blair Zajac
+
+	* FAQ: Add an answer to describe the message: "Warning: file
+	  `.../orcallator/host1/orcallator-2001-11-06-000' did exist
+	  and is now gone."
+
+Sat Nov  3 08:04:26 PST 2001 <blair@orcaware.com> Blair Zajac
+
+	* FAQ: Update the answer to question 2.1 "Number of columns in
+	  line '1,2,3.....' of ../orcallator/.../percol-2000-09-26
+	  does not match column description" to suggest upgrading to
+	  orcallator.se and orcallator.cfg.in 1.32 or greater.
+
+Sat Oct 27 18:02:52 PDT 2001 <blair@orcaware.com> Blair Zajac
+
+	* orcallator/orcallator.cfg.in: Change html_dir from
+	  @HTML_DIR@ to @HTML_DIR@/orcallator so that other Orca
+	  output directory trees, such as those from orca_services,
+	  can be placed in the same directory.
+
+Sat Oct 27 17:41:40 PDT 2001 <blair@orcaware.com> Blair Zajac
+
+	* configure.in: Rename all names containing orcaservices to
+	  orca_services to make the name easier to read.
+	* configure: Ditto.
+	* NEWS: Ditto.
+	* contrib/Makefile.in: Ditto.
+	* contrib: Rename the orcaservices directory to orca_services
+	  to make the name easier to read.
+	* contrib/*: Ditto.
+
+Wed Oct 24 23:36:31 PDT 2001 <blair@orcaware.com> Blair Zajac
+
+	* orcallator/orcallator.cfg.in: Divide the state values in "%g
+	  System Overview" by 2 to make normal operating state values
+	  range from 0 to 1, which is expected for a system
+	  administrator.
+
+Wed Oct 24 20:24:30 PDT 2001 <blair@orcaware.com> Blair Zajac
+
+	* orcallator/orcallator.se: Upgrade to orcallator.se version
+	  1.32.  Fix a problem where the web access log file pointer
+	  instead of the file descriptor was being passed to fstat().
+	  Fix a problem where the cached web access log stat()
+	  information wasn't being erased if the log file was
+	  successfully stat()ed but then fopen() failed.  Rename
+	  variables used to keep track of open file pointers and file
+	  stat() information to be clearer: ofile to out_log_fp,
+	  www_fd to www_log_fp, www_stat to www_log_stat, www_ino to
+	  www_log_ino and www_size to www_log_size.  Problem noted by
+	  Jeremy McCarty <jeremy@nd.edu>.
+
+Sun Oct 21 14:56:45 PDT 2001 <blair@orcaware.com> Blair Zajac
+
+	* orcallator/orcallator.se: Upgrade to orcallator.se version
+	  1.31.  Instead of naming the output files percol-*, name
+	  them orcallator-*.  Always define USE_RAWDISK to use the new
+	  raw disk code.  Previously, USE_RAWDISK was defined only if
+	  WATCH_OS was defined, but if WATCH_DISK was defined and
+	  WATCH_OS was not, then the new raw disk code was not being
+	  used.  This change makes the behavior consistent.
+	
+Sun Oct 21 14:40:41 PDT 2001 <blair@orcaware.com> Blair Zajac
+
+	* README: Add wish list URL.
+
+Sun Oct 21 13:01:09 PDT 2001 <blair@orcaware.com> Blair Zajac
+
+	* orcallator/orcallator.cfg.in: The "%g Disk Run Percent" plot
+	  was not matching on IDE disks on x86 Solaris systems.  Add
+	  an additional regular expression to match these disks.
+
+Fri Oct 19 19:30:26 PDT 2001 <blair@orcaware.com> Blair Zajac
+
+	* orcallator/orcallator.cfg.in: Revamp the "%g Subsystem
+	  state" plot.  Rename the plot to "%g System Overview" and
+	  reorder the subsystems plotted to make more sense.
+
+Fri Oct 19 18:59:10 PDT 2001 <blair@orcaware.com> Blair Zajac
+
+	* lib/Orca/Constants.pm: Update Orca's version number to 0.27.
+	* orcallator/orcallator.cfg.in: Require Orca version 0.27.
+
+Fri Oct 19 18:17:22 PDT 2001 <blair@orcaware.com> Blair Zajac
+
+	* orcallator/orcallator.se: Upgrade to orcallator.se version
+	  1.30.  Rename the new State_* columns to state_*.
+
+Fri Oct 19 18:16:30 PDT 2001 <blair@orcaware.com> Blair Zajac
+
+	* orcallator/orcallator.se: Upgrade to orcallator.se version
+	  1.30b2.  Output eleven new columns named State_* where each
+	  column represents numerically the state of one of the
+	  system's substates as they appear in the DNnsrkcmdit output.
+	  The character * is replaced with the same character that
+	  appears in the DNnsrkcmdit string to represent the
+	  particular subsystem.  This can be used to create a single
+	  plot that shows how all of the subsystems are performing.
+	  The mapping between successive states is exponential, so
+	  that as the subsystems get in worse conditions, the plots
+	  will show higher values.  Patch contributed by Rusty Carruth
+	  <rcarruth@tempe.tt.slb.com>.  Make all of the live_rule.se
+	  live and temporary variable names consistent.
+
+Fri Oct 19 18:14:15 PDT 2001 <blair@orcaware.com> Blair Zajac
+
+	* orcallator/orcallator.se: Upgrade to orcallator.se version
+	  1.30b1.  Changed method used by raw_disk_map to detect the
+	  end of GLOBAL_disk_info to looking for the first short disk
+	  name.  This works for SCSI disks and looking for fd or st
+	  devices which should work for EIDE devices.  Patch
+	  contributed by Alan LeGrand <alegrand@wallace.com>.
+
+Mon Oct 15 15:28:47 PDT 2001 <blair@orcaware.com> Blair Zajac
+
+	* lib/Orca/OpenFileHash.pm: If a file cannot be opened the
+	  first time but after reducing the number of open file
+	  descriptors the file is opened, then print a message saying
+	  that the file was opened.
+
+Thu Oct 11 21:51:07 PDT 2001 <blair@orcaware.com> Blair Zajac
+
+	* FAQ: Answer the question: "Warning: cannot create
+	  Orca::HTMLFile object: cannot open
+	  '/home/orca_html/o_host1-monthly.html.htm' for writing: Too
+	  many open files."
+
+Thu Oct 11 19:13:18 PDT 2001 <blair@orcaware.com> Blair Zajac
+
+	* orcallator/orcallator.cfg.in: Add a new orcallator plot
+	  titled "%g Subsystem state" which plots a numerical severity
+	  level using the subsystem state as determined by SE's
+	  live_rules.se class.  How a subsystem state is determined is
+	  described here
+
+	    http://www.sun.com/950901/columns/adrian/column1.html
+
+	  but the specific rules for each subsystem on this web page
+	  are out of date with respect to the latest SE release.
+
+Thu Oct 11 18:40:55 PDT 2001 <blair@orcaware.com> Blair Zajac
+
+	* src/orca.pl.in: In Orca's configuration file, instead of
+	  defaulting to LINE1 for any data parameters appearing
+	  in a plot configuration that does not have its line_type
+	  specified, use the last set line_type set in that plot.  If
+	  no line_type's are set in a plot, then use LINE1 as the
+	  default for all data's in that plot.
+	* lib/Orca/Config: Ditto.
+
+Thu Oct 11 16:42:26 PDT 2001 <blair@orcaware.com> Blair Zajac
+
+	* src/orca.pl.in: Now require Perl version 5.004_05 instead of
+	  5.004_01.  Perl 5.004_04 is very broken and cannot even load
+	  Orca.
+	* contrib/orcaservices/orcaservices.pl.in: Ditto.
+	* NEWS: Ditto.
+	* INSTALL: Ditto.
+
+Fri Oct  5 14:25:18 PDT 2001 <blair@orcaware.com> Blair Zajac
+
+	* orcallator/orcallator.se: Upgrade to orcallator.se version
+	  1.29.  In SE 3.2.1 stat.se, mknod is a C-preprocessor define
+	  to _xmknod on x86 systems while on SPARC systems stat.se
+	  declares mknod as a normal function.  When stat.se is
+	  included before kstat.se on x86 systems the mknod define
+	  causes a compile error on kstat's mknod variables which are
+	  part of the ks_rfs_proc_v3 and ks_rfs_req_v3 structures.
+	  The work around is to include kstat.se before stat.se.
+	* NEWS: Be more specific on what files where changed in the
+	  orcallator.se/orcallator.cfg.in section for the changes made
+	  in 0.27b2.
+
+Tue Oct  2 18:18:29 PDT 2001 <blair@orcaware.com> Blair Zajac
 
 	* Release Orca version 0.27b2.
 
@@ -9,7 +553,7 @@ Tue Oct  2 17:56:22 PDT 2001 <blair@orcaware.com> Blair Zajac
 
 Tue Oct  2 17:56:22 PDT 2001 <blair@orcaware.com> Blair Zajac
 
-	* config/config.guess: Upgrade from ftp://ftp.gnu.org/gnu/config
+	* config/config.guess: Upgrade from ftp://ftp.gnu.org/gnu/config .
 	* config/config.sub: Ditto.
 
 Tue Oct  2 17:51:46 PDT 2001 <blair@orcaware.com> Blair Zajac
@@ -107,7 +651,7 @@ Mon Aug 27 22:05:57 PDT 2001
 
 Fri Aug 24 11:12:31 PDT 2001
 
-	* config/config.guess: Upgrade from ftp://ftp.gnu.org/gnu/config
+	* config/config.guess: Upgrade from ftp://ftp.gnu.org/gnu/config .
 	* config/config.sub: Ditto.
 
 Fri Aug 24 09:57:36 PDT 2001
@@ -157,7 +701,7 @@ Wed Jul 18 08:18:17 PDT 2001
 
 Wed Jul 11 16:08:15 PDT 2001
 
-	* config/config.guess: Upgrade from ftp://ftp.gnu.org/pub/gnu/config
+	* config/config.guess: Upgrade from ftp://ftp.gnu.org/pub/gnu/config .
 	* config/config.sub: Ditto.
 
 Mon Jul  2 22:58:04 PDT 2001
@@ -183,7 +727,7 @@ Sun Jun 10 08:31:55 PDT 2001
 
 Mon Jun  4 00:50:28 PDT 2001
 
-	* config/config.guess: Upgrade from ftp://ftp.gnu.org/pub/gnu/config
+	* config/config.guess: Upgrade from ftp://ftp.gnu.org/pub/gnu/config .
 	* config/config.sub: Ditto.
 
 Thu May 24 12:09:18 PDT 2001

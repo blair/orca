@@ -54,7 +54,8 @@ Debugging and code contributions
 	Bruce Campbell <bruce.campbell@apnic.net>
 	Sean Summers <sean@Fenstermaker.com> (RPM .spec)
 	Christophe Van Ginneken <Christophe.VanGinneken@ubizen.com> (--no-legend)
-
+        Milan Obuch <milan.obuch@in.nextra.sk> background unit GD overlay --y-alt-mrtg
+	Wolfgang Schrimm <wschrimm@uni-hd.de> xport function
 
 Documentation
 
@@ -82,6 +83,9 @@ Internet Resources
         Alexander Lucke (lucke@dns-net.de) 
            and DNS:NET Internet Services (www.dns-net.de)
               for http://rrdtool.org
+
+        Matt Levine (matt@deliver3.com)
+           for http://rrdtool.com
 
 Further I would like to note, that rrdtool would not exist without
 the following free software products:

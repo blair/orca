@@ -10,7 +10,7 @@ dnl but WITHOUT ANY WARRANTY, to the extent permitted by law; without
 dnl even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 dnl PARTICULAR PURPOSE.
 
-dnl $Id: acinclude.m4,v 1.98 2000/06/17 16:13:11 andrei Exp $
+dnl $Id: aclocal.m4,v 1.1.1.1 2002/02/26 10:21:20 oetiker Exp $
 dnl
 dnl This file contains local autoconf functions.
 

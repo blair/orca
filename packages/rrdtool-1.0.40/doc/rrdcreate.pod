@@ -53,7 +53,7 @@ source from an B<RRD>. A I<ds-name> must be 1 to 19 characters long in
 the characters [a-zA-Z0-9_].
 
 I<DST> defines the Data Source Type. See the section on "How to Measure" below for further insight.
-The Datasource Type must be onw of the following:
+The Datasource Type must be one of the following:
 
 =over 4
 
@@ -187,7 +187,7 @@ together with the time.
 
 =item Mail Messages
 
-Assume you have a methode to count the number of messages transported by
+Assume you have a method to count the number of messages transported by
 your mailserver in a certain amount of time, this give you data like '5
 messages in the last 65 seconds'. If you look at the count of 5 like and
 B<ABSOLUTE> datatype you can simply update the rrd with the number 5 and the
@@ -229,7 +229,7 @@ A few archives areas are also defined. The first stores the
 temperatures supplied for 100 hours (1200 * 300 seconds = 100
 hours). The second RRA stores the minimum temperature recorded over
 every hour (12 * 300 seconds = 1 hour), for 100 days (2400 hours). The
-third and the fourth RRA's do the same with the for the maximum and
+third and the fourth RRA's do the same for the maximum and
 average temperature, respectively.
 
 =head1 AUTHOR

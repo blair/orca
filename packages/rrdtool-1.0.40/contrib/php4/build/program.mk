@@ -21,7 +21,7 @@
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 ##############################################################################
-# $Id: program.mk,v 1.2 2000/01/01 20:48:42 sas Exp $ 
+# $Id: program.mk,v 1.1.1.1 2002/02/26 10:21:21 oetiker Exp $ 
 #
 
 PROGRAM_OBJECTS = $(PROGRAM_SOURCES:.c=.lo)

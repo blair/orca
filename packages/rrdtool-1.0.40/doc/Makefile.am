@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 
-SUFFIXES = .pod .1 .man .html .txt .pm .pdf
+SUFFIXES = .pod .1 .man .html .txt .pm .pdf .ps
 
 #AUTOMAKE_OPTIONS        =  foreign
 
@@ -11,13 +11,14 @@ CLEANFILES = *.1 *.html *.txt *-dircache *.pm *.pdf *~ core *itemcache *.rej *.o
 POD = rrdtool.pod rrdlast.pod rrdcreate.pod rrdupdate.pod  rrdtutorial.es.pod \
 	cdeftutorial.pod rpntutorial.pod rrdgraph.pod  bin_dec_hex.pod \
 	rrdfetch.pod rrdrestore.pod rrddump.pod rrdtune.pod rrdresize.pod \
-	rrdcgi.pod rrdtutorial.pod rrdinfo.pod
+	rrdcgi.pod rrdtutorial.pod rrdinfo.pod rrdxport.pod
 
 PMP = RRDs.pm RRDp.pm
 
 MAN = $(POD:.pod=.1) $(PMP:.pm=.1) 
 TXT = $(MAN:.1=.txt)
 HTML = $(POD:.pod=.html) $(PMP:.pm=.html) 
+PS = $(MAN:.1=.ps)
 PDF = $(MAN:.1=.pdf)
 
 # what should go into the distribution
@@ -39,8 +40,11 @@ all-local: link txt man html
 .1.txt:
 	@NROFF@ -man -Tlp $< > $@
 
-.1.pdf:
-	@TROFF@ -man $< | ps2pdf - $@
+.1.ps:
+	@TROFF@ -man $< > $@
+
+.ps.pdf:
+	distill $<
 
 .pm.html .pod.html .pl.html:
 	pod2html --infile=$< --outfile=$@ --noindex --htmlroot=. --podpath=. --title=$*

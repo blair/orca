@@ -84,15 +84,16 @@ TCL_SHLIB_LD = @TCL_SHLIB_LD@
 TCL_SHLIB_SUFFIX = @TCL_SHLIB_SUFFIX@
 TROFF = @TROFF@
 VERSION = @VERSION@
+ZLIB_CFLAGS = @ZLIB_CFLAGS@
 ZLIB_LIB_DIR = @ZLIB_LIB_DIR@
 
-INCLUDES = -I../../src -I../../gd1.3
+INCLUDES = -I$(top_srcdir)/src -I$(top_srcdir)/gd1.3
 EXTRA_DIST = trytime.c
 contribdir = $(prefix)/contrib/trytime
 contrib_DATA = README trytime.c
 bin_PROGRAMS = trytime
 trytime_SOURCES = trytime.c
-trytime_LDADD = ../../src/librrd.la
+trytime_LDADD = $(top_srcdir)/src/librrd.la
 mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 CONFIG_HEADER = ../../config/config.h
 CONFIG_CLEAN_FILES = 
@@ -104,7 +105,7 @@ CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 trytime_OBJECTS =  trytime.o
-trytime_DEPENDENCIES =  ../../src/librrd.la
+trytime_DEPENDENCIES =  $(top_srcdir)/src/librrd.la
 trytime_LDFLAGS = 
 CFLAGS = @CFLAGS@
 COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -129,7 +130,7 @@ all: all-redirect
 .SUFFIXES:
 .SUFFIXES: .S .c .lo .o .s
 $(srcdir)/Makefile.in: Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
-	cd $(top_srcdir) && $(AUTOMAKE) --foreign --include-deps contrib/trytime/Makefile
+	cd $(top_srcdir) && $(AUTOMAKE) --gnu --include-deps contrib/trytime/Makefile
 
 Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status
 	cd $(top_builddir) \

@@ -6,16 +6,24 @@ libdir		= @libdir@
 INSTALL		= @INSTALL@
 MKDIR		= @MKDIR@
 
-all:		Makefile orca.gif.hex rrdtool.gif.hex
+all:		Makefile			\
+		orca_logo.gif.hex		\
+		rrdtool_logo.gif.hex		\
+		rothschild_image_logo.png.hex
 
-# Create a hex file representation of orca.gif that can be stored inside
-# orca.pl.
-orca.gif.hex: orca.gif
+# Create a hex file representation of orca_logo.gif that can be stored
+# inside orca.pl.
+orca_logo.gif.hex: orca_logo.gif
 	perl -e 'while (sysread(STDIN, $$b, 35)){print unpack("h*", $$b),"\n"}' < $< > $@
 
-# Create a hex file representation of rrdtool.gif that can be stored inside
-# orca.pl.
-rrdtool.gif.hex: rrdtool.gif
+# Create a hex file representation of rrdtool_logo.gif that can be
+# stored inside orca.pl.
+rrdtool_logo.gif.hex: rrdtool_logo.gif
+	perl -e 'while (sysread(STDIN, $$b, 35)){print unpack("h*", $$b),"\n"}' < $< > $@
+
+# Create a hex file representation of rothschild_image_logo.png that
+# can be stored inside orca.pl.
+rothschild_image_logo.png.hex: rothschild_image_logo.png
 	perl -e 'while (sysread(STDIN, $$b, 35)){print unpack("h*", $$b),"\n"}' < $< > $@
 
 install: all

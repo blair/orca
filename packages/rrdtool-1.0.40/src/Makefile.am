@@ -5,12 +5,18 @@
 #ACLOCAL_M4	   = $(top_srcdir)/config/aclocal.m4
 #AUTOHEADER = @AUTOHEADER@ --localdir=$(top_srcdir)/config
 
-CGI_LIB_DIR	   = $(top_srcdir)/@CGI_LIB_DIR@
-GD_LIB_DIR	   = $(top_srcdir)/@GD_LIB_DIR@
-PNG_LIB_DIR	   = $(top_srcdir)/@PNG_LIB_DIR@
-ZLIB_LIB_DIR	   = $(top_srcdir)/@ZLIB_LIB_DIR@
+CGI_INC_DIR       = $(top_srcdir)/@CGI_LIB_DIR@
+GD_INC_DIR        = $(top_srcdir)/@GD_LIB_DIR@
+PNG_INC_DIR       = $(top_srcdir)/@PNG_LIB_DIR@
+ZLIB_INC_DIR      = $(top_srcdir)/@ZLIB_LIB_DIR@
 
-INCLUDES 	   = -I$(CGI_LIB_DIR) -I$(GD_LIB_DIR) -I$(PNG_LIB_DIR) -I$(ZLIB_LIB_DIR)
+CGI_LIB_DIR       = $(top_builddir)/@CGI_LIB_DIR@
+GD_LIB_DIR        = $(top_builddir)/@GD_LIB_DIR@
+PNG_LIB_DIR       = $(top_builddir)/@PNG_LIB_DIR@
+ZLIB_LIB_DIR      = $(top_builddir)/@ZLIB_LIB_DIR@
+
+
+INCLUDES          = -I$(CGI_INC_DIR) -I$(GD_INC_DIR) -I$(PNG_INC_DIR) -I$(ZLIB_INC_DIR)
 
 #COMPILE   = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) $(CFLAGS_EXTRA)
 #LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) $(CFLAGS_EXTRA)
@@ -37,7 +43,9 @@ RRD_C_FILES =		\
 	rrd_restore.c	\
 	rrd_tune.c	\
 	rrd_update.c	\
-	getopt.h ntconfig.h parsetime.h rrd_format.h rrd_tool.h rrd.h
+	rrd_xport.c	\
+	rrd_graph.h rrd_xport.h getopt.h ntconfig.h \
+	parsetime.h rrd_format.h rrd_tool.h rrd.h
 
 # Build two libraries.  One is a public one that gets installed in
 # $prefix/lib.  Libtool does not create an archive of the PIC compiled
@@ -75,8 +83,8 @@ rrdupdate_SOURCES =
 rrdupdate_LDADD	= rrdupdate.o librrd.la
 
 
-rrdupdate.c: rrd_update.c
-	-ln -s rrd_update.c rrdupdate.c
+rrdupdate.c: $(srcdir)/rrd_update.c
+	-ln -s $(srcdir)/rrd_update.c rrdupdate.c
 
 rrdupdate.o: rrdupdate.c
 	$(COMPILE) -DSTANDALONE -c rrdupdate.c

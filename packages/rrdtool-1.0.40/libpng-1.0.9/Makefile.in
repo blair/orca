@@ -84,6 +84,7 @@ TCL_SHLIB_LD = @TCL_SHLIB_LD@
 TCL_SHLIB_SUFFIX = @TCL_SHLIB_SUFFIX@
 TROFF = @TROFF@
 VERSION = @VERSION@
+ZLIB_CFLAGS = @ZLIB_CFLAGS@
 
 ZLIB_LIB_DIR = @ZLIB_LIB_DIR@
 
@@ -132,7 +133,7 @@ all: all-redirect
 .SUFFIXES:
 .SUFFIXES: .S .c .lo .o .s
 $(srcdir)/Makefile.in: Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
-	cd $(top_srcdir) && $(AUTOMAKE) --foreign --include-deps libpng-1.0.9/Makefile
+	cd $(top_srcdir) && $(AUTOMAKE) --gnu --include-deps libpng-1.0.9/Makefile
 
 Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status
 	cd $(top_builddir) \
@@ -233,36 +234,36 @@ distdir: $(DISTFILES)
 	    || cp -p $$d/$$file $(distdir)/$$file || :; \
 	  fi; \
 	done
-png.lo png.o : png.c png.h ../zlib-1.1.3/zlib.h ../zlib-1.1.3/zconf.h \
+png.lo png.o : png.c png.h ../zlib-1.1.4/zlib.h ../zlib-1.1.4/zconf.h \
 	pngconf.h
-pngerror.lo pngerror.o : pngerror.c png.h ../zlib-1.1.3/zlib.h \
-	../zlib-1.1.3/zconf.h pngconf.h
-pngget.lo pngget.o : pngget.c png.h ../zlib-1.1.3/zlib.h \
-	../zlib-1.1.3/zconf.h pngconf.h
-pngmem.lo pngmem.o : pngmem.c png.h ../zlib-1.1.3/zlib.h \
-	../zlib-1.1.3/zconf.h pngconf.h
-pngpread.lo pngpread.o : pngpread.c png.h ../zlib-1.1.3/zlib.h \
-	../zlib-1.1.3/zconf.h pngconf.h
-pngread.lo pngread.o : pngread.c png.h ../zlib-1.1.3/zlib.h \
-	../zlib-1.1.3/zconf.h pngconf.h
-pngrio.lo pngrio.o : pngrio.c png.h ../zlib-1.1.3/zlib.h \
-	../zlib-1.1.3/zconf.h pngconf.h
-pngrtran.lo pngrtran.o : pngrtran.c png.h ../zlib-1.1.3/zlib.h \
-	../zlib-1.1.3/zconf.h pngconf.h
-pngrutil.lo pngrutil.o : pngrutil.c png.h ../zlib-1.1.3/zlib.h \
-	../zlib-1.1.3/zconf.h pngconf.h
-pngset.lo pngset.o : pngset.c png.h ../zlib-1.1.3/zlib.h \
-	../zlib-1.1.3/zconf.h pngconf.h
-pngtrans.lo pngtrans.o : pngtrans.c png.h ../zlib-1.1.3/zlib.h \
-	../zlib-1.1.3/zconf.h pngconf.h
-pngwio.lo pngwio.o : pngwio.c png.h ../zlib-1.1.3/zlib.h \
-	../zlib-1.1.3/zconf.h pngconf.h
-pngwrite.lo pngwrite.o : pngwrite.c png.h ../zlib-1.1.3/zlib.h \
-	../zlib-1.1.3/zconf.h pngconf.h
-pngwtran.lo pngwtran.o : pngwtran.c png.h ../zlib-1.1.3/zlib.h \
-	../zlib-1.1.3/zconf.h pngconf.h
-pngwutil.lo pngwutil.o : pngwutil.c png.h ../zlib-1.1.3/zlib.h \
-	../zlib-1.1.3/zconf.h pngconf.h
+pngerror.lo pngerror.o : pngerror.c png.h ../zlib-1.1.4/zlib.h \
+	../zlib-1.1.4/zconf.h pngconf.h
+pngget.lo pngget.o : pngget.c png.h ../zlib-1.1.4/zlib.h \
+	../zlib-1.1.4/zconf.h pngconf.h
+pngmem.lo pngmem.o : pngmem.c png.h ../zlib-1.1.4/zlib.h \
+	../zlib-1.1.4/zconf.h pngconf.h
+pngpread.lo pngpread.o : pngpread.c png.h ../zlib-1.1.4/zlib.h \
+	../zlib-1.1.4/zconf.h pngconf.h
+pngread.lo pngread.o : pngread.c png.h ../zlib-1.1.4/zlib.h \
+	../zlib-1.1.4/zconf.h pngconf.h
+pngrio.lo pngrio.o : pngrio.c png.h ../zlib-1.1.4/zlib.h \
+	../zlib-1.1.4/zconf.h pngconf.h
+pngrtran.lo pngrtran.o : pngrtran.c png.h ../zlib-1.1.4/zlib.h \
+	../zlib-1.1.4/zconf.h pngconf.h
+pngrutil.lo pngrutil.o : pngrutil.c png.h ../zlib-1.1.4/zlib.h \
+	../zlib-1.1.4/zconf.h pngconf.h
+pngset.lo pngset.o : pngset.c png.h ../zlib-1.1.4/zlib.h \
+	../zlib-1.1.4/zconf.h pngconf.h
+pngtrans.lo pngtrans.o : pngtrans.c png.h ../zlib-1.1.4/zlib.h \
+	../zlib-1.1.4/zconf.h pngconf.h
+pngwio.lo pngwio.o : pngwio.c png.h ../zlib-1.1.4/zlib.h \
+	../zlib-1.1.4/zconf.h pngconf.h
+pngwrite.lo pngwrite.o : pngwrite.c png.h ../zlib-1.1.4/zlib.h \
+	../zlib-1.1.4/zconf.h pngconf.h
+pngwtran.lo pngwtran.o : pngwtran.c png.h ../zlib-1.1.4/zlib.h \
+	../zlib-1.1.4/zconf.h pngconf.h
+pngwutil.lo pngwutil.o : pngwutil.c png.h ../zlib-1.1.4/zlib.h \
+	../zlib-1.1.4/zconf.h pngconf.h
 
 info-am:
 info: info-am

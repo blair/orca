@@ -37,9 +37,7 @@
 <HR>
 <H1><A NAME="synopsis">SYNOPSIS</A></H1>
 <P>#!/path/to/<STRONG>rrdcgi</STRONG> 
-[<STRONG>--goodfor</STRONG>|<STRONG>-g</STRONG>&nbsp;<EM>seconds</EM>]
-[<STRONG>--filter</STRONG>]
-[<STRONG>--refresh</STRONG>|<STRONG>-r</STRONG>]</P>
+[<STRONG>--filter</STRONG>]</P>
 <P>
 <HR>
 <H1><A NAME="description">DESCRIPTION</A></H1>
@@ -50,16 +48,6 @@ In the end it will printout a web page including the necessary CGI headers.</P>
 <P><STRONG>rrdcgi</STRONG> parses the contents of the template in 2 steps. In each step it looks
 only for a subset of tags. This allows to nest tags.</P>
 <P>The argument parser uses the same semantics as you are used from your c shell.</P>
-<DL>
-<DT><STRONG><A NAME="item_%2D%2Dfilter"><STRONG>--filter</STRONG></A></STRONG><BR>
-<DD>
-Assume that rrdcgi is being run as a filter and not as a cgi.
-<P></P>
-<DT><STRONG><A NAME="item_%2D%2Drefresh%7C%2Dr"><STRONG>--refresh</STRONG>|<STRONG>-r</STRONG></A></STRONG><BR>
-<DD>
-If the <STRONG>--goodfor</STRONG> flag is specified, then <STRONG>--refresh</STRONG> will cause rrdcgi
-to output a Refresh header with the value of the <STRONG>--goodfor</STRONG> value.
-<P></P></DL>
 <P>
 <H2><A NAME="pass 1">Pass 1</A></H2>
 <DL>

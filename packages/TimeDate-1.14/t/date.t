@@ -4,7 +4,7 @@ use Date::Parse;
 use Date::Format qw(time2str);
 
 $data = qq!1995-01-24
-1995-01-24:09:08:17.1823213
+1995-01-24T09:08:17.1823213
 Wed, 16 Jun 94 07:29:35 CST 
 Wed, 16 Nov 94 07:29:35 CST 
 Mon, 21 Nov 94 07:42:23 CST 
@@ -145,11 +145,11 @@ foreach (@data)
 
    $y = str2time($x);
 
-   print "",($y == $time) ? "ok $loop\n" : "FAIL $loop\n";
+   print "",($y == $time) ? "ok $loop\n" : "not ok $loop # $y != $time\n";
   }
  else
   {
-   print "FAIL $loop\n";
+   print "not ok $loop # $_\n";
   }
 
  $loop++;

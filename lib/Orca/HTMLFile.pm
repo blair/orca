@@ -1,6 +1,7 @@
 # Orca::HTMLFile: Manage the creation of HTML files.
 #
-# Copyright (C) 1998-2001 Blair Zajac and Yahoo!, Inc.
+# Copyright (C) 1998-1999 Blair Zajac and Yahoo!, Inc.
+# Copyright (C) 1999-2002 Blair Zajac.
 
 package Orca::HTMLFile;
 
@@ -33,14 +34,23 @@ sub new {
   }
 
   print FD <<END;
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
-<head>
-<title>Orca - $title</title>
-</head>
-<body bgcolor="#ffffff">
+  <head>
+    <title>Orca - $title</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="robots" content="index, follow">
+  </head>
 
-$top
-<h1>$title</h1>
+  <body bgcolor="#ffffff">
+
+    <!-- Created by Orca version $ORCA_VERSION -->
+    <!-- Created using RRDtool version $RRDs::VERSION -->
+    <!-- Created using Perl $] -->
+
+    $top
+
+    <h1>$title</h1>
 END
 
   bless [$filename, *FD, $bottom], $class;
@@ -57,28 +67,106 @@ sub DESTROY {
   my $self = shift;
 
   print { $self->[I_FD] } <<END;
-$self->[$i_bottom]
-<p>
-<hr align=left width=475>
-<table cellpadding=0 border=0>
-  <tr>
-    <td width=350 valign=center>
-      <a href="http://www.orcaware.com/orca/">
-        <img width=186 height=45 border=0 src="orca.gif" alt="Orca Home Page"></a>
-      <br>
-      <font FACE="Arial,Helvetica" size=2>
-        Orca-$ORCA_VERSION by
-        <a href="http://www.orcaware.com/">Blair Zajac</a>
-        <a href="mailto:blair\@orcaware.com">blair\@orcaware.com</a>.
-      </font>
-    </td>
-    <td width=120 valign=center>
-      <a href="http://people.ee.ethz.ch/~oetiker/webtools/rrdtool/">
-        <img width=120 height=34 border=0 src="rrdtool.gif" alt="RRDTool Home Page"></a>
-    </td>
-  </tr>
-</table>
-</body>
+    $self->[$i_bottom]
+
+    <br />
+    <hr align="left" width="692">
+    <table cellpadding="0" border="0">
+      <tr valign="bottom">
+        <td width="186">
+          <a href="http://www.orcaware.com/orca/">
+            <img width="186" height="45" border="0"
+                 src="orca_logo.gif" alt="Orca home page"></a>
+        </td>
+        <td width="20">&nbsp;&nbsp</td>
+
+        <!--
+        If you are using Orca for free, then as a return to the effort
+        Blair Zajac has put into building and writing Orca, you have
+        several choices:
+
+        1) Become an Orca developer and contribute code to the Orca
+           project.  Contact orca-dev\@orcaware.com to discuss what
+           Orca related projects are available.
+
+        2) Donate via PayPal to blair\@orcaware.com a nominal amount,
+           \$10.00.
+
+        3) Purchase an item for Blair and his wife Ashley Rothschild
+           from their Amazon.com wish list:
+           http://www.orcaware.com/wish_list.html
+
+        4) Ensure that the following HTML code in the <td>..</td>
+
+        remains in the generated HTML files and that it is visible to
+        people that browse the generated web pages.
+        -->
+        <td width="334">
+          <a href="http://www.rothschildimage.com/">
+            <img width="334" height="21" border="0"
+                 src="rothschild_image_logo.png"
+                 alt="The Rothschild Image home page" /></a>
+        </td>
+        <td width="20">&nbsp;&nbsp;</td>
+        <td width="120">
+          <a href="http://people.ee.ethz.ch/~oetiker/webtools/rrdtool/">
+            <img width="120" height="34" border="0" src="rrdtool_logo.gif"
+                 alt="RRDtool home page"></a>
+        </td>
+      </tr>
+
+      <tr valign="top">
+        <td width="186">
+          <font face="verdana,geneva,arial,helvetica" size="2">
+            <a href="http://www.orcaware.com/orca/">Orca</a> $ORCA_VERSION
+            by<br />
+            <a href="http://www.orcaware.com/">Blair Zajac</a><br />
+            <a href="mailto:blair\@orcaware.com">blair\@orcaware.com</a>
+            <span style="position:absolute; left:0px; top:0px; width:100%; display:none;z-index:1">
+              <img src="http://images.orcaware.com/orca/orca_logo.gif?orca-version=$ORCA_VERSION"
+                   width="186" height="45" alt="Orca home page" />
+            </span>
+          </font>
+        </td>
+        <td width="20">&nbsp;&nbsp;</td>
+
+        <!--
+        If you are using Orca for free, then as a return to the effort
+        Blair Zajac has put into building and writing Orca, you have
+        several choices:
+
+        1) Become an Orca developer and contribute code to the Orca
+           project.  Contact orca-dev\@orcaware.com to discuss what
+           Orca related projects are available.
+
+        2) Donate via PayPal to blair\@orcaware.com a nominal amount,
+           \$10.00.
+
+        3) Purchase an item for Blair and his wife Ashley Rothschild
+           from their Amazon.com wish list:
+           http://www.orcaware.com/wish_list.html
+
+        4) Ensure that the following HTML code in the <td>..</td>
+
+        remains in the generated HTML files and that it is visible to
+        people that browse the generated web pages.
+        -->
+        <td width="334">
+          <font face="verdana,geneva,arial,helvetica" size="2">
+             Funding for Orca provided by renowned fashion
+             <a href="http://www.rothschildimage.com/">image consultant</a>,
+             <a href="http://www.rothschildimage.com/">Ashley Rothschild</a>.
+           </font>
+        </td>
+        <td width="20">&nbsp;&nbsp;</td>
+        <td width="120">
+          <font face="verdana,geneva,arial,helvetica" size="2">
+            Graphs made available by RRDtool.
+          </font>
+        </td>
+      </tr>
+    </table>
+  </body>
 </html>
 END
 

@@ -1,26 +1,39 @@
-# $Id: Makefile.PL,v 1.0.1.1 2001/01/03 09:38:39 ram Exp $
 #
 #  Copyright (c) 1995-2000, Raphael Manfredi
 #  
 #  You may redistribute only under the same terms as Perl 5, as specified
 #  in the README file that comes with the distribution.
 #
-# $Log: Makefile.PL,v $
-# Revision 1.0.1.1  2001/01/03 09:38:39  ram
-# patch7: removed spurious 'clean' entry
-#
-# Revision 1.0  2000/09/01 19:40:41  ram
-# Baseline for first official release.
-#
 
 use ExtUtils::MakeMaker;
 use Config;
 
 WriteMakefile(
-    'NAME'			=> 'Storable',
-    'DISTNAME'		=> "Storable",
-	'MAN3PODS'		=> {},
-    'VERSION_FROM'	=> 'Storable.pm',
-    'dist'			=> { SUFFIX => 'gz', COMPRESS => 'gzip -f' },
+    NAME                => 'Storable',
+    DISTNAME            => "Storable",
+    MAN3PODS            => {},
+    PREREQ_PM           => { 'Test::More' => '0.41' },
+    INSTALLDIRS         => 'perl',
+    VERSION_FROM        => 'Storable.pm',
+    dist                => { SUFFIX => 'gz', COMPRESS => 'gzip -f' },
 );
 
+my $ivtype = $Config{ivtype};
+
+# I don't know if the VMS folks ever supported long long on 5.6.x
+if ($ivtype and $ivtype eq 'long long' and $^O !~ /^MSWin/) {
+  print <<'EOM';
+
+You appear to have a perl configured to use 64 bit integers in its scalar
+variables.  If you have existing data written with an earlier version of
+Storable which this version of Storable refuses to load with a
+
+   Byte order is not compatible
+
+error, then please read the section "64 bit data in perl 5.6.0 and 5.6.1"
+in the Storable documentation for instructions on how to read your data.
+
+(You can find the documentation at the end of Storable.pm in POD format)
+
+EOM
+}

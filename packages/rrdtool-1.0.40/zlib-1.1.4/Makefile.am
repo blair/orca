@@ -6,7 +6,9 @@
 #ACLOCAL_M4 = $(top_srcdir)/config/aclocal.m4
 #AUTOHEADER = @AUTOHEADER@ --localdir=$(top_srcdir)/config
 
-EXTRA_DIST= ChangeLog FAQ INDEX README README.rrdtool algorithm.txt zlib.dsp zlib.dsw zlib.3 
+EXTRA_DIST= ChangeLog FAQ INDEX README README.rrdtool algorithm.txt zlib.3 
+
+CFLAGS=$(ZLIB_CFLAGS)
 
 noinst_LTLIBRARIES = librrd_z.la
 
@@ -27,3 +29,6 @@ librrd_z_la_SOURCES =	\
 	zutil.c		\
 	deflate.h   infcodes.h  inffixed.h  infutil.h   zconf.h     zutil.h	\
 	infblock.h  inffast.h   inftrees.h  trees.h     zlib.h
+
+
+

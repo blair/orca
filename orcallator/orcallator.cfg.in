@@ -1,7 +1,7 @@
 # Orca configuration file for orcallator files.
 
 # Require at least this version of Orca.
-require			Orca 0.264
+require			Orca 0.265
 
 # base_dir is prepended to the paths find_files, html_dir, rrd_dir,
 # and state_file only if the path does not match the regular

@@ -2,6 +2,131 @@ ChangeLog for RRDtool 1.0.x
 ---------------------------
 - bugfix, + enhancement, * contrib, = RELEASE
 ---------------------------------------------
+= 1.0.40 2002/10/11 -- Tobi
+
+- 2002/10/11 Jeffrey Wheat <jeff@nt.cetlink.net>
+  updated php4 bindings to work with php 4.2.3
+
+- 2002/10/07 Tomoyuki Murakami <tomoyuki@pobox.com>
+  -z does not take an option
+
+- 2002/10/03 Gonzalo Augusto Arana Tagle <garana@uolsinectis.com.ar>
+  fix for PREV() operator
+
+- 2002/08/01 Paul Clifford <paul.clifford@bbc.co.uk>
+  fix for segfault in print_calc function
+
++ 2002/07/31  "Nenad Antic (EAB)" <Nenad.Antic@era.ericsson.se>
+  rrdfetch manpage update
+
+- 2002/07/12 Gonzalo Augusto Arana Tagle <garana@uolsinectis.com.ar>
+  PREV(xxx) match with DEF_NAM_FMT
+
+- 2002/07/12 Joerg Mertin <mertinj@europe.psi.com>
+  fixed bindings for php4
+
+- 2002/07/02 Philippe.Simonet@swisscom.com
+  fixed DINF for win32 compile
+
+= 1.0.39 2002/06/20 -- Tobi
+
++ 2002/06/20 -- Gonzalo Augusto Arana Tagle <garana@uolsinectis.com.ar>
+  * new CDEF feature PREV(x) which allows for funky new filters
+    to be created easily
+
++ 2002/06/14 -- "Shipway, Steve" <steve.shipway@eds.com>
+  * Improved docs for rrd_resize
+
+- Tobi
+  * increassed commandline buffer in rrd_tool.c to 100 kilo Byte
+  * in rrd_graph replace rint by ceil ...its more portable
+  * remove // comments and replace with /* .... */
+  * due to popular demand change strftime format to %V for weeks
+
++ 2002/05/24 -- Joe Griffin <joe.griffin@mscsoftware.com>
+  * config.guess and config.sub updates for IA64 
+
+= 1.0.38 2002/05/22 -- Tobi
+
+- 2002/05/12 -- Tobi
+  * fix for crash in restore when used with existing file
+
+- 2002/04/29 -- Alex
+  * fix for PRINT template parser in rrd_graph ...
+
+- 2002/04/16 -- Milan Obuch <milan.obuch@in.nextra.sk>
+  * fix for --alt-mrtg
+
++ 2002/05/01 Wolfgang Schrimm <Wolfgang.Schrimm@urz.uni-heidelberg.de>
+  * new subcommand xport
+
+= 1.0.37 2002/04/13 -- Tobi
+
+- 2002/04/14 -- Thierry Nkaoua <tnka@linux-sottises.net>
+  * do not change LC_ALL but just LC_TIME ...
+
+= 1.0.36 2002/04/13 -- Tobi
+
++ 2002/04/13 -- Milan Obuch <milan.obuch@in.nextra.sk>
+  * added new options to rrdgraph. Check the manpage for
+    --overlay, --background, --unit, GD (graph output format)
+
++ 2002/04/09 -- Tobi
+  * added setlocale and tzset calls to rrd_graph
+
+- 2002/04/09 -- Tobi
+  * removed description of --goodfor and --refresh from rrdcgi
+
+- 2002/04/02 -- Paul Vixie <paul@vix.com>
+  * rrd restore should not burn down existing files
+
+- 2002/03/23 -- Oliver Cook  <ollie@uk.clara.net> 
+  * kill segfault in diff code for non digit input
+
+- 2002/03/23 -- Ashok Mandala <chakri063@yahoo.com>
+  * make sure CDEFs work properly even when none of the contributing
+    data sources start at start of the cdef.
+
++ 2002/03/20 -- David Lee <t.d.lee@durham.ac.uk>
+  * Allow link builds through the ../configure syntax
+
+= 1.0.35 2002/03/20 -- Tobi
+
+- 2002/03/20 -- Tobi
+  * fixed longstanding off by 1 bug in CDEF for cases where RRDs with
+    different step sizes were mixed in one CDEF
+
+- 2002/03/13 -- Tobi
+  * Deal with cases where Config{cc} contains an absolute path to perls
+    C compiler.
+- 2002/03/14 -- Matt Galvin <mgalvin@dandd.com>
+  * new OS detector config files which can deal with macos X
+
+= 1.0.34 2002/03/12 -- Tobi
+
+- 2002/02/12 -- Tobi
+  * replaced zlib 1.1.3 with 1.1.4
+
+- 2002/02/06 -- Alexander Schwartz <alexander.schwartz@gmx.net>
+  * allow rrdcgi to deal with umlauts
+
+- 2001/12/27 -- Tom.Bertelson@gecapital.com
+  * fix overflow error in rrd_fetch
+
+- 2001/11/28 -- Richard A. Steenbergen <ras@e-gerbil.net>
+  * allow + - and ' ' in printfsring
+
+- 2001/03/31 -- Tobi
+  * added 'all' dependancy to site-perl-install rule as many seem to skip
+    this step when instaling cricket ... probably an incomplete cricket doku.
+
+- 2001/03/02 --  Mike Franusich <mike@franusich.com>
+  * filedescriptor leak fixed in rrd_open for faild open attempts.
+
+- 2001/03/01 -- Tobi
+  * test if compiler perl wants to use for building its modules is available on the system
+  * zlib wants to be linked with -fpic on HPUX or it breaks ...
+
 = 1.0.33 2001/02/22 -- Tobi
 
 - 2001/02/20 -- Tobi
@@ -29,7 +154,7 @@ ChangeLog for RRDtool 1.0.x
 
 = Beta 1.0.29
 
-+ 2001/02/11 -- Roman Hoogant <rhoogant@ee.ethz.ch>
++ 2001/02/11 -- Roman Hoog Antink <rhoogant@ee.ethz.ch>
   add unix time to rrddump comment
 
 - 2001/02/11 -- Terminator rAT <karl_schilke@eli.net>

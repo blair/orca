@@ -1,0 +1,395 @@
+								-*-text-*-
+
+If you are contributing code to the Orca project, please read this
+first.
+
+                        ======================
+                        HACKER'S GUIDE TO ORCA
+                        ======================
+
+$LastChangedDate: 2002-11-07 09:30:37 -0800 (Thu, 07 Nov 2002) $
+
+TABLE OF CONTENTS
+
+   * Participating in the community
+   * Getting the source
+   * What to read
+   * Directory layout
+   * Coding style
+   * Document everything
+   * Using page breaks
+   * Other conventions
+   * Writing log messages
+   * Patch submission guidelines
+   * Commit access
+
+
+
+Participating in the community
+==============================
+
+The community exists mainly through mailing lists and a Subversion
+source code repository:
+
+Go to http://www.orcaware.com/mailman/listinfo and
+
+   *  Join the "Orca-dev", "Orca-checkins", and "Orca-announce"
+      mailing lists.  The dev list, orca-dev@orcaware.com, is where
+      almost all discussion takes place.  All questions should go
+      there, though you might want to check the list archives first.
+      The "orca-checkins" list receives automated commit emails.
+
+There are many ways to join the project, either by writing code, or by
+testing.
+
+To submit code, simply send your patches to orca-dev@orcaware.com.
+No, wait, first read the rest of this file, _then_ start sending
+patches to orca-dev@orcaware.com. :-)
+
+
+
+Getting the source
+==================
+
+Orca uses the Subversion source control system to manage the source
+code.  Subversion is a CVS replacement that offers many features over
+and above CVS.  To get an overview of Subversion, check out
+
+   http://www.orcaware.com/svn/Subversion-Blair_Zajac.ppt
+
+The Orca Subversion repository is located at
+
+   http://svn.orcaware.com/repos/trunk/orca/
+
+with tagged releases located at
+
+   http://svn.orcaware.com/repos/tags/orca/
+
+The Subversion home page is at
+
+   http://subversion.tigris.org
+
+If you are using Windows, then you can use the Windows binaries
+available at
+
+   http://subversion.tigris.org/servlets/ProjectDocumentList?folderID=91
+
+Make sure to use the latest svn-*-setup.exe file.
+
+If you are running Unix, then you'll need to compile Subversion for
+yourself.  To get the source code for Subversion, go to
+
+   http://subversion.tigris.org/servlets/ProjectDocumentList?folderID=260
+
+and download the latest tar.gz.  To build Subversion, read these pages
+
+   http://svn.collab.net/repos/svn/trunk/INSTALL
+   http://subversion.tigris.org/project_source.html
+
+
+
+What to read
+============
+
+Before you can contribute code, you'll need to familiarize yourself
+with the existing code base and interfaces.
+
+Check out a copy of Orca (anonymously, if you don't yet have an
+account with commit-access) -- so you can look at the code base.
+
+
+
+Directory layout
+================
+
+A rough guide to the source tree:
+
+   config/
+      Files for the configure auto-configuration system.
+   contrib/
+      Contributed tools.
+   docs/
+      User documentation.
+   lib/
+      Perl modules and image files for Orca.
+   lib/Orca/
+      Perl modules that Orca uses.
+   orcallator/
+      All programs and scripts for the Solaris orcallator.se program.
+   packages/
+      Important Perl modules used by Orca that don't come with Perl.
+   patches/
+      Patches for the SE toolkit.
+   src/
+      The main Orca script and key utility scripts.
+
+
+
+Coding style
+============
+
+We're using Perl, and following the standard Perl style.
+
+In general, be generous with parentheses even when you're sure about
+the operator precedence, and be willing to add spaces and newlines to
+avoid "code crunch".  Don't worry too much about vertical density;
+it's more important to make code readable than to fit that extra line
+on the screen.
+
+
+
+Document everything
+===================
+
+Every function, whether public or internal, must start out with a
+documentation comment that describes what the function does.  The
+documentation should mention every parameter received by the function,
+every possible return value, and (if not obvious) the conditions under
+which the function could return an error.  Put the parameter names in
+upper case in the doc string, even when they are not upper case in the
+actual declaration, so that they stand out to human readers.
+
+
+
+Using page breaks
+=================
+
+We're using page breaks (the Ctrl-L character, ASCII 12) for section
+boundaries in both code and plaintext prose files.  This file is a
+good example of how it's done: each section starts with a page break,
+and the immediately after the page break comes the title of the
+section.
+
+This helps out people who use the Emacs page commands, such as
+`pages-directory' and `narrow-to-page'.  Such people are not as scarce
+as you might think, and if you'd like to become one of them, then type
+C-x C-p C-h in Emacs sometime.
+
+
+
+Other conventions
+=================
+
+In addition to the above standards, Orca uses these conventions:
+
+   *  Use only spaces for indenting code, never tabs.  Tab display
+      width is not standardized enough, and anyway it's easier to
+      manually adjust indentation that uses spaces.
+
+   *  Stay within 80 columns, the width of a minimal standard display
+      window.
+
+   *  We have a tradition of not marking files with the names of
+      individual authors (i.e., we don't put lines like "Author: foo"
+      or "@author foo" in a special position at the top of a source
+      file).  This is to discourage territoriality -- even when a file
+      has only one author, we want to make sure others feel free to
+      make changes.  People might be unnecessarily hesitant if someone
+      appears to have staked ownership on the file.
+
+   *  There are many other unspoken conventions maintained throughout
+      the code, that are only noticed when someone unintentionally
+      fails to follow them.  Just try to have a sensitive eye for the
+      way things are done, and when in doubt, ask.
+
+
+
+Writing log messages
+====================
+
+Certain guidelines should be adhered to when writing log messages:
+
+Make a log message for every change.  The value of the log becomes
+much less if developers cannot rely on its completeness.  Even if
+you've only changed comments, write a log that says "Doc fix." or
+something.
+
+Use full sentences, not sentence fragments.  Fragments are more often
+ambiguous, and it takes only a few more seconds to write out what you
+mean.  Fragments like "Doc fix", "New file", or "New function" are
+acceptable because they are standard idioms, and all further details
+should appear in the source code.
+
+The log message should name every affected function, variable, macro,
+makefile target, grammar rule, etc, including the names of symbols
+that are being removed in this commit.  This helps people searching
+through the logs later.  Don't hide names in wildcards, because the
+globbed portion may be what someone searches for later.  For example,
+this is bad:
+
+   * twirl.c
+     (twirling_baton_*): Removed these obsolete structures.
+     (handle_parser_warning): Pass data directly to callees, instead
+     of storing in twirling_baton_*.
+
+   * twirl.h: Fix indentation.
+
+Later on, when someone is trying to figure out what happened to
+`twirling_baton_fast', they may not find it if they just search for
+"_fast".  A better entry would be:
+
+   * twirl.c 
+     (twirling_baton_fast, twirling_baton_slow): Removed these
+     obsolete structures. 
+     (handle_parser_warning): Pass data directly to callees, instead
+     of storing in twirling_baton_*. 
+
+   * twirl.h: Fix indentation.
+
+The wildcard is okay in the description for `handle_parser_warning',
+but only because the two structures were mentioned by full name
+elsewhere in the log entry.
+
+Note how each file gets its own entry, and the changes within a file
+are grouped by symbol, with the symbols are listed in parentheses
+followed by a colon, followed by text describing the change.  Please
+adhere to this format -- not only does consistency aid readability, it
+also allows software to colorize log entries automatically.
+
+If your change is related to a specific issue in the issue tracker,
+then include a string like "issue #N" in the log message.  For
+example, if a patch resolves issue 1729, then the log message might
+be:
+
+   Fix issue #1729:
+
+   * get_editor.c
+     (frobnicate_file): Check that file exists first.
+
+For large changes or change groups, group the log entry into
+paragraphs separated by blank lines.  Each paragraph should be a set
+of changes that accomplishes a single goal, and each group should
+start with a sentence or two summarizing the change.  Truly
+independent changes should be made in separate commits, of course.
+
+One should never need the log entries to understand the current code.
+If you find yourself writing a significant explanation in the log, you
+should consider carefully whether your text doesn't actually belong in
+a comment, alongside the code it explains.  Here's an example of doing
+it right:
+
+   (consume_count): If `count' is unreasonable, return 0 and don't
+   advance input pointer.
+
+And then, in `consume_count' in `cplus-dem.c':
+
+   while (isdigit ((unsigned char)**type))
+     {
+       count *= 10;
+       count += **type - '0';
+       /* A sanity check.  Otherwise a symbol like
+         `_Utf390_1__1_9223372036854775807__9223372036854775'
+         can cause this function to return a negative value.
+         In this case we just consume until the end of the string.  */
+      if (count > strlen (*type))
+        {
+          *type = save;
+          return 0;
+        }
+
+This is why a new function, for example, needs only a log entry saying
+"New Function" --- all the details should be in the source.
+
+There are some common-sense exceptions to the need to name everything
+that was changed:
+
+   *  If you have made a change which requires trivial changes
+      throughout the rest of the program (e.g., renaming a variable),
+      you needn't name all the functions affected, you can just say
+      "All callers changed".
+
+   *  If you have rewritten a file completely, the reader understands
+      that everything in it has changed, so your log entry may simply
+      give the file name, and say "Rewritten".
+
+   *  If your change was only to one file, or was the same change to
+      multiple files, then there's no need to list their paths in the
+      log message (because "svn log" can show the changed paths for
+      that revision anyway).  Only when you need to describe how the
+      change affected different areas in different ways is it
+      necessary to organize the log message by paths and symbols, as
+      in the examples above.
+
+In general, there is a tension between making entries easy to find by
+searching for identifiers, and wasting time or producing unreadable
+entries by being exhaustive.  Use your best judgment --- and be
+considerate of your fellow developers.  (Also, run "svn log" to see
+how others have been writing their log entries.)
+
+
+
+Patch submission guidelines
+===========================
+
+Mail patches to `orca-dev@orcaware.com', with a subject line that
+contains the word "PATCH" in all uppercase, for example
+
+   Subject: [PATCH] fix for Orca images
+
+A patch submission should contain one logical change; please don't mix
+N unrelated changes in one submission -- send N separate emails
+instead.
+
+The email message should start off with a log message, as described in
+"Writing log messages" above.  The patch itself should be in unified
+diff format, preferably inserted directly into the body of your
+message (rather than MIME-attached, uuencoded, or otherwise
+opaqified).  If your mailer wraps long lines, then you will need to
+attach your patch.  Please ensure the MIME type of the attachment is
+text/plain (some mailers allow you to set the MIME type; for some
+others, you might have to use a .txt extension on your patch file). Do
+not compress or otherwise encode the attached patch.
+
+If the patch implements a new feature, make sure to describe the
+feature completely in your mail; if the patch fixes a bug, describe
+the bug in detail and give a reproduction recipe.  An exception to
+these guidelines is when the patch addresses a specific issue in the
+issues database -- in that case, just make sure to refer to the issue
+number in your log message, as described in "Writing log messages".
+
+It is normal for patches to undergo several rounds of feedback and
+change before being applied.  Don't be discouraged if your patch is
+not accepted immediately -- it doesn't mean you goofed, it just means
+that there are a *lot* of eyes looking at every code submission, and
+it's a rare patch that doesn't have at least a little room for
+improvement.  After reading people's responses to your patch, make the
+appropriate changes and resubmit, wait for the next round of feedback,
+and lather, rinse, repeat, until some committer applies it.
+
+If you don't get a response for a while, and don't see the patch
+applied, it may just mean that people are really busy.  Go ahead and
+repost, and don't hesitate to point out that you're still waiting for
+a response.  One way to think of it is that patch management is highly
+parallizable, and we need you to shoulder your share of the management
+as well as the coding.  Every patch needs someone to shepherd it
+through the process, and the person best qualified to do that is the
+original submitter.
+
+
+
+Commit access
+=============
+
+After someone has successfully contributed a few non-trivial patches,
+some committer, usually whoever has reviewed and applied the most
+patches from that contributor, proposes them for commit access.  This
+proposal is sent only to the other full committers -- the ensuing
+discussion is private, so that everyone can feel comfortable speaking
+their minds.  Assuming there are no objections, the contributor is
+granted commit access.  The decision is made by consensus; there are
+no formal rules governing the procedure, though generally if someone
+strongly objects the access is not offered, or is offered on a
+provisional basis.
+
+The criteria for commit access are that the person's patches adhere to
+the guidelines in this file, adhere to all the usual unquantifiable
+rules of coding (code should readable, robust, maintainable, etc), and
+that the person respects the "Hippocratic Principle": first, do no
+harm.  In other words, what is significant is not the size or quantity
+of patches submitted, but the degree of care shown in avoiding bugs
+and minimizing unnecessary impact on the rest of the code.  Many
+committers are people who have not made major code contributions, but
+rather lots of small, clean fixes, each of which was an unambiguous
+improvement to the code.
+
+See the COMMITTERS file for a complete list of committers.

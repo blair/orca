@@ -6,7 +6,7 @@ AC_CONFIG_AUX_DIR(config)
 AC_CANONICAL_SYSTEM
 
 # Minimum Autoconf version required.
-AC_PREREQ(2.13)
+AC_PREREQ(2.52)
 
 # Remember the command line arguments to configure for use when
 # configure is run again.  Also create the command line options for
@@ -29,18 +29,18 @@ COMPRESS_ZLIB_DIR=Compress-Zlib-1.05
 COMPRESS_ZLIB_VER=1.05
 DATA_DUMPER_DIR=Data-Dumper-2.101
 DATA_DUMPER_VER=2.101
-DATE_PARSE_DIR=TimeDate-1.10
-DATE_PARSE_VER=2.20
-DIGEST_MD5_DIR=Digest-MD5-2.16
-DIGEST_MD5_VER=2.16
+DATE_PARSE_DIR=TimeDate-1.14
+DATE_PARSE_VER=2.24
+DIGEST_MD5_DIR=Digest-MD5-2.20
+DIGEST_MD5_VER=2.19
 MATH_INTERPOLATE_DIR=Math-Interpolate-1.05
 MATH_INTERPOLATE_VER=1.05
-RRDTOOL_DIR=rrdtool-1.0.33
-RRDTOOL_VER=1.000331
-STORABLE_DIR=Storable-1.0.13
-STORABLE_VER=1.012
-TIME_HIRES_DIR=Time-HiRes-01.20
-TIME_HIRES_VER=1.20
+RRDTOOL_DIR=rrdtool-1.0.40
+RRDTOOL_VER=1.000401
+STORABLE_DIR=Storable-2.05
+STORABLE_VER=2.05
+TIME_HIRES_DIR=Time-HiRes-1.38
+TIME_HIRES_VER=1.38
 
 AC_SUBST(COMPRESS_ZLIB_DIR)
 AC_SUBST(DATA_DUMPER_DIR)
@@ -66,10 +66,30 @@ if test ! -d $config_dir; then
   AC_MSG_ERROR([*** Cannot find config directory.])
 fi
 
+AC_ARG_WITH(var-dir,
+  [  --with-var-dir=DIR      where raw measured data is stored [[localstatedir/orca]]],
+  [
+    case "$withval" in
+      "" | y | ye | yes | n | no)
+         AC_MSG_ERROR([*** You must supply an argument to the --with-var-dir option.])
+         ;;
+      *) VAR_DIR="$withval"
+         ;;
+    esac
+  ],
+  : ${VAR_DIR=$localstatedir/orca}
+)
+VAR_DIR=`(
+    test "x$prefix" = xNONE && prefix=$ac_default_prefix
+    test "x$exec_prefix" = xNONE && exec_prefix=${prefix}
+    eval echo "$VAR_DIR"
+)`
+AC_SUBST(VAR_DIR)
+
 # Define the directories where the source orcallator and RRD data files
 # will be installed.
 AC_ARG_WITH(rrd-dir,
-  [   --with-rrd-dir=DIR         directory were the RRD data files are stored],
+  [  --with-rrd-dir=DIR      where RRD data files are stored [[var-dir/rrd]]],
   [
     case "$withval" in
       "" | y | ye | yes | n | no)
@@ -79,7 +99,7 @@ AC_ARG_WITH(rrd-dir,
          ;;
     esac
   ],
-  : ${RRD_DIR=$localstatedir/orca/rrd}
+  : ${RRD_DIR=$VAR_DIR/rrd}
 )
 RRD_DIR=`(
     test "x$prefix" = xNONE && prefix=$ac_default_prefix
@@ -89,7 +109,7 @@ RRD_DIR=`(
 AC_SUBST(RRD_DIR)
 
 AC_ARG_WITH(html-dir,
-  [   --with-html-dir=DIR        location of the root output HTML directory],
+  [  --with-html-dir=DIR     where is the output HTML root directory],
   [
     case "$withval" in
       "" | y | ye | yes | n | no)
@@ -103,30 +123,10 @@ AC_ARG_WITH(html-dir,
 )
 AC_SUBST(HTML_DIR)
 
-AC_ARG_WITH(orcallator-dir,
-  [   --with-orcallator-dir=DIR  directory were orcallator output is stored],
-  [
-    case "$withval" in
-      "" | y | ye | yes | n | no)
-         AC_MSG_ERROR([*** You must supply an argument to the --with-orcallator-dir option.])
-         ;;
-      *) ORCALLATOR_DIR="$withval"
-         ;;
-    esac
-  ],
-  : ${ORCALLATOR_DIR=$localstatedir/orca/orcallator}
-)
-ORCALLATOR_DIR=`(
-    test "x$prefix" = xNONE && prefix=$ac_default_prefix
-    test "x$exec_prefix" = xNONE && exec_prefix=${prefix}
-    eval echo "$ORCALLATOR_DIR"
-)`
-AC_SUBST(ORCALLATOR_DIR)
-
 WATCH_WEB=
 NCSA_LOG=
 AC_ARG_WITH(ncsa-log,
-  [   --with-ncsa-log=FILE       location of the NCSA style web server access log],
+  [  --with-ncsa-log=FILE    location of the NCSA style web server access log],
   [
     case "$withval" in
       "" | y | ye | yes | n | no)
@@ -142,7 +142,7 @@ AC_ARG_WITH(ncsa-log,
 
 PROXY_LOG=
 AC_ARG_WITH(proxy-log,
-  [   --with-proxy-log=FILE      location of the proxy NCSA web server access log],
+  [  --with-proxy-log=FILE   location of the proxy NCSA web server access log],
   [
     if test "$NCSA_LOG"; then
       AC_MSG_ERROR([*** You cannot use both --with-ncsa-log and --with-proxy-log.])
@@ -160,7 +160,7 @@ AC_ARG_WITH(proxy-log,
 )
 
 AC_ARG_WITH(squid-log,
-  [   --with-squid-log=FILE      location of the Squid file log file],
+  [  --with-squid-log=FILE   location of the Squid file log file],
   [
     if test "$NCSA_LOG"; then
       AC_MSG_ERROR([*** You cannot use both --with-ncsa-log and --with-squid-log.])
@@ -207,6 +207,10 @@ fi
 PERL_HEAD="$cwd/config/$PERL_HEAD"
 AC_SUBST(PERL_HEAD)
 
+AC_PATH_PROG(POD2HTML, pod2html, :)
+AC_PATH_PROG(POD2MAN,  pod2man,  :)
+AC_PATH_PROG(POD2TEXT, pod2text, :)
+
 # Determine the correct ps command to use to find out about process
 # information for itself.
 AC_PATH_PROG(PS, ps)
@@ -224,7 +228,7 @@ case "$target" in
     AC_MSG_WARN([*** to get process information for your host,])
     AC_MSG_WARN([*** please email the command and the output from])
     AC_MSG_WARN([*** ./config/config.guess to])
-    AC_MSG_WARN([*** orca-developers@yahoogroups.com])
+    AC_MSG_WARN([*** orca-dev@orcaware.com])
     ;;
 esac
 if test "$PS_SELF"; then
@@ -278,9 +282,9 @@ AC_SUBST(INSTALL_LIB_RRDTOOL)
 # options for RRDtool if it is not already declared.
 # expr "$ORCA_CONFIGURE_COMMAND_LINE" : "--enable-shared" >/dev/null 2>&1 || ORCA_CONFIGURE_COMMAND_LINE="$ORCA_CONFIGURE_COMMAND_LINE --enable-shared"
 
-dnl BORP_PERL_MODULE(borp_cv_perl_compress_zlib, $PERL, Compress::Zlib, $COMPRESS_ZLIB_VER)
-dnl test "$ALWAYS_BUILD_PERL_MODULES" && borp_cv_perl_compress_zlib=no
-dnl if test "$borp_cv_perl_compress_zlib" = no; then
+dnl BORP_PERL_MODULE(orca_cv_perl_compress_zlib, $PERL, Compress::Zlib, $COMPRESS_ZLIB_VER)
+dnl test "$ALWAYS_BUILD_PERL_MODULES" && orca_cv_perl_compress_zlib=no
+dnl if test "$orca_cv_perl_compress_zlib" = no; then
 dnl   MAKE_COMPRESS_ZLIB=make_compress_zlib
 dnl   TEST_COMPRESS_ZLIB=test_compress_zlib
 dnl   INSTALL_PERL_COMPRESS_ZLIB=install_perl_compress_zlib
@@ -293,9 +297,9 @@ AC_SUBST(INSTALL_PERL_COMPRESS_ZLIB)
 AC_SUBST(CLEAN_COMPRESS_ZLIB)
 AC_SUBST(DISTCLEAN_COMPRESS_ZLIB)
 
-BORP_PERL_MODULE(borp_cv_perl_data_dumper, $PERL, Data::Dumper, $DATA_DUMPER_VER)
-test "$ALWAYS_BUILD_PERL_MODULES" && borp_cv_perl_data_dumper=no
-if test "$borp_cv_perl_data_dumper" = no; then
+BORP_PERL_MODULE(orca_cv_perl_data_dumper, $PERL, Data::Dumper, $DATA_DUMPER_VER)
+test "$ALWAYS_BUILD_PERL_MODULES" && orca_cv_perl_data_dumper=no
+if test "$orca_cv_perl_data_dumper" = no; then
   MAKE_DATA_DUMPER=make_data_dumper
   TEST_DATA_DUMPER=test_data_dumper
   INSTALL_PERL_DATA_DUMPER=install_perl_data_dumper
@@ -308,9 +312,9 @@ AC_SUBST(INSTALL_PERL_DATA_DUMPER)
 AC_SUBST(CLEAN_DATA_DUMPER)
 AC_SUBST(DISTCLEAN_DATA_DUMPER)
 
-BORP_PERL_MODULE(borp_cv_perl_date_parse, $PERL, Date::Parse, $DATE_PARSE_VER)
-test "$ALWAYS_BUILD_PERL_MODULES" && borp_cv_perl_date_parse=no
-if test "$borp_cv_perl_date_parse" = no; then
+BORP_PERL_MODULE(orca_cv_perl_date_parse, $PERL, Date::Parse, $DATE_PARSE_VER)
+test "$ALWAYS_BUILD_PERL_MODULES" && orca_cv_perl_date_parse=no
+if test "$orca_cv_perl_date_parse" = no; then
   MAKE_DATE_PARSE=make_date_parse
   TEST_DATE_PARSE=test_date_parse
   INSTALL_PERL_DATE_PARSE=install_perl_date_parse
@@ -323,9 +327,9 @@ AC_SUBST(INSTALL_PERL_DATE_PARSE)
 AC_SUBST(CLEAN_DATE_PARSE)
 AC_SUBST(DISTCLEAN_DATE_PARSE)
 
-BORP_PERL_MODULE(borp_cv_perl_digest_md5, $PERL, Digest::MD5, $DIGEST_MD5_VER)
-test "$ALWAYS_BUILD_PERL_MODULES" && borp_cv_perl_digest_md5=no
-if test "$borp_cv_perl_digest_md5" = no; then
+BORP_PERL_MODULE(orca_cv_perl_digest_md5, $PERL, Digest::MD5, $DIGEST_MD5_VER)
+test "$ALWAYS_BUILD_PERL_MODULES" && orca_cv_perl_digest_md5=no
+if test "$orca_cv_perl_digest_md5" = no; then
   MAKE_DIGEST_MD5=make_digest_md5
   TEST_DIGEST_MD5=test_digest_md5
   INSTALL_PERL_DIGEST_MD5=install_perl_digest_md5
@@ -338,9 +342,9 @@ AC_SUBST(INSTALL_PERL_DIGEST_MD5)
 AC_SUBST(CLEAN_DIGEST_MD5)
 AC_SUBST(DISTCLEAN_DIGEST_MD5)
 
-BORP_PERL_MODULE(borp_cv_perl_math_interpolate, $PERL, Math::Interpolate, $MATH_INTERPOLATE_VER)
-test "$ALWAYS_BUILD_PERL_MODULES" && borp_cv_perl_math_interpolate=no
-if test "$borp_cv_perl_math_interpolate" = no; then
+BORP_PERL_MODULE(orca_cv_perl_math_interpolate, $PERL, Math::Interpolate, $MATH_INTERPOLATE_VER)
+test "$ALWAYS_BUILD_PERL_MODULES" && orca_cv_perl_math_interpolate=no
+if test "$orca_cv_perl_math_interpolate" = no; then
   MAKE_MATH_INTERPOLATE=make_math_interpolate
   TEST_MATH_INTERPOLATE=test_math_interpolate
   INSTALL_PERL_MATH_INTERPOLATE=install_perl_math_interpolate
@@ -353,9 +357,9 @@ AC_SUBST(INSTALL_PERL_MATH_INTERPOLATE)
 AC_SUBST(CLEAN_MATH_INTERPOLATE)
 AC_SUBST(DISTCLEAN_MATH_INTERPOLATE)
 
-BORP_PERL_MODULE(borp_cv_perl_rrds, $PERL, RRDs, $RRDTOOL_VER)
-test "$ALWAYS_BUILD_PERL_MODULES" && borp_cv_perl_rrds=no
-if test "$borp_cv_perl_rrds" = no; then
+BORP_PERL_MODULE(orca_cv_perl_rrds, $PERL, RRDs, $RRDTOOL_VER)
+test "$ALWAYS_BUILD_PERL_MODULES" && orca_cv_perl_rrds=no
+if test "$orca_cv_perl_rrds" = no; then
   MAKE_RRDTOOL=make_rrdtool
   TEST_RRDTOOL=test_rrdtool
   INSTALL_PERL_RRDTOOL=install_perl_rrdtool
@@ -368,9 +372,9 @@ AC_SUBST(INSTALL_PERL_RRDTOOL)
 AC_SUBST(CLEAN_RRDTOOL)
 AC_SUBST(DISTCLEAN_RRDTOOL)
 
-BORP_PERL_MODULE(borp_cv_perl_storable, $PERL, Storable, $STORABLE_VER)
-test "$ALWAYS_BUILD_PERL_MODULES" && borp_cv_perl_storable=no
-if test "$borp_cv_perl_storable" = no; then
+BORP_PERL_MODULE(orca_cv_perl_storable, $PERL, Storable, $STORABLE_VER)
+test "$ALWAYS_BUILD_PERL_MODULES" && orca_cv_perl_storable=no
+if test "$orca_cv_perl_storable" = no; then
   MAKE_STORABLE=make_storable
   TEST_STORABLE=test_storable
   INSTALL_PERL_STORABLE=install_perl_storable
@@ -383,9 +387,9 @@ AC_SUBST(INSTALL_PERL_STORABLE)
 AC_SUBST(CLEAN_STORABLE)
 AC_SUBST(DISTCLEAN_STORABLE)
 
-BORP_PERL_MODULE(borp_cv_perl_time_hires, $PERL, Time::HiRes, $TIME_HIRES_VER)
-test "$ALWAYS_BUILD_PERL_MODULES" && borp_cv_perl_time_hires=no
-if test "$borp_cv_perl_time_hires" = no; then
+BORP_PERL_MODULE(orca_cv_perl_time_hires, $PERL, Time::HiRes, $TIME_HIRES_VER)
+test "$ALWAYS_BUILD_PERL_MODULES" && orca_cv_perl_time_hires=no
+if test "$orca_cv_perl_time_hires" = no; then
   MAKE_TIME_HIRES=make_time_hires
   TEST_TIME_HIRES=test_time_hires
   INSTALL_PERL_TIME_HIRES=install_perl_time_hires
@@ -401,6 +405,17 @@ AC_SUBST(INSTALL_PERL_TIME_HIRES)
 AC_SUBST(CLEAN_TIME_HIRES)
 AC_SUBST(DISTCLEAN_TIME_HIRES)
 AC_SUBST(PERL_USE_TIME_HIRES)
+
+# Build the RRDtool library if it is needed.
+if test "$orca_cv_perl_rrds" = no; then
+  command="(cd packages/$RRDTOOL_DIR; ./configure $RRD_CONFIGURE_COMMAND_LINE)"
+  echo ""
+  echo "Running configure in packages/$RRDTOOL_DIR to create RRDtool and RRDs.pm."
+  echo ""
+  echo $command
+  echo ""
+  eval $command
+fi
 
 # Define the INSTALL and MKDIR variables to point to the scripts in
 # the config directory.
@@ -435,27 +450,47 @@ AC_OUTPUT(Makefile
 	  contrib/Makefile
 	  contrib/rotate_orca_graphs/Makefile
 	  contrib/rotate_orca_graphs/rotate_orca_graphs.sh
-	  contrib/orcaservices/Makefile
-	  contrib/orcaservices/orcaservices.cfg
-	  contrib/orcaservices/orcaservices.pl
-	  contrib/orcaservices/orcaservices_running.pl
-	  contrib/orcaservices/restart_orcaservices.sh
-	  contrib/orcaservices/start_orcaservices.sh
-	  contrib/orcaservices/stop_orcaservices.sh
-	  contrib/orcaservices/S99orcaservices.sh)
+	  contrib/orca_services/Makefile
+	  contrib/orca_services/orca_services.cfg
+	  contrib/orca_services/orca_services.pl
+	  contrib/orca_services/orca_services_running.pl
+	  contrib/orca_services/restart_orca_services.sh
+	  contrib/orca_services/start_orca_services.sh
+	  contrib/orca_services/stop_orca_services.sh
+	  contrib/orca_services/S99orca_services.sh)
 
-# Build the RRDtool library if it is needed.
-if test "$borp_cv_perl_rdds" = no; then
-  command="(cd packages/$RRDTOOL_DIR; ./configure $RRD_CONFIGURE_COMMAND_LINE)"
-  echo ""
-  echo "Running configure in packages/$RRDTOOL_DIR to create RRDtool and RRDs.pm."
-  echo ""
-  echo $command
-  echo ""
-  eval $command
-  sleep 1
-fi
+echo
+echo "----------------------------------------------------------------"
+echo "You have now successfully configured Orca."
+echo
+echo "Type 'make' to compile the software and use 'make install' to "
+echo "install everything to: $prefix."
+echo
+echo "If you find Orca useful, make my wife and me happy.  Go to"
+echo "http://www.orcaware.com/wish_list.html and pick an item from our"
+echo "Amazon.com wish list."
+echo
+echo "Blair Zajac <blair@orcaware.com>"
+echo "----------------------------------------------------------------"
 
-if test -z "$WEB_LOG"; then
-  AC_MSG_WARN([*** Unless you use a --with-*-log option orcallator will not gather WWW log data.])
-fi
+echo $ECHO_N "ordering CD from http://www.orcaware.com/wish_list.html $ECHO_C" 1>&6
+sleep 1
+echo $ECHO_N ".$ECHO_C" 1>&6
+sleep 1
+echo $ECHO_N ".$ECHO_C" 1>&6
+sleep 1
+echo $ECHO_N ".$ECHO_C" 1>&6
+sleep 1
+echo $ECHO_N ".$ECHO_C" 1>&6
+sleep 1
+AC_MSG_RESULT([ just kidding ;-)])
+
+case "$target" in
+  *-solaris*)
+    if test -z "$WEB_LOG"; then
+      AC_MSG_WARN([*** Unless you use a --with-*-log option orcallator will not gather WWW log data.])
+    fi
+    ;;
+  *)
+    ;;
+esac

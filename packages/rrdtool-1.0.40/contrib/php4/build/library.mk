@@ -21,7 +21,7 @@
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 ##############################################################################
-# $Id: library.mk,v 1.6 2000/05/01 02:57:24 sas Exp $ 
+# $Id: library.mk,v 1.1.1.1 2002/02/26 10:21:21 oetiker Exp $ 
 #
 
 LTLIBRARY_OBJECTS = $(LTLIBRARY_SOURCES:.c=.lo)

@@ -14,7 +14,7 @@ BEGIN {
 use strict;
 
 use vars qw($VERSION);
-my $rcs = ' $Id: rrdview.cgi,v 1.16 2000/09/22 23:20:40 gilles Exp $ ' ;
+my $rcs = ' $Id: rrdview.cgi,v 1.1.1.1 2002/02/26 10:21:20 oetiker Exp $ ' ;
 $rcs =~ m/,v (\d+\.\d+)/;
 $VERSION = ($1) ? $1 : "UNKNOWN";
 

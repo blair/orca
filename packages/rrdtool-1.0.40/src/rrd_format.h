@@ -1,5 +1,5 @@
 /*****************************************************************************
- * RRDtool 1.0.33  Copyright Tobias Oetiker, 1997, 1998, 1999
+ * RRDtool 1.0.40  Copyright Tobias Oetiker, 1997, 1998, 1999
  *****************************************************************************
  * rrd_format.h  RRD Database Format header
  *****************************************************************************/
@@ -24,7 +24,7 @@
 
 #if defined(WIN32)
 #define DNAN          ((double)fmod(0.0,0.0))    
-#define DINF	      ((double)log(0.0))
+#define DINF	      ((double)fabs((double)log(0.0)))
 #else
 
 #define DNAN          ((double)(0.0/0.0))     /* we use a DNAN to

@@ -1,6 +1,7 @@
 # Orca::Constants.pm: Global constants for Orca.
 #
-# Copyright (C) 1998-2001 Blair Zajac and Yahoo!, Inc.
+# Copyright (C) 1998-1999 Blair Zajac and Yahoo!, Inc.
+# Copyright (C) 1999-2002 Blair Zajac.
 
 package Orca::Constants;
 
@@ -20,7 +21,7 @@ $VERSION = substr q$Revision: 0.01 $, 10;
 # IS_WIN32		If Orca is running on a Windows platform.
 use vars         qw($ORCA_VERSION $ORCA_RRD_VERSION);
 push(@EXPORT_OK, qw($ORCA_VERSION $ORCA_RRD_VERSION DAY_SECONDS IS_WIN32));
-$ORCA_VERSION        =  '0.264';
+$ORCA_VERSION        =  '0.265';
 $ORCA_RRD_VERSION    =  19990222;
 sub DAY_SECONDS      () { 24*60*60 };
 sub IS_WIN32         () { $^O eq 'MSWin32' };

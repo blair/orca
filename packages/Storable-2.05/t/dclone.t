@@ -1,22 +1,30 @@
 #!./perl
-
-# $Id: dclone.t,v 1.0 2000/09/01 19:40:41 ram Exp $
 #
 #  Copyright (c) 1995-2000, Raphael Manfredi
 #  
 #  You may redistribute only under the same terms as Perl 5, as specified
 #  in the README file that comes with the distribution.
 #
-# $Log: dclone.t,v $
-# Revision 1.0  2000/09/01 19:40:41  ram
-# Baseline for first official release.
-#
 
-require 't/dump.pl';
+sub BEGIN {
+    if ($ENV{PERL_CORE}){
+	chdir('t') if -d 't';
+	@INC = ('.', '../lib', '../ext/Storable/t');
+    } else {
+	unshift @INC, 't';
+    }
+    require Config; import Config;
+    if ($ENV{PERL_CORE} and $Config{'extensions'} !~ /\bStorable\b/) {
+        print "1..0 # Skip: Storable was not built\n";
+        exit 0;
+    }
+    require 'st-dump.pl';
+}
+
 
 use Storable qw(dclone);
 
-print "1..9\n";
+print "1..10\n";
 
 $a = 'toto';
 $b = \$a;
@@ -69,3 +77,16 @@ $$cloned{a} = "blah";
 print "not " unless $$cloned{''}[0] == \$$cloned{a};
 print "ok 9\n";
 
+# [ID 20020221.007] SEGV in Storable with empty string scalar object
+package TestString;
+sub new {
+    my ($type, $string) = @_;
+    return bless(\$string, $type);
+}
+package main;
+my $empty_string_obj = TestString->new('');
+my $clone = dclone($empty_string_obj);
+# If still here after the dclone the fix (#17543) worked.
+print ref $clone eq ref $empty_string_obj &&
+      $$clone eq $$empty_string_obj &&
+      $$clone eq '' ? "ok 10\n" : "not ok 10\n";

@@ -21,7 +21,7 @@
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 ##############################################################################
-# $Id: ltlib.mk,v 1.4 2000/04/30 03:10:34 sas Exp $ 
+# $Id: ltlib.mk,v 1.1.1.1 2002/02/26 10:21:21 oetiker Exp $ 
 #
 
 targets = $(LTLIBRARY_NAME)

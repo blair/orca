@@ -1,4 +1,4 @@
-# Date::Format $Id: //depot/TimeDate/lib/Date/Format.pm#4 $
+# Date::Format $Id: //depot/TimeDate/lib/Date/Format.pm#8 $
 #
 # Copyright (c) 1995-1999 Graham Barr. All rights reserved. This program is free
 # software; you can redistribute it and/or modify it under the same terms
@@ -10,7 +10,7 @@ use     strict;
 use     vars qw(@EXPORT @ISA $VERSION);
 require Exporter;
 
-$VERSION = "2.20";
+$VERSION = "2.22";
 @ISA     = qw(Exporter);
 @EXPORT  = qw(time2str strftime ctime asctime);
 
@@ -85,7 +85,7 @@ sub strftime
    $tzname = sprintf("%+05d",$tzname)
 	unless($tzname =~ /\D/);
 
-   $epoch = timegm(@{$time}->[0..5]);
+   $epoch = timegm(@{$time}[0..5]);
 
    @$me = gmtime($epoch + tz_offset($tzname) - tz_offset());
   }
@@ -202,6 +202,7 @@ sub format_b { $MoYs[$_[0]->[4]] }
 sub format_B { $MoY[$_[0]->[4]] }
 sub format_h { $MoYs[$_[0]->[4]] }
 sub format_p { $_[0]->[2] >= 12 ?  $AMPM[1] : $AMPM[0] }
+sub format_P { lc($_[0]->[2] >= 12 ?  $AMPM[1] : $AMPM[0]) }
 
 sub format_d { sprintf("%02d",$_[0]->[3]) }
 sub format_e { sprintf("%2d",$_[0]->[3]) }
@@ -210,11 +211,12 @@ sub format_I { sprintf("%02d",$_[0]->[2] % 12 || 12)}
 sub format_j { sprintf("%03d",$_[0]->[7] + 1) }
 sub format_k { sprintf("%2d",$_[0]->[2]) }
 sub format_l { sprintf("%2d",$_[0]->[2] % 12 || 12)}
+sub format_L { $_[0]->[4] + 1 }
 sub format_m { sprintf("%02d",$_[0]->[4] + 1) }
 sub format_M { sprintf("%02d",$_[0]->[1]) }
 sub format_q { sprintf("%01d",int($_[0]->[4] / 3) + 1) }
 sub format_s { 
-   $epoch = timegm(@{$_[0]}->[0..5])
+   $epoch = timegm(@{$_[0]}[0..5])
 	unless defined $epoch;
    sprintf("%d",$epoch) 
 }
@@ -272,7 +274,7 @@ Date::Format - Date formating subroutines
 
 	use Date::Format;
 	
-	@lt = timelocal(time);
+	@lt = localtime(time);
 	
 	print time2str($template, time);
 	print strftime($template, @lt);
@@ -281,7 +283,7 @@ Date::Format - Date formating subroutines
 	print strftime($template, @lt, $zone);
 	
 	print ctime(time);
-	print ascctime(@lt);
+	print asctime(@lt);
 	
 	print ctime(time, $zone);
 	print asctime(@lt, $zone);
@@ -357,11 +359,13 @@ category of the program's locale.
 	%j 	day of the year
 	%k 	hour
 	%l 	hour, 12 hour clock
-	%m 	month number, starting with 1
+	%L 	month number, starting with 1
+	%m 	month number, starting with 01
 	%M 	minute, leading 0's
 	%n 	NEWLINE
 	%o	ornate day of month -- "1st", "2nd", "25th", etc.
 	%p 	AM or PM 
+	%P 	am or pm (Yes %p and %P are backwards :)
 	%q	Quarter number, starting with 1
 	%r 	time format: 09:05:57 PM
 	%R 	time format: 21:05

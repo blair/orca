@@ -1,6 +1,7 @@
 # Orca::OldState: Keep state information between invocations of Orca.
 #
-# Copyright (C) 1998-2001 Blair Zajac and Yahoo!, Inc.
+# Copyright (C) 1998-1999 Blair Zajac and Yahoo!, Inc.
+# Copyright (C) 1999-2002 Blair Zajac.
 
 package Orca::OldState;
 

@@ -1,4 +1,4 @@
-#! /usr/sepp/bin/perl
+#! /usr/bin/perl
 #
 # Log 2 RRD.  This script translates a MRTG 2.x log file
 # into a RRD archive.  The original version was written by

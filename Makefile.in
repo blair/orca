@@ -4,14 +4,23 @@ SUBDIRS 	= packages lib src @ORCALLATOR_SUBDIR@ docs contrib
 prefix		= @prefix@
 MKDIR		= @MKDIR@
 MAKE_RRDTOOL	= @MAKE_RRDTOOL@
-ORCALLATOR_DIR	= @ORCALLATOR_DIR@
 RRD_DIR		= @RRD_DIR@
+VAR_DIR		= @VAR_DIR@
+ORCALLATOR_DIR	= $(VAR_DIR)/orcallator
 CFLAGS		= @CFLAGS@
 
 all:	configure config/PerlHead1 config/PerlHead2 Makefile
 	@for dir in $(SUBDIRS); do					\
-		echo "cd $$dir && $(MAKE) CFLAGS=$(CFLAGS)";		\
-		(cd $$dir && $(MAKE) CFLAGS="$(CFLAGS)");		\
+		if test -d $$dir; then					\
+			echo "cd $$dir";				\
+			cd $$dir || exit 1;				\
+			echo "$(MAKE) CFLAGS=$(CFLAGS) || exit 1";	\
+			$(MAKE) CFLAGS="$(CFLAGS)" || exit 1;		\
+			echo "cd ..";					\
+			cd ..;						\
+		else							\
+			exit 1;						\
+		fi							\
 	done
 
 test:	configure Makefile
@@ -20,11 +29,20 @@ upgrade:
 	cd src && $(MAKE) upgrade_installation
 
 install: $(INSTALL_RRDTOOL)
+	$(MKDIR) $(VAR_DIR)
 	$(MKDIR) $(ORCALLATOR_DIR)
 	$(MKDIR) $(RRD_DIR)/orcallator
 	@for dir in $(SUBDIRS); do			\
-		echo "cd $$dir && $(MAKE) install";	\
-		(cd $$dir && $(MAKE) install);		\
+		if test -d $$dir; then					\
+			echo "cd $$dir";				\
+			cd $$dir || exit 1;				\
+			echo "$(MAKE) CFLAGS=$(CFLAGS) install || exit 1"; \
+			$(MAKE) CFLAGS="$(CFLAGS)" install || exit 1;	\
+			echo "cd ..";					\
+			cd ..;						\
+		else							\
+			exit 1;						\
+		fi							\
 	done
 
 install_contrib:
@@ -50,11 +68,14 @@ distclean: $(DISTCLEAN_RRDTOOL)
 		echo "cd $$dir && $(MAKE) distclean";	\
 		(cd $$dir && $(MAKE) distclean);	\
 	done
+	$(RM) -r autom4te*.cache
 	$(RM) config/PerlHead1 config/PerlHead2
 	$(RM) config.cache config.log config.status Makefile
 
 to-autoconf:
-	aclocal -I config --output=config/aclocal.m4 && autoconf --localdir=config
+	aclocal -I config --output=config/aclocal.m4
+	autoconf --include=config
+	$(RM) -r autom4te.cache
 
 configure: configure.in
 	$(MAKE) to-autoconf

@@ -1,4 +1,4 @@
-#! /usr/sepp/bin/perl
+#! /usr/bin/perl
 
 # batch.pl, simple program to help add datasources to an existing RRD
 #   goes with add_ds.pl
@@ -43,7 +43,7 @@ use strict;
 ########### USER CONFIGURABLE SECTION #######################
 
 my $newdir = "xml";
-my $rrdtool = "/usr/local/rrdtool-1.0.30/bin/rrdtool";
+my $rrdtool = "/usr/local/rrdtool-1.0.39/bin/rrdtool";
 my $add_ds = "./add_ds.pl";  # path to add_ds.pl script
 
 ########### END CONFIGURE SECTION ###########################

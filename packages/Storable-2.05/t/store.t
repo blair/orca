@@ -1,18 +1,25 @@
 #!./perl
-
-# $Id: store.t,v 1.0 2000/09/01 19:40:42 ram Exp $
 #
 #  Copyright (c) 1995-2000, Raphael Manfredi
 #  
 #  You may redistribute only under the same terms as Perl 5, as specified
 #  in the README file that comes with the distribution.
 #
-# $Log: store.t,v $
-# Revision 1.0  2000/09/01 19:40:42  ram
-# Baseline for first official release.
-#
 
-require 't/dump.pl';
+sub BEGIN {
+    if ($ENV{PERL_CORE}){
+	chdir('t') if -d 't';
+	@INC = ('.', '../lib', '../ext/Storable/t');
+    } else {
+	unshift @INC, 't';
+    }
+    require Config; import Config;
+    if ($ENV{PERL_CORE} and $Config{'extensions'} !~ /\bStorable\b/) {
+        print "1..0 # Skip: Storable was not built\n";
+        exit 0;
+    }
+    require 'st-dump.pl';
+}
 
 use Storable qw(store retrieve store_fd nstore_fd fd_retrieve);
 
@@ -26,13 +33,13 @@ $c->{attribute} = 'attrval';
 @a = ('first', undef, 3, -4, -3.14159, 456, 4.5,
 	$b, \$a, $a, $c, \$c, \%a);
 
-print "not " unless defined store(\@a, 't/store');
+print "not " unless defined store(\@a, 'store');
 print "ok 1\n";
 
 $dumped = &dump(\@a);
 print "ok 2\n";
 
-$root = retrieve('t/store');
+$root = retrieve('store');
 print "not " unless defined $root;
 print "ok 3\n";
 
@@ -42,7 +49,7 @@ print "ok 4\n";
 print "not " unless $got eq $dumped; 
 print "ok 5\n";
 
-unlink 'store';
+1 while unlink 'store';
 
 package FOO; @ISA = qw(Storable);
 
@@ -55,10 +62,10 @@ sub make {
 package main;
 
 $foo = FOO->make;
-print "not " unless $foo->store('t/store');
+print "not " unless $foo->store('store');
 print "ok 6\n";
 
-print "not " unless open(OUT, '>>t/store');
+print "not " unless open(OUT, '>>store');
 print "ok 7\n";
 binmode OUT;
 
@@ -72,7 +79,7 @@ print "ok 10\n";
 print "not " unless close(OUT);
 print "ok 11\n";
 
-print "not " unless open(OUT, 't/store');
+print "not " unless open(OUT, 'store');
 binmode OUT;
 
 $r = fd_retrieve(::OUT);
@@ -103,6 +110,5 @@ eval { $r = fd_retrieve(::OUT); };
 print "not " unless $@;
 print "ok 20\n";
 
-close OUT;
-unlink 't/store';
-
+close OUT or die "Could not close: $!";
+END { 1 while unlink 'store' }

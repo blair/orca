@@ -1,10 +1,13 @@
 /*****************************************************************************
- * RRDtool 1.0.33  Copyright Tobias Oetiker, 1997 - 2000
+ * RRDtool 1.0.40  Copyright Tobias Oetiker, 1997 - 2000
  *****************************************************************************
  * rrd_fetch.c  read date from an rrd to use for further processing
  *****************************************************************************
- * $Id: rrd_fetch.c,v 1.8 1998/03/08 12:35:11 oetiker Exp oetiker $
+ * $Id: rrd_fetch.c,v 1.1.1.1 2002/02/26 10:21:37 oetiker Exp $
  * $Log: rrd_fetch.c,v $
+ * Revision 1.1.1.1  2002/02/26 10:21:37  oetiker
+ * Intial Import
+ *
  *****************************************************************************/
 
 #include "rrd_tool.h"
@@ -254,8 +257,8 @@ rrd_fetch_fn(
 		    - (rrd.live_head->last_up % *step));
     rra_start_time = (rra_end_time
 		 - ( *step * (rrd.rra_def[chosen_rra].row_cnt-1)));
-    start_offset = (*start - rra_start_time) / (long)*step;
-    end_offset = (rra_end_time - *end ) / (long)*step; 
+    start_offset = (long)(*start - rra_start_time) / (long)*step;
+    end_offset = (long)(rra_end_time - *end ) / (long)*step; 
 #ifdef DEBUG
     fprintf(stderr,"rra_start %lu, rra_end %lu, start_off %li, end_off %li\n",
 	    rra_start_time,rra_end_time,start_offset,end_offset);

@@ -1,4 +1,4 @@
-#! /usr/sepp/bin/perl
+#! /usr/bin/perl
 #
 # rrdlastds - report the latest DS values from the RRA with
 # the shortest time resolution
@@ -7,13 +7,13 @@
 # <rader@wiscnet.net>
 # Jan 8th, 2000
 #
-# $Id: rrdlastds.in,v 1.15 2000/01/27 21:35:16 rader Exp $
+# $Id: rrdlastds.pl.in,v 1.1.1.1 2002/02/26 10:21:19 oetiker Exp $
 #
 
 #makes things work when run without install
 use lib qw( ../../perl-shared/blib/lib ../../perl-shared/blib/arch );
 # this is for after install
-use lib qw( /usr/local/rrdtool-1.0.30/lib/perl ../lib/perl );
+use lib qw( /usr/local/rrdtool-1.0.39/lib/perl ../lib/perl );
 
 use RRDs;
 

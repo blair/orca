@@ -1,6 +1,7 @@
 # Orca::OpenFileHash: Cache open file descriptors for the whole program.
 #
-# Copyright (C) 1998-2001 Blair Zajac and Yahoo!, Inc.
+# Copyright (C) 1998-1999 Blair Zajac and Yahoo!, Inc.
+# Copyright (C) 1999-2002 Blair Zajac.
 
 package Orca::OpenFileHash;
 
@@ -71,20 +72,30 @@ sub open {
     $is_pipe = 0;
   }
 
-  # Try to open the file or pipe.  If the pipe fails and if there are
+  # Try to open the file or pipe.  If the open fails and if there are
   # other opened files, then reduce the maximum number of open files.
   # If this is the first open file and the pipe fails, then do not
   # attempt to open it again.
+  my $open_error = 0;
   while (!open(FD, $filename)) {
+    my $num_current_open_files = keys %{$self->[I_HASH]};
     warn "$0: warning: cannot open `$filename' for reading: $!\n";
-    my $num_current_open_files = (keys %{$self->[I_HASH]});
+    warn "$0: warning: there are current $num_current_open_files open source ",
+         "files.\n";
     return unless $num_current_open_files;
+
     $num_current_open_files -= 2;
     return if $num_current_open_files <= 4;
     warn "$0: warning: shrinking maximum number open files to ",
          "$num_current_open_files.\n";
+
     $self->[I_MAX_ELEMENTS] = $num_current_open_files;
     $self->_close_extra($num_current_open_files-1);
+    $open_error = 1;
+  }
+
+  if ($open_error) {
+    warn "$0: warning: finally able to open `$filename' for reading.\n";
   }
 
   $self->add($fid, $weight, *FD, $is_pipe);

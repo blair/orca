@@ -1,10 +1,13 @@
 /*****************************************************************************
- * RRDtool 1.0.33  Copyright Tobias Oetiker, 1997 - 2000
+ * RRDtool 1.0.40  Copyright Tobias Oetiker, 1997 - 2000
  *****************************************************************************
  * rrd_open.c  Open an RRD File
  *****************************************************************************
- * $Id: rrd_open.c,v 1.6 1998/03/08 12:35:11 oetiker Exp oetiker $
+ * $Id: rrd_open.c,v 1.1.1.1 2002/02/26 10:21:37 oetiker Exp $
  * $Log: rrd_open.c,v $
+ * Revision 1.1.1.1  2002/02/26 10:21:37  oetiker
+ * Intial Import
+ *
  *****************************************************************************/
 
 #include "rrd_tool.h"
@@ -42,6 +45,7 @@ rrd_open(char *file_name, FILE **in_file, rrd_t *rrd, int rdwr)
 #define MYFREAD(MYVAR,MYVART,MYCNT) \
     if ((MYVAR = malloc(sizeof(MYVART) * MYCNT)) == NULL) {\
 	rrd_set_error("" #MYVAR " malloc"); \
+        fclose(*in_file); \
     return (-1); } \
     fread(MYVAR,sizeof(MYVART),MYCNT, *in_file); 
 
@@ -52,17 +56,20 @@ rrd_open(char *file_name, FILE **in_file, rrd_t *rrd, int rdwr)
 	if (strncmp(rrd->stat_head->cookie,RRD_COOKIE,4) != 0){
 	    rrd_set_error("'%s' is not an RRD file",file_name);
 	    free(rrd->stat_head);
+	    fclose(*in_file);
 	    return(-1);}
 
 	if (strncmp(rrd->stat_head->version,RRD_VERSION,5) != 0){
-	    rrd_set_error("cant handle RRD file version %s",
+	    rrd_set_error("can't handle RRD file version %s",
 			rrd->stat_head->version);
 	    free(rrd->stat_head);
+	    fclose(*in_file);
 	    return(-1);}
 
 	if (rrd->stat_head->float_cookie != FLOAT_COOKIE){
 	    rrd_set_error("This RRD was created on other architecture");
 	    free(rrd->stat_head);
+	    fclose(*in_file);
 	    return(-1);}
 
     MYFREAD(rrd->ds_def,    ds_def_t,     rrd->stat_head->ds_cnt)

@@ -12,6 +12,9 @@ have stored over 300 source text files. Currently I have 34472 files
 using 7.3 gigabytes of storage.  I have 9 different orcallator.cfg for
 different classes of machines.
 
+* Orca:	Fix the "did exist and is now gone" email messages for source
+	files that are fine.
+
 * Orca: Have an install option just for orcallator.se and not the
         Orca whole pacckage.
 

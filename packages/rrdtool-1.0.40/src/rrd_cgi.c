@@ -1,5 +1,5 @@
 /*****************************************************************************
- * RRDtool 1.0.33  Copyright Tobias Oetiker, 1997 - 2000
+ * RRDtool 1.0.40  Copyright Tobias Oetiker, 1997 - 2000
  *****************************************************************************
  * rrd_cgi.c  RRD Web Page Generator
  *****************************************************************************/
@@ -454,7 +454,7 @@ char* scanargs(char *aLine, long *argc, char ***args)
   getP = aLine;
   putP = aLine;
   while (*getP && !( !Quote  && (braket == 0) && ((*getP) == '>'))){
-    if (*getP < ' ') *getP = ' '; /*remove all special chars*/
+    if ((unsigned)*getP < ' ') *getP = ' '; /*remove all special chars*/
     switch (*getP) {
     case ' ': 
       if (Quote){

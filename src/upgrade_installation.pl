@@ -5,6 +5,7 @@
 # 2) Rename all files with * in them to _times_.
 #
 # Copyright (C) 1999 Blair Zajac and GeoCities, Inc.
+# Copyright (C) 1999-2002 Blair Zajac.
 
 use strict;
 use File::Find;

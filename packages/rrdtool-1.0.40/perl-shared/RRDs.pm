@@ -7,7 +7,7 @@ use vars qw(@ISA $VERSION);
 
 require DynaLoader;
 
-$VERSION = 1.000331;
+$VERSION = 1.000401;
 
 bootstrap RRDs $VERSION;
 
@@ -110,6 +110,16 @@ integers, a pointer to an array and a pointer to a array of pointers.
   }
 
 See the examples directory for more ways to use this extension.
+
+=head1 NOTE
+
+If you are manipulating the TZ variable you should also call the posixs
+function tzset to initialize all internal state of the library for properly
+operating in the timezone of your choice.
+
+ use POSIX qw(tzset);
+ $ENV{TZ} = 'CET';
+ POSIX::tzset();
 
 =head1 AUTHOR
 

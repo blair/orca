@@ -1,18 +1,26 @@
 #!./perl
-
-# $Id: tied.t,v 1.0 2000/09/01 19:40:42 ram Exp $
 #
 #  Copyright (c) 1995-2000, Raphael Manfredi
 #  
 #  You may redistribute only under the same terms as Perl 5, as specified
 #  in the README file that comes with the distribution.
 #
-# $Log: tied.t,v $
-# Revision 1.0  2000/09/01 19:40:42  ram
-# Baseline for first official release.
-#
 
-require 't/dump.pl';
+sub BEGIN {
+    if ($ENV{PERL_CORE}){
+	chdir('t') if -d 't';
+	@INC = ('.', '../lib', '../ext/Storable/t');
+    } else {
+	unshift @INC, 't';
+    }
+    require Config; import Config;
+    if ($ENV{PERL_CORE} and $Config{'extensions'} !~ /\bStorable\b/) {
+        print "1..0 # Skip: Storable was not built\n";
+        exit 0;
+    }
+    require 'st-dump.pl';
+}
+
 sub ok;
 
 use Storable qw(freeze thaw);
@@ -199,4 +207,3 @@ my $ht = thaw($hf);
 ok 20, defined $ht;
 ok 21, $ht->{'x'} == 1;
 ok 22, $FAULT::fault == 2;
-

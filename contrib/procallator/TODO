@@ -1,0 +1,9 @@
+Procallator TODO list:
+	- Use the same names for data sets as in solaris version for using same config files
+	- Document and optimize collectorn source code
+	- Write better config file for network and NFS stats
+	- Add web server stats
+	- LVM statsi
+
+
+Copyright (C) 2001 Guilherme Carvalho Chehab.  All Rights Reserved

@@ -1,21 +1,26 @@
 #!./perl
-
-# $Id: tied_hook.t,v 1.0.1.1 2001/02/17 12:29:01 ram Exp $
 #
 #  Copyright (c) 1995-2000, Raphael Manfredi
 #  
 #  You may redistribute only under the same terms as Perl 5, as specified
 #  in the README file that comes with the distribution.
 #
-# $Log: tied_hook.t,v $
-# Revision 1.0.1.1  2001/02/17 12:29:01  ram
-# patch8: added test for blessed ref to tied hash
-#
-# Revision 1.0  2000/09/01 19:40:42  ram
-# Baseline for first official release.
-#
 
-require 't/dump.pl';
+sub BEGIN {
+    if ($ENV{PERL_CORE}){
+	chdir('t') if -d 't';
+	@INC = ('.', '../lib', '../ext/Storable/t');
+    } else {
+	unshift @INC, 't';
+    }
+    require Config; import Config;
+    if ($ENV{PERL_CORE} and $Config{'extensions'} !~ /\bStorable\b/) {
+        print "1..0 # Skip: Storable was not built\n";
+        exit 0;
+    }
+    require 'st-dump.pl';
+}
+
 sub ok;
 
 use Storable qw(freeze thaw);
@@ -240,4 +245,3 @@ ok 24, ref $bx eq 'TIED_HASH_REF';
 $old_hash_fetch = $hash_fetch;
 $v = $bx->{attribute};
 ok 25, $hash_fetch == $old_hash_fetch + 1;	# Still tied
-

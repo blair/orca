@@ -1,0 +1,550 @@
+#!/usr/bin/perl -w
+#
+#	collector for /proc statistics for use with Linux 2.2 and 2.4 kernels.
+#
+#	 Copyright (C) 2001 Guilherme Carvalho Chehab.  All Rights Reserved.
+#
+# Config variables
+#$PROC="./linux-2.2";		# Proc directory, usually /proc
+$PROC="/proc";			# Proc directory, usually /proc
+$INTERVAL=300;			# Interval between each measure, in seconds
+$COMPRESS="/usr/bin/gzip";	# Compressor...
+$HOSTNAME=`/bin/hostname`;
+chomp $HOSTNAME;
+$DEST_DIR="/usr/local/var/orca/$HOSTNAME";	# Destination dir for output files
+#$DEST_DIR="/tmp";	# Destination dir for output files
+
+# Initializations
+$r=0;				# Rotating indice for measuring counter differences
+$rate_ok=0;			# Check if is ok to calculate rates
+
+# Create output dir if needed
+if (! -d $DEST_DIR ) {
+   `mkdir -p $DEST_DIR`;
+}
+
+# Read kernel version
+open (F_VERSION, "<$PROC/version");
+($os,$line,$version)=split / +/ , <F_VERSION>, 4;
+close (F_VERSION);
+
+# Main loop
+do {
+   # Wait for the next INTERVAL 
+   sleep ($INTERVAL-time() % $INTERVAL);
+
+   # Loop initializations
+   $n_cols[$r]=0;
+
+   # Get Local time & uptime
+   $timestamp=time();
+   ($sec,$min,$hour,$mday,$mon,$year,$yday,$isdst)=localtime($timestamp);
+   $mon+=1;
+   $year+=1900;
+   $locltime=sprintf "%02d:%02d:%02d", $hour,$min,$sec;
+   open (F_UPTIME,"<$PROC/uptime");
+   ($uptime)=split / +/,<F_UPTIME>;
+   close (F_UPTIME);
+      
+   # insert in output table
+   put_output("timestamp",$timestamp,"locltime",$locltime,"uptime",$uptime);
+
+   # Evaluate filename
+   $out_filename[$r]=sprintf "%s/proccol-%04d-%02d-%02d",$DEST_DIR, $year,$mon,$mday;
+
+   # Read load average
+   open (F_LOADAVG, "<$PROC/loadavg");
+   ($runq_1, $runq_5, $runq_15, $proc_run, $procs[$r], $last_pid)=split / +|\//, <F_LOADAVG>;
+   chomp $last_pid;
+   close (F_LOADAVG);
+   put_output ( "1runq",$runq_1,
+		"5runq",$runq_5,
+		"15runq",$runq_15,
+		"#proc_oncpu",$proc_run,
+		"#proc",$procs[$r],
+		"#proc/s",rate(@procs)
+   );
+
+   # Read system stats
+   open (F_STAT, "<$PROC/stat");
+   $n_cpus=0;
+   while ( $line=<F_STAT> ) {
+      chomp ($line);
+      if ( $line=~/cpu[0-9]*/ ) { 
+         ($cpu[$r][$n_cpus], $usr[$r][$n_cpus], $nice[$r][$n_cpus], $sys[$r][$n_cpus], $idle[$r][$n_cpus])= split / +/,$line;
+	 $total[$r][$n_cpus]= $usr[$r][$n_cpus] + $nice[$r][$n_cpus] + $sys[$r][$n_cpus] + $idle[$r][$n_cpus];
+         $n_cpus++;
+      }
+      if ( $line=~/page/) {
+	 ($dumb, $page_in[$r], $page_out[$r])= split / +/,$line;
+      }
+      if ( $line=~/swap/) {
+	 ($dumb, $swap_in[$r], $swap_out[$r])= split / +/,$line;
+      }
+      if ( $line=~/ctxt/) {
+	 ($dumb, $ctxt[$r])=  split / +/,$line;
+      }
+      if ( $line=~/intr/) {
+	 @dumb=split / /,$line;
+	 $intr[$r]=0;
+         $i=1;
+         while ($i<@dumb) {
+            $intr[$r]+=$dumb[$i];
+	    $i++;
+         }
+      }
+      
+      # Linux 2.4 style I/O report
+      if ( $line=~/disk_io/ ) {
+         @dsk=0;
+         $i=0;
+	 ($dsk_stat_t[$r],$dsk_rio_t[$r],$dsk_rblk_t[$r],$dsk_wio_t[$r],$dsk_wblk_t[$r])=(0,0,0,0);
+
+	 ($dumb, $line)= split /: /,$line;
+         $n_dsk=@dsk= split / /,$line;
+
+         while ($i<$n_dsk) {
+	    (  $dumb,
+               $dsk_maj[$r][$i],$dsk_min[$r][$i],
+               $dsk_stat[$r][$i],
+               $dsk_rio[$r][$i],$dsk_rblk[$r][$i],
+               $dsk_wio[$r][$i],$dsk_wblk[$r][$i]
+            ) = split /[^0-9]+/,$dsk[$i];
+            $dsk_stat_t[$r]+=$dsk_stat[$r][$i];
+	    $dsk_rio_t[$r] +=$dsk_rio[$r][$i];
+	    $dsk_rblk_t[$r]+=$dsk_rblk[$r][$i];
+	    $dsk_wio_t[$r] +=$dsk_wio[$r][$i];
+	    $dsk_wblk_t[$r]+=$dsk_wblk[$r][$i];
+            $i++;
+	 }
+      }
+
+      # Linux 2.2 style I/O report, they are strangely limited to first 4 disks
+      if ( $line=~/disk / ) {
+ 	 @dumb=split / /,$line;
+	 $dsk_stat_t[$r]=0;
+ 	 $i=1;
+         while ($i<@dumb) {
+            $dsk_stat_t[$r]+=$dumb[$i];
+            $i++;
+         }
+      }
+      if ( $line=~/disk_rio / ) {
+ 	 @dumb=split / /,$line;
+	 $dsk_rio_t[$r]=0;
+ 	 $i=1;
+         while ($i<@dumb) {
+            $dsk_rio_t[$r]+=$dumb[$i];
+            $i++;
+         }
+      }
+      if ( $line=~/disk_wio / ) {
+ 	 @dumb=split / /,$line;
+	 $dsk_wio_t[$r]=0;
+ 	 $i=1;
+         while ($i<@dumb) {
+            $dsk_wio_t[$r]+=$dumb[$i];
+            $i++;
+         }
+      }
+      if ( $line=~/disk_rblk / ) {
+ 	 @dumb=split / /,$line;
+	 $dsk_rblk_t[$r]=0;
+ 	 $i=1;
+         while ($i<@dumb) {
+            $dsk_rblk_t[$r]+=$dumb[$i];
+            $i++;
+         }
+      }
+      if ( $line=~/disk_wblk / ) {
+ 	 @dumb=split / /,$line;
+	 $dsk_wblk_t[$r]=0;
+ 	 $i=1;
+         while ($i<@dumb) {
+            $dsk_wblk_t[$r]+=$dumb[$i];
+            $i++;
+         }
+      }
+   }
+
+   # Operate percentuals and rates for system Stats
+   for ($i=0;$i<$n_cpus ;$i++) {
+      $usr_100 [$i]=rate_prcnt($usr [$r][$i],$usr [1-$r][$i],$total[$r][$i],$total[1-$r][$i]);
+      $nice_100[$i]=rate_prcnt($nice[$r][$i],$nice[1-$r][$i],$total[$r][$i],$total[1-$r][$i]);
+      $sys_100 [$i]=rate_prcnt($sys [$r][$i],$sys [1-$r][$i],$total[$r][$i],$total[1-$r][$i]);
+      $idle_100[$i]=rate_prcnt($idle[$r][$i],$idle[1-$r][$i],$total[$r][$i],$total[1-$r][$i]);
+      if ($i==0) {
+         put_output("ncpus",$n_cpus-1,"usr%",$usr_100 [$i],"nice%",$nice_100[$i],"sys%",$sys_100 [$i],"wait%",$idle_100[$i]);
+      } else {
+ 	 if ($n_cpus>2) {
+            put_output("usr_%_$i",$usr_100 [$i],"nice_%_$i",$nice_100[$i],"sys_%_$i",$sys_100 [$i],"wait_%_$i",$idle_100[$i]);
+         }
+      }
+   }
+
+   put_output ( "pages_in",rate(@page_in),
+		"pages_out",rate(@page_out),
+		"swap_in",rate(@swap_in),
+		"swap_out",rate(@swap_out),
+		"ctxt/s",rate(@ctxt),
+		"intr/s",rate (@intr)
+   );
+
+   put_output ( "disk_op/s",rate(@dsk_stat_t),
+		"disk_rd/s",rate(@dsk_rio_t),
+		"disk_wr/s",rate(@dsk_wio_t),
+		"disk_rB/s",rate(@dsk_rblk_t),
+		"disk_wB/s",rate(@dsk_wblk_t)
+   );
+
+   if ( $version=~/^2\.4/ ) {
+      for ($i=0; $i<$n_dsk; $i++) {
+	 $dumb="c$dsk_maj[$r][$i]_d$dsk_min[$r][$i]";
+	 put_output("disk_op_$dumb/s",rate($dsk_stat[$r][$i],$dsk_stat[1-$r][$i]),
+		    "disk_rd_$dumb/s",rate($dsk_rio[$r][$i], $dsk_rio[1-$r][$i]),
+		    "disk_wr_$dumb/s",rate($dsk_wio[$r][$i], $dsk_wio[1-$r][$i]),
+		    "disk_rB_$dumb/s",rate($dsk_rblk[$r][$i],$dsk_rblk[1-$r][$i]),
+		    "disk_wB_$dumb/s",rate($dsk_wblk[$r][$i],$dsk_wblk[1-$r][$i])
+         );
+      }
+   }
+   close (F_STAT);
+
+   # Get filesystem ocupation
+   @df=`/bin/df -k`;
+   for ($i=1,$j=0;$df[$i];$i++)  {
+      if (!(($df[$i]=~/cdrom/)||($df[$i]=~/cdrom/))) {
+	 chomp $df[$i];
+	 ($dumb, $fs[2][$j], $fs[3][$j], $dumb, $dumb, $fs[0][$j])= split / +/,$df[$i];
+	 $fs[1][$j]=prcnt($fs[3][$j],$fs[2][$j]);
+	 put_output("mnt_$fs[0][$j]",$fs[1][$j]);
+	 $j++;
+      }
+   }
+   $n_fs=$j;
+
+   # Get memory ocupation
+   open (F_MEMINFO, "<$PROC/meminfo");
+   <F_MEMINFO>;
+   ($dumb, $mem_total,$mem_used,$mem_free,$mem_shrd,$mem_buff,$mem_cchd)=split /[^0-9]+/,<F_MEMINFO>;
+   ($dumb, $swp_total,$swp_used,$swp_free)=split /[^0-9]+/,<F_MEMINFO>;
+   close (F_MEMINFO);
+   put_output ( "mem_used%",prcnt($mem_used,$mem_total),
+   		"mem_free%",prcnt($mem_free,$mem_total),
+		"mem_shrd%",prcnt($mem_shrd,$mem_total),
+		"mem_buff%",prcnt($mem_buff,$mem_total),
+   		"mem_cchd%",prcnt($mem_cchd,$mem_total),
+   		"swp_free%",prcnt($swp_free,$swp_total),
+		"swp_used%",prcnt($swp_used,$swp_total)
+   );
+
+   # Get network interface statistics
+   open (F_NET_DEV, "<$PROC/net/dev");
+   $i=0;
+   while ($line=<F_NET_DEV>) {
+      if ($line=~/:/) {
+         ($if_name[$i][$r],$line)=split /: */,$line;
+         ($dumb, $if_name[$i][$r])=split /^ +/,$if_name[$i][$r];
+	 (  $if_in_b[$i][$r],  $if_in_p[$i][$r],
+	    $if_in_e[$i][$r],  $if_in_d[$i][$r],
+            $if_in_ff[$i][$r], $if_in_fr[$i][$r],
+            $if_in_c[$i][$r],  $if_in_m[$i][$r],
+	    $if_out_b[$i][$r], $if_out_p[$i][$r],
+	    $if_out_e[$i][$r], $if_out_d[$i][$r],
+            $if_out_ff[$i][$r],$if_out_cl[$i][$r],
+            $if_out_ca[$i][$r], $if_out_cp[$i][$r]
+         ) = split / +/,$line;
+         put_output (	"if_in_b_$if_name[$i][$r]",  rate ($if_in_b[$i][$r] ,$if_in_b[$i][1-$r]),
+		     	"if_in_p_$if_name[$i][$r]",  rate ($if_in_p[$i][$r],$if_in_p[$i][1-$r]),
+         	     	"if_in_e_$if_name[$i][$r]",  rate ($if_in_e[$i][$r],$if_in_e[$i][1-$r]),
+			"if_in_d_$if_name[$i][$r]",  rate ($if_in_d[$i][$r],$if_in_d[$i][1-$r]),
+			"if_in_ff_$if_name[$i][$r]", rate ($if_in_ff[$i][$r],$if_in_ff[$i][1-$r]),
+			"if_in_fr_$if_name[$i][$r]", rate ($if_in_fr[$i][$r],$if_in_fr[$i][1-$r]),
+			"if_in_c_$if_name[$i][$r]",  rate ($if_in_c[$i][$r],$if_in_c[$i][1-$r]),
+			"if_in_m_$if_name[$i][$r]",  rate ($if_in_m[$i][$r],$if_in_m[$i][1-$r]),
+			"if_out_b_$if_name[$i][$r]", rate ($if_out_b[$i][$r],$if_out_b[$i][1-$r]),
+			"if_out_p_$if_name[$i][$r]", rate ($if_out_p[$i][$r],$if_out_p[$i][1-$r]),
+			"if_out_e_$if_name[$i][$r]", rate ($if_out_e[$i][$r],$if_out_e[$i][1-$r]),
+			"if_out_d_$if_name[$i][$r]", rate ($if_out_d[$i][$r],$if_out_d[$i][1-$r]),
+			"if_out_ff_$if_name[$i][$r]",rate ($if_out_ff[$i][$r],$if_out_ff[$i][1-$r]),
+			"if_out_cl_$if_name[$i][$r]",rate ($if_out_cl[$i][$r],$if_out_cl[$i][1-$r]),
+			"if_out_ca_$if_name[$i][$r]",rate ($if_out_ca[$i][$r],$if_out_ca[$i][1-$r]),
+			"if_out_cp_$if_name[$i][$r]",rate ($if_out_cp[$i][$r],$if_out_cp[$i][1-$r])
+         );
+
+         $i++;
+      }
+   }
+   $n_nets=$i;
+
+   # Get TCP/IP statistics
+   open (F_SNMP, "<$PROC/net/snmp");
+   $j=0;
+   while ($line=<F_SNMP>) {
+      $line2=<F_SNMP>;
+      chomp $line;
+      chomp $line2;
+      ($cat,$line) = split /: +/,$line;
+      ($dumb,$line2)=split /: +/,$line2;
+      (@dumb) =split / +/,$line;
+      (@dumb2)=split / +/,$line2;
+      for ($i=0; $dumb[$i]; $i++, $j++) {
+	 $net_parm[0][$j]=sprintf "%s_%s",$cat,$dumb[$i];
+	 $net_parm[2+$r][$j]= $dumb2[$i];
+	 $net_parm[1][$j]= rate ($net_parm[2+$r][$j],$net_parm[3-$r][$j]);
+	 SWITCH: {
+            if ($cat=~/Ip/) {
+	       if ($net_parm[0][$j]=~/In|Out|Forw|Reasm|Frag/) {
+		  put_output("$net_parm[0][$j]",$net_parm[1][$j]); 
+	       };
+	       last SWITCH;
+	    }
+	    if ($cat=~/Icmp/) {
+	       put_output("$net_parm[0][$j]",$net_parm[1][$j]);
+               last SWITCH;
+            }
+	    if ($cat=~/Udp/) {
+	       put_output("$net_parm[0][$j]",$net_parm[1][$j]);
+               last SWITCH;
+            }
+	    if ($cat=~/Tcp/) {
+	       if ($net_parm[0][$j]=~/Rto|Max/) { last SWITCH; }
+	       if ($net_parm[0][$j]=~/CurrEstab/) {
+	  	  put_output("g$net_parm[0][$j]",$net_parm[2+$r][$j]); 
+	          last SWITCH;
+               }
+               put_output("$net_parm[0][$j]",$net_parm[1][$j]);
+               last SWITCH;
+	    };
+	 }
+      }
+   }
+   $net_parms=$j;
+
+   # Get NFS Client statistics
+   if ( -f "$PROC/net/rpc/nfs") {
+      open (F_NFS, "<$PROC/net/rpc/nfs");
+      while ($line=<F_NFS>) {
+
+         if ($line=~/rpc/) {
+     	    ($dumb,$nfs_c_rpc_calls[$r],$nfs_c_rpc_retrs[$r],$nfs_c_rpc_auth[$r])=split / +/,$line;
+            put_output(	"nfs_c_rpc_calls",	rate(@nfs_c_rpc_calls),
+			"nfs_c_rpc_retrs",	rate(@nfs_c_rpc_retrs),
+			"nfs_c_rpc_auth",	rate(@nfs_c_rpc_auth)
+            );
+         }
+
+	 if ($line=~/proc2/) {
+	    ( $dumb,$dumb,$dumb,	$nfs_c_p2_getattr[$r],	$nfs_c_p2_setattr[$r],	$nfs_c_p2_root[$r],
+              $nfs_c_p2_lookup[$r],	$nfs_c_p2_readlink[$r],	$nfs_c_p2_read[$r],	$nfs_c_p2_wrcache[$r],
+              $nfs_c_p2_write[$r],	$nfs_c_p2_create[$r],	$nfs_c_p2_remove[$r],	$nfs_c_p2_rename[$r],
+	      $nfs_c_p2_link[$r],	$nfs_c_p2_symlink[$r],	$nfs_c_p2_mkdir[$r],	$nfs_c_p2_rmdir[$r],
+	      $nfs_c_p2_readdir[$r],	$nfs_c_p2_fsstat[$r]
+            ) = split / +/,$line;
+
+            put_output( "nfs_c_p2_getattr",	rate(@nfs_c_p2_getattr),
+		 	"nfs_c_p2_setattr",	rate(@nfs_c_p2_setattr),
+			"nfs_c_p2_root",	rate(@nfs_c_p2_root),
+			"nfs_c_p2_lookup",	rate(@nfs_c_p2_lookup),
+			"nfs_c_p2_readlink",	rate(@nfs_c_p2_readlink),
+			"nfs_c_p2_read",	rate(@nfs_c_p2_read),
+			"nfs_c_p2_wrcache",	rate(@nfs_c_p2_wrcache),
+			"nfs_c_p2_write",	rate(@nfs_c_p2_write),
+			"nfs_c_p2_create",	rate(@nfs_c_p2_create),
+			"nfs_c_p2_remove",	rate(@nfs_c_p2_remove),
+			"nfs_c_p2_rename",	rate(@nfs_c_p2_rename),
+			"nfs_c_p2_link",	rate(@nfs_c_p2_link),
+			"nfs_c_p2_symlink",	rate(@nfs_c_p2_symlink),
+			"nfs_c_p2_mkdir",	rate(@nfs_c_p2_mkdir),
+			"nfs_c_p2_rmdir",	rate(@nfs_c_p2_rmdir),
+			"nfs_c_p2_readdir",	rate(@nfs_c_p2_readdir),
+			"nfs_c_p2_fsstat",	rate(@nfs_c_p2_fsstat)
+            );
+	 }
+	 if ($line=~/proc3/) {
+            ( $dumb,$dumb,$dumb,	$nfs_c_p3_getattr[$r],	$nfs_c_p3_setattr[$r],	$nfs_c_p3_lookup[$r],
+              $nfs_c_p3_access[$r],	$nfs_c_p3_readlink[$r],	$nfs_c_p3_read[$r],	$nfs_c_p3_write[$r],
+              $nfs_c_p3_create[$r],	$nfs_c_p3_mkdir[$r],	$nfs_c_p3_symlink[$r],	$nfs_c_p3_mknod[$r],
+              $nfs_c_p3_remove[$r],	$nfs_c_p3_rmdir[$r],	$nfs_c_p3_rename[$r],	$nfs_c_p3_link[$r],
+              $nfs_c_p3_readdir[$r],	$nfs_c_p3_readdirplus[$r],$nfs_c_p3_fsstat[$r],	$nfs_c_p3_fsinfo[$r],
+	      $nfs_c_p3_pathconf[$r],	$nfs_c_p3_commit[$r]
+            )=split / +/,$line;
+
+            put_output( "nfs_c_p3_getattr",	rate(@nfs_c_p3_getattr),
+                        "nfs_c_p3_setattr",	rate(@nfs_c_p3_setattr),
+                        "nfs_c_p3_lookup",	rate(@nfs_c_p3_lookup),
+                        "nfs_c_p3_access",	rate(@nfs_c_p3_access),
+                        "nfs_c_p3_readlink",	rate(@nfs_c_p3_readlink),
+                        "nfs_c_p3_read",	rate(@nfs_c_p3_read),
+                        "nfs_c_p3_write",	rate(@nfs_c_p3_write),
+                        "nfs_c_p3_create",	rate(@nfs_c_p3_create),
+                        "nfs_c_p3_mkdir",	rate(@nfs_c_p3_mkdir),
+                        "nfs_c_p3_symlink",	rate(@nfs_c_p3_symlink),
+                        "nfs_c_p3_mknod",	rate(@nfs_c_p3_mknod),
+                        "nfs_c_p3_remove",	rate(@nfs_c_p3_remove),
+                        "nfs_c_p3_rmdir",	rate(@nfs_c_p3_rmdir),
+                        "nfs_c_p3_rename",	rate(@nfs_c_p3_rename),
+                        "nfs_c_p3_link",	rate(@nfs_c_p3_link),
+                        "nfs_c_p3_readdir",	rate(@nfs_c_p3_readdir),
+                        "nfs_c_p3_readdirplus",	rate(@nfs_c_p3_readdirplus),
+                        "nfs_c_p3_fsstat",	rate(@nfs_c_p3_fsstat),
+                        "nfs_c_p3_fsinfo",	rate(@nfs_c_p3_fsinfo),
+                        "nfs_c_p3_pathconf",	rate(@nfs_c_p3_pathconf),
+                        "nfs_c_p3_commit",	rate(@nfs_c_p3_commit)
+            );
+         }
+      }
+   }
+
+   # Get NFS Server statistics
+   if ( -f "$PROC/net/rpc/nfsd") {
+      open (F_NFS, "<$PROC/net/rpc/nfsd");
+      while ($line=<F_NFS>) {
+
+         if ($line=~/rpc/) {
+     	    (  $dumb,$nfs_s_rpc_calls[$r],	$nfs_s_rpc_badcalls[$r],
+	       $nfs_s_rpc_badauth[$r],	$nfs_s_rpc_badclnt[$r],	$nfs_s_rpc_xdrcall[$r]
+            )=split / +/,$line;
+            put_output(	"nfs_s_rpc_calls",	rate(@nfs_s_rpc_calls),
+			"nfs_s_rpc_badcalls",	rate(@nfs_s_rpc_badcalls),
+			"nfs_s_rpc_badauth",	rate(@nfs_s_rpc_badauth),
+			"nfs_s_rpc_badclnt",	rate(@nfs_s_rpc_badclnt),
+			"nfs_s_rpc_xdrcall",	rate(@nfs_s_rpc_xdrcall)
+            );
+         }
+
+	 if ($line=~/proc2/) {
+	    ( $dumb,$dumb,$dumb,	$nfs_s_p2_getattr[$r],	$nfs_s_p2_setattr[$r],	$nfs_s_p2_root[$r],
+              $nfs_s_p2_lookup[$r],	$nfs_s_p2_readlink[$r],	$nfs_s_p2_read[$r],	$nfs_s_p2_wrcache[$r],
+              $nfs_s_p2_write[$r],	$nfs_s_p2_create[$r],	$nfs_s_p2_remove[$r],	$nfs_s_p2_rename[$r],
+	      $nfs_s_p2_link[$r],	$nfs_s_p2_symlink[$r],	$nfs_s_p2_mkdir[$r],	$nfs_s_p2_rmdir[$r],
+	      $nfs_s_p2_readdir[$r],	$nfs_s_p2_fsstat[$r]
+            ) = split / +/,$line;
+
+            put_output( "nfs_s_p2_getattr",	rate(@nfs_s_p2_getattr),
+		 	"nfs_s_p2_setattr",	rate(@nfs_s_p2_setattr),
+			"nfs_s_p2_root",	rate(@nfs_s_p2_root),
+			"nfs_s_p2_lookup",	rate(@nfs_s_p2_lookup),
+			"nfs_s_p2_readlink",	rate(@nfs_s_p2_readlink),
+			"nfs_s_p2_read",	rate(@nfs_s_p2_read),
+			"nfs_s_p2_wrcache",	rate(@nfs_s_p2_wrcache),
+			"nfs_s_p2_write",	rate(@nfs_s_p2_write),
+			"nfs_s_p2_create",	rate(@nfs_s_p2_create),
+			"nfs_s_p2_remove",	rate(@nfs_s_p2_remove),
+			"nfs_s_p2_rename",	rate(@nfs_s_p2_rename),
+			"nfs_s_p2_link",	rate(@nfs_s_p2_link),
+			"nfs_s_p2_symlink",	rate(@nfs_s_p2_symlink),
+			"nfs_s_p2_mkdir",	rate(@nfs_s_p2_mkdir),
+			"nfs_s_p2_rmdir",	rate(@nfs_s_p2_rmdir),
+			"nfs_s_p2_readdir",	rate(@nfs_s_p2_readdir),
+			"nfs_s_p2_fsstat",	rate(@nfs_s_p2_fsstat)
+            );
+	 }
+	 if ($line=~/proc3/) {
+            ( $dumb,$dumb,$dumb,	$nfs_s_p3_getattr[$r],	$nfs_s_p3_setattr[$r],	$nfs_s_p3_lookup[$r],
+              $nfs_s_p3_access[$r],	$nfs_s_p3_readlink[$r],	$nfs_s_p3_read[$r],	$nfs_s_p3_write[$r],
+              $nfs_s_p3_create[$r],	$nfs_s_p3_mkdir[$r],	$nfs_s_p3_symlink[$r],	$nfs_s_p3_mknod[$r],
+              $nfs_s_p3_remove[$r],	$nfs_s_p3_rmdir[$r],	$nfs_s_p3_rename[$r],	$nfs_s_p3_link[$r],
+              $nfs_s_p3_readdir[$r],	$nfs_s_p3_readdirplus[$r],$nfs_s_p3_fsstat[$r],	$nfs_s_p3_fsinfo[$r],
+	      $nfs_s_p3_pathconf[$r],	$nfs_s_p3_commit[$r]
+            )=split / +/,$line;
+
+            put_output( "nfs_s_p3_getattr",	rate(@nfs_s_p3_getattr),
+                        "nfs_s_p3_setattr",	rate(@nfs_s_p3_setattr),
+                        "nfs_s_p3_lookup",	rate(@nfs_s_p3_lookup),
+                        "nfs_s_p3_access",	rate(@nfs_s_p3_access),
+                        "nfs_s_p3_readlink",	rate(@nfs_s_p3_readlink),
+                        "nfs_s_p3_read",	rate(@nfs_s_p3_read),
+                        "nfs_s_p3_write",	rate(@nfs_s_p3_write),
+                        "nfs_s_p3_create",	rate(@nfs_s_p3_create),
+                        "nfs_s_p3_mkdir",	rate(@nfs_s_p3_mkdir),
+                        "nfs_s_p3_symlink",	rate(@nfs_s_p3_symlink),
+                        "nfs_s_p3_mknod",	rate(@nfs_s_p3_mknod),
+                        "nfs_s_p3_remove",	rate(@nfs_s_p3_remove),
+                        "nfs_s_p3_rmdir",	rate(@nfs_s_p3_rmdir),
+                        "nfs_s_p3_rename",	rate(@nfs_s_p3_rename),
+                        "nfs_s_p3_link",	rate(@nfs_s_p3_link),
+                        "nfs_s_p3_readdir",	rate(@nfs_s_p3_readdir),
+                        "nfs_s_p3_readdirplus",	rate(@nfs_s_p3_readdirplus),
+                        "nfs_s_p3_fsstat",	rate(@nfs_s_p3_fsstat),
+                        "nfs_s_p3_fsinfo",	rate(@nfs_s_p3_fsinfo),
+                        "nfs_s_p3_pathconf",	rate(@nfs_s_p3_pathconf),
+                        "nfs_s_p3_commit",	rate(@nfs_s_p3_commit)
+            );
+         }
+      }
+   }
+
+
+   # flush output
+   flush_output();
+
+   $r=1-$r;
+   $rate_ok=1;
+
+} while (1);
+
+# to perl dont complain on unused vars
+($os,$n_fs,$net_parms,$n_nets,$cpu,$yday,$isdst)=($os,$n_fs,$net_parms,$n_nets,$cpu,$yday,$isdst);
+
+sub rate {
+   my ($a,$b) = @_;
+   my $c;
+   $c= (!($a&&$b))?0:((abs($a-$b)%$INTERVAL)==0)?abs($a-$b)/$INTERVAL:sprintf("%.3f",abs($a-$b)/$INTERVAL);
+   return $c;
+}
+
+sub prcnt {
+   my ($a,$b) = @_;
+   return ($b==0) ? 0 : sprintf ("%.2f",100 * $a / $b);
+}
+
+sub rate_prcnt {
+   my ($a1,$a2,$b1,$b2) = @_;
+   if (!($a1&&$b1&&$a2&&$b2)) {
+      return 0;
+   }
+
+   return (abs($b1-$b2)==0)?0:sprintf ("%.2f",100*abs($a1-$a2)/abs($b1-$b2));
+}    
+
+sub flush_output {
+   my $t;
+
+   # check if new file is not required
+   open (F_OUT,">>$out_filename[$r]") or die "Could not open output";
+
+   if (!$rate_ok) {
+      for ($t=0;$t<$n_cols[$r];$t++) {
+	 print F_OUT $out [0][$t]," ";
+      }
+      print F_OUT "\n";
+   } else {
+      if ( ($n_cols[$r]!=$n_cols[1-$r]) || ($out_filename[$r] ne $out_filename[1-$r]) || $rate_ok==0 ) {
+         for ($t=0;$t<$n_cols[$r];$t++) {
+	    print F_OUT $out [0][$t]," ";
+         }
+         print F_OUT "\n";
+      }
+      if ($out_filename[$r] ne $out_filename[1-$r]) {
+         `$COMPRESS $out_filename[1-$r]`;
+      }
+   }
+
+   for ($t=0;$t<$n_cols[$r];$t++) {
+      print F_OUT $out [1][$t]," ";
+   }
+   print F_OUT "\n";
+   close F_OUT;	
+
+   @out=();
+}
+sub put_output {
+   my (@a) = @_;
+   my $t;
+
+   for ($t=0;$a[$t];$t+=2,$n_cols[$r]+=1) {
+      $out [0][$n_cols[$r]]=$a[$t];
+      $out [1][$n_cols[$r]]=$a[$t+1];
+   }
+}

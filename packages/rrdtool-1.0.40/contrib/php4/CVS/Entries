@@ -1,0 +1,23 @@
+/.cvsignore/1.1.1.1/Tue Feb 26 10:21:20 2002//
+/INSTALL/1.1.1.1/Tue Feb 26 10:21:20 2002//
+/Makefile.in/1.1.1.1/Tue Feb 26 10:21:20 2002//
+/README/1.1.1.1/Tue Feb 26 10:21:20 2002//
+/USAGE/1.1.1.1/Tue Feb 26 10:21:20 2002//
+/acinclude.m4/1.1.1.1/Tue Feb 26 10:21:20 2002//
+/aclocal.m4/1.1.1.1/Tue Feb 26 10:21:20 2002//
+/config.guess/1.1.1.1/Tue Feb 26 10:21:20 2002//
+/config.m4/1.1.1.1/Tue Feb 26 10:21:20 2002//
+/config.sub/1.1.1.1/Tue Feb 26 10:21:20 2002//
+/configure/1.1.1.1/Tue Feb 26 10:21:20 2002//
+/configure.in/1.1.1.1/Tue Feb 26 10:21:20 2002//
+/dynlib.m4/1.1.1.1/Tue Feb 26 10:21:20 2002//
+/install-sh/1.1.1.1/Tue Feb 26 10:21:20 2002//
+/ltconfig/1.1.1.1/Tue Feb 26 10:21:20 2002//
+/ltmain.sh/1.1.1.1/Tue Feb 26 10:21:20 2002//
+/missing/1.1.1.1/Tue Feb 26 10:21:20 2002//
+/mkinstalldirs/1.1.1.1/Tue Feb 26 10:21:20 2002//
+/php_config.h.in/1.1.1.1/Tue Feb 26 10:21:20 2002//
+/php_rrdtool.h/1.1.1.1/Tue Feb 26 10:21:20 2002//
+/rrdtool.c/1.1.1.1/Tue Feb 26 10:21:20 2002//
+D/build////
+D/examples////

@@ -12,6 +12,7 @@ S<[B<-e>|B<--end> I<seconds>]>
 S<[B<-x>|B<--x-grid> I<x-axis grid and label>]>
 S<[B<-y>|B<--y-grid> I<y-axis grid and label>]>
 S<[B<--alt-y-grid>]>
+S<[B<--alt-y-mrtg>]>
 S<[B<--alt-autoscale>]>
 S<[B<--alt-autoscale-max>]>
 S<[B<--units-exponent>]> I<value>]>
@@ -20,11 +21,15 @@ S<[B<-w>|B<--width> I<pixels>]>
 S<[B<-h>|B<--height> I<pixels>]> 
 S<[B<-i>|B<--interlaced>]> 
 S<[B<-f>|B<--imginfo> I<formatstring>]> 
-S<[B<-a>|B<--imgformat> B<GIF>|B<PNG>]> 
+S<[B<-a>|B<--imgformat> B<GIF>|B<PNG>|B<GD>]> 
+S<[B<-B>|B<--background> I<value>]>
+S<[B<-O>|B<--overlay> I<value>]>
+S<[B<-U>|B<--unit> I<value>]>
 S<[B<-z>|B<--lazy>]> 
 S<[B<-o>|B<--logarithmic>]>
 S<[B<-u>|B<--upper-limit> I<value>]> 
 S<[B<-l>|B<--lower-limit> I<value>]>
+S<[B<-g>|B<--no-legend>]>
 S<[B<-r>|B<--rigid>]>
 S<[B<--step> I<value>]>
 S<[B<-b>|B<--base> I<value>]>
@@ -113,6 +118,10 @@ day and not Monday morning 00:00. Thus the label should be positioned
 at noon. By defining a precision of 24 hours or rather 86400 seconds,
 you make sure that this happens.
 
+If you want to alter the genertated text to another language, use the
+LC_TIME environment variable to set the locale you prefere prior to calling
+the graph function.
+
 =item B<-y>|B<--y-grid> I<grid step>:I<label factor> (default autoconfigure)
 
 Makes vertical grid lines appear at I<grid step> interval. Every
@@ -128,6 +137,10 @@ that you always have grid, that there are enough but not too many
 grid lines and the grid is metric. That is grid lines are placed 
 every 1, 2, 5 or 10 units.  (contributed by Sasha Mikheev)
 
+=item B<--alt-y-mrtg>
+
+Y grid placed on graph Y range mimmics mrtg's (rateup-generated) graphs.
+Currently axis is split into 4 parts, just as rateup does.
 
 =item B<--alt-autoscale>
 
@@ -195,9 +208,25 @@ would look like this:
 
  --imginfo '<IMG SRC="/img/%s" WIDTH="%lu" HEIGHT="%lu" ALT="Demo">'
 
-=item B<-a>|B<--imgformat> B<GIF>|B<PNG> (default: GIF)
+=item B<-a>|B<--imgformat> B<GIF>|B<PNG>|B<GD> (default: GIF)
 
-Allows you to produce PNG output from rrdtool. 
+Allows you to produce PNG or GD output from rrdtool. 
+
+=item B<-B>|B<--background> I<value>
+
+You could use image in (currently only) GD format for background. It is
+used as background at the very beginning of graph creation.
+
+=item B<-O>|B<--overlay> I<value>
+
+You could use image in (currently only) GD format as overlay. It is
+placed over created graph so that white pixel (color 255,255,255) is
+considered transparent, all other is replacing corresponding pixel in created graph.
+
+=item B<-U>|B<--unit> I<value>
+
+You could use unit to be displayed on y axis. It is wise to use only short
+units on graph, however.
 
 =item B<-z>|B<--lazy> (default: false)
 
@@ -360,6 +389,12 @@ Push an I<*UNKNOWN*> value onto the stack.
 Push I<*UNKNOWN*> if its at the first value of a data set or otherwise
 the value of this CDEF at the previous time step. This allows you to
 perform calculations across the data.
+
+=item PREV(vname)
+
+Push I<*UNKNOWN*> if its at the first value of the data set named vname
+or otherwise the value of the CDEF named vname at the previous time step.
+This allows you to perform complex calculations across the data.
 
 =item INF, NEGINF
 
@@ -536,7 +571,7 @@ doesn't match.
          CDEF:agginput=idat1,UN,0,idat1,IF,idat2,UN,0,idat2,IF,+,8,* \
          CDEF:aggoutput=odat1,UN,0,odat1,IF,odat2,UN,0,odat2,IF,+,8,* \
          AREA:agginput#00cc00:Input Aggregate \
-         LINE1:agginput#0000FF:Output Aggregate
+         LINE1:aggoutput#0000FF:Output Aggregate
          
 Assuming that idat1 has a data value of I<*UNKNOWN*>, the CDEF expression 
 

@@ -1,4 +1,4 @@
-#! /usr/sepp/bin/perl
+#! /usr/bin/perl
 
 # add_ds.pl, program to add datasources to an existing RRD 
 #

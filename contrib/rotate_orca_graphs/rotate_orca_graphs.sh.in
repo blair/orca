@@ -32,7 +32,7 @@ if test "$dir1" = "$dir2"; then
   exit 1
 fi
 
-if test ! -e $ARCHIVE_DIR/$DATE; then
+if /bin/test ! -e $ARCHIVE_DIR/$DATE; then
   mkdir $ARCHIVE_DIR/$DATE || exit 1
 fi
 

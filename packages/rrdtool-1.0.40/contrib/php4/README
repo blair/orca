@@ -1,71 +1,11 @@
-$Id: README,v 1.4 2000/08/28 23:24:08 joeym Exp joeym $
+This is an adapted version of rrdtool for the php-4.0.6 version 
+of the RedHat sourcecode. Just go into the main php
+Directory, say php-4.0.6, go into the ext Directory and untar this
+tar-file.
 
-UPDATES for php4:
+call: ./buildconf in the Main php-4.0.6 directory
+add "--with-rrdtool" to the general ./configure call.
 
-    This version of the module will only build for php4/zend.  It will
-not build for php3.  Get php3_rrdtool from the rrdtool distribution
-if you need the rrd_* functions in php3.  
+And you'r done.
 
-    The module now contains two ways to install.  The first is as
-a self-contained extension (much like the php3_rrdtool module),
-and the second is as a php4 embedded extension.  See the INSTALL
-file for instructions on how to install in both ways.
-
-    Also fixed some of the scripts in the 'examples' directory. 
-A few of them were checking the return value for -1 on some
-of the rrd_* function calls.  Most calls will return 0 or 1 to
-indicate failure or success, not -1.  Sorry about that.
-
-
-
-------------------------------------
-
-PHP bindings for RRD Tool.
-
-    Contained herein are bindings to allow you to interface
-php scripts with RRD tool directly via RRD tool's 'librrd' library,
-thus avoiding the need to use system() calls to the rrdtool binary.
-
-    RRD Tool is an AMAZING package of tools to faciliate
-the easy storage, retrieval, and graphing of statistics (usually
-but not limited to bit/byte counts from routers, switches, and 
-hubs).  It was written by the author of MRTG, Tobias Oetiker
-(oetiker@ee.ethz.ch).  The primary web site for RRD Tool is:
-http://www.caida.org/Tools/RRDtool
-
-
-Reason I wrote this:  Wanted to use PHP to create fairly real-time / 
-dynamic web pages w/ RRD tool, but the only way was to use system()
-and popen() with PHP, since there was no direct interface to RRD
-Tool from PHP.  The fork()ing would have been slow and tedious
-so that was pretty much out of the question.  I could have used the 
-Perl library (RRDs) to interface ePerl, or mod_perl, or even 
-'rrdcgi', but I didn't really want to.  I wanted to use PHP and
-there was nothing to change my mind.
-
-
-You are free to redistribute the source provided my name is
-kept at the top of the source files as credit for the original
-author.  I make no warranties to the usability of this software,
-nor I am responsible if your machine explodes (although it 
-shouldn't).
-
-
-BUGS:
-     There might be some.  Let me know: joeym@inficad.com.  
-Patches to fix bugs you find are more welcome than simple
-reports of bugs (I don't have a lot of time to maintain
-this code).
-
-	You must include OS, apache version, and method of use
-(embedded or self-contained extension) in bug reports.  This
-info is important.  Also, give as much detail and examples 
-as possible so I can figure out what is wrong =)
-
-THANKS:
-	I'd like to thank Jeroen Roodnat for generously helping 
-debug the PHP4/Zend version of this module.  
-
-
-Joe Miller, <joeym@inficad.com>,<joeym@ibizcorp.com>,
-2/12/2000  (updated: 8/28/2000)
+NOTE: You need rrdtool-1.0.38 to be installed forthis to compile properly.

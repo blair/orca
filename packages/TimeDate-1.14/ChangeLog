@@ -1,3 +1,141 @@
+Change 753 on 2002/11/03 by <gbarr@pobox.com> (Graham Barr)
+
+	Fix bug parsing 2002-11-02 11pm
+
+Change 752 on 2002/11/03 by <gbarr@pobox.com> (Graham Barr)
+
+	Add Greek language module from Matthew Musgrove
+
+Change 744 on 2002/09/16 by <gbarr@pobox.com> (Graham Barr)
+
+	Add Date::Language::Brazilian and Date::Language::Danish
+	to MANIFEST
+
+Change 743 on 2002/09/16 by <gbarr@pobox.com> (Graham Barr)
+
+	Add Date::Language::Brazilian from Christian Tosta
+	Add Date::Language::Danish from Lars Skjærlund
+
+Change 742 on 2002/09/16 by <gbarr@pobox.com> (Graham Barr)
+
+	Time::Zone
+	- Add some zones for Brazil
+
+Change 741 on 2002/09/16 by <gbarr@pobox.com> (Graham Barr)
+
+	Time::Zone [cpan #1299]
+	- Allow $ENV{TZ} to have zomes like EST5
+
+Change 733 on 2002/06/13 by <gbarr@pobox.com> (Graham Barr)
+
+	Date::Language::French
+	- Fix missing ;
+
+Change 732 on 2002/06/06 by <gbarr@pobox.com> (Graham Barr)
+
+	Release 1.13
+
+Change 731 on 2002/06/06 by <gbarr@pobox.com> (Graham Barr)
+
+	Fix pattern to allow single digits for month and day (eg '2002-6-1')
+
+Change 730 on 2002/06/03 by <gbarr@pobox.com> (Graham Barr)
+
+	Release 1.12
+
+Change 729 on 2002/06/03 by <gbarr@pobox.com> (Graham Barr)
+
+	Fix month name abbreviations
+
+Change 720 on 2002/04/25 by <gbarr@pobox.com> (Graham Barr)
+
+	Date::Parse
+	- Make it work with 5.004 again
+
+Change 719 on 2002/04/25 by <gbarr@pobox.com> (Graham Barr)
+
+	Prevent the ISO date pattern matching where it should not. ie there must not
+	be a non-space character directly before the date string
+
+Change 718 on 2002/04/17 by <gbarr@pobox.com> (Graham Barr)
+
+	Change French @Dsuf, from Peter Samuelson <peter@cadcamlab.org>
+
+Change 712 on 2002/03/07 by <gbarr@pobox.com> (Graham Barr)
+
+	Added %L format for month number as 1..12 from Adam Monsen
+
+Change 708 on 2002/02/28 by <gbarr@pobox.com> (Graham Barr)
+
+	Release 1.11
+
+Change 707 on 2002/02/28 by <gbarr@pobox.com> (Graham Barr)
+
+	Fix format error in t/date.t
+
+Change 692 on 2002/01/09 by <gbarr@pobox.com> (Graham Barr)
+
+	Be a bit more lenient on the ISO format
+
+Change 691 on 2002/01/02 by <gbarr@pobox.com> (Graham Barr)
+
+	Fix typo in ISO-8601 formats in docs
+
+Change 690 on 2001/12/28 by <gbarr@pobox.com> (Graham Barr)
+
+	Date::Format
+	- Fix array dereference syntax typo
+
+Change 689 on 2001/12/28 by <gbarr@pobox.com> (Graham Barr)
+
+	Date::Format
+	- Fix doc typos
+
+Change 682 on 2001/11/20 by <gbarr@pobox.com> (Graham Barr)
+
+	Date::Parse
+	- Make the minutes and seconds parts of an ISO-8601 optional
+	(patch from Christian Hammers)
+
+Change 681 on 2001/11/20 by <gbarr@pobox.com> (Graham Barr)
+
+	Date::Parse
+	- Allow AM/PM to be just A/P (eg Jul 13 1999 1:23P) as used by MySQL
+	(patch from Drew Degentesh)
+
+Change 680 on 2001/11/20 by <gbarr@pobox.com> (Graham Barr)
+
+	Time::Zone
+	- Add CEST Central European Daylight
+
+Change 679 on 2001/11/20 by <gbarr@pobox.com> (Graham Barr)
+
+	Date::Parse
+	- Extract (but ignore) fractions of a second in an ISO8601 date string
+	(patch from rayg at yahoo-inc.com)
+
+Change 678 on 2001/11/20 by <gbarr@pobox.com> (Graham Barr)
+
+	Add %P to be am or pm
+
+Change 677 on 2001/11/20 by <gbarr@pobox.com> (Graham Barr)
+
+	Date::Language::French
+	- Um, the french have 7 days in the week just like everyone else
+
+Change 676 on 2001/11/20 by <gbarr@pobox.com> (Graham Barr)
+
+	Date::Language::German
+	- Fix abbrev for October (patch from Stefan Niederhauser)
+
+Change 634 on 2001/09/03 by <gbarr@pobox.com> (Graham Barr)
+
+	Add a check for invalid years in format 1995-01-24
+
+Change 580 on 2000/09/04 by <gbarr@pobox.com> (Graham Barr)
+
+	Release 1.10
+
 Change 579 on 2000/09/04 by <gbarr@pobox.com> (Graham Barr)
 
 	Date::Parse

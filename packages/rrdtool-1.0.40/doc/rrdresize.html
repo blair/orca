@@ -23,7 +23,7 @@
 
 <P>
 <H1><A NAME="name">NAME</A></H1>
-<P>rrdtool resize - alters the size of an RRA.</P>
+<P>rrdtool resize - alters the size of an RRA and creates new .rrd file</P>
 <div align="right"><a href="rrdresize.pdf">PDF</a> version.</div><P>
 <HR>
 <H1><A NAME="synopsis">SYNOPSIS</A></H1>
@@ -59,6 +59,9 @@ the number of rows you want to add or remove.
 <P>
 <HR>
 <H1><A NAME="notes">NOTES</A></H1>
+<P>The new .rrd file, with the modified RRAm, is written to the file 
+<STRONG>resize.rrd</STRONG> in the current directory.  The original .rrd file is not
+modified.</P>
 <P>It is possible to abuse this tool and get strange results
 by first removing some rows and then reinsert the same amount (effectively
 clearing them to be Unknown). You may thus end up with unknown data in one

@@ -10,4 +10,5 @@ rfc1321.txt		The MD5 Message-Digest Algorithm
 t/badfile.t             Try addfile() on unopened file
 t/files.t		Check a few files.
 t/md5-aaa.t		Exercise padding code
+t/utf8.t		Try some Unicode strings
 Changes			Version history

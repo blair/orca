@@ -1,12 +1,15 @@
 /*****************************************************************************
- * RRDtool 1.0.33  Copyright Tobias Oetiker, 1999
+ * RRDtool 1.0.40  Copyright Tobias Oetiker, 1999
  * This code is stolen from rateup (mrtg-2.x) by Dave Rand
  *****************************************************************************
  * diff calculate the difference between two very long integers available as
  *      strings
  *****************************************************************************
- * $Id: diff.c,v 1.1 1998/10/08 18:21:45 oetiker Exp oetiker $
- * $Log: diff.c,v $
+ * $Id: rrd_diff.c,v 1.1.1.1 2002/02/26 10:21:37 oetiker Exp $
+ * $Log: rrd_diff.c,v $
+ * Revision 1.1.1.1  2002/02/26 10:21:37  oetiker
+ * Intial Import
+ *
  * Revision 1.1  1998/10/08 18:21:45  oetiker
  * Initial revision
  *
@@ -29,13 +32,13 @@ rrd_diff(char *a, char *b)
     char res[LAST_DS_LEN+1], *a1, *b1, *r1, *fix;
     int c,x,m;
     
-    while (!isdigit((int)*a) || *a==0)
+    while (!(isdigit((int)*a) || *a==0))
         a++;
     fix=a;
     while (isdigit((int)*fix)) 
 	fix++;
     *fix = 0; /* maybe there is some non digit data in the string */ 
-    while (!isdigit((int)*b) || *b==0)
+    while (!(isdigit((int)*b) || *b==0))
         b++;
     fix=b;
     while (isdigit((int)*fix)) 

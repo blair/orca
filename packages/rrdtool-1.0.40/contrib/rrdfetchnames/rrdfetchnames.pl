@@ -6,7 +6,7 @@ use strict;
 use lib qw( ../../perl-shared/blib/lib ../../perl-shared/blib/arch );
 
 #makes programm work AFTER install
-use lib qw( /usr/local/rrdtool-1.0.30/lib/perl ../lib/perl );
+use lib qw( /usr/local/rrdtool-1.0.39/lib/perl ../lib/perl );
 
 use vars qw(@ISA $loaded);
 

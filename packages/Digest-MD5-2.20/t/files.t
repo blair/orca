@@ -1,3 +1,10 @@
+BEGIN {
+	if ($ENV{PERL_CORE}) {
+        	chdir 't' if -d 't';
+        	@INC = '../lib';
+        }
+}
+
 print "1..5\n";
 
 use strict;
@@ -6,13 +13,31 @@ use Digest::MD5 qw(md5 md5_hex md5_base64);
 #
 # This is the output of: 'md5sum Changes README MD5.pm MD5.xs rfc1321.txt'
 #
-my $EXPECT = <<EOT;
-df6bb160e273cbf342bd1a947ebb155f  Changes
-e2447354c8b24340bc49e38f8d00bf3b  README
-bf8c3c72d071d1c0303fc9e311820708  MD5.pm
-abcee0576dd82eca765f54bace61c434  MD5.xs
+my $EXPECT;
+
+# To update the EBCDIC section even on a Latin 1 platform,
+# run this script with $ENV{EBCDIC_MD5SUM} set to a true value.
+# (You'll need to have Perl 5.7.3 or later, to have the Encode installed.)
+# (And remember that under the Perl core distribution you should
+#  also have the $ENV{PERL_CORE} set to a true value.)
+
+if (ord "A" == 193) { # EBCDIC
+    $EXPECT = <<EOT;
+b362148b17a451f0d81e0ebb2487756e Changes
+5a591a47e8c40fe4b78c744111511c45 README
+3157e2d2e27dacddea7c54efddc32520 MD5.pm
+4850753428db9422e8e5f97b401d5a13 MD5.xs
+276da0aa4e9a08b7fe09430c9c5690aa rfc1321.txt
+EOT
+} else {
+    $EXPECT = <<EOT;
+0106b67df0dbf9f4d65e9fc04907745b  Changes
+3519f3d02c7c91158f732f0f00064657  README
+88c35ca46c7e8069fb5ae00c091c98d6  MD5.pm
+1be293491bba726810f8e87671ee0328  MD5.xs
 754b9db19f79dbc4992f7166eb0f37ce  rfc1321.txt
 EOT
+}
 
 if (!(-f "README") && -f "../README") {
    chdir("..") or die "Can't chdir: $!";
@@ -23,13 +48,38 @@ my $testno = 0;
 my $B64 = 1;
 eval { require MIME::Base64; };
 if ($@) {
-    print $@;
-    print "Will not test base64 methods\n";
+    print "# $@: Will not test base64 methods\n";
     $B64 = 0;
 }
 
 for (split /^/, $EXPECT) {
      my($md5hex, $file) = split ' ';
+     my $base = $file;
+     if ($ENV{PERL_CORE}) {
+         if ($file eq 'rfc1321.txt') { # Don't have it in core.
+	     print "ok ", ++$testno, " # Skip: PERL_CORE\n";
+	     next;
+	 }
+         use File::Spec;
+	 my @path = qw(ext Digest MD5);
+	 my $path = File::Spec->updir;
+	 while (@path) {
+	   $path = File::Spec->catdir($path, shift @path);
+	 }
+	 $file = File::Spec->catfile($path, $file);
+     }
+#     print "# file = $file\n";
+     unless (-f $file) {
+	warn "No such file: $file\n";
+	next;
+     }
+     if ($ENV{EBCDIC_MD5SUM}) {
+         require Encode;
+	 my $data = cat_file($file);	
+	 Encode::from_to($data, 'latin1', 'cp1047');
+	 print md5_hex($data), " $base\n";
+	 next;
+     }
      my $md5bin = pack("H*", $md5hex);
      my $md5b64;
      if ($B64) {
@@ -37,14 +87,15 @@ for (split /^/, $EXPECT) {
 	 chop($md5b64); chop($md5b64);   # remove padding
      }
      my $failed;
+     my $got;
 
      if (digest_file($file, 'digest') ne $md5bin) {
 	 print "$file: Bad digest\n";
 	 $failed++;
      }
 
-     if (digest_file($file, 'hexdigest') ne $md5hex) {
-	 print "$file: Bad hexdigest\n";
+     if (($got = digest_file($file, 'hexdigest')) ne $md5hex) {
+	 print "$file: Bad hexdigest: got $got expected $md5hex\n";
 	 $failed++;
      }
 
@@ -110,7 +161,6 @@ sub digest_file
     #print "$file $method\n";
 
     open(FILE, $file) or die "Can't open $file: $!";
-    binmode(FILE);
     my $digest = Digest::MD5->new->addfile(*FILE)->$method();
     close(FILE);
 
@@ -122,7 +172,6 @@ sub cat_file
     my($file) = @_;
     local $/;  # slurp
     open(FILE, $file) or die "Can't open $file: $!";
-    binmode(FILE);
     my $tmp = <FILE>;
     close(FILE);
     $tmp;

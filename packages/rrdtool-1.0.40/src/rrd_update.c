@@ -1,10 +1,13 @@
 /*****************************************************************************
- * RRDtool 1.0.33  Copyright Tobias Oetiker, 1997 - 2000
+ * RRDtool 1.0.40  Copyright Tobias Oetiker, 1997 - 2000
  *****************************************************************************
  * rrd_update.c  RRD Update Function
  *****************************************************************************
- * $Id: rrd_update.c,v 1.7 1998/03/08 12:35:11 oetiker Exp oetiker $
+ * $Id: rrd_update.c,v 1.1.1.1 2002/02/26 10:21:38 oetiker Exp $
  * $Log: rrd_update.c,v $
+ * Revision 1.1.1.1  2002/02/26 10:21:38  oetiker
+ * Intial Import
+ *
  *****************************************************************************/
 
 #include "rrd_tool.h"
@@ -29,7 +32,7 @@ int
 main(int argc, char **argv){
         rrd_update(argc,argv);
         if (rrd_test_error()) {
-                printf("RRDtool 1.0.33  Copyright 1997-2000 by Tobias Oetiker <tobi@oetiker.ch>\n\n"
+                printf("RRDtool 1.0.40  Copyright 1997-2000 by Tobias Oetiker <tobi@oetiker.ch>\n\n"
                         "Usage: rrdupdate filename\n"
                         "\t\t\t[--template|-t ds-name:ds-name:...]\n"
                         "\t\t\ttime|N:value[:value...]\n\n"

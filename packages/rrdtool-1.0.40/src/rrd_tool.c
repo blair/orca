@@ -1,10 +1,11 @@
 /*****************************************************************************
- * RRDtool 1.0.33  Copyright Tobias Oetiker, 1997 - 2001
+ * RRDtool 1.0.40  Copyright Tobias Oetiker, 1997 - 2001
  *****************************************************************************
  * rrd_tool.c  Startup wrapper
  *****************************************************************************/
 
 #include "rrd_tool.h"
+#include "rrd_xport.h"
 
 void PrintUsage(char *cmd);
 int CountArgs(char *aLine);
@@ -12,19 +13,19 @@ int CreateArgs(char *, char *, int, char **);
 int HandleInputLine(int, char **, FILE*);
 #define TRUE		1
 #define FALSE		0
-#define MAX_LENGTH	10000
+#define MAX_LENGTH	100000
 
 
 void PrintUsage(char *cmd)
 {
 
     char help_main[] =
-	   "RRDtool 1.0.33  Copyright 1997-2001 by Tobias Oetiker <tobi@oetiker.ch>\n\n"
+	   "RRDtool 1.0.40  Copyright 1997-2001 by Tobias Oetiker <tobi@oetiker.ch>\n\n"
 	   "Usage: rrdtool [options] command command_options\n\n";
 
     char help_list[] =
 	   "Valid commands: create, update, graph, dump, restore,\n"
-	   "\t\tlast, info, fetch, tune, resize\n\n";
+	   "\t\tlast, info, fetch, tune, resize, xport\n\n";
 
     char help_create[] =
 	   "* create - create a new RRD\n\n"
@@ -71,6 +72,7 @@ void PrintUsage(char *cmd)
 	   "\t\t[-h|--height pixels] [-o|--logarithmic]\n"
 	   "\t\t[-u|--upper-limit value] [-z|--lazy]\n"
 	   "\t\t[-l|--lower-limit value] [-r|--rigid]\n"
+           "\t\t[-g|--no-legend]\n"
 	   "\t\t[--alt-autoscale]\n"
 	   "\t\t[--alt-autoscale-max]\n"
 	   "\t\t[--units-exponent value]\n"	   
@@ -100,6 +102,15 @@ void PrintUsage(char *cmd)
 	   " * resize - alter the lenght of one of the RRAs in an RRD\n\n"
 	   "\trrdtool resize filename rranum GROW|SHRINK rows\n\n";
 
+    char help_xport[] =
+	   "* xport - generate XML dump from one or several RRD\n\n"
+	   "\trrdtool xport [-s|--start seconds] [-e|--end seconds]\n"
+	   "\t\t[-m|--maxrows rows]\n"
+	   "\t\t[--step seconds]\n"	   
+	   "\t\t[DEF:vname=rrd:ds-name:CF]\n"
+	   "\t\t[CDEF:vname=rpn-expression]\n"
+           "\t\t[XPORT:vname:legend]\n\n";
+
     char help_lic[] =
 	   "RRDtool is distributed under the Terms of the GNU General\n"
 	   "Public License Version 2. (www.gnu.org/copyleft/gpl.html)\n\n"
@@ -107,7 +118,7 @@ void PrintUsage(char *cmd)
 	   "For more information read the RRD manpages\n\n";
 
     enum { C_NONE, C_CREATE, C_DUMP, C_INFO, C_RESTORE, C_LAST,
-	   C_UPDATE, C_FETCH, C_GRAPH, C_TUNE, C_RESIZE };
+	   C_UPDATE, C_FETCH, C_GRAPH, C_TUNE, C_RESIZE, C_XPORT };
 
     int help_cmd = C_NONE;
 
@@ -133,6 +144,8 @@ void PrintUsage(char *cmd)
 		help_cmd = C_TUNE;
     	    else if (!strcmp(cmd,"resize"))
 		help_cmd = C_RESIZE;
+    	    else if (!strcmp(cmd,"xport"))
+		help_cmd = C_XPORT;
 	}
     fputs(help_main, stdout);
     switch (help_cmd)
@@ -169,6 +182,9 @@ void PrintUsage(char *cmd)
 		break;
 	    case C_RESIZE:
 		fputs(help_resize, stdout);
+		break;
+	    case C_XPORT:
+		fputs(help_xport, stdout);
 		break;
 	}
     fputs(help_lic, stdout);
@@ -303,7 +319,7 @@ int HandleInputLine(int argc, char **argv, FILE* out)
 	     strcmp("v", argv[1]) == 0 ||
 	     strcmp("-v", argv[1]) == 0  ||
 	     strcmp("-version", argv[1]) == 0  )
-        printf("RRDtool 1.0.33  Copyright (C) 1997-2001 by Tobias Oetiker <tobi@oetiker.ch>\n");
+        printf("RRDtool 1.0.40  Copyright (C) 1997-2001 by Tobias Oetiker <tobi@oetiker.ch>\n");
     else if (strcmp("restore", argv[1]) == 0)
 	rrd_restore(argc-1, &argv[1]);
     else if (strcmp("resize", argv[1]) == 0)
@@ -334,8 +350,54 @@ int HandleInputLine(int argc, char **argv, FILE* out)
 	    free(ds_namv);
 	    free (data);
 	}
-    }
-    else if (strcmp("graph", argv[1]) == 0) {
+    } else if (strcmp("xport", argv[1]) == 0) {
+	int xxsize;
+	int i = 0, j = 0;
+	time_t        start,end;
+	unsigned long step, col_cnt,row_cnt;
+	rrd_value_t   *data,*ptr;
+	char          **legend_v;
+	if(rrd_xport(argc-1, &argv[1], &xxsize,&start,&end,&step,&col_cnt,&legend_v,&data) != -1) {
+	  row_cnt = (end-start)/step + 1;
+	  ptr = data;
+	  printf("<?xml version=\"1.0\" encoding=\"%s\"?>\n\n", XML_ENCODING);
+	  printf("<%s>\n", ROOT_TAG);
+	  printf("  <%s>\n", META_TAG);
+	  printf("    <%s>%lu</%s>\n", META_START_TAG, start, META_START_TAG);
+	  printf("    <%s>%lu</%s>\n", META_STEP_TAG, step, META_STEP_TAG);
+	  printf("    <%s>%lu</%s>\n", META_END_TAG, end, META_END_TAG);
+	  printf("    <%s>%lu</%s>\n", META_ROWS_TAG, row_cnt, META_ROWS_TAG);
+	  printf("    <%s>%lu</%s>\n", META_COLS_TAG, col_cnt, META_COLS_TAG);
+	  printf("    <%s>\n", LEGEND_TAG);
+	  for (j = 0; j < col_cnt; j++) {
+	    char *entry = NULL;
+	    entry = legend_v[j];
+	    printf("      <%s>%s</%s>\n", LEGEND_ENTRY_TAG, entry, LEGEND_ENTRY_TAG);
+	    free(entry);
+	  }
+	  free(legend_v);
+	  printf("    </%s>\n", LEGEND_TAG);
+	  printf("  </%s>\n", META_TAG);
+	  printf("  <%s>\n", DATA_TAG);
+	  for (i = start; i <= end; i += step) {
+	    printf ("    <%s>", DATA_ROW_TAG);
+	    printf ("<%s>%lu</%s>", COL_TIME_TAG, i, COL_TIME_TAG);
+	    for (j = 0; j < col_cnt; j++) {
+	      rrd_value_t newval = DNAN;
+	      newval = *(ptr++);
+	      if(isnan(newval)){
+		printf("<%s>NaN</%s>", COL_DATA_TAG, COL_DATA_TAG);
+	      } else {
+		printf("<%s>%0.10e</%s>", COL_DATA_TAG, newval, COL_DATA_TAG);
+	      };
+	    }
+	    printf("</%s>\n", DATA_ROW_TAG);
+	  }
+	  free(data);
+	  printf("  </%s>\n", DATA_TAG);
+	  printf("</%s>\n", ROOT_TAG);
+	}
+    } else if (strcmp("graph", argv[1]) == 0) {
 	char **calcpr;
 	int xsize, ysize;
 	int i;

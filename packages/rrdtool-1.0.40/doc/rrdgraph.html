@@ -44,6 +44,7 @@
 [<STRONG>-x</STRONG>|<STRONG>--x-grid</STRONG>&nbsp;<EM>x-axis&nbsp;grid&nbsp;and&nbsp;label</EM>]
 [<STRONG>-y</STRONG>|<STRONG>--y-grid</STRONG>&nbsp;<EM>y-axis&nbsp;grid&nbsp;and&nbsp;label</EM>]
 [<STRONG>--alt-y-grid</STRONG>]
+[<STRONG>--alt-y-mrtg</STRONG>]
 [<STRONG>--alt-autoscale</STRONG>]
 [<STRONG>--alt-autoscale-max</STRONG>]
 [<STRONG>--units-exponent</STRONG>] <EM>value</EM>]&gt;
@@ -52,11 +53,15 @@
 [<STRONG>-h</STRONG>|<STRONG>--height</STRONG>&nbsp;<EM>pixels</EM>] 
 [<STRONG>-i</STRONG>|<STRONG>--interlaced</STRONG>] 
 [<STRONG>-f</STRONG>|<STRONG>--imginfo</STRONG>&nbsp;<EM>formatstring</EM>] 
-[<STRONG>-a</STRONG>|<STRONG>--imgformat</STRONG>&nbsp;<STRONG>GIF</STRONG>|<STRONG>PNG</STRONG>] 
+[<STRONG>-a</STRONG>|<STRONG>--imgformat</STRONG>&nbsp;<STRONG>GIF</STRONG>|<STRONG>PNG</STRONG>|<STRONG>GD</STRONG>] 
+[<STRONG>-B</STRONG>|<STRONG>--background</STRONG>&nbsp;<EM>value</EM>]
+[<STRONG>-O</STRONG>|<STRONG>--overlay</STRONG>&nbsp;<EM>value</EM>]
+[<STRONG>-U</STRONG>|<STRONG>--unit</STRONG>&nbsp;<EM>value</EM>]
 [<STRONG>-z</STRONG>|<STRONG>--lazy</STRONG>] 
 [<STRONG>-o</STRONG>|<STRONG>--logarithmic</STRONG>]
 [<STRONG>-u</STRONG>|<STRONG>--upper-limit</STRONG>&nbsp;<EM>value</EM>] 
 [<STRONG>-l</STRONG>|<STRONG>--lower-limit</STRONG>&nbsp;<EM>value</EM>]
+[<STRONG>-g</STRONG>|<STRONG>--no-legend</STRONG>]
 [<STRONG>-r</STRONG>|<STRONG>--rigid</STRONG>]
 [<STRONG>--step</STRONG>&nbsp;<EM>value</EM>]
 [<STRONG>-b</STRONG>|<STRONG>--base</STRONG>&nbsp;<EM>value</EM>]
@@ -132,6 +137,9 @@ hours, because when you say something like 'Monday' you mean the whole
 day and not Monday morning 00:00. Thus the label should be positioned
 at noon. By defining a precision of 24 hours or rather 86400 seconds,
 you make sure that this happens.</P>
+<P>If you want to alter the genertated text to another language, use the
+LC_TIME environment variable to set the locale you prefere prior to calling
+the graph function.</P>
 <P></P>
 <DT><STRONG><A NAME="item_factor"><STRONG>-y</STRONG>|<STRONG>--y-grid</STRONG> <EM>grid step</EM>:<EM>label factor</EM> (default autoconfigure)</A></STRONG><BR>
 <DD>
@@ -146,6 +154,11 @@ Place Y grid dynamically based on graph Y range. Algorithm ensures
 that you always have grid, that there are enough but not too many
 grid lines and the grid is metric. That is grid lines are placed 
 every 1, 2, 5 or 10 units.  (contributed by Sasha Mikheev)
+<P></P>
+<DT><STRONG><A NAME="item_%2D%2Dalt%2Dy%2Dmrtg"><STRONG>--alt-y-mrtg</STRONG></A></STRONG><BR>
+<DD>
+Y grid placed on graph Y range mimmics mrtg's (rateup-generated) graphs.
+Currently axis is split into 4 parts, just as rateup does.
 <P></P>
 <DT><STRONG><A NAME="item_%2D%2Dalt%2Dautoscale"><STRONG>--alt-autoscale</STRONG></A></STRONG><BR>
 <DD>
@@ -213,9 +226,25 @@ would look like this:
 <PRE>
  --imginfo '&lt;IMG SRC=&quot;/img/%s&quot; WIDTH=&quot;%lu&quot; HEIGHT=&quot;%lu&quot; ALT=&quot;Demo&quot;&gt;'</PRE>
 <P></P>
-<DT><STRONG><A NAME="item_PNG"><STRONG>-a</STRONG>|<STRONG>--imgformat</STRONG> <STRONG>GIF</STRONG>|<STRONG>PNG</STRONG> (default: GIF)</A></STRONG><BR>
+<DT><STRONG><A NAME="item_GD"><STRONG>-a</STRONG>|<STRONG>--imgformat</STRONG> <STRONG>GIF</STRONG>|<STRONG>PNG</STRONG>|<STRONG>GD</STRONG> (default: GIF)</A></STRONG><BR>
 <DD>
-Allows you to produce PNG output from rrdtool.
+Allows you to produce PNG or GD output from rrdtool.
+<P></P>
+<DT><STRONG><A NAME="item_%2DB%7C%2D%2Dbackground_value"><STRONG>-B</STRONG>|<STRONG>--background</STRONG> <EM>value</EM></A></STRONG><BR>
+<DD>
+You could use image in (currently only) GD format for background. It is
+used as background at the very beginning of graph creation.
+<P></P>
+<DT><STRONG><A NAME="item_%2DO%7C%2D%2Doverlay_value"><STRONG>-O</STRONG>|<STRONG>--overlay</STRONG> <EM>value</EM></A></STRONG><BR>
+<DD>
+You could use image in (currently only) GD format as overlay. It is
+placed over created graph so that white pixel (color 255,255,255) is
+considered transparent, all other is replacing corresponding pixel in created graph.
+<P></P>
+<DT><STRONG><A NAME="item_%2DU%7C%2D%2Dunit_value"><STRONG>-U</STRONG>|<STRONG>--unit</STRONG> <EM>value</EM></A></STRONG><BR>
+<DD>
+You could use unit to be displayed on y axis. It is wise to use only short
+units on graph, however.
 <P></P>
 <DT><STRONG><A NAME="item_lazy"><STRONG>-z</STRONG>|<STRONG>--lazy</STRONG> (default: false)</A></STRONG><BR>
 <DD>
@@ -372,6 +401,12 @@ Push an <EM>*UNKNOWN*</EM> value onto the stack.
 Push <EM>*UNKNOWN*</EM> if its at the first value of a data set or otherwise
 the value of this CDEF at the previous time step. This allows you to
 perform calculations across the data.
+<P></P>
+<DT><STRONG><CODE>PREV(vname)</CODE></STRONG><BR>
+<DD>
+Push <EM>*UNKNOWN*</EM> if its at the first value of the data set named vname
+or otherwise the value of the CDEF named vname at the previous time step.
+This allows you to perform complex calculations across the data.
 <P></P>
 <DT><STRONG><A NAME="item_INF%2C_NEGINF">INF, NEGINF</A></STRONG><BR>
 <DD>
@@ -531,7 +566,7 @@ doesn't match.</P>
          CDEF:agginput=idat1,UN,0,idat1,IF,idat2,UN,0,idat2,IF,+,8,* \
          CDEF:aggoutput=odat1,UN,0,odat1,IF,odat2,UN,0,odat2,IF,+,8,* \
          AREA:agginput#00cc00:Input Aggregate \
-         LINE1:agginput#0000FF:Output Aggregate
+         LINE1:aggoutput#0000FF:Output Aggregate
 </PRE>
 <PRE>
 

@@ -2,7 +2,7 @@
 use Date::Format qw(ctime time2str);
 use Date::Language;
 
-print "1..147\n";
+print "1..150\n";
 
 my $i = 1;
 
@@ -45,6 +45,7 @@ __DATA__
 %j	250
 %k	13
 %l	 1
+%L	9
 %m	09
 %M	02
 %o	 7th
@@ -95,6 +96,7 @@ German
 %j	250
 %k	13
 %l	 1
+%L	9
 %m	09
 %M	02
 %o	 7.
@@ -145,6 +147,7 @@ Italian
 %j	250
 %k	13
 %l	 1
+%L	9
 %m	09
 %M	02
 %o	 7th

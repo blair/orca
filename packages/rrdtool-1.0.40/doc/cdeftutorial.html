@@ -52,6 +52,7 @@
 		<LI><A HREF="#infinity demo">Infinity demo</A></LI>
 	</UL>
 
+	<LI><A HREF="#out of ideas for now">Out of ideas for now</A></LI>
 	<LI><A HREF="#see also">SEE ALSO</A></LI>
 	<LI><A HREF="#author">AUTHOR</A></LI>
 </UL>
@@ -83,7 +84,7 @@ tutorial, I also expect you to have read and fully understand my
 other tutorial.</P>
 <P>
 <H2><A NAME="more reading">More reading</A></H2>
-<P>If you have difficulties with the way I try to explain them please read
+<P>If you have difficulties with the way I try to explain it please read
 Steve Rader's <A HREF="././rpntutorial.html">the rpntutorial manpage</A>. It may help you understand how this all works.</P>
 <P>
 <HR>
@@ -747,7 +748,31 @@ sign before it:  ``CDEF:wipeout2=wipeout,-1,*''
 </P>
 <PRE>
 
-=head1 Out of ideas for now</PRE>
+=head2 Filtering data</PRE>
+<P>You may do some complex data filtering:</P>
+<PRE>
+  MEDIAN FILTER: filters shot noise</PRE>
+<PRE>
+    DEF:var=database.rrd:traffic:AVERAGE
+    CDEF:prev1=PREV(var)
+    CDEF:prev2=PREV(prev1)
+    CDEF:prev3=PREV(prev2)
+    CDEF:median=prev1,prev2,prev3,+,+,3,/
+    LINE3:median#000077:filtered
+    LINE1:prev2#007700:'raw data'</PRE>
+<PRE>
+  DERIVATE:</PRE>
+<PRE>
+    DEF:var=database.rrd:traffic:AVERAGE
+    CDEF:prev1=PREV(var)
+    CDEF:time=TIME
+    CDEF:prevtime=PREV(time)
+    CDEF:derivate=var,prev1,-,time,prevtime,-,/
+    LINE3:derivate#000077:derivate
+    LINE1:var#007700:'raw data'</PRE>
+<P>
+<HR>
+<H1><A NAME="out of ideas for now">Out of ideas for now</A></H1>
 <P>This document was created from questions asked by either myself or
 by other people on the list. Please let me know if you find errors
 in it or if you have trouble understanding it. If you think there

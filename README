@@ -40,7 +40,7 @@ I recommend reading the documentation that comes with RRDtool.  It will
 explain how the data files Orca uses are created, maintained, and used
 to create the images that Orca creates.  Read about RRDtool at
 
-    http://people.ee.ethz.ch/~oetiker/webtools/rrdtool/
+    http://people.ethz.ch/~oetiker/webtools/rrdtool/
 
 DATA COLLECTION TOOLS
 =====================
@@ -78,56 +78,73 @@ These tools are available for download from
 
 http://www.orcaware.com/orca/
 
+KEEPING BLAIR HAPPY
+===================
+
+If you want to show your appreciation for Orca, go to 
+
+http://www.orcaware.com/wish_list.html
+
 MAILING LISTS
 =============
 
 Four mailing lists exist for Orca.  To subscribe to any of the mailing
-lists, please visit the URL listed below.  You have the option of choosing
-a digest form of the mailing list if you wish it when you subscribe to
-the mailing list or anytime thereafter.  To send email to any of these
+lists, please visit the URL listed below.  You have the option of
+choosing a digest form of the mailing list when you subscribe to the
+mailing list or anytime thereafter.  To send email to any of these
 lists you must subscribe to the list.
 
-orca-announce@yahoogroups.com
-    Home         http://groups.yahoo.com/group/orca-announce/
-    Subscribe    http://groups.yahoo.com/group/orca-announce/join
-    Archive      http://groups.yahoo.com/group/orca-announce/archive
+orca-announce@orcaware.com
 
-    This is a LOW volume moderated mailing list for announcing stable
-    releases of Orca.
+    The orca-announce@orcaware.com mailing list is a *low* volume
+    moderated mailing list for announcing stable releases of Orca and
+    affiliated data measurement tools used with Orca.
 
-orca-users@yahoogroups.com
-    Home         http://groups.yahoo.com/group/orca-users/
-    Subscribe    http://groups.yahoo.com/group/orca-users/join
-    Archive      http://groups.yahoo.com/group/orca-users/archive
+    Home                http://www.orcaware.com/mailman/listinfo/orca-announce
+    Subscribe via web   http://www.orcaware.com/mailman/listinfo/orca-announce
+    Subscribe via email orca-announce-request@orcaware.com
+                        with subject "subscribe"
+    Archive             http://www.orcaware.com/pipermail/orca-announce/
 
-    This mailing list is a first stop mailing list for getting help
-    in setting up and getting Orca running.  Problems relating to
-    downloading, configuring, compiling the necessary Perl modules,
-    and installing Orca belong here.  People interested anything more
-    than this, such as developing data gathering modules or active Perl
-    development, should be on one or both of the following mailing lists.
-    Once you get Orca running to your satisfaction, you may want to
-    remove yourself from this list.
+orca-users@orcaware.com
 
-orca-discuss@yahoogroups.com
-    Home         http://groups.yahoo.com/group/orca-discuss/
-    Subscribe    http://groups.yahoo.com/group/orca-discuss/join
-    Archive      http://groups.yahoo.com/group/orca-discuss/archive
+    The orca-users@orcaware.com is the mailing list for Orca users.
+    Problems relating to downloading, configuring, compiling the
+    necessary Perl modules, installing and configuring Orca belong
+    here.
 
-    This mailing list is for active users of Orca who are doing new
-    interesting things with Orca and want to discuss Orca but are not
-    interested in actively developing Orca source code.  These people
-    are also not interested in helping people get Orca running on their
-    systems.
+    Home                http://www.orcaware.com/mailman/listinfo/orca-users
+    Subscribe via web   http://www.orcaware.com/mailman/listinfo/orca-users
+    Subscribe via email orca-users-request@orcaware.com
+                        with subject "subscribe"
+    Archive             http://www.orcaware.com/pipermail/orca-users/
 
-orca-developers@yahoogroups.com
-    Home         http://groups.yahoo.com/group/orca-developers/
-    Subscribe    http://groups.yahoo.com/group/orca-developers/join
-    Archive      http://groups.yahoo.com/group/orca-developers/archive
+orca-dev@orcaware.com
 
-    This mailing list is for people who are interested in actively
-    developing, fixing and improving Orca's source code and related data
-    gathering modules, and porting Orca to new platforms.
+    The orca-dev@orcaware.com mailing list is for Orca developers who
+    develop Orca or its affiliated data gathering tools.
+
+    Home                http://www.orcaware.com/mailman/listinfo/orca-dev
+    Subscribe via web   http://www.orcaware.com/mailman/listinfo/orca-dev
+    Subscribe via email orca-dev-request@orcaware.com
+                        with subject "subscribe"
+    Archive             http://www.orcaware.com/pipermail/orca-dev/
+
+orca-checkins@orcaware.com
+
+    The orca-checkins@orcaware.com is a publically accessible,
+    moderated list which is used to disseminate version control
+    check-in messages made by the Orca maintainers, to the Orca
+    developer community.  This list is an adjunct to the publically
+    available Subversion tree currently residing on OrcaWare. If you
+    intend to follow the Subversion checkins, you should also join the
+    orca-dev@orcaware.com mailing list for discussions.
+
+    Home                http://www.orcaware.com/mailman/listinfo/orca-checkins
+    Subscribe via web   http://www.orcaware.com/mailman/listinfo/orca-checkins
+    Subscribe via email orca-checkins-request@orcaware.com
+                        with subject "subscribe"
+    Archive             http://www.orcaware.com/pipermail/orca-checkins/
 
 INSTALLATION
 ============
@@ -139,8 +156,8 @@ AUTHOR
 
 These two tools were written by Blair Zajac.  I welcome any patches
 for bugs or improvements, comments and suggestions.  Please send any
-Orca correspondence to orca-users@yahoogroups.com or
-orca-developers@yahoogroups.com, which I read and participate on.
+Orca correspondence to orca-dev@orcaware.com or
+orca-users@orcaware.com, which I read and participate on.
 
 If you wish to contact me directly, my email address is
 blair@orcaware.com.
@@ -151,5 +168,4 @@ NAMING OF ORCA
 I originally named Orca FMRTG, but after asking my wife Ashley
 Rothschild (http://www.rothschildimage.com) for some suggestions, she
 came up with Orca.  It turns out that there are only one or two small
-programs on the Internet named Orca, so we both were happy to hear
-this.
+programs on the Internet named Orca, so the name stuck.

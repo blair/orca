@@ -17,6 +17,7 @@
 	<LI><A HREF="#description">DESCRIPTION</A></LI>
 	<UL>
 
+		<LI><A HREF="#resolution interval">RESOLUTION INTERVAL</A></LI>
 		<LI><A HREF="#atstyle time specification">AT-STYLE TIME SPECIFICATION</A></LI>
 		<LI><A HREF="#time reference specification">TIME REFERENCE SPECIFICATION</A></LI>
 		<LI><A HREF="#time offset specification">TIME OFFSET SPECIFICATION</A></LI>
@@ -61,7 +62,7 @@ want to fetch? (AVERAGE,MIN,MAX,LAST)
 <DD>
 what interval should the values have (seconds per value). <STRONG>rrdfetch</STRONG> will try
 to match your request, but it will return data even if no absolute
-match is possible.
+match is possible. <STRONG>NB.</STRONG> See note below.
 <P></P>
 <DT><STRONG><A NAME="item_start"><STRONG>--start</STRONG>|<STRONG>-s</STRONG> <EM>start</EM> (default end-1day)</A></STRONG><BR>
 <DD>
@@ -76,6 +77,48 @@ when should the data end. Time in seconds since epoch. See also
 AT-STYLE TIME SPECIFICATION section for a detailed explanation of how to specify
 end time.
 <P></P></DL>
+<P>
+<H2><A NAME="resolution interval">RESOLUTION INTERVAL</A></H2>
+<P>In order to get rrdtool to fetch anything other than the finest resolution RRA 
+<STRONG>both</STRONG> the start and end time must be specified on boundaries that are 
+multiples of the wanted resolution. Consider the following example:</P>
+<PRE>
+ rrdtool create subdata.rrd -s 10 DS:ds0:GAUGE:300:0:U \
+  RRA:AVERAGE:0.5:30:3600 \
+  RRA:AVERAGE:0.5:90:1200 \
+  RRA:AVERAGE:0.5:360:1200 \
+  RRA:MAX:0.5:360:1200 \
+  RRA:AVERAGE:0.5:8640:600 \
+  RRA:MAX:0.5:8640:600</PRE>
+<P>This RRD collects data every 10 seconds and stores its averages over 5 minutes, 
+15 minutes, 1 hour and 1 day as well as the maxima for 1 hour and 1 day.</P>
+<P>Consider now that you want too fetch the 15 minute average data for last hour. 
+So you might try</P>
+<PRE>
+ rrdtool fetch subdata.rrd AVERAGE -r 900 -s -1h</PRE>
+<P>However, this will almost always result in a time series that is <STRONG>NOT</STRONG> in the 15 
+minute RRA. Therefore the highest resolution RRA, i.e. 5 minute averages, will 
+be chosen which, in this case, is not what you want.</P>
+<P>Hence, make sure that</P>
+<OL>
+<LI>
+both start and end time are a multiple of 900
+<P></P>
+<LI>
+both start and end time are within the wanted RRA
+<P></P></OL>
+<P>So, if time now is called ``t'',</P>
+<PRE>
+ do end time == int(t/900)*900,
+ start time == end time -1hour, resolution == 900.</PRE>
+<P>In e.g. bash this could look as:</P>
+<PRE>
+ TIME=$(date +%s); RRDRES=900; rrdtool fetch subdata.rrd AVERAGE -r $RRDRES \
+ -e $(echo $(($TIME/$RRDRES*$RRDRES))) -s e-1h</PRE>
+<P>Or in perl:</P>
+<PRE>
+ perl -e '$ctime = time; $rrdres = 900; system &quot;rrdtool fetch subdata.rrd AVERAGE \
+ -r $rrdres -e @{[int($ctime/$rrdres)*$rrdres]} -s e-1h&quot;'</PRE>
 <P>
 <H2><A NAME="atstyle time specification">AT-STYLE TIME SPECIFICATION</A></H2>
 <P>Apart from the traditional <EM>Seconds since epoch</EM>, rrdtool does also

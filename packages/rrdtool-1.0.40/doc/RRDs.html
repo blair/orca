@@ -22,6 +22,7 @@
 		<LI><A HREF="#return values">Return Values</A></LI>
 	</UL>
 
+	<LI><A HREF="#note">NOTE</A></LI>
 	<LI><A HREF="#author">AUTHOR</A></LI>
 </UL>
 -->
@@ -112,6 +113,16 @@ integers, a pointer to an array and a pointer to a array of pointers.</P>
     print &quot;\n&quot;;
   }</PRE>
 <P>See the examples directory for more ways to use this extension.</P>
+<P>
+<HR>
+<H1><A NAME="note">NOTE</A></H1>
+<P>If you are manipulating the TZ variable you should also call the posixs
+function tzset to initialize all internal state of the library for properly
+operating in the timezone of your choice.</P>
+<PRE>
+ use POSIX qw(tzset);
+ $ENV{TZ} = 'CET';
+ POSIX::tzset();</PRE>
 <P>
 <HR>
 <H1><A NAME="author">AUTHOR</A></H1>

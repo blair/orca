@@ -1,10 +1,13 @@
 /*****************************************************************************
- * RRDtool 1.0.33  Copyright Tobias Oetiker, 1997,1998, 1999
+ * RRDtool 1.0.40  Copyright Tobias Oetiker, 1997,1998, 1999
  *****************************************************************************
  * rrdlib.h   Public header file for librrd
  *****************************************************************************
- * $Id: rrd_tool.h,v 1.5 1998/03/08 12:35:11 oetiker Exp oetiker $
- * $Log: rrd_tool.h,v $
+ * $Id: rrd.h,v 1.1.1.1 2002/02/26 10:21:37 oetiker Exp $
+ * $Log: rrd.h,v $
+ * Revision 1.1.1.1  2002/02/26 10:21:37  oetiker
+ * Intial Import
+ *
  *****************************************************************************/
 #ifdef  __cplusplus
 extern "C" {
@@ -31,6 +34,9 @@ int    rrd_dump(int, char **);
 int    rrd_tune(int, char **);
 time_t rrd_last(int, char **);
 int    rrd_resize(int, char **);
+int    rrd_xport(int, char **, int *, time_t *, time_t *,
+		 unsigned long *, unsigned long *,
+		 char ***, rrd_value_t **);
 
 /* Transplanted from parsetime.h */
 typedef enum {

@@ -5,7 +5,7 @@
  *
  * Joe Miller, <joeym@inficad.com>,<joeym@ibizcorp.com>, 7/19/2000
  *
- * $Id: php_rrdtool.h,v 1.1 2000/07/19 17:24:08 joeym Exp joeym $
+ * $Id: php_rrdtool.h,v 1.1.1.1 2002/02/26 10:21:20 oetiker Exp $
  *
  */
 

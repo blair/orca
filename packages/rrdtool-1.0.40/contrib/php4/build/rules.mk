@@ -21,7 +21,7 @@
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 ##############################################################################
-# $Id: rules_pear.mk,v 1.9 2000/06/11 19:53:19 rasmus Exp $ 
+# $Id: rules.mk,v 1.1.1.1 2002/02/26 10:21:21 oetiker Exp $ 
 #
 
 include $(top_builddir)/config_vars.mk

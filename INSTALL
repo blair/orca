@@ -1,10 +1,9 @@
 Outline:
 
- 1) Install Perl 5.004_01 or later.
+ 1) Install Perl 5.005_03 or later.
 
- 2) Decide where Orca's binaries, RRD, HTML, and orcallator
-    directories will reside.  Make sure performance concerns are
-    handled.
+ 2) Decide where Orca's binaries, raw data, RRD and HTML directories
+    will reside.  Make sure performance concerns are handled.
 
  3) Determine which Perl modules need compiling and installing.
     Optionally download newer versions of these modules.
@@ -35,7 +34,7 @@ Outline:
 
 
 
- 1) Install Perl 5.004_01 or later.
+ 1) Install Perl 5.005_03 or later.
 
     This step is too large to go into here.  The bottom line is to
     follow the instructions at
@@ -46,19 +45,20 @@ Outline:
 
        http://aspn.activestate.com/ASPN/Downloads/ActivePerl/
 
- 2) Decide where Orca's binaries, RRD, HTML, and orcallator
-    directories will reside.  Make sure performance concerns are
-    handled.
+    if you happen to run Linux, Solaris or Windows.
+
+ 2) Decide where Orca's binaries, raw data, RRD and HTML directories
+    will reside.  Make sure performance concerns are handled.
 
     First choose the location where Orca will be installed.  By
     default, Orca will install into the following structure:
 
-    $prefix                     Prefix, set with --prefix=
-    $prefix/bin                 Binaries, set with --bindir=
-    $prefix/lib                 Libraries, set with --libdir=
-    $prefix/man                 Manual pages, set with --mandir=
+    $prefix                     Prefix, set with --prefix
+    $prefix/bin                 Binaries, set with --bindir
+    $prefix/lib                 Libraries, set with --libdir
+    $prefix/man                 Manual pages, set with --mandir
+    $prefix/var/orca            Data storage directory, set with --with-var-dir
     $prefix/var/orca/rrd        RRD directory, set with --with-rrd-dir
-    $prefix/var/orca/orcallator Orcallator directory, set with --with-orcallator-dir
 
     The HTML output directory is not set by default and must be
     specified by the Orca administrator.
@@ -78,8 +78,8 @@ Outline:
     the HTML and image files, since the RRD files are much more
     read/write intensive.
 
-    If you are going to use the orcallator Orca addon to monitor your
-    Sun Solaris systems, then you will in addition need to decide
+    If you are going to use the orcallator.se Orca addon to monitor
+    your Sun Solaris systems, then you will in addition need to decide
     where to have orcallator store its data files.  By default, these
     data files are written to once every 5 minutes, so IO is not an
     issue.  The issue here is that orcallator needs to run as root and
@@ -100,10 +100,10 @@ Outline:
     orcallator data files and the web server access logs, are located,
     run the configure script with the following arguments:
 
-    % ./configure --prefix=ORCA_PREFIX_DIRECTORY \
-                  --with-rrd-dir=RRD_DIR_LOCATION \
+    % ./configure --prefix=ORCA_PREFIX_DIRECTORY    \
+                  --with-var-dir=VAR_DIR_LOCATION   \
+                  --with-rrd-dir=RRD_DIR_LOCATION   \
                   --with-html-dir=HTML_DIR_LOCATION \
-                  --with-orcallator-dir=ORCALLATOR_DIR_LOCATION \
                   --with-TYPE-log=LOG_LOCATION
 
     If you choose nothing else, the --with-html-dir must always be
@@ -142,10 +142,10 @@ Outline:
     Name			Required Version	Included With Orca
     ----------------------------------------------------------------------
     Data::Dumper		2.101 or greater	2.101
-    Digest::MD5			2.16 or greater		2.16
+    Digest::MD5			2.20 or greater		2.20
     Math::IntervalSearch	1.05 or greater		1.05
     RRDs			1.0.33 or greater	1.0.33
-    Storable			1.0.13 or greater	1.0.13
+    Storable			2.05 or greater		2.05
 
     All five of these modules are included with the Orca distribution
     in the packages directory.  When you configure Orca in step 3),
@@ -173,10 +173,10 @@ Outline:
 
     Digest::MD5
 
-      http://www.perl.com/CPAN/authors/id/G/GA/GAAS/Digest-MD5-2.16.tar.gz
+      http://www.perl.com/CPAN/authors/id/G/GA/GAAS/Digest-MD5-2.20.tar.gz
 
-      % gunzip -c Digest-MD5-2.16.tar.gz | tar xvf -
-      % cd Digest-MD5-2.16
+      % gunzip -c Digest-MD5-2.20.tar.gz | tar xvf -
+      % cd Digest-MD5-2.20
       % perl Makefile.PL
       % make
       % make test
@@ -213,10 +213,10 @@ Outline:
 
     Storable
 
-      http://www.perl.com/CPAN/authors/id/R/RA/RAM/Storable-1.0.13.tar.gz
+      http://www.perl.com/CPAN/authors/id/A/AM/AMS/Storable-2.05.tar.gz
 
-      % gunzip -c Storable-1.0.13.tar.gz | tar xvf -
-      % cd Storable-1.0.13
+      % gunzip -c Storable-2.05.tar.gz | tar xvf -
+      % cd Storable-2.05
       % perl Makefile.PL
       % make
       % make test

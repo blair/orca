@@ -9,10 +9,12 @@
  *          iBIZ Technology Corp,  SkyLynx / Inficad Communications
  *          2/12/2000 & 7/18/2000
  *
+ *       Jeffrey Wheat <jeff@cetlink.net> - 10/01/2002
+ *       - Fixed to build with php-4.2.3
  *
  * See README, INSTALL, and USAGE files for more details.
  *
- * $Id: rrdtool.c,v 1.2 2000/08/22 17:30:34 joeym Exp $
+ * $Id: rrdtool.c,v 1.1.1.1 2002/02/26 10:21:20 oetiker Exp $
  *
  */
 
@@ -34,6 +36,7 @@ function_entry rrdtool_functions[] = {
 };
 
 zend_module_entry rrdtool_module_entry = {
+	STANDARD_MODULE_HEADER,
 	"RRDTool",
 	rrdtool_functions,
 	NULL,
@@ -41,6 +44,7 @@ zend_module_entry rrdtool_module_entry = {
 	NULL,
 	NULL,
 	PHP_MINFO(rrdtool),
+	NO_VERSION_YET,
 	STANDARD_MODULE_PROPERTIES,
 };
 

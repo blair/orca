@@ -88,6 +88,7 @@ TCL_SHLIB_LD = @TCL_SHLIB_LD@
 TCL_SHLIB_SUFFIX = @TCL_SHLIB_SUFFIX@
 TROFF = @TROFF@
 VERSION = @VERSION@
+ZLIB_CFLAGS = @ZLIB_CFLAGS@
 ZLIB_LIB_DIR = @ZLIB_LIB_DIR@
 
 EXTRA_DIST = cgi-demo.cgi.in    piped-demo.pl.in   shared-demo.pl.in stripes.pl.in bigtops.pl.in minmax.pl.in

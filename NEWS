@@ -1,3 +1,104 @@
+NEW IN ORCA 0.27b3
+==================
+
+ 1) Now require Perl version 5.005_03 instead of 5.004_01.  Perl
+    versions older than this are very broken and cannot even load
+    Orca.  Additionally, CPAN modules are now requiring newer Perl
+    features which the older ones do not support.
+
+ 2) In Orca's configuration file, instead of defaulting to LINE1 for
+    any data parameters appearing in a plot configuration that does
+    not have its line_type specified, use the last set line_type set
+    in that plot.  If no line_type's are set in a plot, then use LINE1
+    as the default for all data's in that plot.
+
+ 3) Rename any orcaservices file and directory names to orca_services
+    to make the name easier to read.
+
+ 4) Include and require rrdtool 1.0.40, Digest::MD5 2.20 and Storable
+    2.05.  Include TimeDate 1.14 and Time::HiRes 1.38.
+
+ 5) All of the Orca mailing lists have moved off of Yahoo! Groups and
+    are now hosted on orcaware.com using the Mailman mailing list
+    software.  See http://devel.orcaware.com/orca/mailing_lists.html
+    or http://www.orcaware.com/mailman/listinfo for more information.
+
+The following changes are what's new in orcallator.se 1.35 and the
+orcallator.cfg file since version 1.28 which was included with Orca
+0.27b2.  Most of the changes below are taken advantage of in the
+included orcallator.cfg and start_orcallator files.
+
+ 4) Instead of naming the output files percol-*, name them
+    orcallator-*.
+
+ 5) Output eleven new columns named state_* where each column
+    represents numerically the state of one of the system's substates
+    as they appear in the DNnsrkcmdit output.  The character * is
+    replaced with the same character that appears in the DNnsrkcmdit
+    string to represent the particular subsystem.  This can be used to
+    create a single plot that shows how all of the subsystems are
+    performing.  The mapping between successive states is exponential,
+    so that as the subsystems get in worse conditions, the plots will
+    show higher values.  Patch contributed by Rusty Carruth
+    <rcarruth@tempe.tt.slb.com>.  Make all of the live_rule.se live
+    and temporary variable names consistent.
+
+ 6) In orcallator.se, SE 3.2.1 stat.se, mknod is a C-preprocessor
+    define to _xmknod on x86 systems while on SPARC systems stat.se
+    declares mknod as a normal function.  When stat.se is included
+    before kstat.se on x86 systems the mknod define causes a compile
+    error on kstat's mknod variables which are part of the
+    ks_rfs_proc_v3 and ks_rfs_req_v3 structures.  The work around is
+    to include kstat.se before stat.se.
+
+ 7) In orcallator.se, changed method used by raw_disk_map to detect
+    the end of GLOBAL_disk_info to looking for the first short disk
+    name.  This works for SCSI disks and looking for fd or st devices
+    whichshould work for EIDE devices.  Patch contributed by Alan
+    LeGrand <alegrand@wallace.com>.
+
+ 8) In orcallator.se, always define USE_RAWDISK to use the new raw
+    disk code.  Previously, USE_RAWDISK was defined only if WATCH_OS
+    was defined, but if WATCH_DISK was defined and WATCH_OS was not,
+    then the new raw disk code was not being used.  This change makes
+    the behavior consistent.
+
+ 9) In orcallator.se, fix a problem where the web access log file
+    pointer instead of the file descriptor was being passed to
+    fstat().  Fix a problem where the cached web access log stat()
+    information wasn't being erased if the log file was successfully
+    stat()ed but then fopen() failed.  Problem noted by Jeremy McCarty
+    <jeremy@nd.edu>.
+
+10) In orcallator.se, in check_output_log_filename(), stat() was was
+    being passed a stat_t by value, instead of a pointer to a stat_t.
+    Only the return value from stat() was being used, so this bug had
+    no effect upon the logic of the code.  Problem noted by Richard
+    Pettit <richp@setoolkit.com>.
+
+11) In orcallator.se, add support for SE version 3.3.  Break
+    compatibility with SE version 3.1, which was released in April
+    1999, and older SE versions.  Solaris 8 removed the pagesio
+    variable and in SE 3.3, kstat.se #ifdef's out ks_system_pages's
+    pagesio variable on Solaris 8 and above, so now orcallator.se only
+    measures pagesio on Solaris 7 or older.  Even with older versions
+    of SE and orcallator.se which defined and used pagesio on Solaris
+    8, pagesio would always measure as 0.  SE 3.3 finally removed the
+    compatibility #define from prpsinfo_t to psinfo_t, so now use
+    psinfo_t.  This breaks compatibility with SE 3.1 and older SE
+    versions.
+
+12) In orcallator.se, add a new measurement, the number of secure web
+    server processes on the system using the column name #httpsds.  If
+    the environmental variable WEB_SERVER_SECURE is defined, use its
+    value as the regular expression to match on process names.  If
+    WEB_SERVER_SECURE is not defined, then count the number of
+    httpsd's.  New variable www_server_secure_proc_name to hold the
+    regular expression.  Increase the maximum number of disks that can
+    be monitored using the RAWDISK code from 512 to 1024 by increasing
+    MAX_RAWDISKS from 512 to 1024.  Reformat and modify the usage
+    message to fit the new WEB_SERVER_SECURE environmental variable.
+
 NEW IN ORCA 0.27b2
 ==================
 
@@ -31,47 +132,47 @@ orcallator.cfg and start_orcallator files.
  5) In orcallator.cfg.in, the Disk Run Percent plots also match for
     disk_runp_sd\d+ in addition to disk_runp_md\d+.
 
- 6) Change the output log filename format from percol-%Y-%m-%d to
-    percol-%Y-%m-%d-XXX, where XXX is a number starting at 0 that is
-    incremented anytime the number of output columns changes or type
-    of data stored in a column changes.  This is in addition to the
-    creation of a new log filename when a new day starts.  Whenever
-    the program needs to create a new log file for any reason, it will
-    search for the smallest XXX so that there are no log files named
-    percol-%Y-%m-%d-XXX{,.Z,.gz,.bz2}.  If the COMPRESSOR
-    environmental is set and any uncompressed files are found while
-    looking for the smallest XXX, they are compressed with the
-    COMPRESSOR command.  orcallator.cfg.in's find_files has been
+ 6) In orcallator.se, change the output log filename format from
+    percol-%Y-%m-%d to percol-%Y-%m-%d-XXX, where XXX is a number
+    starting at 0 that is incremented anytime the number of output
+    columns changes or type of data stored in a column changes.  This
+    is in addition to the creation of a new log filename when a new
+    day starts.  Whenever the program needs to create a new log file
+    for any reason, it will search for the smallest XXX so that there
+    are no log files named percol-%Y-%m-%d-XXX{,.Z,.gz,.bz2}.  If the
+    COMPRESSOR environmental is set and any uncompressed files are
+    found while looking for the smallest XXX, they are compressed with
+    the COMPRESSOR command.  orcallator.cfg.in's find_files has been
     updated to find the new log filenames generated by orcallator.se
     1.28.
 
- 7) Instead of outputting the number of CPUs only when WATCH_MUTEX is
-    defined, output it when either WATCH_CPU or WATCH_MUTEX is
-    defined.  Only declare and update tmp_mutex if WATCH_MUTEX
-    defined.
+ 7) In orcallator.se, instead of outputting the number of CPUs only
+    when WATCH_MUTEX is defined, output it when either WATCH_CPU or
+    WATCH_MUTEX is defined.  Only declare and update tmp_mutex if
+    WATCH_MUTEX defined.
 
- 8) Add three parameters that vmstat outputs to the output files that
-    orcallator.se generates, #runque, vmstat's `r' column, which is
-    the number of processes in the run queue waiting to run on a CPU,
-    #waiting, vmstat's `b' column, which is the number of processes
-    blocked for resourceses (I/O, paging), and #swpque, vmstat's `w',
-    the number of proceses runnable but swapped out.  In
-    orcallator.cfg.in add a new plot titled "Processes in Run
+ 8) In orcallator.se, add three parameters that vmstat outputs to the
+    output files that orcallator.se generates, #runque, vmstat's `r'
+    column, which is the number of processes in the run queue waiting
+    to run on a CPU, #waiting, vmstat's `b' column, which is the
+    number of processes blocked for resourceses (I/O, paging), and
+    #swpque, vmstat's `w', the number of proceses runnable but swapped
+    out.  In orcallator.cfg.in add a new plot titled "Processes in Run
     Queue/Waiting/Swapped" to plot the new measurements.
 
- 9) Check [wr]lentime to see if an EMC is using a fake disk for
-    control.  EMC disks have a fake disk which commands are run over
-    to configure the disk array or to get stats from; they are not
-    real data transfers. They cause 1000 MB/sec writes to appear in
-    the stats.  I still get them but not as often with this bit of
-    code in.  If the I/O which occurred in the last five minutes is
-    not greater than 1/100sec then it is not a very valid stat anyway.
-    What hapens is that we can have a small I/O, say 1024 bytes, in a
-    1/100sec = 1024*100/sec.  Make sure to define
+ 9) In orcallator.se, check [wr]lentime to see if an EMC is using a
+    fake disk for control.  EMC disks have a fake disk which commands
+    are run over to configure the disk array or to get stats from;
+    they are not real data transfers. They cause 1000 MB/sec writes to
+    appear in the stats.  I still get them but not as often with this
+    bit of code in.  If the I/O which occurred in the last five
+    minutes is not greater than 1/100sec then it is not a very valid
+    stat anyway.  What hapens is that we can have a small I/O, say
+    1024 bytes, in a 1/100sec = 1024*100/sec.  Make sure to define
     HAVE_EMC_DISK_CONTROL to enable this check.  Patch contributed by
     Damon Atkins <Damon.Atkins@nabaus.com.au>.
 
-10) Increase MAX_COLUMNS from 512 to 2048.
+10) In orcallator.se, increase MAX_COLUMNS from 512 to 2048.
 
 NEW IN ORCA 0.27b1
 ==================
@@ -128,9 +229,10 @@ NEW IN ORCA 0.27b1
     contributed scripts and programs will be kept.  The first
     submissions are:
 
-    a) Include the orcaservices package in the contrib directory which
-       was written by Carlos Canau <Carlos.Canau@KPNQwest.pt> and
-       documented by Jose Carlos <jcp@KPNQwest.pt>.  This package
+    a) Include the orca_services (was originally named orcaservices
+       but this is too hard to read) package in the contrib directory
+       which was written by Carlos Canau <Carlos.Canau@KPNQwest.pt>
+       and documented by Jose Carlos <jcp@KPNQwest.pt>.  This package
        allows monitoring of many different types of Unix services,
        such as DNS, SMTP, POP, etc.
 

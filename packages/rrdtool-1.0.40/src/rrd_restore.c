@@ -1,10 +1,11 @@
 /*****************************************************************************
- * RRDtool 1.0.33  Copyright Tobias Oetiker, 1997 - 2000
+ * RRDtool 1.0.40  Copyright Tobias Oetiker, 1997 - 2000
  *****************************************************************************
  * rrd_restore.c  creates new rrd from data dumped by rrd_dump.c
  *****************************************************************************/
 
 #include "rrd_tool.h"
+#include <fcntl.h>
 
 /* Prototypes */
 
@@ -279,9 +280,11 @@ rrd_write(char *file_name, rrd_t *rrd)
     if (strcmp("-",file_name)==0){
       *rrd_file= *stdout;
     } else {
-      if ((rrd_file = fopen(file_name,"wb")) == NULL ) {
+      int fd = open(file_name,O_RDWR|O_CREAT|O_EXCL,0666);
+      if (fd == -1 || (rrd_file = fdopen(fd,"wb")) == NULL) {
 	rrd_set_error("creating '%s': %s",file_name,strerror(errno));
-	rrd_free(rrd);
+        if (fd != -1)
+          close(fd);
 	return(-1);
       }
     }

@@ -6,7 +6,7 @@
  * See the file "COPYING" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * $Id$
+ * $Id: tclrrd.c,v 1.1.1.1 2002/02/26 10:21:52 oetiker Exp $
  */
 
 

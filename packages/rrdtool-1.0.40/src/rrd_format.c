@@ -1,10 +1,13 @@
 /*****************************************************************************
- * RRDtool 1.0.33  Copyright Tobias Oetiker, 1999
+ * RRDtool 1.0.40  Copyright Tobias Oetiker, 1999
  *****************************************************************************
  * rrd_format.c  RRD Database Format helper functions
  *****************************************************************************
- * $Id: rrd_format.c,v 1.3 1998/03/08 12:35:11 oetiker Exp oetiker $
+ * $Id: rrd_format.c,v 1.1.1.1 2002/02/26 10:21:37 oetiker Exp $
  * $Log: rrd_format.c,v $
+ * Revision 1.1.1.1  2002/02/26 10:21:37  oetiker
+ * Intial Import
+ *
  * Revision 1.3  1998/03/08 12:35:11  oetiker
  * checkpointing things because the current setup seems to work
  * according to the things said in the manpages

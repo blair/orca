@@ -176,7 +176,7 @@ Outline:
     Digest::MD5             >= 2.33        >= 2.33      2.33
     Math::IntervalSearch    >= 1.05        >= 1.05      1.05
     RRDs                    >= 1.000451    >= 1.0.45    1.0.45
-    Storable                >= 2.07        >= 2.07      2.07
+    Storable                >= 2.09        >= 2.09      2.09
     Time::HiRes             Not required by Orca        1.52
 
     All seven of these modules are included with the Orca distribution
@@ -267,10 +267,10 @@ Outline:
 
     Storable
 
-      http://www.perl.com/CPAN/authors/id/A/AM/AMS/Storable-2.07.tar.gz
+      http://www.perl.com/CPAN/authors/id/A/AM/AMS/Storable-2.09.tar.gz
 
-      % gunzip -c Storable-2.07.tar.gz | tar xvf -
-      % cd Storable-2.07
+      % gunzip -c Storable-2.09.tar.gz | tar xvf -
+      % cd Storable-2.09
       % perl Makefile.PL
       % make
       % make test

@@ -470,7 +470,7 @@ static stcxt_t *Context_ptr = NULL;
 	if (!mbase) {						\
 		TRACEME(("** allocating mbase of %d bytes", MGROW)); \
 		New(10003, mbase, MGROW, char);	\
-		msiz = MGROW;					\
+		msiz = (STRLEN)MGROW;					\
 	}									\
 	mptr = mbase;						\
 	if (x)								\
@@ -783,6 +783,10 @@ static const char byteorderstr_56[] = {BYTEORDER_BYTES_56, 0};
 #define STORABLE_BIN_WRITE_MINOR	6
 #endif /* (PATCHLEVEL <= 6) */
 
+#if (PATCHLEVEL < 8 || (PATCHLEVEL == 8 && SUBVERSION < 1))
+#define PL_sv_placeholder PL_sv_undef
+#endif
+
 /*
  * Useful store shortcuts...
  */
@@ -850,12 +854,12 @@ static const char byteorderstr_56[] = {BYTEORDER_BYTES_56, 0};
 #define STORE_SCALAR(pv, len)	STORE_PV_LEN(pv, len, SX_SCALAR, SX_LSCALAR)
 
 /*
- * Store undef in arrays and hashes without recursing through store().
+ * Store &PL_sv_undef in arrays without recursing through store().
  */
-#define STORE_UNDEF() 					\
+#define STORE_SV_UNDEF() 					\
   STMT_START {							\
 	cxt->tagnum++;						\
-	PUTMARK(SX_UNDEF);					\
+	PUTMARK(SX_SV_UNDEF);					\
   } STMT_END
 
 /*
@@ -1322,7 +1326,8 @@ static void init_retrieve_context(stcxt_t *cxt, int optype, int is_tainted)
 	 * new retrieve routines.
 	 */
 
-	cxt->hseen = ((cxt->retrieve_vtbl == sv_old_retrieve) ? newHV() : 0);
+	cxt->hseen = (((void*)cxt->retrieve_vtbl == (void*)sv_old_retrieve)
+		      ? newHV() : 0);
 
 	cxt->aseen = newAV();			/* Where retrieved objects are kept */
 	cxt->aclass = newAV();			/* Where seen classnames are kept */
@@ -2036,7 +2041,7 @@ static int store_array(stcxt_t *cxt, AV *av)
 		sav = av_fetch(av, i, 0);
 		if (!sav) {
 			TRACEME(("(#%d) undef item", i));
-			STORE_UNDEF();
+			STORE_SV_UNDEF();
 			continue;
 		}
 		TRACEME(("(#%d) item", i));
@@ -2207,7 +2212,7 @@ static int store_hash(stcxt_t *cxt, HV *hv)
                             = (((hash_flags & SHV_RESTRICTED)
                                 && SvREADONLY(val))
                                ? SHV_K_LOCKED : 0);
-                        if (val == &PL_sv_undef)
+                        if (val == &PL_sv_placeholder)
                             flags |= SHV_K_PLACEHOLDER;
 
 			keyval = SvPV(key, keylen_tmp);
@@ -2248,7 +2253,13 @@ static int store_hash(stcxt_t *cxt, HV *hv)
                             PUTMARK(flags);
                             TRACEME(("(#%d) key '%s' flags %x %u", i, keyval, flags, *keyval));
                         } else {
-                            assert (flags == 0);
+                            /* This is a workaround for a bug in 5.8.0
+                               that causes the HEK_WASUTF8 flag to be
+                               set on an HEK without the hash being
+                               marked as having key flags. We just
+                               cross our fingers and drop the flag.
+                               AMS 20030901 */
+                            assert (flags == 0 || flags == SHV_K_WASUTF8);
                             TRACEME(("(#%d) key '%s'", i, keyval));
                         }
 			WLEN(keylen);
@@ -2303,7 +2314,7 @@ static int store_hash(stcxt_t *cxt, HV *hv)
                             = (((hash_flags & SHV_RESTRICTED)
                                 && SvREADONLY(val))
                                              ? SHV_K_LOCKED : 0);
-                        if (val == &PL_sv_undef)
+                        if (val == &PL_sv_placeholder)
                             flags |= SHV_K_PLACEHOLDER;
 
                         hek = HeKEY_hek(he);
@@ -2339,7 +2350,13 @@ static int store_hash(stcxt_t *cxt, HV *hv)
                             PUTMARK(flags);
                             TRACEME(("(#%d) key '%s' flags %x", i, key, flags));
                         } else {
-                            assert (flags == 0);
+                            /* This is a workaround for a bug in 5.8.0
+                               that causes the HEK_WASUTF8 flag to be
+                               set on an HEK without the hash being
+                               marked as having key flags. We just
+                               cross our fingers and drop the flag.
+                               AMS 20030901 */
+                            assert (flags == 0 || flags == SHV_K_WASUTF8);
                             TRACEME(("(#%d) key '%s'", i, key));
                         }
                         if (flags & SHV_K_ISSV) {
@@ -2379,7 +2396,7 @@ static int store_code(stcxt_t *cxt, CV *cv)
 #else
 	dSP;
 	I32 len;
-	int ret, count, reallen;
+	int count, reallen;
 	SV *text, *bdeparse;
 
 	TRACEME(("store_code (0x%"UVxf")", PTR2UV(cv)));
@@ -4895,7 +4912,7 @@ static SV *retrieve_flag_hash(stcxt_t *cxt, char *cname)
 
             if (flags & SHV_K_PLACEHOLDER) {
                 SvREFCNT_dec (sv);
-                sv = &PL_sv_undef;
+                sv = &PL_sv_placeholder;
 		store_flags |= HVhek_PLACEHOLD;
 	    }
             if (flags & SHV_K_UTF8) {
@@ -4928,7 +4945,7 @@ static SV *retrieve_flag_hash(stcxt_t *cxt, char *cname)
              */
 
 #ifdef HAS_RESTRICTED_HASHES
-            if (hv_store_flags(hv, kbuf, size, sv, 0, flags) == 0)
+            if (hv_store_flags(hv, kbuf, size, sv, 0, store_flags) == 0)
                 return (SV *) 0;
 #else
             if (!(store_flags & HVhek_PLACEHOLD))
@@ -4960,7 +4977,7 @@ static SV *retrieve_code(stcxt_t *cxt, char *cname)
 	dSP;
 	int type, count;
 	SV *cv;
-	SV *sv, *text, *sub, *errsv;
+	SV *sv, *text, *sub;
 
 	TRACEME(("retrieve_code (#%d)", cxt->tagnum));
 

@@ -8,6 +8,15 @@
 //
 // Portions copied from percollator.se written by Adrian Cockroft.
 //
+// Version 1.29:   Oct  5, 2001	In SE 3.2.1 stat.se, mknod is a C-preprocessor
+//				define to _xmknod on x86 systems while on SPARC
+//				systems stat.se declares mknod as a normal
+//				function.  When stat.se is included before
+//				kstat.se on x86 systems the mknod define
+//				causes a compile error on kstat's mknod
+//				variables which are part of the ks_rfs_proc_v3
+//				and ks_rfs_req_v3 structures.  The work around
+//				is to include kstat.se before stat.se.
 // Version 1.28:   Oct  2, 2001	No changes, bump version number to 1.28.
 // Version 1.28b7: Sep 29, 2001	Change the output log filename format from
 //				percol-%Y-%m-%d to percol-%Y-%m-%d-XXX, where
@@ -74,22 +83,22 @@
 //				under /snapshots from being seen.  Patch
 //				contributed by Alan LeGrand
 //				<alegrand@wallace.com>.
-// Version 1.27: Mar 27, 2001	Print the portion of time running in idle mode
+// Version 1.27:   Mar 27, 2001	Print the portion of time running in idle mode
 //				with some process waiting for block I/O as
 //				wio% and otherwise completely idle time as
 //				idle%.
-// Version 1.26: Feb  5, 2001	Make sure to check the return from stat() on
+// Version 1.26:   Feb  5, 2001	Make sure to check the return from stat() on
 //				the web server access log in case the file is
 //				missing.  Use fstat() instead of stat() when a
 //				file descriptor is available.
-// Version 1.25: Mar 30, 2000	Fix a typo where nil was misspelled as nik.
-// Version 1.24: Mar 25, 2000	When orcallator.se was running on a system
+// Version 1.25:   Mar 30, 2000	Fix a typo where nil was misspelled as nik.
+// Version 1.24:   Mar 25, 2000	When orcallator.se was running on a system
 //				with an older version of SE the p_vmstat.scan
 //				variable is an integer and the sprintf to
 //				%8.3f fails, resulting in a perceived scan rate
 //				of 0 pages per second.  Now always add 0.0 to
 //				p_vmstat.scan to get a double.
-// Version 1.23: Feb 25, 2000	When orcallator.se was running on a system
+// Version 1.23:   Feb 25, 2000	When orcallator.se was running on a system
 //				with DiskSuite, the same physical disk was
 //				listed multiple times when it appeared in
 //				several metadevices.  The solution to the
@@ -97,7 +106,7 @@
 //				use the long disk name provided by the
 //				long_name string.  Patch contributed by Paul
 //				Haldane <Paul.Haldane@newcastle.ac.uk>.
-// Version 1.22: Jan 14, 2000	Include code to record NFS v2 and v3 server
+// Version 1.22:   Jan 14, 2000	Include code to record NFS v2 and v3 server
 //				statistics.  The new statistics are:
 //				nfss_calls, the number of NFS calls to the NFS
 //				server, nfss_bad, the number of bad NFS calls
@@ -114,17 +123,17 @@
 //				-DWATCH_NFS_CLIENT, but to keep backwards
 //				compatibility, -DWATCH_NFS_CLIENT will be
 //				defined if -DWATCH_NFS is defined.
-// Version 1.21: Jan 12, 2000	Prevent core dumps on extremely long access
+// Version 1.21:   Jan 12, 2000	Prevent core dumps on extremely long access
 //				log lines.
-// Version 1.20: Oct 20, 1999	Update my email address.
-// Version 1.19: Oct 13, 1999	Prevent a division by zero in calculating the
+// Version 1.20:   Oct 20, 1999	Update my email address.
+// Version 1.19:   Oct 13, 1999	Prevent a division by zero in calculating the
 //				mean_disk_busy if the number of disks on the
 //				system is 0.
-// Version 1.18: Oct 12, 1999	Rename disk_runp.c?t?d? to disk_runp_c?t?d?
+// Version 1.18:   Oct 12, 1999	Rename disk_runp.c?t?d? to disk_runp_c?t?d?
 //				to remove the .'s.
-// Version 1.17: Oct  8, 1999	Do not record mount point statistics for
+// Version 1.17:   Oct  8, 1999	Do not record mount point statistics for
 //				locally mounted /cdrom partitions.
-// Version 1.16: Oct  7, 1999	To keep backwards compatibility, define
+// Version 1.16:   Oct  7, 1999	To keep backwards compatibility, define
 //				WATCH_WEB if WATCH_HTTPD is defined.
 //				If the COMPRESSOR environmental variable
 //				is defined, then when a new log file is opened
@@ -134,14 +143,14 @@
 //				system(sprintf("%s %s &", COMPRESSOR, log_file)
 //				COMPRESSOR should be set to something like
 //				"gzip -9", or "compress", or "bzip2 -9".
-// Version 1.15: Oct  5, 1999	kvm$mpid is a int not a long.  This caused
+// Version 1.15:   Oct  5, 1999	kvm$mpid is a int not a long.  This caused
 //				problems on Solaris 7 hosts running a 64
 //				bit kernel.
-// Version 1.14: Oct  1, 1999	Rename disk.c?t?d? column names to
+// Version 1.14:   Oct  1, 1999	Rename disk.c?t?d? column names to
 //				disk_runp.c?t?d? to better reflect the data
 //				being recorded and to allow for more per disk
 //				information later.
-// Version 1.13: Sep 24, 1999	Fix a bug in the disk_mean calculation where
+// Version 1.13:   Sep 24, 1999	Fix a bug in the disk_mean calculation where
 //				it was being divided by the wrong disk_count.
 //				Now it should be much larger and in scale with
 //				disk_peak.  When WATCH_DISK is defined, now
@@ -156,9 +165,9 @@
 //				is printed.  This will prevent column name and
 //				data mixups when the system configuration
 //				changes.
-// Version 1.12: Sep 14, 1999	Add the page scan rate as scanrate in
+// Version 1.12:   Sep 14, 1999	Add the page scan rate as scanrate in
 //				measure_cpu.
-// Version 1.11: Aug 13, 1999	Add the number of CPUs as ncpus.  Move
+// Version 1.11:   Aug 13, 1999	Add the number of CPUs as ncpus.  Move
 //				measure_disk and measure_ram sooner in the
 //				list of subsystems to handle.  Increase the
 //				number of characters for each network
@@ -166,25 +175,25 @@
 //				reads, writes, Kbytes read, and Kbytes
 //				written per second.  Add number of bytes
 //				of free memory in bytes as freememK.
-// Version 1.10: Jul 28, 1999	Measure the process spawn rate if WATCH_CPU
+// Version 1.10:   Jul 28, 1999	Measure the process spawn rate if WATCH_CPU
 //				is defined and the user is root.
-// Version 1.9:  Jun  2, 1999	If WATCH_YAHOO is defined, then process the
+// Version 1.9:    Jun  2, 1999	If WATCH_YAHOO is defined, then process the
 //				access log as a Yahoo! style access log.
 //				Restructure the code to handle different
 //				web server access log formats.
-// Version 1.8:  Jun  1, 1999	If the environmental variable WEB_SERVER is
+// Version 1.8:    Jun  1, 1999	If the environmental variable WEB_SERVER is
 //				defined, use its value of the as the name
 //				of the process to count for the number of
 //				web servers on the system.  If WEB_SERVER
 //				is not defined, then count number of httpd's.
-// Version 1.7:  Mar 25, 1999	Simplify and speed up count_proc by 20%.
-// Version 1.6:  Feb 23, 1999	Print pvm.user_time and system_time correctly.
-// Version 1.5:  Feb 23, 1999	Always write header to a new file.
-// Version 1.4:  Feb 19, 1999	Handle missing HTTP/1.x in access log.
-// Version 1.3:  Feb 18, 1999	On busy machines httpops5 will be enlarged.
-// Version 1.2:  Feb 18, 1999	Output data on integral multiples of interval.
-// Version 1.1:	 Feb 18, 1999	Integrate Squid log processing from SE 3.1.
-// Version 1.0:	 Sep  9, 1998	Initial version.
+// Version 1.7:    Mar 25, 1999	Simplify and speed up count_proc by 20%.
+// Version 1.6:    Feb 23, 1999	Print pvm.user_time and system_time correctly.
+// Version 1.5:    Feb 23, 1999	Always write header to a new file.
+// Version 1.4:    Feb 19, 1999	Handle missing HTTP/1.x in access log.
+// Version 1.3:    Feb 18, 1999	On busy machines httpops5 will be enlarged.
+// Version 1.2:    Feb 18, 1999	Output data on integral multiples of interval.
+// Version 1.1:	   Feb 18, 1999	Integrate Squid log processing from SE 3.1.
+// Version 1.0:	   Sep  9, 1998	Initial version.
 //
 
 // The default sampling interval in seconds.
@@ -226,8 +235,8 @@
 #include <unistd.se>
 #include <string.se>
 #include <time.se>
-#include <stat.se>
 #include <kstat.se>
+#include <stat.se>
 #include <utsname.se>
 
 #include <p_iostat_class.se>

@@ -1,6 +1,6 @@
 #!./perl
 
-# $Id: freeze.t,v 0.6.1.1 1998/06/12 09:47:08 ram Exp ram $
+# $Id: freeze.t,v 0.6.1.1 1998/06/12 09:47:08 ram Exp $
 #
 #  Copyright (c) 1995-1998, Raphael Manfredi
 #  
@@ -8,7 +8,7 @@
 #  as specified in the README file that comes with the distribution.
 #
 # $Log: freeze.t,v $
-# Revision 0.6.1.1  1998/06/12  09:47:08  ram
+# Revision 0.6.1.1  1998/06/12 09:47:08  ram
 # patch1: added test for the LVALUE bug workaround
 #
 # Revision 0.6  1998/06/04  16:08:31  ram

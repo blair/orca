@@ -1,4 +1,4 @@
-# $Id: Makefile.PL,v 0.6 1998/06/04 16:08:18 ram Exp ram $
+# $Id: Makefile.PL,v 0.6 1998/06/04 16:08:18 ram Exp $
 #
 #  Copyright (c) 1995-1998, Raphael Manfredi
 #  
@@ -6,7 +6,7 @@
 #  as specified in the README file that comes with the distribution.
 #
 # $Log: Makefile.PL,v $
-# Revision 0.6  1998/06/04  16:08:18  ram
+# Revision 0.6  1998/06/04 16:08:18  ram
 # Baseline for first beta release.
 #
 

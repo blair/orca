@@ -1,6 +1,6 @@
 #!./perl
 
-# $Id: tied.t,v 0.6 1998/06/04 16:08:40 ram Exp ram $
+# $Id: tied.t,v 0.6 1998/06/04 16:08:40 ram Exp $
 #
 #  Copyright (c) 1995-1998, Raphael Manfredi
 #  
@@ -8,7 +8,7 @@
 #  as specified in the README file that comes with the distribution.
 #
 # $Log: tied.t,v $
-# Revision 0.6  1998/06/04  16:08:40  ram
+# Revision 0.6  1998/06/04 16:08:40  ram
 # Baseline for first beta release.
 #
 

@@ -1,6 +1,6 @@
 #!./perl
 
-# $Id: store.t,v 0.6 1998/06/04 16:08:35 ram Exp ram $
+# $Id: store.t,v 0.6 1998/06/04 16:08:35 ram Exp $
 #
 #  Copyright (c) 1995-1998, Raphael Manfredi
 #  
@@ -8,7 +8,7 @@
 #  as specified in the README file that comes with the distribution.
 #
 # $Log: store.t,v $
-# Revision 0.6  1998/06/04  16:08:35  ram
+# Revision 0.6  1998/06/04 16:08:35  ram
 # Baseline for first beta release.
 #
 

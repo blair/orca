@@ -26,8 +26,10 @@ Outline:
     a) Install the SE toolkit.
     b) Apply a patch to the SE 3.0 toolkit if necessary.
     c) Examine Orca/orcallator programs.
-    d) Run start_orcallator on all systems.
-    e) Edit orcallator.cfg.
+    d) Install orcallator boot and halt time start/stop scripts
+       in /etc/rc?.d/.
+    e) Run start_orcallator on all systems.
+    f) Edit orcallator.cfg.
 
 12) Run Orca.
 
@@ -98,7 +100,7 @@ Outline:
     Digest::MD5			2.00 or greater		2.09
     Math::IntervalSearch	1.05 or greater		1.05
     RRDs			1.0.7.2 or greater	1.0.7.2
-    Storable			0.6.3 or greater	0.6.5
+    Storable			0.6.3 or greater	0.6.7
 
     All five of these modules are included with the Orca distribution
     in the packages directory.  When you configure Orca in step 4),
@@ -167,10 +169,10 @@ Outline:
 
     Storable
 
-      http://www.perl.com/CPAN/authors/id/RAM/Storable-0.6.5.tar.gz
+      http://www.perl.com/CPAN/authors/id/RAM/Storable-0.6.7.tar.gz
 
-      % gunzip -c Storable-0.6.5.tar.gz | tar xvf -
-      % cd Storable-0.6.5
+      % gunzip -c Storable-0.6.7.tar.gz | tar xvf -
+      % cd Storable-0.6.7
       % perl Makefile.PL
       % make
       % make test
@@ -365,7 +367,21 @@ Outline:
          orcallator_column  - print selected columns from orcallator output
          orcallator_running - run to see if any orcallators are not running
 
-    d) Run start_orcallator on all systems.
+    d) Install orcallator boot and halt time start/stop scripts
+       in /etc/rc?.d/.
+
+       If you wish to have orcallator run when the machine boots, you can
+       install the included S99orcallator file into the proper /etc/*.d/
+       directories.  To make installing this easier, you can say
+
+       % make orcallator_run_at_boot
+
+       from either the top level Makefile or the orcallator/Makefile.
+       It will remove any old orcallator files and install S99orcallator
+       into /etc/init.d/orcallator, /etc/init.d/rc0.d/K01orcallator,
+       /etc/init.d/rc1.d/K01orcallator, and /etc/rc3.d/S99orcallator.
+
+    e) Run start_orcallator on all systems.
 
        Log in as root on all the systems you want to watch and run:
 
@@ -375,7 +391,7 @@ Outline:
        update interval, which will be between 2.5 to 7.5 minutes after
        orcallator is started.
 
-    e) Edit orcallator.cfg.
+    f) Edit orcallator.cfg.
 
        You need to edit the installed orcallator.cfg file and remove
        all unneeded references.  In particular, you'll want to change

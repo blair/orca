@@ -18,7 +18,7 @@ DATA_DUMPER_DIR=Data-Dumper-2.101
 DIGEST_MD5_DIR=Digest-MD5-2.09
 MATH_INTERPOLATE_DIR=Math-Interpolate-1.05
 RRDTOOL_DIR=rrdtool-1.0.7.2
-STORABLE_DIR=Storable-0.6.5
+STORABLE_DIR=Storable-0.6.7
 AC_SUBST(COMPRESS_ZLIB_DIR)
 AC_SUBST(DATA_DUMPER_DIR)
 AC_SUBST(DIGEST_MD5_DIR)
@@ -325,6 +325,7 @@ if test "$BUILD_ORCALLATOR" = "yes"; then
                      orcallator/restart_orcallator.sh
                      orcallator/start_orcallator.sh
                      orcallator/stop_orcallator.sh
+                     orcallator/S99orcallator.sh
                      orcallator/Makefile"
 fi
 

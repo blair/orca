@@ -26,6 +26,9 @@ install: $(INSTALL_RRDTOOL)
 		(cd $$dir && $(MAKE) install);		\
 	done
 
+orcallator_run_at_boot:
+	cd orcallator && $(MAKE) orcallator_run_at_boot
+
 test_modules:
 	cd packages && $(MAKE) CFLAGS="$(CFLAGS)" test_modules
 

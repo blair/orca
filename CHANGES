@@ -1,3 +1,76 @@
+Wed Oct 20 18:19:15 PDT 1999
+
+	Release Orca 0.25.
+
+Wed Oct 20 17:37:01 PDT 1999
+
+	Fix that annoying warning from pod2html when orca.html is
+	generated.
+
+	Include Storable 0.607 but continue to only require 0.603.
+
+	Add a mention in the POD that sending a HUP to the Orca process
+	forces it to look for new files in the next loop.  This is faster
+	than restarting Orca.
+
+	Change the behavior of warnings when data requested to be plotted
+	in the configuration file does not exist in the source data files.
+	Any resulting errors from this, such as cannot compile errors,
+	are only sent when the verbose level is above 1 or when the plot
+	is required.
+
+	Did some renaming of classes and variables in limited places:
+	Orca::SourceDataFile -> Orca::SourceFile
+	files_key            -> group
+	group                -> subgroup
+	gif                  -> image
+
+	Orcallator.se 1.20 now mentions my new email address of
+	blair@akamai.com instead of the old one.
+
+	Move all references to my and Orca's home page from GeoCities
+	(www.geocities.com/~bzking/) to Caltech
+	(www.gps.caltech.edu/~blair/orca/) everywhere.
+
+	In the default orcallator.cfg, make sure it can find compressed
+	orcallator files in the find_files statement.
+
+	Make sure all Makefile's can rebuild themselves from their
+	Makefile.in and make sure that the Makefile target is built when
+	all is built.
+
+	Put in an optimization where Orca would not repeatedly create
+	a new anonymous subroutine to catch warnings when eval's were
+	being performed.
+
+	Add a new make target, orcallator_run_at_boot, which installs
+	into the proper /etc/*.d/ directories the scripts to start
+	orcallator at boot time and stop orcallator at halt time.
+	Update the INSTALL file to mention this.
+
+	Fix an important bug where Orca would crash if column names
+	mentioned in the configuration file did not exist in the source
+	data files.  This fix was in Orca::SourceFile::add_plots.
+
+Tue Oct 19 18:25:12 PDT 1999
+
+	Make all plots optional by default.  Remove the optional plot
+	keyword and add required, which makes a plot required.
+
+Fri Oct 15 11:25:53 PDT 1999
+
+	Add a new plot in the default orcallator.cfg, the amount of free
+	physical memory.
+
+	Shorten the legend names in orcallator.cfg so that the complete
+	line fits in the generated image.  Also make the Y legend names
+	more consistent with each other.
+
+Thu Oct 14 15:52:43 PDT 1999
+
+	Create a orcallator/S99orcallator file that can be used to start
+	orcallator.se at boot time and stop it at halt time.
+
 Thu Oct 14 14:44:00 PDT 1999
 
 	Release Orca 0.24.
@@ -111,7 +184,7 @@ Fri Sep 24 11:50:33 PDT 1999
 
 Mon Sep 20 11:18:21 PDT 1999
 
-	Include Storable 0.6.5.
+	Include Storable 0.605 but continue to only require 0.603.
 
 Tue Sep 14 15:54:38 PDT 1999
 

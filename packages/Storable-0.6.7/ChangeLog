@@ -1,3 +1,21 @@
+Wed Oct 20 19:07:36 MEST 1999   Raphael Manfredi <Raphael_Manfredi@pobox.com>
+
+. Description:
+
+	Forgot to update VERSION
+
+Tue Oct 19 21:25:02 MEST 1999   Raphael Manfredi <Raphael_Manfredi@pobox.com>
+
+. Description:
+
+	Added mention of japanese translation for the manual page.
+
+	Fixed typo in macro that made threaded code not compilable,
+	especially on Win32 platforms.
+
+	Changed detection of older perls (pre-5.005) by testing PATCHLEVEL
+	directly instead of relying on internal symbols.
+
 Tue Sep 14 22:13:28 MEST 1999   Raphael Manfredi <Raphael_Manfredi@pobox.com>
 
 . Description:

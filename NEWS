@@ -1,3 +1,30 @@
+New in Orca version 0.25.
+ 1) I have moved companies from Yahoo!/GeoCities to Akamai.  My email
+    address has changed to blair@akamai.com and the old one will
+    no longer work.  Also, I have moved the my entire Orca archive
+    from www.geocities.com/~bzking/ to www.gps.caltech.edu/~blair/orca/
+ 2) Fix an important bug where Orca would crash if column names mentioned
+    in the configuration file did not exist in the source data files.
+ 3) Orca, when it received the HUP signal, will look for new source
+    data files the next time it runs through the main loop.  If you have
+    a constantly running Orca, this is a simpler and faster solution
+    than restarting Orca, which takes time to reread all the source files.
+ 4) Add a new make target orcallator_run_at_boot which will install the
+    proper files into the proper /etc/*.d/ directories to start orcallator
+    at boot time and shut it down at halt time.
+ 5) The previous default orcallator.cfg would not find compressed
+    orcallator files.
+ 6) Remove the plot configuration option `optional' which made plots
+    optional.  Now make plots optional by default and use the keyword
+    `required' to make them required.  If a plot is required, then it
+    will always display, even if there is no data loaded for it.
+ 7) Change the behavior of warnings when data requested to be plotted
+    in the configuration file does not exist in the source data files.
+    Any resulting errors from this, such as cannot compile errors,
+    are only sent when the verbose level is above 1 or when the plot
+    is required.
+ 8) Include Storable 0.6.7 but continue to only require Storable 0.6.3.
+
 New in Orca version 0.24.
  1) Installation notes.  Due to the way Orca generated image and HTML
     files are named, read the INSTALL file.  Otherwise, you will have

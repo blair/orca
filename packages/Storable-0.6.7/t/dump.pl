@@ -1,4 +1,4 @@
-;# $Id: dump.pl,v 0.6 1998/06/04 16:08:27 ram Exp ram $
+;# $Id: dump.pl,v 0.6 1998/06/04 16:08:27 ram Exp $
 ;#
 ;#  Copyright (c) 1995-1998, Raphael Manfredi
 ;#  
@@ -6,7 +6,7 @@
 ;#  as specified in the README file that comes with the distribution.
 ;#
 ;# $Log: dump.pl,v $
-;# Revision 0.6  1998/06/04  16:08:27  ram
+;# Revision 0.6  1998/06/04 16:08:27  ram
 ;# Baseline for first beta release.
 ;#
 

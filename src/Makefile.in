@@ -12,7 +12,7 @@ PERL_SCRIPTS	= orca upgrade_installation
 SHELL_SCRIPTS	=
 TARGETS		= $(PERL_SCRIPTS) $(SHELL_SCRIPTS)
 
-all:		$(TARGETS)
+all:		Makefile $(TARGETS)
 
 install: all
 		$(MKDIR) $(bindir)

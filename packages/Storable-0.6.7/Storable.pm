@@ -1,4 +1,4 @@
-;# $Id: Storable.pm,v 0.6.1.5 1999/09/14 20:11:22 ram Exp ram $
+;# $Id: Storable.pm,v 0.6.1.7 1999/10/20 17:07:31 ram Exp $
 ;#
 ;#  Copyright (c) 1995-1998, Raphael Manfredi
 ;#  
@@ -6,6 +6,12 @@
 ;#  as specified in the README file that comes with the distribution.
 ;#
 ;# $Log: Storable.pm,v $
+;# Revision 0.6.1.7  1999/10/20 17:07:31  ram
+;# patch7: forgot to update VERSION
+;#
+;# Revision 0.6.1.6  1999/10/19 19:21:27  ram
+;# patch6: Added mention of japanese translation
+;#
 ;# Revision 0.6.1.5  1999/09/14 20:11:22  ram
 ;# patch5: updated version number
 ;#
@@ -42,7 +48,7 @@ use AutoLoader;
 use Carp;
 use vars qw($forgive_me $VERSION);
 
-$VERSION = '0.605';
+$VERSION = '0.607';
 *AUTOLOAD = \&AutoLoader::AUTOLOAD;		# Grrr...
 
 bootstrap Storable;
@@ -417,6 +423,7 @@ Thank you to (in chronological order):
 	Andrew Ford <A.Ford@ford-mason.co.uk>
 	Gisle Aas <gisle@aas.no>
 	Jeff Gresham <gresham_jeffrey@jpmorgan.com>
+	Murray Nesbitt <murray@activestate.com>
 
 for their bug reports, suggestions and contributions.
 
@@ -427,6 +434,13 @@ and optimized the emission of "tags" in the output streams by
 simply counting the objects instead of tagging them (leading to
 a binary incompatibility for the Storable image starting at version
 0.6--older images are of course still properly understood).
+Murray Nesbitt made Storable thread-safe.
+
+=head1 TRANSLATIONS
+
+There is a Japanese translation of this man page available at
+http://member.nifty.ne.jp/hippo2000/perltips/storable.htm ,
+courtesy of Kawai, Takanori <kawai@nippon-rad.co.jp>.
 
 =head1 AUTHOR
 

@@ -3,7 +3,7 @@
  */
 
 /*
- * $Id: Storable.xs,v 0.6.1.5 1999/09/14 20:12:29 ram Exp ram $
+ * $Id: Storable.xs,v 0.6.1.6 1999/10/19 19:23:34 ram Exp $
  *
  *  Copyright (c) 1995-1998, Raphael Manfredi
  *  
@@ -11,6 +11,10 @@
  *  as specified in the README file that comes with the distribution.
  *
  * $Log: Storable.xs,v $
+ * Revision 0.6.1.6  1999/10/19 19:23:34  ram
+ * patch6: Fixed typo in macro that made threaded code not compilable
+ * patch6: Changed detection of older perls (pre-5.005) by testing PATCHLEVEL
+ *
  * Revision 0.6.1.5  1999/09/14 20:12:29  ram
  * patch5: integrated "thread-safe" patch from Murray Nesbitt
  * patch5: try to avoid compilation warning on 64-bit CPUs
@@ -63,7 +67,7 @@
 #ifndef newRV_noinc
 #define newRV_noinc(sv)		((Sv = newRV(sv)), --SvREFCNT(SvRV(Sv)), Sv)
 #endif
-#ifndef ERRSV				/* Detects older perls (<= 5.004) */
+#if (PATCHLEVEL <= 4)		/* Older perls (<= 5.004) lack PL_ namespace */
 #define PL_sv_yes	sv_yes
 #define PL_sv_no	sv_no
 #define PL_sv_undef	sv_undef
@@ -199,9 +203,9 @@ typedef struct {
 
 #if defined(MULTIPLICITY) || defined(PERL_OBJECT) || defined(PERL_CAPI)
 
-#if (PATCHLEVEL == 4) && (SUBVERSION < 68)
+#if (PATCHLEVEL <= 4) && (SUBVERSION < 68)
 #define dPERINTERP_SV 									\
-	SV *perinterp_sv = perl_get_sv(MY_VERSION, FALSE)	\
+	SV *perinterp_sv = perl_get_sv(MY_VERSION, FALSE)
 #else	/* >= perl5.004_68 */
 #define dPERINTERP_SV									\
 	SV *perinterp_sv = *hv_fetch(PL_modglobal,			\

@@ -1,6 +1,6 @@
 #!./perl
 
-# $Id: forgive.t,v 0.6 1998/06/04 16:08:38 ram Exp ram $
+# $Id: forgive.t,v 0.6 1998/06/04 16:08:38 ram Exp $
 #
 #  Copyright (c) 1995-1998, Raphael Manfredi
 #  
@@ -11,7 +11,7 @@
 # (C) Copyright 1997, Universitat Dortmund, all rights reserved.
 #
 # $Log: forgive.t,v $
-# Revision 0.6  1998/06/04  16:08:38  ram
+# Revision 0.6  1998/06/04 16:08:38  ram
 # Baseline for first beta release.
 #
 

@@ -1,0 +1,109 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>rrdtune</title>
+<link rev="made" href="mailto:dws@ee.ethz.ch" />
+</head>
+
+<body style="background-color: white">
+
+<p><a name="__index__"></a></p>
+<!-- INDEX BEGIN -->
+<!--
+
+<ul>
+
+	<li><a href="#name">NAME</a></li>
+	<li><a href="#synopsis">SYNOPSIS</a></li>
+	<li><a href="#description">DESCRIPTION</a></li>
+	<li><a href="#example">EXAMPLE</a></li>
+	<li><a href="#author">AUTHOR</a></li>
+</ul>
+-->
+<!-- INDEX END -->
+
+<p>
+</p>
+<h1><a name="name">NAME</a></h1>
+<p>rrdtune - Modify some basic properties of a Round Robin Database</p>
+<div align="right"><a href="rrdtune.pdf">PDF</a> version.</div><p>
+</p>
+<hr />
+<h1><a name="synopsis">SYNOPSIS</a></h1>
+<p><strong>rrdtool</strong> <strong>tune</strong> <em>filename</em> 
+[<strong>--heartbeat</strong>|<strong>-h</strong>&nbsp;<em>ds-name</em>:<em>heartbeat</em>] 
+[<strong>--minimum</strong>|<strong>-i</strong>&nbsp;<em>ds-name</em>:<em>min</em>]
+[<strong>--maximum</strong>|<strong>-a</strong>&nbsp;<em>ds-name</em>:<em>max</em>]
+[<strong>--data-source-type</strong>|<strong>-d</strong>&nbsp;<em>ds-name</em>:<em>DST</em>]
+[<strong>--data-source-rename</strong>|<strong>-r</strong>&nbsp;<em>old-name</em>:<em>new-name</em>]</p>
+<p>
+</p>
+<hr />
+<h1><a name="description">DESCRIPTION</a></h1>
+<p>The tune option allows you to alter some of the basic configuration
+values stored in the header area of a Round Robin Database (<strong>RRD</strong>).
+All these tunable parameters together decide when data fed into an 
+<strong>RRD</strong> is to be regarded as invalid. Invalid data is entered into the 
+database as *UNKNOWN*.</p>
+<p>The main application of the <strong>tune</strong> function is to relax the 
+validation rules on an <strong>RRD</strong>. This allows to fill a new <strong>RRD</strong> with
+data available in larger intervals than what you would normally want
+to permit.</p>
+<dl>
+<dt><strong><a name="item_filename"><em>filename</em></a></strong><br />
+</dt>
+<dd>
+The name of the <strong>RRD</strong> you want to tune.
+</dd>
+<p></p>
+<dt><strong><a name="item__2d_2dheartbeat_7c_2dh_ds_2dname_3aheartbeat"><strong>--heartbeat</strong>|<strong>-h</strong>&nbsp;<em>ds-name</em>:<em>heartbeat</em></a></strong><br />
+</dt>
+<dd>
+modify the <em>heartbeat</em> of a data source. By setting this to a high
+value the RRD will accept things like one value per day ...
+</dd>
+<p></p>
+<dt><strong><a name="item__2d_2dminimum_7c_2di_ds_2dname_3amin"><strong>--minimum</strong>|<strong>-i</strong>&nbsp;<em>ds-name</em>:<em>min</em></a></strong><br />
+</dt>
+<dd>
+alter the minimum value acceptable as input from the data source.
+Setting <em>min</em> to 'U' will disable this limit.
+</dd>
+<p></p>
+<dt><strong><a name="item__2d_2dmaximum_7c_2da_ds_2dname_3amax"><strong>--maximum</strong>|<strong>-a</strong>&nbsp;<em>ds-name</em>:<em>max</em></a></strong><br />
+</dt>
+<dd>
+alter the maximum value acceptable as input from the data source.
+Setting <em>max</em> to 'U' will disable this limit.
+</dd>
+<p></p>
+<dt><strong><a name="item__2d_2ddata_2dsource_2dtype_7c_2dd_ds_2dname_3adst"><strong>--data-source-type</strong>|<strong>-d</strong>&nbsp;<em>ds-name</em>:<em>DST</em></a></strong><br />
+</dt>
+<dd>
+alter the type <strong>DST</strong> of a data source.
+</dd>
+<p></p>
+<dt><strong><a name="item__5b_2d_2ddata_2dsource_2drename_7c_2dr_old_2dname_">[<strong>--data-source-rename</strong>|<strong>-r</strong>&nbsp;<em>old-name</em>:<em>new-name</em>]</a></strong><br />
+</dt>
+<dd>
+rename a data source
+</dd>
+<p></p></dl>
+<p>
+</p>
+<hr />
+<h1><a name="example">EXAMPLE</a></h1>
+<p><code>rrdtool tune data.rrd -h in:100000 -h out:100000 -h through:100000</code></p>
+<p>Set the minimum required heartbeat for data sources 'in', 'out' 
+and 'through' to 10000 seconds which is a little over one day in data.rrd.
+This would allow to feed old data from MRTG-2.0 right into
+RRDTool without generating *UNKNOWN* entries.</p>
+<p>
+</p>
+<hr />
+<h1><a name="author">AUTHOR</a></h1>
+<p>Tobias Oetiker &lt;<a href="mailto:oetiker@ee.ethz.ch">oetiker@ee.ethz.ch</a>&gt;</p>
+
+</body>
+
+</html>

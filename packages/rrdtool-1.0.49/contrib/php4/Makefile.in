@@ -1,0 +1,6 @@
+LTLIBRARY_NAME    = librrdtool.la
+LTLIBRARY_SOURCES = rrdtool.c
+LTLIBRARY_SHARED_NAME = rrdtool.la
+LTLIBRARY_SHARED_LIBADD = $(RRDTOOL_SHARED_LIBADD)
+
+include $(top_srcdir)/build/dynlib.mk

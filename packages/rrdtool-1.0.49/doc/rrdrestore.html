@@ -1,0 +1,68 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>rrdrestore</title>
+<link rev="made" href="mailto:dws@ee.ethz.ch" />
+</head>
+
+<body style="background-color: white">
+
+<p><a name="__index__"></a></p>
+<!-- INDEX BEGIN -->
+<!--
+
+<ul>
+
+	<li><a href="#name">NAME</a></li>
+	<li><a href="#synopsis">SYNOPSIS</a></li>
+	<li><a href="#description">DESCRIPTION</a></li>
+	<li><a href="#author">AUTHOR</a></li>
+</ul>
+-->
+<!-- INDEX END -->
+
+<p>
+</p>
+<h1><a name="name">NAME</a></h1>
+<p>rrdrestore - restore the contents of an <strong>RRD</strong> from its XML dump format</p>
+<div align="right"><a href="rrdrestore.pdf">PDF</a> version.</div><p>
+</p>
+<hr />
+<h1><a name="synopsis">SYNOPSIS</a></h1>
+<p><strong>rrdtool</strong> <strong>restore</strong> <em>filename.xml</em> <em>filename.rrd</em>
+[<strong>--range-check</strong>|<strong>-r</strong>]</p>
+<p>
+</p>
+<hr />
+<h1><a name="description">DESCRIPTION</a></h1>
+<p>The <strong>restore</strong> function reads the XML representation of an RRD and converts
+it into the native <strong>RRD</strong> format.</p>
+<dl>
+<dt><strong><a name="item_filename_2exml"><em>filename.xml</em></a></strong><br />
+</dt>
+<dd>
+The name of the <strong>XML</strong> you want to restore.
+</dd>
+<p></p>
+<dt><strong><a name="item_filename_2errd"><em>filename.rrd</em></a></strong><br />
+</dt>
+<dd>
+The name of the <strong>RRD</strong> to restore.
+</dd>
+<p></p>
+<dt><strong><a name="item__2d_2drange_2dcheck_7c_2dr"><strong>--range-check</strong>|<strong>-r</strong></a></strong><br />
+</dt>
+<dd>
+Make sure the values in the RRAs do not exceed the limits defined for
+the different datasources.
+</dd>
+<p></p></dl>
+<p>
+</p>
+<hr />
+<h1><a name="author">AUTHOR</a></h1>
+<p>Tobias Oetiker &lt;<a href="mailto:oetiker@ee.ethz.ch">oetiker@ee.ethz.ch</a>&gt;</p>
+
+</body>
+
+</html>

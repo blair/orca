@@ -1,0 +1,108 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>rrdupdate</title>
+<link rev="made" href="mailto:dws@ee.ethz.ch" />
+</head>
+
+<body style="background-color: white">
+
+<p><a name="__index__"></a></p>
+<!-- INDEX BEGIN -->
+<!--
+
+<ul>
+
+	<li><a href="#name">NAME</a></li>
+	<li><a href="#synopsis">SYNOPSIS</a></li>
+	<li><a href="#description">DESCRIPTION</a></li>
+	<li><a href="#example">EXAMPLE</a></li>
+	<li><a href="#author">AUTHOR</a></li>
+</ul>
+-->
+<!-- INDEX END -->
+
+<p>
+</p>
+<h1><a name="name">NAME</a></h1>
+<p>rrdupdate - Store a new set of values into the RRD</p>
+<div align="right"><a href="rrdupdate.pdf">PDF</a> version.</div><p>
+</p>
+<hr />
+<h1><a name="synopsis">SYNOPSIS</a></h1>
+<p><strong>rrdtool</strong> <strong>update</strong> <em>filename</em> 
+[<strong>--template</strong>|<strong>-t</strong>&nbsp;<em>ds-name</em>[<strong>:</strong><em>ds-name</em>]...] 
+<strong>N</strong>|<em>timestamp</em><strong>:</strong><em>value</em>[<strong>:</strong><em>value</em>...] 
+[<em>timestamp</em><strong>:</strong><em>value</em>[<strong>:</strong><em>value</em>...]&nbsp;...]</p>
+<p>
+</p>
+<hr />
+<h1><a name="description">DESCRIPTION</a></h1>
+<p>The <strong>update</strong> function feeds new data values into an <strong>RRD</strong>. The
+data gets time aligned according to the properties of the <strong>RRD</strong> to
+which the data is written.</p>
+<dl>
+<dt><strong><a name="item_filename"><em>filename</em></a></strong><br />
+</dt>
+<dd>
+The name of the <strong>RRD</strong> you want to update.
+</dd>
+<p></p>
+<dt><strong><a name="item__2d_2dtemplate_7c_2dt_ds_2dname_5b_3ads_2dname_5d_"><strong>--template</strong>|<strong>-t</strong> <em>ds-name</em>[<strong>:</strong><em>ds-name</em>]...</a></strong><br />
+</dt>
+<dd>
+by default, the update function expects the data input in the order,
+the data sources are defined in the RRD. This is not very error
+resistant, as you might be sending the wrong data into a RRD.
+</dd>
+<dd>
+<p>The template switch allows you to specify which data sources you are
+going to update and in which order. If the data sources specified in
+the template are not available in the RRD file, the update process
+will abort with an error message.</p>
+</dd>
+<p></p>
+<dt><strong><a name="item_n_7ctimestamp_3avalue_5b_3avalue_2e_2e_2e_5d"><strong>N</strong>|<em>timestamp</em><strong>:</strong><em>value</em>[<strong>:</strong><em>value</em>...]</a></strong><br />
+</dt>
+<dd>
+The data used for updating the RRD was acquired at a certain time. This
+time can either be defined in seconds since 1970-01-01. Or by using the
+letter 'N' the update time is set to be the current time. Negative time
+values are subtracted from the current time.
+Getting the timing right to the second is especially
+important when you are working with data-sources of type <strong>COUNTER</strong>,
+<strong>DERIVE</strong> or <strong>ABSOLUTE</strong>.
+</dd>
+<dd>
+<p>The remaining elements of the argument are DS updates. The order of this list is
+the same as the order the data sources were defined in the RRA.
+If there is no data for a certain data-source, the letter 
+<strong>U</strong> (e.g. N:0.1:U:1) can be defined.</p>
+</dd>
+<dd>
+<p>The format of the value acquired from the data source is dependent of the
+data source type chosen. Normally it will be numeric, but the data acquisition
+modules may impose their very own parsing of this parameter as long as the colon
+(<strong>:</strong>) remains the data source value separator.</p>
+</dd>
+<p></p></dl>
+<p>
+</p>
+<hr />
+<h1><a name="example">EXAMPLE</a></h1>
+<p><code>rrdtool update demo1.rrd N:3.44:3.15:U:23</code></p>
+<p>Update the database file demo1.rrd with 3 known and one <em>*UNKNOWN*</em>
+value. Use the current time as the update time.</p>
+<p><code>rrdtool update demo2.rrd 887457267:U 887457521:22 887457903:2.7</code></p>
+<p>Update the database file demo2.rrd which expects data from a single
+data-source, three times. First with an <em>*UNKNOWN*</em> value then with two
+normal readings. The update interval seems to be around 300 seconds.</p>
+<p>
+</p>
+<hr />
+<h1><a name="author">AUTHOR</a></h1>
+<p>Tobias Oetiker &lt;<a href="mailto:oetiker@ee.ethz.ch">oetiker@ee.ethz.ch</a>&gt;</p>
+
+</body>
+
+</html>

@@ -1,5 +1,5 @@
 /*****************************************************************************
- * RRDtool  Copyright Tobias Oetiker, 1997, 1998, 1999
+ * RRDtool 1.0.13  Copyright Tobias Oetiker, 1997, 1998, 1999
  *****************************************************************************
  * rrd_create.c  creates new rrds
  *****************************************************************************/
@@ -62,7 +62,7 @@ rrd_create(int argc, char **argv)
 	switch(opt) {
 	case 'b':
             if ((parsetime_error = parsetime(optarg, &last_up_tv))) {
-                rrd_set_error("last update time: %s", parsetime_error );
+                rrd_set_error("start time: %s", parsetime_error );
 		rrd_free(&rrd);
                 return(-1);
 	    }
@@ -94,7 +94,10 @@ rrd_create(int argc, char **argv)
 	    break;
 
 	case '?':
-	    rrd_set_error("unknown option '%s'",argv[optind-1]);
+            if (optopt != 0)
+                rrd_set_error("unknown option '%c'", optopt);
+            else
+                rrd_set_error("unknown option '%s'",argv[optind-1]);
             rrd_free(&rrd);
 	    return(-1);
 	}
@@ -103,6 +106,7 @@ rrd_create(int argc, char **argv)
 
     for(i=optind+1;i<argc;i++){
 	char minstr[20], maxstr[20];	
+	int ii;
 	if (strncmp(argv[i],"DS:",3)==0){
 	    size_t old_size = sizeof(ds_def_t)*(rrd.stat_head->ds_cnt);
 	    if((rrd.ds_def = rrd_realloc(rrd.ds_def,
@@ -118,6 +122,15 @@ rrd_create(int argc, char **argv)
 		       rrd.ds_def[rrd.stat_head->ds_cnt].dst,
 		       &rrd.ds_def[rrd.stat_head->ds_cnt].par[DS_mrhb_cnt].u_cnt,
 		       minstr,maxstr) == 5){
+		/* check for duplicate datasource names */
+		for(ii=0;ii<rrd.stat_head->ds_cnt;ii++){
+			if(strcmp(rrd.ds_def[rrd.stat_head->ds_cnt].ds_nam,
+			  	  rrd.ds_def[ii].ds_nam) == 0){
+				rrd_set_error("Duplicate DS name: %s",rrd.ds_def[ii].ds_nam);
+		                rrd_free(&rrd);
+                                return(-1);
+			}				                                
+		}
 		if(dst_conv(rrd.ds_def[rrd.stat_head->ds_cnt].dst) == -1){
 		    rrd_free(&rrd);
 		    return (-1);

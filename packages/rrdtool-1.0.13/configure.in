@@ -16,10 +16,10 @@ dnl determine the type of system we are running on
 AC_CANONICAL_SYSTEM
 
 dnl tell automake the this script is for rrdtool
-AM_INIT_AUTOMAKE(rrdtool, 1.0.7)
+AM_INIT_AUTOMAKE(rrdtool, 1.0.13)
 
 dnl where we install our stuff ...
-AC_PREFIX_DEFAULT( /usr/local/rrdtool-1.0.7 )
+AC_PREFIX_DEFAULT( /usr/local/rrdtool-1.0.13 )
 
 dnl tell automake which file to use as config header
 AM_CONFIG_HEADER(config/config.h)
@@ -63,7 +63,7 @@ AM_PROG_LIBTOOL
 
 dnl Checks for header files.
 AC_HEADER_STDC
-AC_CHECK_HEADERS(fcntl.h malloc.h unistd.h math.h sys/time.h sys/times.h sys/resource.h)
+AC_CHECK_HEADERS(fcntl.h fp_class.h malloc.h unistd.h math.h sys/time.h sys/times.h sys/param.h sys/resource.h float.h)
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
@@ -73,20 +73,33 @@ AC_STRUCT_TM
 dnl Checks for libraries.
 AC_CHECK_LIB(m, acos)
 
-dnl If CC is not set we assume gcc
-if test ${CC-gcc} = gcc; then
-	oCFLAGS=$CFLAGS
-	CFLAGS="$CFLAGS -Wall -pedantic"
-	AC_CACHE_CHECK(if we can use GCC-specific compiler options, rd_cv_gcc_opt,
-	[
-	AC_TRY_COMPILE( , return 0 ,
-		rd_cv_gcc_opt=yes,
-		rd_cv_gcc_opt=no )
-	])
-	if test $rd_cv_gcc_opt = no; then
-		CFLAGS=$oCFLAGS
-	fi
+dnl Does the compiler like -Wall and -pedantic ?
+oCFLAGS=$CFLAGS
+CFLAGS="$CFLAGS -Wall -pedantic"
+AC_CACHE_CHECK(if we can use GCC-specific compiler options, rd_cv_gcc_opt,
+               [AC_TRY_COMPILE( , return 0 ,
+             	    rd_cv_gcc_opt=yes,
+		    rd_cv_gcc_opt=no )
+	       ]
+       )
+if test $rd_cv_gcc_opt = no; then
+	CFLAGS=$oCFLAGS
 fi
+
+dnl Can the compiler take -fPIC
+
+oCFLAGS=$CFLAGS
+CFLAGS="$CFLAGS -fPIC"
+AC_CACHE_CHECK(if we can use -fPIC as this may help building the perl module, rd_cv_pic,
+               [AC_TRY_RUN([int main(void){return 0;}],
+             	    rd_cv_pic=yes,
+		    rd_cv_pic=no,:)
+	       ]
+       )
+if test $rd_cv_pic = no; then
+	CFLAGS=$oCFLAGS
+fi
+
 
 dnl Checks for library functions.
 AC_FUNC_STRFTIME
@@ -94,7 +107,7 @@ AC_FUNC_VPRINTF
 
 dnl for each function found we get a definition in config.h 
 dnl of the form HAVE_FUNCTION
-AC_CHECK_FUNCS(snprintf fpclass isnan finite isinf memmove strchr mktime getrusage gettimeofday)
+AC_CHECK_FUNCS(snprintf vsnprintf fpclass class fpclassify fp_class isnan finite isinf memmove strchr mktime getrusage gettimeofday)
 
 dnl what does realloc do if it gets called with a NULL pointer
 
@@ -118,16 +131,42 @@ AC_DEFUN(AC_IEEE,
 AC_CACHE_CHECK([if IEEE math works $1], [rd_cv_ieee_$2],
 [AC_TRY_RUN([$3
 
-#if (! defined(HAVE_FINITE) && defined(HAVE_ISNAN) && defined(HAVE_ISINF))
-#  define HAVE_FINITE 1
-#  define finite(a) (! isnan(a) && ! isinf(a))
+#if HAVE_MATH_H
+#  include <math.h>                                                                                                                                        
 #endif
 
+#if HAVE_FLOAT_H
+#  include <float.h>  
+#endif
+
+/* for solaris */
 #if (! defined(HAVE_ISINF) && defined(HAVE_FPCLASS))
 #  define HAVE_ISINF 1
 #  include <ieeefp.h>
 #  define isinf(a) (fpclass(a) == FP_NINF || fpclass(a) == FP_PINF)
 #endif
+/* for dec unix */
+#if (! defined(HAVE_ISINF) && defined(HAVE_FP_CLASS) && defined(HAVE_FP_CLASS_H))
+#  define HAVE_ISINF 1
+#  include <fp_class.h>
+#  define isinf(a) (fp_class(a) == FP_NEG_INF || fp_class(a) == FP_POS_INF)
+#endif
+/* for HP-UX 10.20 */
+#if (! defined(HAVE_ISINF) && defined(HAVE_FPCLASSIFY))
+#  define HAVE_ISINF 1
+#  define isinf(a) (fpclassify(a) == FP_MINUS_INF || fpclassify(a) == FP_PLUS_INF)
+#endif
+/* for AIX */
+#if (! defined(HAVE_ISINF) && defined(HAVE_CLASS))
+#  define HAVE_ISINF 1
+#  define isinf(a) (class(a) == FP_MINUS_INF || class(a) == FP_PLUS_INF)
+#endif
+
+#if (! defined(HAVE_FINITE) && defined(HAVE_ISNAN) && defined(HAVE_ISINF))
+#  define HAVE_FINITE 1
+#  define finite(a) (! isnan(a) && ! isinf(a))
+#endif
+
 
 #include <stdio.h>
 int main(void){
@@ -154,33 +193,34 @@ oCFLAGS=$CFLAGS
 unset CFLAGS
 
 AC_IEEE([out of the box],works)
-
 if test "$rd_cv_ieee_works" != yes ; then
 
 CFLAGS=-ieee
 AC_IEEE([with the -ieee switch],switch)
+if test "$rd_cv_ieee_switch" != yes ; then
 
- if test "$rd_cv_ieee_switch" != yes ; then
+CFLAGS=-qfloat=nofold
+AC_IEEE([with the -qfloat=nofold switch],nofold)
+if test "$rd_cv_ieee_nofold" != yes ; then
+
+CFLAGS="-w -qflttrap=enable:zerodivide"
+AC_IEEE([with the -w -qflttrap=enable:zerodivide],flttrap)
+if test "$rd_cv_ieee_flttrap" != yes ; then
 
 CFLAGS=-mieee
 AC_IEEE([with the -mieee switch],mswitch)
-
-  if test "$rd_cv_ieee_mswitch" != yes ; then
+if test "$rd_cv_ieee_mswitch" != yes ; then
 
 CFLAGS="-q float=rndsngl"
 AC_IEEE([with the -q float=rndsngl switch],qswitch)
-
-  if test "$rd_cv_ieee_qswitch" != yes ; then
+if test "$rd_cv_ieee_qswitch" != yes ; then
 
 unset CFLAGS
-
 AC_IEEE([with fpsetmask(0)],mask,[#include <floatingpoint.h>],[fpsetmask(0)])
-
-   if test "$rd_cv_ieee_mask" != yes ; then
+if test "$rd_cv_ieee_mask" != yes ; then
 
 AC_IEEE([with signal(SIGFPE,SIG_IGN)],sigfpe,[#include <signal.h>],[signal(SIGFPE,SIG_IGN)])
-
-    if test "$rd_cv_ieee_sigfpe" != yes ; then
+if test "$rd_cv_ieee_sigfpe" != yes ; then
 
 
 echo "--------------------------------------------------------------"
@@ -190,6 +230,8 @@ echo "and let me know (oetiker@ee.ethz.ch)"
 echo "Check config.log to see what went wrong ..."
 echo ""
 exit 1
+       fi
+      fi
      fi
     fi
    fi
@@ -205,10 +247,19 @@ fi
 
 if test x$rd_cv_ieee_mask = xyes; then
    AC_DEFINE(MUST_DISABLE_FPMASK)
+   CFLAGS="$CFLAGS -DMUST_DISABLE_FPMASK"
 fi
 
 if test x$rd_cv_ieee_switch = xyes; then
    CFLAGS="$CFLAGS -ieee"
+fi
+
+if test x$rd_cv_ieee_nofold = xyes; then
+   CFLAGS="$CFLAGS -qfloat=nofold"
+fi
+
+if test x$rd_cv_ieee_flttrap = xyes; then
+   CFLAGS="$CFLAGS -w -qflttrap=enable:zerodivide"
 fi
 
 if test x$rd_cv_ieee_mswitch = xyes; then
@@ -234,7 +285,17 @@ AC_OUTPUT(cgilib-0.4/Makefile				\
           contrib/trytime/Makefile			\
           contrib/log2rrd/Makefile			\
           contrib/log2rrd/log2rrd.pl			\
+          contrib/killspike/Makefile			\
+          contrib/killspike/killspike.pl		\
+          contrib/rrdlastds/Makefile			\
+          contrib/rrdlastds/rrdlastds.pl		\
+          contrib/rrdfetchnames/Makefile		\
+          contrib/rrdfetchnames/rrdfetchnames.pl	\
+          contrib/add_ds/Makefile			\
+          contrib/add_ds/add_ds.pl			\
+	  contrib/add_ds/batch.pl			\
           contrib/rrd-file-icon/Makefile		\
+          contrib/rrdproc/Makefile			\
           doc/Makefile					\
           gd1.3/Makefile				\
           libpng-1.0.3/Makefile				\
@@ -246,7 +307,7 @@ AC_OUTPUT(cgilib-0.4/Makefile				\
 AC_MSG_CHECKING(in)
 AC_MSG_RESULT(and out again)
 
-echo $ac_n "ordering CD from http://cdnow.com/gift/oetiker@ee.ethz.ch $ac_c" 1>&6
+echo $ac_n "ordering CD from http://ee-staff.ethz-ch/~oetiker/wish $ac_c" 1>&6
 sleep 1
 echo $ac_n ".$ac_c" 1>&6
 sleep 1
@@ -265,7 +326,7 @@ echo "Type 'make' to compile the software and use 'make install' to "
 echo "install everything to $prefix. If you want to install the perl"
 echo "modules in site-perl, try 'make site-perl-install'."
 echo 
-echo "       ... that wishlist mentioned above does realy exist. So if"
+echo "       ... that wishlist mentioned above does really exist. So if"
 echo "you feel like showing your appreciation for rrdtool this is the"
 echo "place to go. :-)"
 echo 

@@ -1,5 +1,5 @@
 I would like to thank to following people for helping to
-bring mrtg 3.0 into existence.
+bring RRDTool into existence.
 
 Planning and Inspiration
 
@@ -11,22 +11,33 @@ Debugging and code contributions
 
 	Andreas Kroomaa <andre@ml.ee>
 	Andrew Turner <turner@mint.net> (LAST consolidator)
+	Bill Fenner <fenner@research.att.com>
 	Blair Zajac <bzajac@geostaff.com>
 	Dan Dunn <dandunn@computer.org>
 	Hermann Hueni <hueni@glue.ch> (SunOS porting)
 	Jeff R. Allen <jeff.allen@acm.org> (autoconfigure, portability)  
 	Jost.Krieger <Jost.Krieger@ruhr-uni-bochum.de>
+	Larry Leszczynski <larryl@furph.com>
 	Otmar Lendl <O.Lendl@Austria.EU.net> (lots of bugfixes)
+	Paul Joslin <Paul.Joslin@sdrc.com>
 	Philippe.Simonet <Philippe.Simonet@swisscom.com> (NT porting)
 	Russ Wright <rwwright@home.com>
 	Simon Leinen <simon@switch.ch>
-	Wrolf Courtney <wrolf@concentric.net> (HP-UX)
+	Wrolf Courtney <wrolf@wrolf.net> (HP-UX)
         Alan Lichty <alan_lichty@eli.net>
         Alex van den Bogaerdt <alex@ergens.op.het.net> (rrd_resize.c and more)
         Jeremy Fischer <jeremy@pobox.com> (Makefile changes & RPM builds)
         Oleg Cherevko <olwi@icyb.kiev.ua>
         Steen Linden <Steen.Linden@ebone.net>
         Tom Crawley <Tom.Crawley@hi.riotinto.com.au> (GCC&HP configuration)
+	Steve Rader <rader@teak.wiscnet.net> (rrd_cgi debugging and LAST)
+        Steve Harris <steveh@wesley.com.au> AIX portability
+	Stefan Mueller <s.mueller@computer.org> HPUX 11
+	Ulrich Schilling <schilling@netz.uni-essen.de> AIX
+	Joel Becker <jlbec@raleigh.ibm.com> AIX
+	REIBENSCHUH Alfred <alfred.reibenschuh@it-austria.com> AIX
+        Selena M Brewington <smbrewin@ichips.intel.com> add_ds
+	Larry Leszczynski <larryl@furph.com>
 
 Documentation
 
@@ -35,8 +46,15 @@ Documentation
         Amos Shapira <amos@gezernet.co.il>
         Kai Siering <kai.siering@mediaways.net>
         Russ Wright <rwwright@home.com>
-        Wrolf Courtney <wrolf@concentric.net>      
+	Steve Rader <rader@teak.wiscnet.net>  
+        Wrolf Courtney <wrolf@wrolf.net>      
 	Tobias Weingartner <weingart@cs.ualberta.ca>
+	hendrik visage <hvisage@is.co.za>
+	Steve Rader <rader@teak.wiscnet.net>
+
+Packaging
+        Henri GOMEZ -- Redhat RPMs
+        Philippe Simonet -- NT Binaries
 
 Internet Resources
         LAN Services AG (www.lan.ch) for the http://rrdtool.eu.org domain reflector

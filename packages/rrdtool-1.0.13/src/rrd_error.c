@@ -1,5 +1,5 @@
 /*****************************************************************************
- * RRDtool  Copyright Tobias Oetiker, 1997, 1998, 1999
+ * RRDtool 1.0.13  Copyright Tobias Oetiker, 1997, 1998, 1999
  *****************************************************************************
  * rrd_error.c   Common Header File
  *****************************************************************************
@@ -16,14 +16,17 @@ static char* rrd_error = NULL;
 void
 rrd_set_error(char *fmt, ...)
 {
-    static char buffer[4096];
+    int maxlen = 4096;
     va_list argp;
     rrd_clear_error();
+    rrd_error = malloc(sizeof(char)*maxlen);
     va_start(argp, fmt);
-    vsprintf(buffer, fmt, argp);
+#ifdef HAVE_VSNPRINTF
+    vsnprintf(rrd_error, maxlen-1, fmt, argp);
+#else
+    vsprintf(rrd_error, fmt, argp);
+#endif
     va_end(argp);
-    rrd_error = malloc(sizeof(char)*(strlen(buffer)+1));
-    strcpy(rrd_error, buffer);
 }
 
 int

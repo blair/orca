@@ -1,4 +1,4 @@
-;# $Id: Storable.pm,v 0.6.1.7 1999/10/20 17:07:31 ram Exp $
+;# $Id: Storable.pm,v 0.6.1.9 2000/03/02 22:19:47 ram Exp $
 ;#
 ;#  Copyright (c) 1995-1998, Raphael Manfredi
 ;#  
@@ -6,6 +6,12 @@
 ;#  as specified in the README file that comes with the distribution.
 ;#
 ;# $Log: Storable.pm,v $
+;# Revision 0.6.1.9  2000/03/02 22:19:47  ram
+;# patch9: updated version number
+;#
+;# Revision 0.6.1.8  2000/02/10 18:47:11  ram
+;# patch8: documented last_op_in_netorder()
+;#
 ;# Revision 0.6.1.7  1999/10/20 17:07:31  ram
 ;# patch7: forgot to update VERSION
 ;#
@@ -48,7 +54,7 @@ use AutoLoader;
 use Carp;
 use vars qw($forgive_me $VERSION);
 
-$VERSION = '0.607';
+$VERSION = '0.609';
 *AUTOLOAD = \&AutoLoader::AUTOLOAD;		# Grrr...
 
 bootstrap Storable;
@@ -338,6 +344,12 @@ creating lookup tables for complicated queries.
 
 Canonical order does not imply network order, those are two orthogonal
 settings.
+
+=head1 WIZARDS ONLY
+
+The C<Storable::last_op_in_netorder()> predicate will tell you whether
+network order was used in the last store or retrieve operation.  If you
+don't know how to use this, just forget about it.
 
 =head1 EXAMPLES
 

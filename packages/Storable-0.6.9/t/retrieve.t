@@ -1,6 +1,6 @@
 #!./perl
 
-# $Id: retrieve.t,v 0.6 1998/06/04 16:08:33 ram Exp $
+# $Id: retrieve.t,v 0.6.1.1 2000/02/10 18:47:49 ram Exp $
 #
 #  Copyright (c) 1995-1998, Raphael Manfredi
 #  
@@ -8,7 +8,10 @@
 #  as specified in the README file that comes with the distribution.
 #
 # $Log: retrieve.t,v $
-# Revision 0.6  1998/06/04 16:08:33  ram
+# Revision 0.6.1.1  2000/02/10 18:47:49  ram
+# patch8: added tests for the new last_op_in_netorder() predicate
+#
+# Revision 0.6  1998/06/04  16:08:33  ram
 # Baseline for first beta release.
 #
 
@@ -16,7 +19,7 @@ require 't/dump.pl';
 
 use Storable qw(store retrieve nstore);
 
-print "1..9\n";
+print "1..14\n";
 
 $a = 'toto';
 $b = \$a;
@@ -28,30 +31,40 @@ $c->{attribute} = 'attrval';
 
 print "not " unless defined store(\@a, 't/store');
 print "ok 1\n";
-print "not " unless defined nstore(\@a, 't/nstore');
+print "not " if Storable::last_op_in_netorder();
 print "ok 2\n";
+print "not " unless defined nstore(\@a, 't/nstore');
+print "ok 3\n";
+print "not " unless Storable::last_op_in_netorder();
+print "ok 4\n";
+print "not " unless Storable::last_op_in_netorder();
+print "ok 5\n";
 
 $root = retrieve('t/store');
 print "not " unless defined $root;
-print "ok 3\n";
+print "ok 6\n";
+print "not " if Storable::last_op_in_netorder();
+print "ok 7\n";
 
 $nroot = retrieve('t/nstore');
 print "not " unless defined $nroot;
-print "ok 4\n";
+print "ok 8\n";
+print "not " unless Storable::last_op_in_netorder();
+print "ok 9\n";
 
 $d1 = &dump($root);
-print "ok 5\n";
+print "ok 10\n";
 $d2 = &dump($nroot);
-print "ok 6\n";
+print "ok 11\n";
 
 print "not " unless $d1 eq $d2; 
-print "ok 7\n";
+print "ok 12\n";
 
 # Make sure empty string is defined at retrieval time
 print "not " unless defined $root->[1];
-print "ok 8\n";
+print "ok 13\n";
 print "not " if length $root->[1];
-print "ok 9\n";
+print "ok 14\n";
 
 unlink 't/store', 't/nstore';
 

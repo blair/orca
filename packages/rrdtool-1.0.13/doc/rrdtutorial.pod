@@ -1,6 +1,6 @@
 =head1 NAME
 
-rrdtutorial - Alex van den Bogaerdts RRDtool tutorial
+rrdtutorial - Alex van den Bogaerdt's RRDtool tutorial
 
 =head1 DESCRIPTION
 
@@ -10,20 +10,22 @@ written by Alex van den Bogaerdt <alex@ergens.op.het.net> to help you
 understand what RRDtool is and what it can do for you.
 
 The documentation provided with RRDtool can be too technical for some
-people and here we help you to understand the basics in order to
-prepare you to read the documentation yourself. It also explains the
-general things about statistics with a focus on networking.
+people. This tutorial is here to help you understand the basics of
+RRDtool. It should prepare you to read the documentation yourself.
+It also explains the general things about statistics with a focus on
+networking.
 
 =head1 TUTORIAL
 
 =head2 Important
 
-We first have to do some uninteresting reading folks, don't skip this
-part! Later on, in the examples, you need to know the basics.
+Please don't skip ahead in this document!  The first part of this
+document explains the basics and may be boring.  But if you don't
+understand the basics, the examples will not be as meaningful to you.
 
 =head2 What is RRDtool ?
 
-RRDtool means Round Robin Database tool.
+RRDtool refers to Round Robin Database tool.
 Round robin is a technique that works with a fixed amount of data, and a
 pointer to the current element. Think of a circle with some dots plotted
 on the edge, these dots are the places where data can be stored. Draw an
@@ -31,60 +33,60 @@ arrow from the center of the circle to one of the dots, this is the pointer.
 When the current data is read or written, the pointer moves to the next
 element. As we are on a circle there is no beginning nor an end, you can
 go on and on. After a while, all the available places will be used and
-the process automatically reuses old locations.
+the process automatically reuses old locations. This way, the database
+will not grow in size and therefore requires no mainenance.
 RRDtool works with with Round Robin Databases (RRDs). It stores and retrieves
 data from them.
 
 =head2 What data can be put into an RDD ?
 
 You name it, it will probably fit. You should be able to measure some value
-at several points in time and provide this to RRDtool. If you can do this,
-RRDtool will probably be able to store it.
+at several points in time and provide this information to RRDtool. If you
+can do this, RRDtool will be able to store it. The values need to be
+numerical but don't have to be, as opposed to MRTG, integers.
 
 Many examples talk about SNMP which is an acronym for
-Simple Network Management Protocol. The "simple" is about the protocol,
-it does not mean it is simple to manage a network. After working your
-way through this document, you will know enough to be able to understand
-what people are talking about. For now, just assume SNMP is a way to
-talk to devices and ask those devices about counters they keep.
+Simple Network Management Protocol. "Simple" refers to the protocol --
+it does not mean it is simple to manage or monitor a network. After working your
+way through this document, you should know enough to be able to understand
+what people are talking about. For now, just realize that SNMP is a way to
+ask devices for the values of counters they keep.
 It is the value from those counters that are kept in the RRD.
 
 =head2 What can I do with this tool ?
 
-RRDtool originated from MRTG (multi router traffic grapher) which itself
-came from a tiny little script to monitor the performance of a connection
-to the Internet. Since then, MRTG has also been used for several other
-purposes including temperature, speed, voltage, number of printouts and
-many other things. Most likely you will start to use the RRDtool to store
+RRDtool originated from MRTG (Multi Router Traffic Grapher).  MRTG started
+as a tiny little script for graphing the use of a connection
+to the Internet. MRTG evolved into a tool for graphing other data sources
+including temperature, speed, voltage, number of printouts and
+the like. Most likely you will start to use the RRDtool to store
 and process data collected via SNMP. The data will most likely be bytes
 (or bits) transfered from and to a network or a computer.
 RRDtool lets you create a database, store data in it, retrieve that data
 and create graphs in GIF format for display on a web browser. Those GIF
 images are dependent on the data you collected and could be, for instance,
-an overview of the average network usage, or rather the peaks that occurred.
+an overview of the average network usage, or the peaks that occurred.
 It can also be used to display tidal waves, solar radiation, power
 consumption, number of visitors at an exhibition, noise levels near an
 airport, temperature on your favorite holiday location, temperature in the
 fridge and whatever you imagination can come up with. You need a sensor to
-measure the data and be able to feed the numbers to RRDtool. Many devices
-have such a sensor.
+measure the data and be able to feed the numbers to RRDtool.
 
 =head2 What if I still have problems after reading this document ?
 
-More exact, after re-reading this document :)
-It all depends on the kind of problems you have. If you are unable to
-compile the sources and you have a fairly common OS, it will probably
-not be the fault of RRDtool. There may be precompiled versions around
-on the Internet. If they come from trusted sources, get one of those.
+First of all: read it again! You may have missed something.
+If you are unable to compile the sources and you have a fairly common
+OS, it will probably not be the fault of RRDtool. There may be precompiled
+versions around on the Internet. If they come from trusted sources, get
+one of those.
 If on the other hand the program works but does not give you the
 expected results, it will be a problem with configuring it. Review
 your configuration and compare it with the examples that follow.
 
 There is a mailing list and an archive of it. Read the list for a few
 weeks and search the archive. It is considered rude to just ask
-a question without reading the list, your problem may already have been
-solved for somebody else and you will be helped without writing a new
-a message at all ... This is true for most, if not all, mailing lists
+a question without searching the archives: your problem may already have been
+solved for somebody else!  This is true for most, if not all, mailing lists
 and not only for this particular list! Look in the documentation that
 came with RRDtool for the location and usage of the list.
 
@@ -97,7 +99,7 @@ an email to the same address but now with a subject of "unsubscribe".
 
 By giving you some detailed descriptions with detailed examples.
 It is assumed that following the instructions in the order presented
-will build up enough knowledge of the program to experiment for yourself.
+will give you enough knowledge of RRDtool to experiment for yourself.
 If it doesn't work the first time, don't give up. Reread the stuff that
 you did understand, you may have missed something.
 By following the examples you get some hands-on experience and, even
@@ -109,12 +111,13 @@ then start with reading "bin_dec_hex" before you continue here.
 =head2 Your first Round Robin Database
 
 In my opinion the best way to learn something is to actually do it.
-Why not start right now? We will create a database, put some values in
-it and extract this data again. It is expected that you get the same
-results when you try these examples yourself so do that.
+Why not start right now?  We will create a database, put some values
+in it and extract this data again.  Your output should be the same
+as the output that is included in this document.
+
 We will start with some easy stuff and compare a car with a router,
 or compare kilometers (miles if you wish) with bits and bytes. It's
-all the same: Some number over some time.
+all the same: some number over some time.
 
 Assume we have a device that transfers bytes to and from the Internet.
 This device keeps a counter that starts at zero when it is turned on,
@@ -124,13 +127,13 @@ the counter starts all over at zero. This is the same as many counters
 in the world such as the mileage counter in a car.
 Most discussions about networking talk about bits per second so lets
 get used to that right away. Assume a byte is eight bits and start to
-think in bits not bytes. The counter however still counts bytes !
+think in bits not bytes. The counter, however, still counts bytes !
 In the SNMP world most of the counters are 32 bits. That means they are
 counting from 0 to 4294967295. We will use these values in the examples.
 The device, when asked, returns the current value of the counter. We
 know the time that has passes since we last asked so we now know how
 many bytes have been transfered ***on average*** per second. This is
-not very hard to calculate. First in words, then in calculi:
+not very hard to calculate. First in words, then in calculations:
 
 =over 3
 
@@ -148,9 +151,9 @@ Divide the outcome of (1) by the outcome of (2), the result is
 the amount of bytes per second. Multiply by eight to get the
 number of bits per second (bps).
 
-  bps = (counter_now - counter_before) / (time_now - time_before) * 8
-
 =back
+
+  bps = (counter_now - counter_before) / (time_now - time_before) * 8
 
 For some people it may help to translate this to a automobile example:
 Do not try this example, and if you do, don't blame me for the results.
@@ -177,24 +180,25 @@ We traveled 12 kilometers which is 12000 meters. We did that in five
 minutes which translates into 300 seconds. Our speed is 12000M / 300S
 equals 40 M/S.
 
-We could also calculate the speed in KM/H: twelve times five minutes
+We could also calculate the speed in KM/H: 12 times five minutes
 is an hour so we have to multiply 12 KM by 12 to get 144 KM/H.
-For our native English speaking friends: this is ninety MPH and
-therefore not recommended to try for yourself where I live :)
+For our native English speaking friends: that's 90 MPH so don't
+try this example at home or where I live :)
 
-Remember: these numbers are averages and there is no way to figure out
-from the numbers we got that you drove at a constant speed.
+Remember: these numbers are averages only.  There is no way to figure out
+from the numbers, if you drove at a constant speed.  There is an example
+later on in this tutorial that explains this.
 
 I hope you understand that there is no difference in calculating M/S or
-bps, only the way we collect the data is different. Even the K from kilo
+bps; only the way we collect the data is different. Even the K from kilo
 is the same as in networking terms k also means 1000.
 
 We will now create a database where we can keep all these interesting
 numbers. The method used to start the program may differ slightly from
 OS to OS but I assume you can figure it out if it works different on
 your OS. Make sure you do not overwrite any file on your system when
-executing the following command (so: first look if it's safe!) and type
-the whole line as one long line (I had to split it for readability)
+executing the following command and type the whole line as one long
+line (I had to split it for readability)
 and skip all of the '\' characters.
 
    rrdtool create test.rrd             \
@@ -212,14 +216,21 @@ which starts at noon the day I started (7th of march, 1999) writing
 this document. It holds one data source (DS) named "speed" that gets
 built from a counter. This counter is read every five minutes (default)
 In the same database two round robin archives (RRAs) are kept, one
-averages the data every time it is read (so: there's nothing to average)
+averages the data every time it is read (eg there's nothing to average)
 and keeps 24 samples (24 times 5 minutes is 2 hours). The other averages
-6 values (half hour) and contains 10 of such averages (so: 5 hours)
+6 values (half hour) and contains 10 of such averages (eg 5 hours)
 The remaining options will be discussed later on.
+
+RRDtool works with special time stamps coming from the UNIX world.
+This time stamp is the number of seconds that passed since January
+1st 1970 UTC.  This time stamp is translated into local time and
+it will therefore look different for the different time zones.
+
 Chances are that you are not in the same part of the world as I am.
 This means your time zone is different. In all examples where I talk
 about time, the hours may be wrong for you. This has little effect on
 the results of the examples, just correct the hours while reading.
+As an example: where I will see "12:05" the UK folks will see "11:05".
 
 We now have to fill our database with some numbers. We'll pretend to
 have read the following numbers:
@@ -257,11 +268,41 @@ etcetera.
 
 As you can see, it is possible to feed more than one value into the
 database in one command. I had to stop at three for readability but
-the real maximum will be OS dependent.
+the real maximum is OS dependent.
 
-The time value may look strange to you, it is written in seconds since
-the first of January, 1970, midnight. Don't worry about this yet, just
-notice that there is a difference of 300 in between all values.
+We can now retrieve the data from our database using "rrdtool fetch":
+
+ rrdtool fetch test.rrd AVERAGE --start 920804400 --end 920809200
+
+It should return the following output:
+
+                speed
+
+ 920804700:       NaN
+ 920805000:      0.04
+ 920805300:      0.02
+ 920805600:      0.00
+ 920805900:      0.00
+ 920806200:      0.03
+ 920806500:      0.03
+ 920806800:      0.03
+ 920807100:      0.02
+ 920807400:      0.02
+ 920807700:      0.02
+ 920808000:      0.01
+ 920808300:      0.02
+ 920808600:      0.01
+ 920808900:      0.00
+ 920809200:       NaN
+
+If it doesn't, something may be wrong.  Perhaps your OS will print
+"NaN" in a different form.  It represents "Not A Number".  If your OS
+writes "U" or "UNKN" or something similar that's okay.  If something
+else is wrong, it will probably be due to an error you made (assuming
+that my tutorial is correct of course :-). In that case: delete the
+database and try again.
+
+What this output represents will become clear in the rest of the tutorial.
 
 =head2 It is time to create some graphics
 
@@ -281,70 +322,72 @@ and this is because we have insufficient data to tell the average before
 that time. This will only happen when you miss some samples, this will
 not happen a lot, hopefully.
 
-If this has worked: Congratulations. If not, check what went wrong.
+If this has worked: congratulations! If not, check what went wrong.
 
 
 The colors are built up from red, green and blue. For each of the
 components, you specify how much to use in hexadecimal where 00 means
 not included and FF means fully included.
-The color white is a mixture of red, green and blue: FFFFFF
-The color black is all colors off: 000000
-(Please, no discussions if black and white can be called colors)
+The "color" white is a mixture of red, green and blue: FFFFFF
+The "color" black is all colors off: 000000
 
-   red    #FF0000
-   green  #00FF00
-   blue   #0000FF
-   purple #FF00FF     (mixed red with blue)
-   gray   #555555     (one third of all components)
+   red     #FF0000
+   green   #00FF00
+   blue    #0000FF
+   magenta #FF00FF     (mixed red with blue)
+   gray    #555555     (one third of all components)
 
-
-
-The GIF you just created can be displayed using a web browser or other
-software you like. I can not provide you with an example of that,
-because there are too many different setups, possibilities etc.
+The GIF you just created can be displayed using your favorite image
+viewer.  Web browsers will display the GIF via the URL
+"file://the/path/to/speed.gif"
 
 =head2 Graphics with some math
 
-When looking at the image, you notice that the horizontal axis displays
+When looking at the image, you notice that the horizontal axis is labeled
 12:10, 12:20, 12:30, 12:40 and 12:50. The two remaining times (12:00 and
 13:00) would not be displayed nicely so they are skipped.
 The vertical axis displays the range we entered. We provided kilometers
 and when divided by 300 seconds, we get very small numbers. To be exact,
-the first value was 12 (12357-12345) and divided by 300 this makes 0.04
-RRDtool displays this as 40 m which means 40 milli (so: NOT meters).
+the first value was 12 (12357-12345) and divided by 300 this makes 0.04,
+which is displayed by RRDtool as "40 m" meaning "40/1000". The "m" has
+nothing to do with meters, kilometers or millimeters! RRDtool doesn't
+know about all this, it just works with numbers and not with meters...
+
 What we did wrong was that we should have measured in meters, this would
 have been (12357000-12345000)/300 = 12000/300 = 40.
 
 Let's correct that. We could recreate our database and store the correct
-data but there is another way: do some calculations while creating the
+data but there is a better way: do some calculations while creating the
 gif file !
 
    rrdtool graph speed2.gif                           \
       --start 920804400 --end 920808000               \
       --vertical-label m/s                            \
       DEF:myspeed=test.rrd:speed:AVERAGE              \
-      "CDEF:realspeed=myspeed,1000,*"                 \
+      CDEF:realspeed=myspeed,1000,*                   \
       LINE2:realspeed#FF0000
 
 After viewing this GIF, you notice the "m" has disappeared. This it what
 the correct result would be. Also, a label has been added to the image.
 Apart from the things mentioned above, the GIF should be the same.
 
-The calculations are done with the CDEF part. What it says is: take the
-data source myspeed and the number 1000, multiply those. The calculations
-are done using Reverse Polish Notation. It is an easy way of performing
-calculations after you understand it. You will, eventually but for now
-assume it is correct what I write and just keep to the examples in this
-file. Read the documentation that came with RRDtool (look in rrdgraph.doc)
-when you're ready for it.
+The calculations are in the CDEF part and are in Reverse Polish Notation
+("RPN"). What it says is: "take the data source myspeed and the number
+1000; multiply those". Don't bother with RPN yet, it will be explained
+later on in more detail. Also, you may want to read my tutorial on CDEFs
+and Steve Rader's tutorial on RPN. But first finish this tutorial.
 
 Hang on! If we can multiply values with 1000, it should also be possible
-to display kilometers per hour from the same data !
-What do we need to do ? If we have meters per second, we can make this
-meters per hour by multiplying the value with 3600 (there go 3600 seconds
-in one hour). To get kilometers per hour, we need to divide by 1000.
-We end up with: value * 3600 / 1000 = value * 3.6 . Remember we also have
-to correct our mistake, so it is value * 3600 for us.
+to display kilometers per hour from the same data!
+
+To change a value that is measured in meters per second:
+ -*- Calculate meters per hour:     value * 3600
+ -*- Calculate kilometers per hour: value / 1000
+ -*- Together this makes:           value * (3600/1000) == value * 3.6
+
+In our example database we made a mistake and we need to compensate for
+this by multiplying with 1000. Applying that correction:
+ -*- value * 3.6  *1000 == value * 3600
 
 Now let's create this GIF, and add some more magic ...
 
@@ -365,37 +408,19 @@ colors used to display speed and changed it from a line into an area.
 
 The calculations are more complex now. For the "good" speed they are:
 
-=over 2
-
-=item *
-
-Check if kmh is greater than 100    ( kmh,100 ) GT
-
-=item *
-
-If so, return 0, else kmh           ((( kmh,100 ) GT ), 0, kmh) IF
-
-=back
+   Check if kmh is greater than 100    ( kmh,100 ) GT
+   If so, return 0, else kmh           ((( kmh,100 ) GT ), 0, kmh) IF
 
 For the other speed:
 
-=over 2
-
-=item *
-
-Check if kmh is greater than 100    ( kmh,100 ) GT
-
-=item *
-
-If so, return kmh, else return 0    ((( kmh,100) GT ), kmh, 0) IF
-
-=back
+   Check if kmh is greater than 100    ( kmh,100 ) GT
+   If so, return kmh, else return 0    ((( kmh,100) GT ), kmh, 0) IF
 
 =head2 Graphics Magic
 
-I like to believe there are virtually no limits about what RRDtool
-can do. I will not explain how it works, but look at the following
-GIF:
+I like to believe there are virtually no limits to how RRDtool graph
+can manipulate data. I will not explain how it works, but look at the
+following GIF:
 
    rrdtool graph speed4.gif                           \
       --start 920804400 --end 920808000               \
@@ -423,13 +448,14 @@ Let's create a quick and dirty HTML page to view three GIFs:
 Name the file "speed.html" or similar, and view it.
 
 Now, all you have to do is measure the values regularly and update the
-database. Every time you create these three GIFs and reload the page
-and the GIFs (better reread these last three words!) you know how fast
-you traveled.
+database.  When you want to view the data, recreate the GIFs and make
+sure to refresh them in your browser. (Note: just clicking reload may
+not be enough; Netscape in particular has a problem doing so and you'll
+need to click reload while pressing the shift key).
 
 =head2 Updates in Reality
 
-You already looked at the "update" tool. It took one or more parameters
+We've already used the "update" command: it took one or more parameters
 in the form of "<time>:<value>". You'll be glad to know that you can
 get the current time by filling in a "N" as the time.
 If you wish, you can also use the "time" function in perl.
@@ -437,12 +463,13 @@ The shortest example in this doc :)
 
    perl -e 'print time, "\n" '
 
-How you can run a program on regular intervals is OS specific, so I just
-give you an example script in a sort of pseudo code:
-(Do not try this with our test database, it is used in further examples)
+How you can run a program on regular intervals is OS specific. But here's
+an example in pseudo code:
 
    Get the value, put it in variable "$speed"
    rrdtool update speed.rrd N:$speed
+
+(Do not try this with our test database, it is used in further examples)
 
 This is all. Run this script every five minutes. When you need to know
 what the graphics look like, run the examples above. You could put them
@@ -453,16 +480,17 @@ in a script. After running that script, view index.html
 I can imagine very few people will be able to get real data from their
 car every five minutes, all other people will have to settle for some
 other kind of counter. You could measure the number of pages printed by
-the laser-jet printer, the coffee made by the coffee machine, a device
-that counts the electricity used, whatever. Just as long as it is an
-incrementing counter that you can measure regularly, you can graph it
-against time as we did. Most people will use the counter that keeps track
-of octets (bytes) transfered by a routing device so we have to do just
+a printer, the coffee made by the coffee machine, a device that counts
+the electricity used, whatever. Any incrementing counter can be monitored
+and graphed using the stuff you learned until now. Later on we will also
+be able to monitor other types of values like temperature.
+Most people will use the counter that keeps track
+of octets (bytes) transfered by a network device so we have to do just
 that. We will start with a description of how to collect data.
 Some people will make a remark that there are tools who can do this data
-collection for you. They are right! However, I feel it is important that
-you understand they are not necessary. If you have to look why things
-went wrong, you need to know how the stuff works.
+collection for you. They are right!  However, I feel it is important that
+you understand they are not necessary.  When you have to determine why
+things went wrong you need to know how they work.
 
 One tool used in the example has been talked about very briefly in the
 beginning of this document, it is called SNMP. It is a way of talking to
@@ -471,50 +499,52 @@ works:
 
    snmpget device password OID
 
-For device you substitute the name of your device, for password you
-use the "community" as it is called. For most devices "public" will do
-but this can be disabled, altered or protected for privacy and security
-reasons. You will need to find this out as there is no way I can tell
-what you ( ...your device... ) are keeping a secret from me.
+For device you substitute the name, or the IP address, of your device.
+For password you use the "community read string" as it is called in the
+SNMP world.  For some devices the default of "public" might work, however
+this can be disabled, altered or protected for privacy and security
+reasons.  Read the documentation that comes with your device or program.
 
-Then there is this third parameter, called OID.
+Then there is this third parameter, called OID, which means "object
+identifier".
+
 When you start to learn about SNMP it looks very confusing. It isn't
 all that difficult when you look at the Management Information Base
-or in short: the MIB. It is an upside-down tree, with a single node
-as the root and from there a number of branches. These branches end
-up in another node, they branch out, etc. All the branches have a name
-and they form the path that we follow all the way down. The branches
+("MIB").  It is an upside-down tree that describes data, with a single node
+as the root and from there a number of branches.  These branches end
+up in another node, they branch out, etc.  All the branches have a name
+and they form the path that we follow all the way down.  The branches
 that we follow are named: iso, org, dod, internet, mgmt and mib-2.
 These names can also be written down as numbers and are 1 3 6 1 2 1.
 
    iso.org.dod.internet.mgmt.mib-2 (1.3.6.1.2.1)
 
+There is a lot of confusion about the leading dot that some programs
+use.  There is *no* leading dot in an OID.  However, some programs
+can use above part of OIDs as a default.  To indicate the difference
+between abbreviated OIDs and full OIDs they need a leading dot when
+you specify the complete OID.  Often those programs will leave out
+the default portion when returning the data to you.  To make things
+worse, they have several default prefixes ...
+
+Right, lets continue to the start of our OID: we had 1.3.6.1.2.1
 From there, we are especially interested in the branch "interfaces"
-which has number 2 (so: 1.3.6.1.2.1.2 or 1.3.6.1.2.1.interfaces).
-
-The SNMP programs that I know can take above path as a default, so
-I could walk to interfaces without writing it in full. To do that,
-the path has to be written as interfaces, without a leading dot.
-I could also use the long form, then I need to start with a dot.
-
-I can intermix numbers and names as I like.  1.3.6.1.2.1 is the same
-as iso.org.dod.1.2.1 and 1.3.6.internet.2.mib-2
-For interfaces I could write "interfaces", 2, or a long version by
-prefixing it with ".1.3.6.1.2.1.". Just try what works for you and
-do read the manual for the version of snmpget you are using.
+which has number 2 (eg 1.3.6.1.2.1.2 or 1.3.6.1.2.1.interfaces).
 
 First, we have to get some SNMP program. First look if there is a
 pre-compiled package available for your OS. This is the preferred way.
 If not, you will have to get yourself the sources and compile those.
 The Internet is full of sources, programs etc. Find information using
-a search engine or whatever you prefer. You are on your own here, sorry.
+a search engine or whatever you prefer. As a suggestion: look for
+CMU-SNMP.  It is commonly used.
 
 Assume you got the program. First try to collect some data that is
 available on most systems. Remember: there is a short name for the
-part of the tree that interests us most in the world we live in !
+part of the tree that interests us most in the world we live in!
+
 I will use the short version as I think this document is large enough
 as it is. If that doesn't work for you, prefix with .1.3.6.1.2.1 and
-try again. Also, Read The Fine Manual. Skip the parts you cannot
+try again.  Also, Read The Fine Manual.  Skip the parts you cannot
 understand yet, you should be able to find out how to start the
 program and use it.
 
@@ -566,8 +596,8 @@ about MIBs and OIDs you know what it's all about.
 Do not forget the interface number (0 if it is not interface dependent)
 and try snmpwalk if you don't get an answer from snmpget.
 
-If you understand above part, and get numbers from your device, it is
-time to continue with the following. If not, then go back.
+If you understand above part, and get numbers from your device, continue
+on with this tutorial. If not, then go back and re-read this part.
 
 =head2 A Real World Example
 
@@ -578,30 +608,43 @@ They also go into archives that keep the maximum numbers. This will be
 explained later on. The time in-between samples is 300 seconds, a good
 starting point, which is the same as five minutes.
 
- 1 sample averaged stays 1 period of 5 minutes
+ 1 sample "averaged" stays 1 period of 5 minutes
  6 samples averaged become one average on 30 minutes
  24 samples averaged become one average on 2 hours
  288 samples averaged become one average on 1 day
 
- There are 600 samples of five minutes, together just over two days
- There are 600 samples of 30 minutes, almost two weeks
- There are 600 samples of 2 hours, 50 hour or almost two months
- There are 732 samples of 1 day, just over two years
+Lets try to be compatible with MRTG:
+MRTG stores about the following amount of data:
 
-For people used to MRTG that even have read the manuals, these numbers
-should look familiar...
+ 600 5-minute samples:    2   days and 2 hours
+ 600 30-minute samples:  12.5 days
+ 600 2-hour samples:     50   days
+ 600 1-day samples:     732   days
+
+These ranges are appended so the total amount of data kept is approximately
+797 days.  RRDtool stores the data differently, it doesn't start the "weekly"
+archive where the "daily" archive stopped.  For both archives the most recent
+data will be near "now" and therefore we will need to keep more data than
+MRTG does!
+
+We will need:
+
+ 600 samples of 5 minutes  (2 days and 2 hours)
+ 700 samples of 30 minutes (2 days and 2 hours, plus 12.5 days)
+ 775 samples of 2 hours    (above + 50 days)
+ 797 samples of 1 day      (above + 732 days, rounded up to 797)
 
    rrdtool create myrouter.rrd         \
             DS:input:COUNTER:600:U:U   \
             DS:output:COUNTER:600:U:U  \
             RRA:AVERAGE:0.5:1:600      \
-            RRA:AVERAGE:0.5:6:600      \
-            RRA:AVERAGE:0.5:24:600     \
-            RRA:AVERAGE:0.5:288:732    \
+            RRA:AVERAGE:0.5:6:700      \
+            RRA:AVERAGE:0.5:24:775     \
+            RRA:AVERAGE:0.5:288:797    \
             RRA:MAX:0.5:1:600          \
-            RRA:MAX:0.5:6:600          \
-            RRA:MAX:0.5:24:600         \
-            RRA:MAX:0.5:288:732
+            RRA:MAX:0.5:6:700          \
+            RRA:MAX:0.5:24:775         \
+            RRA:MAX:0.5:288:797
 
 Next thing to do is collect data and store it. Here is an example.
 It is written partially in pseudo code so you will have to find out what
@@ -631,13 +674,13 @@ Then, after collecting data for a day, try to create an image using:
 
 This should produce a picture with one day worth of traffic.
 One day is 24 hours of 60 minutes of 60 seconds: 24*60*60=86400, we
-start at now minus 86400 seconds. We DEFine inoctets and outoctets
-as the average values from the database myrouter.rrd and draw an area
-for the "in" traffic and a line for the "out" traffic.
+start at now minus 86400 seconds. We define (with DEFs) inoctets and
+outoctets as the average values from the database myrouter.rrd and draw
+an area for the "in" traffic and a line for the "out" traffic.
 
-View the image and keep logging for a few more days.
+View the image and keep logging data for a few more days.
 If you like, you could try the examples from the test database and
-see if you can play around with the options and calculations.
+see if you can get various options and calculations working.
 
 Suggestion:
 
@@ -687,14 +730,14 @@ second one will show 180 KM/H. This means that I traveled a distance
 of 60 KM/H times 24 H = 1440 KM. I did this with a higher speed and
 a maximum around 180 KM/H. This doesn't mean that I traveled for 8
 hours at a constant speed of 180 KM/H !
-This is a real example: go with the flow through Germany and stop
+This is a real example: go with the flow through Germany (fast!) and stop
 a few times for gas and coffee. Drive slowly through Austria and the
 Netherlands. Be careful in the mountains and villages. If you would
 look at the graphs created from the five-minute averages you would
 get a totally different picture. You would see the same values on the
 average and maximum graphs (provided I measured every 300 seconds).
 You would be able to see when I stopped, when I was in top gear, when
-I drove over fast motor-ways etc. The granularity of the data is much
+I drove over fast hiways etc. The granularity of the data is much
 higher, so you can see more. However, this takes 12 samples per hour,
 or 288 values per day, so it would be too much to keep for a long
 period of time. Therefore we average it, eventually to one value per
@@ -731,18 +774,17 @@ for an increased speed in the examples and explanation.
 
 You know that in order to view a counter over time, you have to
 take two numbers and divide the difference of them between the
-time lapsed. This makes sense for the examples I gave you but there
-are other possibilities. For instance, I'm able to retrieve the
+time lapsed.  This makes sense for the examples I gave you but there
+are other possibilities.  For instance, I'm able to retrieve the
 temperature from my router in three places namely the inlet, the
-so called hot-spot and the exhaust. If I take the difference of
-the two samples and divide that by 300 (seconds) there would not be very
-much to display ... If there would be anything to display it would
-be the fluctuations in the temperature and if they produce noticeable
-results when divided by 300, I'd better look for a new computer room.
+so called hot-spot and the exhaust.  These values are not counters.
+If I take the difference of the two samples and divide that by
+300 seconds I would be asking for the temperature change per second.
+Hopefully this is zero! If not, the computerroom is on fire :)
 
-So, what can we do ?  RRDtool can also store the values you measure
+So, what can we do ?  We can tell RRDtool to store the values we measure
 directly as they are (this is not entirely true but close enough). The
-graphs we make look much better, they will show a rather constant
+graphs we make will look much better, they will show a rather constant
 value. I know when the router is busy (it
 works -> it uses more electricity -> it generates more heat -> the
 temperature rises). I know when the doors are left open (the room is
@@ -826,7 +868,7 @@ at 00:10 the next day (where U means unknown/unplotted):
 
  - Line A:  u  u  1  1  1  1  1  1  1  1  1  u
  - Line B:  u  1  3  5  3  1  2  4  6  4  2  u
- - Line C:  u  u  2  2  2  0 -2 -6 -2  0  2  u
+ - Line C:  u  u  2  2  2  0 -2 -6  2  0  2  u
  - Line D:  u  1  2  3  4  5  6  7  8  9 10  u
 
 If your GIF shows all this, you know you have typed the data correct,
@@ -892,7 +934,7 @@ maximum value of the counter + 1. For our car this would be:
 
  Real delta = -999980 + 999999 + 1 = 20
 
-At the moment of writing this document, RRDtool knows of counters that
+At the time of writing this document, RRDtool knows of counters that
 are either 32 bits or 64 bits of size. These counters can handle the
 following different values:
 
@@ -961,14 +1003,14 @@ Correction numbers:
 
 As you can see from the last two examples, you need strange numbers
 for RRDtool to fail (provided it's bug free of course) so this should
-not happen. However, SNMP or whatever method you choose to collect the
-data might also fail and it is not uncommon to get wrong numbers
-occasionally. We can't prevent all errors but there are some things we
-could do. RRDtool create takes two special parameters for this. They define
-the minimum and maximum allowed value. Until now, we made them "U"
-for Unknown. You may (not: must) provide values for one or both of them
-and if RRDtool receives values that are outside these limits, it will ignore
-them. For a thermometer in degrees Celsius, the absolute minimum is
+not happen.  However, SNMP or whatever method you choose to collect the
+data might also report wrong numbers occasionally.  We can't prevent all
+errors but there are some things we can do.  The RRDtool "create" command
+takes two special parameters for this. They define
+the minimum and maximum allowed value. Until now, we used "U", meaning
+"unknown". If you provide values for one or both of them and if RRDtool
+receives values that are outside these limits, it will ignore those
+values. For a thermometer in degrees Celsius, the absolute minimum is
 just under -273. For my router, I can assume this minimum is much higher
 so I would say it is 10. The maximum temperature for my router I would
 state as 80. Any higher and the device would be out of order.
@@ -998,7 +1040,7 @@ Next time you are at exactly the right time. This means that the current
 interval is 297 seconds and also the counter increased with 297. Again
 RRDtool alters the value and stores 300 as it should be.
 
-      in the RDD                 in real
+      in the RDD                 in reality
 
  time+000:   0 delta="U"   time+000:    0 delta="U"
  time+300: 300 delta=300   time+300:  300 delta=300
@@ -1046,7 +1088,7 @@ Both graphs should show the same.
 It's time to wrap up this document. You now know all the basics to be
 able to work with RRDtool and to read the documentation available.
 There is plenty more to discover about RRDtool and you will find more and
-more uses for the program. You could create easy graphics using just the
+more uses for the package. You could create easy graphics using just the
 examples provided and using only RRDtool. You could also use the front
 ends that are available.
 
@@ -1056,7 +1098,7 @@ Remember to subscribe to the mailing-list. Even if you are not answering
 the mails that come by, it helps both you and the rest. A lot of the stuff
 that I know about MRTG (and therefore about RRDtool) I've learned while
 just reading the list without posting to it. I did not need to ask the
-basic questions as they are answered in the FAQ (so: read that too) and
+basic questions as they are answered in the FAQ (read it!) and
 in various mails by other users.
 With thousands of users all over the world, there will always be people
 who ask questions that you can answer because you read this and other

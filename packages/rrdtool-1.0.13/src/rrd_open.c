@@ -1,5 +1,5 @@
 /*****************************************************************************
- * RRDtool  Copyright Tobias Oetiker, 1997, 1998, 1999
+ * RRDtool 1.0.13  Copyright Tobias Oetiker, 1997, 1998, 1999
  *****************************************************************************
  * rrd_open.c  Open an RRD File
  *****************************************************************************
@@ -105,7 +105,7 @@ int readfile(char *file_name, char **buffer, int skipfirst){
     long writecnt=0,totalcnt = MEMBLK;
     FILE *input=NULL;
     char c ;
-    if ((strcmp("-",file_name) == 0)) { *input = *stdin; }
+    if ((strcmp("-",file_name) == 0)) { input = stdin; }
     else {
       if ((input = fopen(file_name,"rb")) == NULL ){
 	rrd_set_error("readfile can't open '%s'",file_name);
@@ -130,7 +130,7 @@ int readfile(char *file_name, char **buffer, int skipfirst){
       }
     } while (! feof(input));
     (*buffer)[writecnt] = '\0';
-    fclose(input);
+    if (strcmp("-",file_name) != 0) {fclose(input);};
     return writecnt;
 }
 

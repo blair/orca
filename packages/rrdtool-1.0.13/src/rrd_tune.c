@@ -1,5 +1,5 @@
 /*****************************************************************************
- * RRDtool  Copyright Tobias Oetiker, 1997, 1998, 1999
+ * RRDtool 1.0.13  Copyright Tobias Oetiker, 1997, 1998, 1999
  *****************************************************************************
  * change header parameters of an rrd
  *****************************************************************************
@@ -132,7 +132,10 @@ rrd_tune(int argc, char **argv)
 	    rrd.ds_def[ds].ds_nam[DS_NAM_SIZE-1]='\0';
 	    break;
 	case '?':
-            rrd_set_error("unknown option '%s'",argv[optind-1]);
+            if (optopt != 0)
+                rrd_set_error("unknown option '%c'", optopt);
+            else
+                rrd_set_error("unknown option '%s'",argv[optind-1]);
 	    rrd_free(&rrd);	    
             return -1;
         }

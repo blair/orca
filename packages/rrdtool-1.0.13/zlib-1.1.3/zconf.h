@@ -71,6 +71,9 @@
 #  define UNALIGNED_OK
 #endif
 
+/* RRDtool will not compile without them anyway */
+#define STDC
+
 #if (defined(MSDOS) || defined(_WINDOWS) || defined(WIN32))  && !defined(STDC)
 #  define STDC
 #endif

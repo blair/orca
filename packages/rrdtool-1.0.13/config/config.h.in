@@ -32,11 +32,20 @@
 /* realloc does not support NULL as argument */
 #undef NO_NULL_REALLOC
 
+/* Define if you have the class function.  */
+#undef HAVE_CLASS
+
 /* Define if you have the finite function.  */
 #undef HAVE_FINITE
 
+/* Define if you have the fp_class function.  */
+#undef HAVE_FP_CLASS
+
 /* Define if you have the fpclass function.  */
 #undef HAVE_FPCLASS
+
+/* Define if you have the fpclassify function.  */
+#undef HAVE_FPCLASSIFY
 
 /* Define if you have the getrusage function.  */
 #undef HAVE_GETRUSAGE
@@ -62,14 +71,26 @@
 /* Define if you have the strchr function.  */
 #undef HAVE_STRCHR
 
+/* Define if you have the vsnprintf function.  */
+#undef HAVE_VSNPRINTF
+
 /* Define if you have the <fcntl.h> header file.  */
 #undef HAVE_FCNTL_H
+
+/* Define if you have the <float.h> header file.  */
+#undef HAVE_FLOAT_H
+
+/* Define if you have the <fp_class.h> header file.  */
+#undef HAVE_FP_CLASS_H
 
 /* Define if you have the <malloc.h> header file.  */
 #undef HAVE_MALLOC_H
 
 /* Define if you have the <math.h> header file.  */
 #undef HAVE_MATH_H
+
+/* Define if you have the <sys/param.h> header file.  */
+#undef HAVE_SYS_PARAM_H
 
 /* Define if you have the <sys/resource.h> header file.  */
 #undef HAVE_SYS_RESOURCE_H
@@ -110,21 +131,51 @@ char *strchr (), *strrchr ();
 # endif
 #endif
 
+
 #if NO_NULL_REALLOC
 # define rrd_realloc(a,b) ( (a) == NULL ? malloc( (b) ) : realloc( (a) , (b) ))
 #else
 # define rrd_realloc(a,b) realloc((a), (b))
 #endif      
 
-#if (! defined(HAVE_FINITE) && defined(HAVE_ISNAN) && defined(HAVE_ISINF))
-#define HAVE_FINITE 1
-#define finite(a) (! isnan(a) && ! isinf(a))
-#endif
+#if HAVE_MATH_H
+#  include <math.h>                                                                                                                      
+#endif                                                                                                                                   
+                                                                                                                                         
+#if HAVE_FLOAT_H                                                                                                                         
+#  include <float.h>                                                                                                                     
+#endif                                                                                                                                   
+ 
 
+/* for Solaris */
 #if (! defined(HAVE_ISINF) && defined(HAVE_FPCLASS))
 #define HAVE_ISINF 1
 #include <ieeefp.h>
 #define isinf(a) (fpclass(a) == FP_NINF || fpclass(a) == FP_PINF)
+#endif
+
+/* for OSF1 Digital Unix */
+#if (! defined(HAVE_ISINF) && defined(HAVE_FP_CLASS) && defined(HAVE_FP_CLASS_H))
+#  define HAVE_ISINF 1
+#  include <fp_class.h>
+#  define isinf(a) (fp_class(a) == FP_NEG_INF || fp_class(a) == FP_POS_INF)
+#endif
+
+/* for HP-UX 10.20 */
+#if (! defined(HAVE_ISINF) && defined(HAVE_FPCLASSIFY) )
+#  define HAVE_ISINF 1
+#  define isinf(a) (fpclassify(a) == FP_MINUS_INF || fpclassify(a) == FP_PLUS_INF)  
+#endif
+
+/* for AIX */
+#if (! defined(HAVE_ISINF) && defined(HAVE_CLASS))
+#  define HAVE_ISINF 1
+#  define isinf(a) (class(a) == FP_MINUS_INF || class(a) == FP_PLUS_INF)
+#endif
+
+#if (! defined(HAVE_FINITE) && defined(HAVE_ISNAN) && defined(HAVE_ISINF))
+#define HAVE_FINITE 1
+#define finite(a) (! isnan(a) && ! isinf(a))
 #endif
 
 #ifndef HAVE_FINITE

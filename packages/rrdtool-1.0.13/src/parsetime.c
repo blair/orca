@@ -296,8 +296,11 @@ static char errmsg[ MAX_ERR_MSG_LEN ];
 static char *
 ve ( char *fmt, va_list ap )
 {
-/* vsnprintf( errmsg, MAX_ERR_MSG_LEN, fmt, ap ); */
+#ifdef HAVE_VSNPRINTF
+  vsnprintf( errmsg, MAX_ERR_MSG_LEN, fmt, ap );
+#else
   vsprintf( errmsg, fmt, ap );
+#endif
   EnsureMemFree();
   return( errmsg );
 }

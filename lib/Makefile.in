@@ -19,6 +19,18 @@ rrdtool.gif.hex: rrdtool.gif
 	perl -e 'while (sysread(STDIN, $$b, 35)){print unpack("h*", $$b),"\n"}' < $< > $@
 
 install: all
+	$(MKDIR) $(libdir)/Orca
+	@for f in Orca/*.pm; do						\
+		$(INSTALL) -m 0644 $$f $(libdir)/Orca;			\
+		echo $(INSTALL) -m 0644 $$f $(libdir)/Orca;		\
+	done
+	@if test -d Orca/Config; then					\
+		$(MKDIR) $(libdir)/Orca/Config;				\
+		for f in Orca/Config/*.pm; do				\
+			$(INSTALL) -m 0644 $$f $(libdir)/Orca/Config;	\
+			echo $(INSTALL) -m 0644 $$f $(libdir)/Orca/Config; \
+		done;							\
+	fi
 
 clean:
 

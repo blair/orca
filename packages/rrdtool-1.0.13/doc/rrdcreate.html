@@ -1,11 +1,10 @@
-    <HTML> 
-	<HEAD> 
-	    <TITLE>create - Set up a new Round Robin Database
+<HTML>
+<HEAD>
+<TITLE>rrdcreate</TITLE>
+<LINK REV="made" HREF="mailto:karrer@zinal.ee.ethz.ch">
+</HEAD>
 
-</TITLE> 
-	</HEAD>
-
-	<BODY>
+<BODY>
 
 <!-- INDEX BEGIN -->
 <!--
@@ -22,19 +21,14 @@
 <!-- INDEX END -->
 
 <P>
-<H1><A NAME="NAME">NAME
-
-</A></H1>
-rrdtool create - Set up a new Round Robin Database
-
-
+<H1><A NAME="NAME">NAME</A></H1>
 <P>
+rrdtool create - Set up a new Round Robin Database
 
 <P>
 <HR>
-<H1><A NAME="SYNOPSIS">SYNOPSIS
-
-</A></H1>
+<H1><A NAME="SYNOPSIS">SYNOPSIS</A></H1>
+<P>
 <STRONG>rrdtool</STRONG>  <STRONG>create</STRONG>  <EM>filename</EM> 
  
 [<STRONG>--start</STRONG>|<STRONG>-b</STRONG>&nbsp;<EM>start&nbsp;time</EM>] 
@@ -47,179 +41,143 @@ rrdtool create - Set up a new Round Robin Database
 
 
 
-
-<P>
-
 <P>
 <HR>
-<H1><A NAME="DESCRIPTION">DESCRIPTION
-
-</A></H1>
+<H1><A NAME="DESCRIPTION">DESCRIPTION</A></H1>
+<P>
 The create function of the RRDtool lets you set up new Round Robin Database
 (<STRONG>RRD</STRONG>) files. The file is created at its final, full size and filled with <EM>*UNKNOWN*</EM> data.
 
-
-<P>
-
 <DL>
-<DT><STRONG><A NAME="item_filename">filename
-
-</A></STRONG><DD>
+<DT><STRONG><A NAME="item_filename">filename</A></STRONG><DD>
+<P>
 The name of the <STRONG>RRD</STRONG> you want to create. <STRONG>RRD</STRONG> files should end with the extension <EM>.rrd</EM>. However, <STRONG>rrdtool</STRONG> will accept any filename.
 
-
+<DT><STRONG><A NAME="item__start_b">--start|-b start time (default: now - 10s)</A></STRONG><DD>
 <P>
-
-<DT><STRONG><A NAME="item__start_b">--start|-b start time (default: now - 10s)
-
-</A></STRONG><DD>
 Specifies the time in seconds since 1970-01-01 UTC when the first value
 should be added to the <STRONG>RRD</STRONG>. <STRONG>rrdtool</STRONG> will not accept any data timed before or at the time specified.
 
-
 <P>
-
 See also AT-STYLE TIME SPECIFICATION section in the
 <EM>rrdfetch</EM> documentation for more ways to specify time.
 
-
+<DT><STRONG><A NAME="item__step_s">--step|-s step (default: 300 seconds)</A></STRONG><DD>
 <P>
-
-<DT><STRONG><A NAME="item__step_s">--step|-s step (default: 300 seconds)
-
-</A></STRONG><DD>
 Specifies the base interval in seconds with which data will be fed into the <STRONG>RRD</STRONG>.
 
-
+<DT><STRONG><A NAME="item_DS">DS:ds-name:DST:heartbeat:min:max</A></STRONG><DD>
 <P>
-
-<DT><STRONG><A NAME="item_DS">DS:ds-name:DST:heartbeat:min:max
-
-</A></STRONG><DD>
 A single <STRONG>RRD</STRONG> can accept input from several data sources (<STRONG>DS</STRONG>). (e.g. Incoming and Outgoing traffic on a specific communication line).
 With the <STRONG>DS</STRONG> configuration option you must define some basic properties of each data
 source you want to use to feed the <STRONG>RRD</STRONG>.
 
-
 <P>
-
 <EM>ds-name</EM> is the name you will use to reference this particular data source from an <STRONG>RRD</STRONG>. A <EM>ds-name</EM> must be 1 to 19 characters long in the characters [a-zA-Z0-9_].
 
-
 <P>
-
 <EM>DST</EM> defines the Data Source Type. It can be one of the following:
-<STRONG>GAUGE</STRONG> this is for things like temperatures or number of people in a room. <STRONG>COUNTER</STRONG> is for continuous incrementing counters like the InOctets counter in a
+
+<DL>
+<DT><STRONG><A NAME="item_GAUGE">GAUGE</A></STRONG><DD>
+<P>
+is for things like temperatures or number of people in a room or value of a
+RedHat share.
+
+<DT><STRONG><A NAME="item_COUNTER">COUNTER</A></STRONG><DD>
+<P>
+is for continuous incrementing counters like the InOctets counter in a
 router. The <STRONG>COUNTER</STRONG> data source assumes that the counter never decreases, except when a counter
 overflows. The update function takes the overflow into account. The counter
-is stored as a per-second rate. <STRONG>DERIVE</STRONG> will store the the derivative of the line going from the last to the
-current value of the data source. This can be useful for gauges, for
-example, to measure the rate of people entering or leaving a room. <STRONG>ABSOLUTE</STRONG> is for counters which get reset upon reading.
+is stored as a per-second rate. When the counter overflows, RRDtool checks
+if the overflow happened at the 32bit or 64bit border and acts accordingly
+by adding an appropriate value to the result.
 
-
+<DT><STRONG><A NAME="item_DERIVE">DERIVE</A></STRONG><DD>
 <P>
+will store the the derivative of the line going from the last to the
+current value of the data source. This can be useful for gauges, for
+example, to measure the rate of people entering or leaving a room.
+Internally, derive works exaclty like COUNTER but without overflow checks.
+So if your counter does not reset at 32 or 64 bit you might want to use
+DERIVE and combine it with a MIN value of 0.
 
+<DT><STRONG><A NAME="item_ABSOLUTE">ABSOLUTE</A></STRONG><DD>
+<P>
+is for counters which get reset upon reading. This is used for fast
+counters which tend to overflow. So instead of reading them normally you
+reset them after every read to make sure you have a maximal time available
+before the next overflow.
+
+</DL>
+<P>
 <EM>heartbeat</EM> defines the maximum number of seconds that may pass between two updates of
 this data source before the value of the data source is assumed to be <EM>*UNKNOWN*</EM>.
 
-
 <P>
-
 <EM>min</EM> and <EM>max</EM> are optional entries defining the expected range of the data supplied by
 this data source. If <EM>min</EM> and/or <EM>max</EM> are defined, any value outside the defined range will be regarded as
 <EM>*UNKNOWN*</EM>. If you do not know or care about min and max, set them to U for unknown.
 Note that min and max always refer to the processed values of the DS. For a
 traffic-<STRONG>COUNTER</STRONG> type DS this would be the max and min data-rate expected from the device.
 
-
 <P>
-
 <EM>If information on minimal/maximal expected values is available,
 always set the min and/or max properties. This will help RRDtool in
 doing a simple sanity check on the data supplied when running update.</EM>
 
 
 
-
+<DT><STRONG><A NAME="item_RRA">RRA:CF:xff:steps:rows</A></STRONG><DD>
 <P>
-
-<DT><STRONG><A NAME="item_RRA">RRA:CF:xff:steps:rows
-
-</A></STRONG><DD>
 The purpose of an <STRONG>RRD</STRONG> is to store data in the round robin archives (<STRONG>RRA</STRONG>). An archive consists of a number of data values from all the defined
 data-sources (<STRONG>DS</STRONG>) and is defined with an <STRONG>RRA</STRONG> line.
 
-
 <P>
-
 When data is entered into an <STRONG>RRD</STRONG>, it is first fit into time slots of the length defined with the <STRONG>-s</STRONG> option becoming a <EM>primary data point</EM>.
 
-
 <P>
-
 The data is also consolidated with the consolidation function (<EM>CF</EM>) of the archive. The following consolidation functions are defined:
 <STRONG>AVERAGE</STRONG>, <STRONG>MIN</STRONG>, <STRONG>MAX</STRONG>, <STRONG>LAST</STRONG>.
 
-
 <P>
-
 <EM>xff</EM> The xfiles factor defines what part of a consolidation interval may be made
-up from <EM>*UNKNOWN*</EM> data while the consolidated value is sill regarded as known.
-
+up from <EM>*UNKNOWN*</EM> data while the consolidated value is still regarded as known.
 
 <P>
-
 <EM>steps</EM> defines how many of these <EM>primary data points</EM> are used to build a <EM>consolidated data point</EM> which then goes into the archive.
 
-
 <P>
-
 <EM>rows</EM> defines how many generations of data values are kept in an <STRONG>RRA</STRONG>.
-
-
-<P>
 
 </DL>
 <P>
 <HR>
-<H1><A NAME="EXAMPLE">EXAMPLE
-
-</A></H1>
+<H1><A NAME="EXAMPLE">EXAMPLE</A></H1>
+<P>
 <CODE>rrdtool create temperature.rrd --step 300 DS:temp:GAUGE:600:-273:5000
 RRA:AVERAGE:0.5:1:1200 RRA:MIN:0.5:12:2400 RRA:MAX:0.5:12:2400
 RRA:AVERAGE:0.5:12:2400</CODE>
 
 
 
-
 <P>
-
 This sets up an <STRONG>RRD</STRONG> called <EM>temperature.rrd</EM> which accepts one temperature value every 300 seconds. If no new data is
 supplied for more than 600 seconds, the temperature becomes <EM>*UNKNOWN*</EM>. The minimum acceptable value is -273 and the maximum is 5000.
 
-
 <P>
-
 A few archives areas are also defined. The first stores the temperatures
 supplied for 100 hours (1200 * 300 seconds = 100 hours). The second RRA
 stores the minimum temperature recorded over every hour (12 * 300 seconds =
 1 hour), for 100 days (2400 hours). The third and the fourth RRA's do the
 same with the for the maximum and average temperature, respectively.
 
-
-<P>
-
 <P>
 <HR>
-<H1><A NAME="AUTHOR">AUTHOR
-
-</A></H1>
-Tobias Oetiker &lt;<A HREF="MAILTO:oetiker@ee.ethz.ch">oetiker@ee.ethz.ch</A>&gt;
-
-
+<H1><A NAME="AUTHOR">AUTHOR</A></H1>
 <P>
+Tobias Oetiker &lt;<A HREF="mailto:oetiker@ee.ethz.ch">oetiker@ee.ethz.ch</A>&gt;
 
-</DL>
-    </BODY>
+</BODY>
 
-    </HTML>
+</HTML>

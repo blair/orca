@@ -83,7 +83,7 @@ SUFFIXES = .pod .1 .man .html .txt .pm
 
 CLEANFILES = *.1 *.html *.txt *-dircache *.pm
 
-POD = rrdtool.pod rrdlast.pod rrdcreate.pod rrdupdate.pod 	rrdgraph.pod  bin_dec_hex.pod rrdfetch.pod 	rrdrestore.pod rrddump.pod rrdtune.pod rrdresize.pod 	rrdcgi.pod rrdtutorial.pod
+POD = rrdtool.pod rrdlast.pod rrdcreate.pod rrdupdate.pod 	cdeftutorial.pod rpntutorial.pod rrdgraph.pod  bin_dec_hex.pod 	rrdfetch.pod rrdrestore.pod rrddump.pod rrdtune.pod rrdresize.pod 	rrdcgi.pod rrdtutorial.pod
 
 
 PMP = RRDs.pm RRDp.pm
@@ -115,7 +115,7 @@ VERSION = @VERSION@
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = tar
+TAR = gtar
 GZIP_ENV = --best
 all: all-redirect
 .SUFFIXES:

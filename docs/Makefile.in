@@ -2,20 +2,20 @@ prefix	= @prefix@
 mandir	= @mandir@/man1
 MKDIR	= @MKDIR@
 INSTALL	= @INSTALL@
-ORCA	= ../src/orca.pl.in
+ORCA	= ../src/orca.pl
 
 TARGETS	= orca.man orca.html orca.txt
 
 all:	Makefile $(TARGETS)
 
 orca.man: $(ORCA)
-	pod2man $< > $@
+	pod2man $(ORCA) > $@
 
 orca.html: $(ORCA)
-	pod2html $< > $@
+	pod2html $(ORCA) > $@
 
 orca.txt: $(ORCA)
-	pod2text $< > $@
+	pod2text $(ORCA) > $@
 
 install: all
 	$(MKDIR) $(mandir)

@@ -1,5 +1,5 @@
 /****************************************************************************
- * RRDtool  Copyright Tobias Oetiker, 1997,1998, 1999
+ * RRDtool 1.0.13  Copyright Tobias Oetiker, 1997,1998, 1999
  ****************************************************************************
  * rrd__graph.c  make creates ne rrds
  ****************************************************************************/
@@ -30,7 +30,7 @@ enum grc_en {GRC_CANVAS=0,GRC_BACK,GRC_SHADEA,GRC_SHADEB,
 enum gf_en {GF_PRINT=0,GF_GPRINT,GF_COMMENT,GF_HRULE,GF_VRULE,GF_LINE1,
 	    GF_LINE2,GF_LINE3,GF_AREA,GF_STACK, GF_DEF, GF_CDEF };
 
-enum op_en {OP_NUMBER=0,OP_VARIABLE,OP_INF,OP_NEGINF,
+enum op_en {OP_NUMBER=0,OP_VARIABLE,OP_INF,OP_PREV,OP_NEGINF,
 	    OP_UNKN,OP_NOW,OP_TIME,OP_ADD,OP_MOD,
             OP_SUB,OP_MUL,
 	    OP_DIV,OP_SIN, OP_DUP, OP_EXC, OP_POP,
@@ -180,7 +180,7 @@ typedef struct image_desc_t {
 
     /* configuration of graph */
 
-    char           graphfile[1024]; /* filename for graphic */
+    char           graphfile[MAXPATH]; /* filename for graphic */
     long           xsize,ysize;    /* graph area size in pixels */
     col_trip_t     graph_col[__GRC_END__]; /* real colors for the graph */   
     char           ylegend[200];   /* legend along the yaxis */
@@ -219,7 +219,7 @@ typedef struct image_desc_t {
 
 } image_desc_t;
 
-
+int bad_format(char *);
 
 
 /* translate time values into x coordinates */   
@@ -559,25 +559,30 @@ reduce_data(
         
     for (src_row = skiprows; src_row < row_cnt; src_row+=reduce_factor) {
 	for (col=0;col<(*ds_cnt);col++){
-	    double newval=0;
+	    double newval=DNAN;
 	    unsigned long validval=0;
 	    for (i=0;i<reduce_factor && src_row+i<row_cnt;i++) {		
 		unsigned long ptr = (src_row+i)* (*ds_cnt)+col;
 		if (isnan((*data)[ptr])) continue; /* we can't help with NAN */
 		validval++;
-		switch (cf) {
-		case CF_AVERAGE:
-		    newval += (*data)[ptr];
-		    break;
-		case CF_MINIMUM:
-		    newval = min (newval,(*data)[ptr]);
-		    break;
-		case CF_MAXIMUM:
-		    newval = max (newval,(*data)[ptr]);
-		    break;
-		case CF_LAST:
+		if (isnan(newval)) {
 		    newval = (*data)[ptr];
-		    break;
+		} else {
+		   
+  		  switch (cf) {
+		  case CF_AVERAGE:
+		      newval += (*data)[ptr];
+		      break;
+		  case CF_MINIMUM:
+		      newval = min (newval,(*data)[ptr]);
+		      break;
+		  case CF_MAXIMUM:
+		      newval = max (newval,(*data)[ptr]);
+		      break;
+		  case CF_LAST:
+		      newval = (*data)[ptr];
+		      break;
+		  }
 		}
 	    }
 	    if (validval == 0){newval = DNAN;} else{
@@ -735,8 +740,8 @@ str2rpn(image_desc_t *im,char *expr){
 	    return NULL;
 	}
 
-	else if(sscanf(expr,"%lf%n",&rpnp[steps].val,&pos) == 1){
-	    rpnp[steps].op = OP_NUMBER;
+	else if((sscanf(expr,"%lf%n",&rpnp[steps].val,&pos) == 1) && (expr[pos] == ',')){
+ 	    rpnp[steps].op = OP_NUMBER;
 	    expr+=pos;
 	} 
 	
@@ -768,6 +773,7 @@ str2rpn(image_desc_t *im,char *expr){
 	match_op(OP_UNKN,UNKN)
 	match_op(OP_UN,UN)
 	match_op(OP_NEGINF,NEGINF)
+	match_op(OP_PREV,PREV)
 	match_op(OP_INF,INF)
 	match_op(OP_NOW,NOW)
 	match_op(OP_TIME,TIME)
@@ -916,6 +922,13 @@ data_calc( image_desc_t *im){
 			    im->gdes[gdi].rpnp[rpi].ds_cnt;
 		    }
 		    stack[++stptr] =  *im->gdes[gdi].rpnp[rpi].data;
+		    break;
+		case OP_PREV:
+		    if (dataidx == 0) {
+                       stack[++stptr] = DNAN;
+                    } else {
+                       stack[++stptr] = im->gdes[gdi].data[dataidx];
+                    }
 		    break;
 		case OP_UNKN:
 		    stack[++stptr] = DNAN; 
@@ -1165,7 +1178,7 @@ data_proc( image_desc_t *im ){
 
 		value =
 		    im->gdes[vidx].data[
-					((unsigned long)floor(
+					((unsigned long)floor((double)
 							     (gr_time - im->gdes[vidx].start ) 
 							     / im->gdes[vidx].step)+1)			
 
@@ -1178,15 +1191,14 @@ data_proc( image_desc_t *im ){
 		if (! isnan(value)) {
 		  paintval += value;
 		  im->gdes[ii].p_data[i] = paintval;
+		  if (finite(paintval)){
+  		   if (isnan(minval) || paintval <  minval)
+		     minval = paintval;
+		   if (isnan(maxval) || paintval >  maxval)
+		     maxval = paintval;
+		  }
 		} else {
 		  im->gdes[ii].p_data[i] = DNAN;
-		}
-
-		if (finite(paintval)){
-		  if (isnan(minval) || paintval <  minval)
-		    minval = paintval;
-		  if (isnan(maxval) || paintval >  maxval)
-		    maxval = paintval;
 		}
 		break;
 	    case GF_PRINT:
@@ -1444,6 +1456,10 @@ print_calc(image_desc_t *im, char ***prdata)
 	    }
 	    if (im->gdes[i].gf == GF_PRINT){
 		(*prdata)[prlines-2] = malloc((FMT_LEG_LEN+2)*sizeof(char));
+		if (bad_format(im->gdes[i].format)) {
+			rrd_set_error("bad format for [G]PRINT in '%s'", im->gdes[i].format);
+			return -1;
+		}
 #ifdef HAVE_SNPRINTF
 		snprintf((*prdata)[prlines-2],FMT_LEG_LEN,im->gdes[i].format,printval,si_symb);
 #else
@@ -1453,6 +1469,10 @@ print_calc(image_desc_t *im, char ***prdata)
 	    } else {
 		/* GF_GPRINT */
 
+		if (bad_format(im->gdes[i].format)) {
+			rrd_set_error("bad format for [G]PRINT in '%s'", im->gdes[i].format);
+			return -1;
+		}
 #ifdef HAVE_SNPRINTF
 		snprintf(im->gdes[i].legend,FMT_LEG_LEN-2,im->gdes[i].format,printval,si_symb);
 #else
@@ -1481,7 +1501,7 @@ print_calc(image_desc_t *im, char ***prdata)
 
 
 /* place legends with color spots */
-void
+int
 leg_place(image_desc_t *im)
 {
     
@@ -1496,6 +1516,12 @@ leg_place(image_desc_t *im)
     int   glue = 0;
     int   i,ii, mark = 0;
     char  prt_fctn; /*special printfunctions */
+    int  *legspace;
+
+    if ((legspace = malloc(im->gdes_c*sizeof(int)))==NULL){
+       rrd_set_error("malloc for legspace");
+       return -1;
+    }
 
     for(i=0;i<im->gdes_c;i++){
 	fill_last = fill;
@@ -1505,22 +1531,38 @@ leg_place(image_desc_t *im)
 	/* is there a controle code ant the end of the legend string ? */ 
 	if (leg_cc >= 2 && im->gdes[i].legend[leg_cc-2] == '\\') {
 	    prt_fctn = im->gdes[i].legend[leg_cc-1];
-	    im->gdes[i].legend[leg_cc-2] = '\0';
 	    leg_cc -= 2;
+	    im->gdes[i].legend[leg_cc] = '\0';
 	} else {
 	    prt_fctn = '\0';
 	}
-
+        /* remove exess space */
+        while (prt_fctn=='g' && 
+	       leg_cc > 0 && 
+	       im->gdes[i].legend[leg_cc-1]==' '){
+	   leg_cc--;
+	   im->gdes[i].legend[leg_cc]='\0';
+	}
 	if (leg_cc != 0 ){	    
-	    if (fill > 0) 
-		fill += interleg;
+	   legspace[i]=(prt_fctn=='g' ? 0 : interleg);
+	   
+	   if (fill > 0){ 
+ 	       /* no interleg space if string ends in \g */
+	       fill += legspace[i];
+	    }
 	    if (im->gdes[i].gf != GF_GPRINT && 
-		im->gdes[i].gf != GF_COMMENT) 
+		im->gdes[i].gf != GF_COMMENT) { 
 		fill += box; 	   
+	    }
 	    fill += leg_cc * SmallFont->w;
 	    leg_c++;
+	} else {
+	   legspace[i]=0;
 	}
-	    
+        /* who said there was a special tag ... ?*/
+	if (prt_fctn=='g') {    
+	   prt_fctn = '\0';
+	}
 	if (prt_fctn == '\0') {
 	    if (i == im->gdes_c -1 ) prt_fctn ='l';
 	    
@@ -1558,7 +1600,7 @@ leg_place(image_desc_t *im)
 		im->gdes[ii].legloc.y = leg_y;
 		leg_x =  leg_x 
 		    + strlen(im->gdes[ii].legend)*SmallFont->w 
-		    + interleg 
+		    + legspace[ii]
 		    + glue;
 		if (im->gdes[ii].gf != GF_GPRINT && 
 		    im->gdes[ii].gf != GF_COMMENT) 
@@ -1572,6 +1614,8 @@ leg_place(image_desc_t *im)
 	}	   
     }
     im->ygif = leg_y+6;
+    free(legspace);
+    return 0;
 }
 
 
@@ -1697,7 +1741,7 @@ horizontal_grid(gdImagePtr gif, image_desc_t   *im)
                               (polyPoints[0].x - (strlen(graph_label) * 
                                                   SmallFont->w)-7), 
                               polyPoints[0].y - SmallFont->h/2+1,
-                              graph_label, graph_col[GRC_FONT].i);
+                              (unsigned char *)graph_label, graph_col[GRC_FONT].i);
 		
 		gdImageSetStyle(gif, styleMajor, 2);
 
@@ -1809,7 +1853,7 @@ horizontal_log_grid(gdImagePtr gif, image_desc_t   *im)
 			  (polyPoints[0].x - (strlen(graph_label) * 
 					      SmallFont->w)-7), 
 			  polyPoints[0].y - SmallFont->h/2+1,
-			  graph_label, graph_col[GRC_FONT].i);	
+			  (unsigned char *)graph_label, graph_col[GRC_FONT].i);	
 	} 
     }
 	return 1;
@@ -1919,7 +1963,7 @@ vertical_grid(
 	    && gr_pos + width <= im->xorigin+im->xsize) 
 	    gdImageString(gif, SmallFont,
 			  gr_pos,  polyPoints[0].y+4,
-			  graph_label, graph_col[GRC_FONT].i);
+			  (unsigned char *)graph_label, graph_col[GRC_FONT].i);
     }
 
 }
@@ -2001,7 +2045,7 @@ grid_paint(
 		     im->xgif/2 
 		     - (strlen(nodata)*LargeFont->w)/2,
 		     (2*im->yorigin-im->ysize) / 2,
-		     nodata, graph_col[GRC_FONT].i);
+		     (unsigned char *)nodata, graph_col[GRC_FONT].i);
     }
 
 
@@ -2010,7 +2054,7 @@ grid_paint(
 		    7,
 		    (im->yorigin - im->ysize/2
 		     +(strlen(im->ylegend)*SmallFont->w)/2 ),
-		    im->ylegend, graph_col[GRC_FONT].i);
+		    (unsigned char *)im->ylegend, graph_col[GRC_FONT].i);
     
 
     /* graph title */
@@ -2018,7 +2062,7 @@ grid_paint(
 		    im->xgif/2 
 		    - (strlen(im->title)*LargeFont->w)/2,
 		  8,
-		    im->title, graph_col[GRC_FONT].i);
+		    (unsigned char *)im->title, graph_col[GRC_FONT].i);
     
     /* graph labels */
 
@@ -2042,7 +2086,7 @@ grid_paint(
 	    gdImageString(gif, SmallFont,
 			  polyPoints[0].x+boxH+6, 
 			  polyPoints[0].y-1,
-			  im->gdes[i].legend,
+			  (unsigned char *)im->gdes[i].legend,
 			  graph_col[GRC_FONT].i);
 	} else {
 	    polyPoints[0].x = im->gdes[i].legloc.x;
@@ -2051,7 +2095,7 @@ grid_paint(
 	    gdImageString(gif, SmallFont,
 			  polyPoints[0].x, 
 			  polyPoints[0].y,
-			  im->gdes[i].legend,
+			  (unsigned char *)im->gdes[i].legend,
 			  graph_col[GRC_FONT].i);
 	}
     }
@@ -2130,11 +2174,9 @@ int lazy_check(image_desc_t *im){
       return 0; /* the file does not exist */
     switch (im->imgformat) {
     case IF_GIF:
-	GifSize(fd,&(im->xgif),&(im->ygif));
-	break;
+	return GifSize(fd,&(im->xgif),&(im->ygif));
     case IF_PNG:
-	PngSize(fd,&(im->xgif),&(im->ygif));
-	break;
+	return PngSize(fd,&(im->xgif),&(im->ygif));
     }
     fclose(fd);
     return 1;
@@ -2206,7 +2248,8 @@ graph_paint(image_desc_t *im, char ***calcpr)
     
     /* determine where to place the legends onto the graphics.
        and set im->ygif to match space requirements for text */
-    leg_place(im);
+    if(leg_place(im)==-1)
+     return -1;
 
     gif=gdImageCreate(im->xgif,im->ygif);
 
@@ -2690,19 +2733,26 @@ rrd_graph(int argc, char **argv, char ***prdata, int *xsize, int *ysize)
 	    break;
 
 	case '?':
-	    rrd_set_error("unknown option '%s'",argv[optind-1]);
-	    return -1;
+            if (optopt != 0)
+                rrd_set_error("unknown option '%c'", optopt);
+            else
+                rrd_set_error("unknown option '%s'",argv[optind-1]);
+            return -1;
 	}
     }
     
+    if (optind >= argc) {
+       rrd_set_error("missing filename");
+       return -1;
+    }
 
     if (im.logarithmic == 1 && (im.minval <= 0 || isnan(im.minval))){
 	rrd_set_error("for a logarithmic yaxis you must specify a lower-limit > 0");	
 	return -1;
     }
 
-    strncpy(im.graphfile,argv[optind],sizeof(im.graphfile)-1);
-    im.graphfile[sizeof(im.graphfile)-1]='\0';
+    strncpy(im.graphfile,argv[optind],MAXPATH-1);
+    im.graphfile[MAXPATH-1]='\0';
 
     if (proc_start_end(&start_tv,&end_tv,&start_tmp,&end_tmp) == -1){
 	return -1;
@@ -2903,7 +2953,7 @@ rrd_graph(int argc, char **argv, char ***prdata, int *xsize, int *ysize)
 		if(sscanf(&argv[i][argstart
 				  +strstart
 				  +scan_for_col(&argv[i][argstart+strstart],
-						254,im.gdes[im.gdes_c-1].rrd)],
+						MAXPATH,im.gdes[im.gdes_c-1].rrd)],
 			  ":" DS_NAM_FMT ":" CF_NAM_FMT,
 			  im.gdes[im.gdes_c-1].ds_nam,
 			  symname) != 2){
@@ -2974,4 +3024,30 @@ rrd_graph(int argc, char **argv, char ***prdata, int *xsize, int *ysize)
     return 0;
 }
 
+int bad_format(char *fmt) {
+	char *ptr;
+
+	ptr = fmt;
+	while (*ptr != '\0') {
+		if (*ptr == '%') {ptr++;
+			if (*ptr == '\0') return 1;
+			while ((*ptr >= '0' && *ptr <= '9') || *ptr == '.') { 
+				ptr++;
+			}
+			if (*ptr == '\0') return 1;
+			if (*ptr == 'l') {
+				ptr++;
+				if (*ptr == '\0') return 1;
+				if (*ptr == 'e' || *ptr == 'f') { 
+					ptr++; 
+					} else { return 1; }
+			}
+			else if (*ptr == 's' || *ptr == 'S' || *ptr == '%') { ++ptr; }
+			else { return 1; }
+		} else {
+			++ptr;
+		}
+	}
+	return 0;
+}
 

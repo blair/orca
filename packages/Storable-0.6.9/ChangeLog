@@ -1,3 +1,18 @@
+Tue May 12 09:15:15 METDST 1998   Raphael Manfredi <Raphael_Manfredi@grenoble.hp.com>
+
+. Description:
+
+	Fixed shared "undef" bug in hashes, which did not remain shared
+	through store/retrieve.
+
+Thu Feb 10 19:48:16 MET 2000   Raphael Manfredi <Raphael_Manfredi@pobox.com>
+
+. Description:
+
+	added last_op_in_netorder() predicate
+	documented last_op_in_netorder()
+	added tests for the new last_op_in_netorder() predicate
+
 Wed Oct 20 19:07:36 MEST 1999   Raphael Manfredi <Raphael_Manfredi@pobox.com>
 
 . Description:

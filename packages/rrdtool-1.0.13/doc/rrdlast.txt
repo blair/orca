@@ -1,25 +1,26 @@
 
 
 
-RRDLAST(1)                   rrdtool                   RRDLAST(1)
+rrdtool                                                RRDLAST(1)
+
 
 
 NNNNAAAAMMMMEEEE
-       rrdtool last - Return the date of the last data sample in
-       an RRRRRRRRDDDD
+     rrdtool last - Return the date of the last data sample in an
+     RRRRRRRRDDDD
 
 SSSSYYYYNNNNOOOOPPPPSSSSIIIISSSS
-       rrrrrrrrddddttttoooooooollll llllaaaasssstttt _f_i_l_e_n_a_m_e
+     rrrrrrrrddddttttoooooooollll llllaaaasssstttt _f_i_l_e_n_a_m_e
 
 DDDDEEEESSSSCCCCRRRRIIIIPPPPTTTTIIIIOOOONNNN
-       The llllaaaasssstttt function returns the UNIX timestamp when the RRD
-       was last updated.
+     The llllaaaasssstttt function returns the UNIX timestamp when the RRD
+     was last updated.
 
-       _f_i_l_e_n_a_m_e
-               The name of the RRRRRRRRDDDD that contains the data.
+     _f_i_l_e_n_a_m_e
+             The name of the RRRRRRRRDDDD that contains the data.
 
 AAAAUUUUTTTTHHHHOOOORRRR
-       Russ Wright <rwwright@home.com>
+     Russ Wright <rwwright@home.com>
 
 
 
@@ -59,8 +60,7 @@ AAAAUUUUTTTTHHHHOOOORRRR
 
 
 
+24/Oct/1999            Last change: 1.0.13                      1
 
-
-9/Aug/99                      1.0.7                             1
 
 

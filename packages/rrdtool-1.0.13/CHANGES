@@ -1,7 +1,217 @@
-CangeLog for RRDtool 1.0.x
---------------------------
+ChangeLog for RRDtool 1.0.x
+---------------------------
 - bugfix, + enhancement, * contrib, = RELEASE
 ---------------------------------------------
+
+= 1.0.13 2000/02/13 -- Tobi
+
+- 2000/02/13 -- Tobi
+  restored rrd_tool.h ... got zeroed during the last distro process ...
+
+= 1.0.12 2000/02/12 -- Tobi
+
+* 2000/02/12 -- Rainer Nagel <rainer@roka.net>
+  contributed rrdfetchnames for getting names of an rrd
+
++ 2000/02/12 -- Tobi
+  more documentation on COUNTER/ABSOLUTE/GAUGE ....
+
++ 2000/02/12 -- Tobi
+  added try time to build process
+
+- 2000/02/11 -- Philippe.Simonet@swisscom.com
+  NT thinks 0 > NaN || 0 < NaN == ture ... fied rrd_update.c accordingly
+
+- 2000/02/09 -- Tobi
+  added FPMASK and SIG8 fixes to rrd_cgi ... will prevent it from sig FPE crashes
+  on FreeBSD and others ...
+
++ 2000/02/08 -- Tobi
+  Improved \g by giving it the ability to squash empty %s
+  return values
+
+= 1.0.11 2000/02/06 -- Tobi
+
++ 2000/02/06 -- Tobi
+  added formating marker '\g' to rrd_graph to remove
+  the spacing between two items printed into the graph
+  
+- 2000/02/06 -- Tobi
+  make sure rrd_graph --lazy does not get confused by broken
+  images.
+
+- 2000/02/06 -- Tobi
+  applie range check to values supplied to update and not
+  to pdp values
+
+- 2000/02/06 -- Tobi
+  fixed rpn parser to allow variable names like nantuket
+
++ 2000/01/14 -- hendrik visage <hvisage@is.co.za>
+  another example for rrdcgi manpage
+
+* 2000/02/06 -- Bert Driehuis <driehuis@playbeing.org>
+  contrib script to kill spikes from rrd dump
+
+- 2000/02/06 -- steve rader <rader@teak.wiscnet.net>
+  fixed 'fetch' example in the RRDs manpage
+
+* 2000/01/10 -- Selena M Brewington <smbrewin@ichips.intel.com>
+  contributed add_ds a perl script for adding new ds es to existing rrds
+
+* 2000/01/10 -- steve rader <rader@teak.wiscnet.net>
+  contributed rrdlastds script ... pulling current values from an rrd
+
+- 2000/02/06 -- Tobi
+  --goodfor and --refresh did not work for rrdcgi as the arguments never got
+  passed on. Introduced <RRD::GOODFOR x> command in rrdcgi language to
+  fix this problem
+
+- 2000/02/06 -- Tobi
+  using - as input did not work for rrd_restore ... 
+
+- 2000/01/26 -- Tobi
+  pass name of the c compile to the perl build along with the CFLAGS
+
+- 2000/01/26 -- Tobi
+  Removed special provisions for HPUX from rrd_format ... this might actually help HPUX to get
+  the NaN problems fixed
+
+- 2000/01/24 -- Tobi
+  in rrd_graph the data consolidation routine was initializing the with 0 instead of DNAN
+  this led to rather log MIN values 
+
+= 1.0.10 2000/01/07 -- Tobi
+
+- 2000/01/07 -- Bill Fenner <fenner@research.att.com>
+  The Update Bug solved ... rrdtool was in violation of the ANSI
+  C standard (7.9.5.3) by issuing a fwrite immediately after an
+  fread without fseek inbetween
+
++ 2000/01/03 -- Tobi
+  added <RRD::TIME::NOW function to rrdcgi
+
+- 2000/01/03 -- Tobi
+  added documentation for <RRD::SETENV to rrdcgi.pod
+
+- 2000/01/03 -- steve rader <rader@teak.wiscnet.net>
+  better explanation of lower and upper limit for rrdgraph
+
+- 2000/01/03 -- Tobi
+  fixed PRINT commands in example scripts
+
+- 2000/01/03 -- Tobi
+  to test -fPIC actually RUN a program ..
+
+= 1.0.9 1999/12/25 -- Tobi
+
+- 1999/12/14 -- Tobi
+  use -fPIC when compiling and if the compiuler does not mind ... some platforms
+  have issues with the RRDs package otherwhise ...
+
+- 1999/12/11 -- Tobi
+  improved format check in rrd_graph
+
+* 1999/11/30 -- Damien Miller <djm@mindrot.org>
+  rrdproc tool ... run linux interface stats straight from proc into rrdtool
+
+= 1.0.8 1999/11/24 -- Tobi
+
+- 1999/11/15 -- thomas.erskine@crc.ca
+  veryfy G?PRINT format strings before executing them ...
+
+- 1999/11/14 -- Tobi
+  the perl-module (RRDs.xs) does now strcpy its arguments. This fixes some
+  stray problems where the rrdtool code was modifying argv values (eg.
+  update --template) and thus backfired into perl proper.
+
+- 1999/11/12 -- Valient Gough <vgough@amazon.com>
+  define STDC in zlib/zconf.h ... rrdtool needs it anyway and
+  without STDC there will be no prototypes which will be a big
+  problem for less tolerant compilers ... does any sensible c compiler
+  not understand prototypes today?
+
+- 1999/11/04 -- Ian Freislich <iang@uunet.co.za>
+  better formatting with large values for rrdtool fetch
+
+- 1999/11/04 -- Paul E. Erkkila <pee@frontiernet.net>                                            
+  made RRDs work on lates perl betas as well as current ones na -> PL_na
+
+- 1999/11/03 -- Tobi & Alex van den Bogaerdt <alex@slot.hollandcasino.nl>
+  fix for autoscaling problems with UNKNOWN values 
+
+- 1999/11/02 -- Tobi
+  rrdcgi was unable to parse two tags running into each other
+  if they were of exactly the same type
+ 
+- 1999/11/02 -- Tobi
+  moved check for FINITE function on acconfig and configure.in
+  so that it can use isinf even if it has to be defined first.
+
+- 1999/10/26 -- Fidelis Assis <fidelis@embratel.net.br>
+  modified gd string functions to use unsigned char  
+
+- 1999/10/24 -- Tobi
+  added test for float.h to configure
+
+- 1999/10/24 -- Tobi
+  Fixed version reporting with rrdtool help
+- 1999/10/24 -- Tobi, Blair Zajac <bzajac@geostaff.com> and Tobias Weingartner <weingart@cs.ualberta.ca>
+  use vsnprintf in rrd_error (max buffer raised to 4096
+
+- 1999/10/24 -- Tobi, Blair Zajac <bzajac@geostaff.com> and Tobias Weingartner <weingart@cs.ualberta.ca>
+  use MAXPATH to determ max path length for filenames in rrd_graph and rrd_open
+
+- 1999/10/24 -- Stefan Mueller <s.mueller@computer.org>
+  better HPUX portability
+
+- 1999/10/24 -- Steve Harris <steveh@wesley.com.au>, Ulrich Schilling <schilling@netz.uni-essen.de>, Joel Becker <jlbec@raleigh.ibm.com>, REIBENSCHUH Alfred <alfred.reibenschuh@it-austria.com>
+  better AIX portability
+
+- 1999/10/24 -- Tobi
+  Fixed PRINT 1 bug in rrdcgi
+
+- 1999/10/24 -- Tobi
+  Removed remaining LZW code from our version of gd
+
+* 1999/10/04 -- steve rader <rader@teak.wiscnet.net>
+  contributed rpntutorial
+
++ 1999/10/04 -- steve rader <rader@teak.wiscnet.net> + Tobi
+  RRD::TIME::LAST function for rrdcgi
+
+- 1999/10/04 -- Bryan Mawhinney <bryanm@is.co.za>
+  improved wording in rrdgraph.pod
+
+* 1999/10/02 -- Alex with help of Steve Rader and others
+  added CDEF tutorial
+
++ 1999/10/02 -- Steve + Alex
+  Large amount of fixes to rrdtutorial.pod, thanks Steve!
+
+- 1999/09/30 -- tobi
+  fixed --template option in update ... for good this time ?
+
++ 1999/09/30 -- steveh@wesley.com.au, Ulrich Schilling <hrz240@hrz.uni-essen.de>
+  first go at makeing it work on AIX
+
++ 1999/09/30 -- Bill Fenner <fenner@research.att.com>
+  disable fpmask was not propagated to perl module build ...
+
++ 1999/09/30 -- Bill Fenner <fenner@research.att.com>
+  added PREV function to CDEF language ... 
+
++ 1999/09/30 -- Paul Joslin <Paul.Joslin@sdrc.com>
+  first go at makeing it work on HPUX 10.20
+
++ 1999/09/30 -- Daniel S. Riley <dsr@mail.lns.cornell.edu> and Larry Leszczynski <larryl@furph.com> and Clive Lilley <clive@lilley31.freeserve.co.uk>
+  first go at makeing it work on OSF1 4.0e
+
+- 1999/09/30 -- Bill Fenner <fenner@research.att.com>
+  make sure a filename is supplied in rrd_graph ... 
+
+- 1999/09/30 -- Blair Zajac <bzajac@geostaff.com>
+  Makefile fixes for perl module cleaning and installing in site-perl
 
 = 1.0.7 1999/08/27 -- Tobi
 
@@ -72,7 +282,7 @@ CangeLog for RRDtool 1.0.x
   Fixed CDEF parser ... it should now be fine with a,-1,*
 
 - 1999/08/14 -- Tobi
-  Updated rrdgraph manpage to be in line with the changes I made to alexs
+  Updated rrdgraph manpage to be in line with the changes I made to alex's
   INF patch when integrating it ... sorry alex
 
 

@@ -1,165 +1,205 @@
 
 
 
-RRDCREATE(1)                 rrdtool                 RRDCREATE(1)
+rrdtool                                              RRDCREATE(1)
+
 
 
 NNNNAAAAMMMMEEEE
-       rrdtool create - Set up a new Round Robin Database
+     rrdtool create - Set up a new Round Robin Database
 
 SSSSYYYYNNNNOOOOPPPPSSSSIIIISSSS
-       rrrrrrrrddddttttoooooooollll ccccrrrreeeeaaaatttteeee _f_i_l_e_n_a_m_e [--------ssssttttaaaarrrrtttt|----bbbb _s_t_a_r_t _t_i_m_e]
-       [--------sssstttteeeepppp|----ssss _s_t_e_p] [DDDDSSSS::::_d_s_-_n_a_m_e::::_D_S_T::::_h_e_a_r_t_b_e_a_t::::_m_i_n::::_m_a_x]
-       [RRRRRRRRAAAA::::_C_F::::_x_f_f::::_s_t_e_p_s::::_r_o_w_s]
+     rrrrrrrrddddttttoooooooollll ccccrrrreeeeaaaatttteeee _f_i_l_e_n_a_m_e [--------ssssttttaaaarrrrtttt|----bbbb _s_t_a_r_t _t_i_m_e] [--------
+     sssstttteeeepppp|----ssss _s_t_e_p] [DDDDSSSS::::_d_s-_n_a_m_e::::_D_S_T::::_h_e_a_r_t_b_e_a_t::::_m_i_n::::_m_a_x]
+     [RRRRRRRRAAAA::::_C_F::::_x_f_f::::_s_t_e_p_s::::_r_o_w_s]
 
 DDDDEEEESSSSCCCCRRRRIIIIPPPPTTTTIIIIOOOONNNN
-       The create function of the RRDtool lets you set up new
-       Round Robin Database (RRRRRRRRDDDD) files.  The file is created at
-       its final, full size and filled with _*_U_N_K_N_O_W_N_* data.
+     The create function of the RRDtool lets you set up new Round
+     Robin Database (RRRRRRRRDDDD) files. The file is created at its
+     final, full size and filled with *_U_N_K_N_O_W_N* data.
 
-       _f_i_l_e_n_a_m_e
-               The name of the RRRRRRRRDDDD you want to create. RRRRRRRRDDDD files
-               should end with the extension _._r_r_d. However,
-               rrrrrrrrddddttttoooooooollll will accept any filename.
+     _f_i_l_e_n_a_m_e
+             The name of the RRRRRRRRDDDD you want to create. RRRRRRRRDDDD files
+             should end with the extension ._r_r_d. However, rrrrrrrrddddttttoooooooollll
+             will accept any filename.
 
-       --------ssssttttaaaarrrrtttt|----bbbb _s_t_a_r_t _t_i_m_e (default: now - 10s)
-               Specifies the time in seconds since 1970-01-01 UTC
-               when the first value should be added to the RRRRRRRRDDDD.
-               rrrrrrrrddddttttoooooooollll will not accept any data timed before or
-               at the time specified.
+     --------ssssttttaaaarrrrtttt|-bbbb _s_t_a_r_t _t_i_m_e (default: now - 10s)
+             Specifies the time in seconds since 1970-01-01 UTC
+             when the first value should be added to the RRRRRRRRDDDD.
+             rrrrrrrrddddttttoooooooollll will not accept any data timed before or at
+             the time specified.
 
-               See also AT-STYLE TIME SPECIFICATION section in
-               the _r_r_d_f_e_t_c_h documentation for more ways to
-               specify time.
+             See also AT-STYLE TIME SPECIFICATION section in the
+             _r_r_d_f_e_t_c_h documentation for more ways to specify
+             time.
 
-       --------sssstttteeeepppp|----ssss _s_t_e_p (default: 300 seconds)
-               Specifies the base interval in seconds with which
-               data will be fed into the RRRRRRRRDDDD.
+     --------sssstttteeeepppp|-ssss _s_t_e_p (default: 300 seconds)
+             Specifies the base interval in seconds with which
+             data will be fed into the RRRRRRRRDDDD.
 
-       DDDDSSSS::::_d_s_-_n_a_m_e::::_D_S_T::::_h_e_a_r_t_b_e_a_t::::_m_i_n::::_m_a_x
-               A single RRRRRRRRDDDD can accept input from several data
-               sources (DDDDSSSS).  (e.g. Incoming and Outgoing traffic
-               on a specific communication line). With the DDDDSSSS
-               configuration option you must define some basic
-               properties of each data source you want to use to
-               feed the RRRRRRRRDDDD.
+     DDDDSSSS::::_d_s-_n_a_m_e::::_D_S_T::::_h_e_a_r_t_b_e_a_t::::_m_i_n::::_m_a_x
+             A single RRRRRRRRDDDD can accept input from several data
+             sources (DDDDSSSS).  (e.g. Incoming and Outgoing traffic
+             on a specific communication line). With the DDDDSSSS
+             configuration option you must define some basic
+             properties of each data source you want to use to
+             feed the RRRRRRRRDDDD.
 
-               _d_s_-_n_a_m_e is the name you will use to reference this
-               particular data source from an RRRRRRRRDDDD. A _d_s_-_n_a_m_e must
-               be 1 to 19 characters long in the characters [a-
-               zA-Z0-9_].
+             _d_s-_n_a_m_e is the name you will use to reference this
+             particular data source from an RRRRRRRRDDDD. A _d_s-_n_a_m_e must
+             be 1 to 19 characters long in the characters [a-
+             zA-Z0-9_].
 
-               _D_S_T defines the Data Source Type. It can be one of
-               the following: GGGGAAAAUUUUGGGGEEEE this is for things like
-               temperatures or number of people in a room.
-               CCCCOOOOUUUUNNNNTTTTEEEERRRR is for continuous incrementing counters
-               like the InOctets counter in a router. The CCCCOOOOUUUUNNNNTTTTEEEERRRR
-               data source assumes that the counter never
-               decreases, except when a counter overflows.  The
-               update function takes the overflow into account.
-               The counter is stored as a per-second rate. DDDDEEEERRRRIIIIVVVVEEEE
+             _D_S_T defines the Data Source Type. It can be one of
+             the following:
 
-
-
-20/Aug/99                     1.0.7                             1
+     GGGGAAAAUUUUGGGGEEEE       is for things like temperatures or number of
+                 people in a room or value of a RedHat share.
 
 
 
 
 
-RRDCREATE(1)                 rrdtool                 RRDCREATE(1)
-
-
-               will store the the derivative of the line going
-               from the last to the current value of the data
-               source. This can be useful for gauges, for
-               example, to measure the rate of people entering or
-               leaving a room. AAAABBBBSSSSOOOOLLLLUUUUTTTTEEEE is for counters which get
-               reset upon reading.
-
-               _h_e_a_r_t_b_e_a_t defines the maximum number of seconds
-               that may pass between two updates of this data
-               source before the value of the data source is
-               assumed to be _*_U_N_K_N_O_W_N_*.
-
-               _m_i_n and _m_a_x are optional entries defining the
-               expected range of the data supplied by this data
-               source. If _m_i_n and/or _m_a_x are defined, any value
-               outside the defined range will be regarded as
-               _*_U_N_K_N_O_W_N_*. If you do not know or care about min
-               and max, set them to U for unknown. Note that min
-               and max always refer to the processed values of
-               the DS. For a traffic-CCCCOOOOUUUUNNNNTTTTEEEERRRR type DS this would
-               be the max and min data-rate expected from the
-               device.
-
-               _I_f _i_n_f_o_r_m_a_t_i_o_n _o_n _m_i_n_i_m_a_l_/_m_a_x_i_m_a_l _e_x_p_e_c_t_e_d _v_a_l_u_e_s
-               _i_s _a_v_a_i_l_a_b_l_e_, _a_l_w_a_y_s _s_e_t _t_h_e _m_i_n _a_n_d_/_o_r _m_a_x
-               _p_r_o_p_e_r_t_i_e_s_. _T_h_i_s _w_i_l_l _h_e_l_p _R_R_D_t_o_o_l _i_n _d_o_i_n_g _a
-               _s_i_m_p_l_e _s_a_n_i_t_y _c_h_e_c_k _o_n _t_h_e _d_a_t_a _s_u_p_p_l_i_e_d _w_h_e_n
-               _r_u_n_n_i_n_g _u_p_d_a_t_e_.
-
-       RRRRRRRRAAAA::::_C_F::::_x_f_f::::_s_t_e_p_s::::_r_o_w_s
-               The purpose of an RRRRRRRRDDDD is to store data in the
-               round robin archives (RRRRRRRRAAAA). An archive consists of
-               a number of data values from all the defined data-
-               sources (DDDDSSSS) and is defined with an RRRRRRRRAAAA line.
-
-               When data is entered into an RRRRRRRRDDDD, it is first fit
-               into time slots of the length defined with the ----ssss
-               option becoming a _p_r_i_m_a_r_y _d_a_t_a _p_o_i_n_t.
-
-               The data is also consolidated with the
-               consolidation function (_C_F) of the archive. The
-               following consolidation functions are defined:
-               AAAAVVVVEEEERRRRAAAAGGGGEEEE, MMMMIIIINNNN, MMMMAAAAXXXX, LLLLAAAASSSSTTTT.
-
-               _x_f_f The xfiles factor defines what part of a
-               consolidation interval may be made up from
-               _*_U_N_K_N_O_W_N_* data while the consolidated value is
-               sill regarded as known.
-
-               _s_t_e_p_s defines how many of these _p_r_i_m_a_r_y _d_a_t_a
-               _p_o_i_n_t_s are used to build a _c_o_n_s_o_l_i_d_a_t_e_d _d_a_t_a _p_o_i_n_t
-               which then goes into the archive.
-
-               _r_o_w_s defines how many generations of data values
-
-
-
-20/Aug/99                     1.0.7                             2
+12/Feb/2000            Last change: 1.0.13                      1
 
 
 
 
 
-RRDCREATE(1)                 rrdtool                 RRDCREATE(1)
+
+rrdtool                                              RRDCREATE(1)
 
 
-               are kept in an RRRRRRRRAAAA.
+
+     CCCCOOOOUUUUNNNNTTTTEEEERRRR     is for continuous incrementing counters like the
+                 InOctets counter in a router. The CCCCOOOOUUUUNNNNTTTTEEEERRRR data
+                 source assumes that the counter never decreases,
+                 except when a counter overflows.  The update
+                 function takes the overflow into account.  The
+                 counter is stored as a per-second rate. When the
+                 counter overflows, RRDtool checks if the
+                 overflow happened at the 32bit or 64bit border
+                 and acts accordingly by adding an appropriate
+                 value to the result.
+
+     DDDDEEEERRRRIIIIVVVVEEEE      will store the the derivative of the line going
+                 from the last to the current value of the data
+                 source. This can be useful for gauges, for
+                 example, to measure the rate of people entering
+                 or leaving a room. Internally, derive works
+                 exaclty like COUNTER but without overflow
+                 checks. So if your counter does not reset at 32
+                 or 64 bit you might want to use DERIVE and
+                 combine it with a MIN value of 0.
+
+     AAAABBBBSSSSOOOOLLLLUUUUTTTTEEEE    is for counters which get reset upon reading.
+                 This is used for fast counters which tend to
+                 overflow. So instead of reading them normally
+                 you reset them after every read to make sure you
+                 have a maximal time available before the next
+                 overflow.
+
+                 _h_e_a_r_t_b_e_a_t defines the maximum number of seconds
+                 that may pass between two updates of this data
+                 source before the value of the data source is
+                 assumed to be *_U_N_K_N_O_W_N*.
+
+                 _m_i_n and _m_a_x are optional entries defining the
+                 expected range of the data supplied by this data
+                 source. If _m_i_n and/or _m_a_x are defined, any value
+                 outside the defined range will be regarded as
+                 *_U_N_K_N_O_W_N*. If you do not know or care about min
+                 and max, set them to U for unknown. Note that
+                 min and max always refer to the processed values
+                 of the DS. For a traffic-CCCCOOOOUUUUNNNNTTTTEEEERRRR type DS this
+                 would be the max and min data-rate expected from
+                 the device.
+
+                 _I_f _i_n_f_o_r_m_a_t_i_o_n _o_n _m_i_n_i_m_a_l/_m_a_x_i_m_a_l _e_x_p_e_c_t_e_d
+                 _v_a_l_u_e_s _i_s _a_v_a_i_l_a_b_l_e, _a_l_w_a_y_s _s_e_t _t_h_e _m_i_n _a_n_d/_o_r
+                 _m_a_x _p_r_o_p_e_r_t_i_e_s. _T_h_i_s _w_i_l_l _h_e_l_p _R_R_D_t_o_o_l _i_n _d_o_i_n_g
+                 _a _s_i_m_p_l_e _s_a_n_i_t_y _c_h_e_c_k _o_n _t_h_e _d_a_t_a _s_u_p_p_l_i_e_d _w_h_e_n
+                 _r_u_n_n_i_n_g _u_p_d_a_t_e.
+
+     RRRRRRRRAAAA::::_C_F::::_x_f_f::::_s_t_e_p_s::::_r_o_w_s
+             The purpose of an RRRRRRRRDDDD is to store data in the round
+
+
+
+12/Feb/2000            Last change: 1.0.13                      2
+
+
+
+
+
+
+rrdtool                                              RRDCREATE(1)
+
+
+
+             robin archives (RRRRRRRRAAAA). An archive consists of a
+             number of data values from all the defined data-
+             sources (DDDDSSSS) and is defined with an RRRRRRRRAAAA line.
+
+             When data is entered into an RRRRRRRRDDDD, it is first fit
+             into time slots of the length defined with the ----ssss
+             option becoming a _p_r_i_m_a_r_y _d_a_t_a _p_o_i_n_t.
+
+             The data is also consolidated with the consolidation
+             function (_C_F) of the archive. The following
+             consolidation functions are defined:  AAAAVVVVEEEERRRRAAAAGGGGEEEE, MMMMIIIINNNN,
+             MMMMAAAAXXXX, LLLLAAAASSSSTTTT.
+
+             _x_f_f The xfiles factor defines what part of a
+             consolidation interval may be made up from *_U_N_K_N_O_W_N*
+             data while the consolidated value is still regarded
+             as known.
+
+             _s_t_e_p_s defines how many of these _p_r_i_m_a_r_y _d_a_t_a _p_o_i_n_t_s
+             are used to build a _c_o_n_s_o_l_i_d_a_t_e_d _d_a_t_a _p_o_i_n_t which
+             then goes into the archive.
+
+             _r_o_w_s defines how many generations of data values are
+             kept in an RRRRRRRRAAAA.
 
 EEEEXXXXAAAAMMMMPPPPLLLLEEEE
-       rrdtool create temperature.rrd --step 300
-       DS:temp:GAUGE:600:-273:5000 RRA:AVERAGE:0.5:1:1200
-       RRA:MIN:0.5:12:2400 RRA:MAX:0.5:12:2400
-       RRA:AVERAGE:0.5:12:2400
+     rrdtool create temperature.rrd --step 300
+     DS:temp:GAUGE:600:-273:5000 RRA:AVERAGE:0.5:1:1200
+     RRA:MIN:0.5:12:2400 RRA:MAX:0.5:12:2400
+     RRA:AVERAGE:0.5:12:2400
 
-       This sets up an RRRRRRRRDDDD called _t_e_m_p_e_r_a_t_u_r_e_._r_r_d which accepts
-       one temperature value every 300 seconds. If no new data is
-       supplied for more than 600 seconds, the temperature
-       becomes _*_U_N_K_N_O_W_N_*.  The minimum acceptable value is -273
-       and the maximum is 5000.
+     This sets up an RRRRRRRRDDDD called _t_e_m_p_e_r_a_t_u_r_e._r_r_d which accepts one
+     temperature value every 300 seconds. If no new data is
+     supplied for more than 600 seconds, the temperature becomes
+     *_U_N_K_N_O_W_N*.  The minimum acceptable value is -273 and the
+     maximum is 5000.
 
-       A few archives areas are also defined. The first stores
-       the temperatures supplied for 100 hours (1200 * 300
-       seconds = 100 hours). The second RRA stores the minimum
-       temperature recorded over every hour (12 * 300 seconds = 1
-       hour), for 100 days (2400 hours). The third and the fourth
-       RRA's do the same with the for the maximum and average
-       temperature, respectively.
+     A few archives areas are also defined. The first stores the
+     temperatures supplied for 100 hours (1200 * 300 seconds =
+     100 hours). The second RRA stores the minimum temperature
+     recorded over every hour (12 * 300 seconds = 1 hour), for
+     100 days (2400 hours). The third and the fourth RRA's do the
+     same with the for the maximum and average temperature,
+     respectively.
 
 AAAAUUUUTTTTHHHHOOOORRRR
-       Tobias Oetiker <oetiker@ee.ethz.ch>
+     Tobias Oetiker <oetiker@ee.ethz.ch>
+
+
+
+
+
+
+
+
+12/Feb/2000            Last change: 1.0.13                      3
+
+
+
+
+
+
+rrdtool                                              RRDCREATE(1)
 
 
 
@@ -193,6 +233,32 @@ AAAAUUUUTTTTHHHHOOOORRRR
 
 
 
-20/Aug/99                     1.0.7                             3
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+12/Feb/2000            Last change: 1.0.13                      4
+
+
+
+
 
 

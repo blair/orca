@@ -1,5 +1,5 @@
 # This file is an input file used by the GNU "autoconf" program to
-# generate the file "configure", which is run during Borp installation
+# generate the file "configure", which is run during Orca installation
 # to configure the system for the local environment.
 AC_INIT(src/orca.pl.in)
 AC_CONFIG_AUX_DIR(config)
@@ -17,8 +17,8 @@ COMPRESS_ZLIB_DIR=Compress-Zlib-1.05
 DATA_DUMPER_DIR=Data-Dumper-2.101
 DIGEST_MD5_DIR=Digest-MD5-2.09
 MATH_INTERPOLATE_DIR=Math-Interpolate-1.05
-RRDTOOL_DIR=rrdtool-1.0.7.2
-STORABLE_DIR=Storable-0.6.7
+RRDTOOL_DIR=rrdtool-1.0.13
+STORABLE_DIR=Storable-0.6.9
 AC_SUBST(COMPRESS_ZLIB_DIR)
 AC_SUBST(DATA_DUMPER_DIR)
 AC_SUBST(DIGEST_MD5_DIR)
@@ -161,7 +161,7 @@ AC_PATH_PROGS(AWK, mawk gawk nawk awk)
 
 # Include the file that defines BORP_PERL_RUN.
 AC_PATH_PROG(PERL, perl, NOT_FOUND)
-if test "x$PERL" = "xNOT_FOUND"; then
+if test "x$PERL" = xNOT_FOUND; then
   AC_MSG_ERROR([*** Perl not found.  Please install Perl.  See INSTALL how to do this.])
 else
   BORP_PERL_RUN($PERL, PERL_HEAD=PerlHead1, PERL_HEAD=PerlHead2)
@@ -169,6 +169,32 @@ fi
 PERL_HEAD="../config/$PERL_HEAD"
 AC_SUBST(PERL_HEAD)
 
+# Determine the correct ps command to use to find out about process
+# information for itself.
+AC_PATH_PROG(PS, ps)
+case "$target" in
+  *-solaris*)
+    PS_SELF="$PS -p PID -o \'rss vsz pmem time user pid comm\'"
+    ;;
+  *-linux-*)
+    PS_SELF="$PS auxp PID"
+    ;;
+  *)
+    PS_SELF="$PS aux | grep PID"
+    AC_MSG_WARN([*** If you know a better PS command than])
+    AC_MSG_WARN([***   '$PS_SELF'])
+    AC_MSG_WARN([*** to get process information for your host,])
+    AC_MSG_WARN([*** please email the command the the output from])
+    AC_MSG_WARN([*** ./config/config.guess to])
+    AC_MSG_WARN([*** orca-developers@onelist.com])
+    ;;
+esac
+if test "$PS_SELF"; then
+  AC_MSG_CHECKING([for ps command])
+  AC_MSG_RESULT($PS_SELF)
+  AC_SUBST(PS_SELF)
+fi
+AC_PATH_PROG(SE, se,,$PATH:/opt/RICHPse/bin)
 AC_PATH_PROG(UNAME, uname, uname)
 AC_PATH_PROG(UNCOMPRESS, uncompress)
 
@@ -189,49 +215,39 @@ fi
 AC_SUBST(COMPRESSOR)
 AC_SUBST(UNCOMPRESSOR_PIPE)
 
-# Now we check for those portions of Orca that should be built and set
-# up for installation.  The first step is to check for operating system
-# specific modules.  For Solaris hosts, orcallator.se is built and
-# installed.  This requires the additional building of a librrd.so
-# installed in libdir.  Then we check for the proper Perl modules.
-AC_MSG_CHECKING([for solaris host for orcallator install])
-case "$target" in
-  *-solaris*)
-    BUILD_ORCALLATOR=yes
-    ORCALLATOR_SUBDIR=orcallator
-    # Add --enable-shared to the configure options for RRDtool if it is
-    # not already declared.
-    expr "$CONFIGURE_COMMAND_LINE" : "--enable-shared" >/dev/null 2>&1 || CONFIGURE_COMMAND_LINE="$CONFIGURE_COMMAND_LINE --enable-shared"
-
-    INSTALL_LIB_RRDTOOL=install_lib_rrdtool
-    MAKE_RRDTOOL=make_rrdtool
-    TEST_RRDTOOL=test_rrdtool
-    INSTALL_PERL_RRDTOOL=
-    CLEAN_RRDTOOL=clean_rrdtool
-    DISTCLEAN_RRDTOOL=distclean_rrdtool
-    ;;
-  *)
-    INSTALL_LIB_RRDTOOL=
-    BUILD_ORCALLATOR=no
-    ORCALLATOR_SUBDIR=
-    ;;
-esac
+# Always build the orcallator files regardless of the operating system.
+BUILD_ORCALLATOR=yes
+ORCALLATOR_SUBDIR=orcallator
+INSTALL_LIB_RRDTOOL=
 AC_SUBST(ORCALLATOR_SUBDIR)
 AC_SUBST(INSTALL_LIB_RRDTOOL)
 
-AC_MSG_RESULT($BUILD_ORCALLATOR)
-if test "$BUILD_ORCALLATOR" = "yes"; then
-  AC_PATH_PROG(SE, se,,$PATH:/opt/RICHPse/bin)
-fi
+# These commands can be used if the orcallator should not be built.
+# AC_MSG_CHECKING([for solaris host for orcallator install])
+# AC_MSG_RESULT($BUILD_ORCALLATOR)
+# BUILD_ORCALLATOR=no
+# ORCALLATOR_SUBDIR=
+
+# These commands can be used to force a build of the librrdtool library.
+# INSTALL_LIB_RRDTOOL=install_lib_rrdtool
+# MAKE_RRDTOOL=make_rrdtool
+# TEST_RRDTOOL=test_rrdtool
+# INSTALL_PERL_RRDTOOL=
+# CLEAN_RRDTOOL=clean_rrdtool
+# DISTCLEAN_RRDTOOL=distclean_rrdtool
+
+# This command can be used to add --enable-shared to the configure
+# options for RRDtool if it is not already declared.
+# expr "$CONFIGURE_COMMAND_LINE" : "--enable-shared" >/dev/null 2>&1 || CONFIGURE_COMMAND_LINE="$CONFIGURE_COMMAND_LINE --enable-shared"
 
 dnl BORP_PERL_MODULE(borp_cv_perl_compress_zlib, $PERL, Compress::Zlib, 1.05)
-if test "$borp_cv_perl_compress_zlib" = no; then
-  MAKE_COMPRESS_ZLIB=make_compress_zlib
-  TEST_COMPRESS_ZLIB=test_compress_zlib
-  INSTALL_PERL_COMPRESS_ZLIB=install_perl_compress_zlib
-  CLEAN_COMPRESS_ZLIB=clean_compress_zlib
-  DISTCLEAN_COMPRESS_ZLIB=distclean_compress_zlib
-fi
+dnl if test "$borp_cv_perl_compress_zlib" = no; then
+dnl   MAKE_COMPRESS_ZLIB=make_compress_zlib
+dnl   TEST_COMPRESS_ZLIB=test_compress_zlib
+dnl   INSTALL_PERL_COMPRESS_ZLIB=install_perl_compress_zlib
+dnl   CLEAN_COMPRESS_ZLIB=clean_compress_zlib
+dnl   DISTCLEAN_COMPRESS_ZLIB=distclean_compress_zlib
+dnl fi
 AC_SUBST(MAKE_COMPRESS_ZLIB)
 AC_SUBST(TEST_COMPRESS_ZLIB)
 AC_SUBST(INSTALL_PERL_COMPRESS_ZLIB)
@@ -252,7 +268,7 @@ AC_SUBST(INSTALL_PERL_DATA_DUMPER)
 AC_SUBST(CLEAN_DATA_DUMPER)
 AC_SUBST(DISTCLEAN_DATA_DUMPER)
 
-BORP_PERL_MODULE(borp_cv_perl_digest_md5, $PERL, Digest::MD5, 2.00)
+BORP_PERL_MODULE(borp_cv_perl_digest_md5, $PERL, Digest::MD5, 2.09)
 if test "$borp_cv_perl_digest_md5" = no; then
   MAKE_DIGEST_MD5=make_digest_md5
   TEST_DIGEST_MD5=test_digest_md5
@@ -266,7 +282,7 @@ AC_SUBST(INSTALL_PERL_DIGEST_MD5)
 AC_SUBST(CLEAN_DIGEST_MD5)
 AC_SUBST(DISTCLEAN_DIGEST_MD5)
 
-BORP_PERL_MODULE(borp_cv_perl_math_interpolate, $PERL, Math::Interpolate, 1.04)
+BORP_PERL_MODULE(borp_cv_perl_math_interpolate, $PERL, Math::Interpolate, 1.05)
 if test "$borp_cv_perl_math_interpolate" = no; then
   MAKE_MATH_INTERPOLATE=make_math_interpolate
   TEST_MATH_INTERPOLATE=test_math_interpolate
@@ -280,7 +296,7 @@ AC_SUBST(INSTALL_PERL_MATH_INTERPOLATE)
 AC_SUBST(CLEAN_MATH_INTERPOLATE)
 AC_SUBST(DISTCLEAN_MATH_INTERPOLATE)
 
-BORP_PERL_MODULE(borp_cv_perl_rdds, $PERL, RRDs, 1.000072)
+BORP_PERL_MODULE(borp_cv_perl_rdds, $PERL, RRDs, 1.000131)
 if test "$borp_cv_perl_rdds" = no; then
   MAKE_RRDTOOL=make_rrdtool
   TEST_RRDTOOL=test_rrdtool
@@ -294,7 +310,7 @@ AC_SUBST(INSTALL_PERL_RRDTOOL)
 AC_SUBST(CLEAN_RRDTOOL)
 AC_SUBST(DISTCLEAN_RRDTOOL)
 
-BORP_PERL_MODULE(borp_cv_perl_storable, $PERL, Storable, 0.603)
+BORP_PERL_MODULE(borp_cv_perl_storable, $PERL, Storable, 0.609)
 if test "$borp_cv_perl_storable" = no; then
   MAKE_STORABLE=make_storable
   TEST_STORABLE=test_storable
@@ -319,7 +335,7 @@ AC_SUBST(MKDIR)
 #	Generate the Makefiles and shell scripts with the
 #	variable substitutions.
 #--------------------------------------------------------------------
-if test "$BUILD_ORCALLATOR" = "yes"; then
+if test "$BUILD_ORCALLATOR" = yes; then
   ORCALLATOR_OUTPUT="orcallator/orcallator.cfg
                      orcallator/orcallator_running.pl
                      orcallator/restart_orcallator.sh
@@ -339,14 +355,17 @@ AC_OUTPUT(config/PerlHead1
 	  docs/Makefile
 	  Makefile)
 
-command="(cd packages/$RRDTOOL_DIR; ./configure $CONFIGURE_COMMAND_LINE --cache-file=../../config.cache)"
-echo ""
-echo "Running configure in packages/$RRDTOOL_DIR to create RRDtool and RRDs.pm."
-echo ""
-echo $command
-echo ""
-eval $command
+# Build the RRDtool library if it is needed.
+if test "$borp_cv_perl_rdds" = no; then
+  command="(cd packages/$RRDTOOL_DIR; ./configure $CONFIGURE_COMMAND_LINE --cache-file=../../config.cache)"
+  echo ""
+  echo "Running configure in packages/$RRDTOOL_DIR to create RRDtool and RRDs.pm."
+  echo ""
+  echo $command
+  echo ""
+  eval $command
+fi
 
 if test -z "$WEB_LOG"; then
-  AC_MSG_WARN([*** Unless you use a --with-*-log option you will not gather WWW log data.])
+  AC_MSG_WARN([*** Unless you use a --with-*-log option orcallator will not gather WWW log data.])
 fi

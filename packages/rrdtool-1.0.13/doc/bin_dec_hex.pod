@@ -1,6 +1,6 @@
 =head1 NAME
 
-Binary Decimal Hexadecimal - How does it wok
+Binary Decimal Hexadecimal - How does it work
 
 =head1 DESCRIPTION
 

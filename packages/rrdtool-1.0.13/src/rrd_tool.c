@@ -1,5 +1,5 @@
 /*****************************************************************************
- * RRDtool  Copyright Tobias Oetiker, 1997, 1998, 1999
+ * RRDtool 1.0.13  Copyright Tobias Oetiker, 1997, 1998, 1999
  *****************************************************************************
  * rrd_tool.c  Startup wrapper
  *****************************************************************************
@@ -21,7 +21,7 @@ int HandleInputLine(int, char **, FILE*);
 void PrintUsage(void)
 {
     printf("\n"
-	   "RRDtool   Copyright (C) 1999 by Tobias Oetiker <tobi@oetiker.ch>\n\n"
+	   "RRDtool 1.0.13  Copyright (C) 1999 by Tobias Oetiker <tobi@oetiker.ch>\n\n"
 	   "Usage: rrdtool [options] command command_options\n\n"
 	   "Valid commands and command_options are listed below.\n\n"
 
@@ -202,12 +202,12 @@ int HandleInputLine(int argc, char **argv, FILE* out)
 	    datai=data;
 	    printf("           ");
 	    for (i = 0; i<ds_cnt;i++)
-	        printf("%10s",ds_namv[i]);
+	        printf("%14s",ds_namv[i]);
 	    printf ("\n\n");
 	    for (i = start; i <= end; i += step){
 	        printf("%10lu:", i);
 	        for (ii = 0; ii < ds_cnt; ii++)
-		    printf("%10.2f", *(datai++));
+		    printf(" %13.2f", *(datai++));
 	        printf("\n");
 	    }
 	    for (i=0;i<ds_cnt;i++)

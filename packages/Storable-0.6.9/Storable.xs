@@ -3,7 +3,7 @@
  */
 
 /*
- * $Id: Storable.xs,v 0.6.1.6 1999/10/19 19:23:34 ram Exp $
+ * $Id: Storable.xs,v 0.6.1.8 2000/03/02 22:20:35 ram Exp $
  *
  *  Copyright (c) 1995-1998, Raphael Manfredi
  *  
@@ -11,6 +11,13 @@
  *  as specified in the README file that comes with the distribution.
  *
  * $Log: Storable.xs,v $
+ * Revision 0.6.1.8  2000/03/02 22:20:35  ram
+ * patch9: include "patchlevel.h" for new perl 5.6
+ * patch9: fixed "undef" bug in hash keys, reported by Albert N. Micheev
+ *
+ * Revision 0.6.1.7  2000/02/10 18:47:22  ram
+ * patch8: added last_op_in_netorder() predicate
+ *
  * Revision 0.6.1.6  1999/10/19 19:23:34  ram
  * patch6: Fixed typo in macro that made threaded code not compilable
  * patch6: Changed detection of older perls (pre-5.005) by testing PATCHLEVEL
@@ -41,6 +48,7 @@
 
 #include "EXTERN.h"
 #include "perl.h"
+#include "patchlevel.h"		/* Perl's one, needed since 5.6 */
 #include "XSUB.h"
 
 /*#define DEBUGME /* Debug mode, turns assertions on as well */
@@ -590,7 +598,7 @@ SV *sv;
 			TRACEME(("immortal undef"));
 			PUTMARK(SX_SV_UNDEF);
 		} else {
-			TRACEME(("undef"));
+			TRACEME(("undef at 0x%x", sv));
 			PUTMARK(SX_UNDEF);
 		}
 		return 0;
@@ -868,8 +876,21 @@ HV *hv;
 			 */
 			
 			if (!SvOK(val)) {
-				TRACEME(("undef value"));
-				STORE_UNDEF();
+				/*
+				 * If the "undef" has a refcnt greater than one, other parts
+				 * of the structure might reference this, so we cannot call
+				 * STORE_UNDEF(): at retrieval time, we would break the
+				 * relationship.  Thanks to Albert Micheev for exhibiting
+				 * a structure where this bug manifested -- RAM, 02/03/2000.
+				 */
+				if (SvREFCNT(val) == 1) {
+					TRACEME(("undef value"));
+					STORE_UNDEF();
+				} else {
+					TRACEME(("undef value with refcnt=%d", SvREFCNT(val)));
+					if (ret = store(f, val))
+						goto out;
+				}
 			} else {
 				TRACEME(("(#%d) value 0x%lx", i, (unsigned long) val));
 				if (ret = store(f, val))
@@ -918,8 +939,17 @@ HV *hv;
 			 */
 
 			if (!SvOK(val)) {
-				TRACEME(("undef value"));
-				STORE_UNDEF();
+				/*
+				 * See comment above in the "canonical" section.
+				 */
+				if (SvREFCNT(val) == 1) {
+					TRACEME(("undef value"));
+					STORE_UNDEF();
+				} else {
+					TRACEME(("undef value with refcnt=%d", SvREFCNT(val)));
+					if (ret = store(f, val))
+						goto out;
+				}
 			} else {
 				TRACEME(("(#%d) value 0x%lx", i, (unsigned long) val));
 				if (ret = store(f, val))
@@ -2596,6 +2626,21 @@ SV *sv;
 }
 
 /*
+ * last_op_in_netorder
+ *
+ * Returns whether last operation was made using network order.
+ *
+ * This is typically out-of-band information that might prove useful
+ * to people wishing to convert native to network order data when used.
+ */
+int last_op_in_netorder()
+{
+	dPERINTERP;
+
+	return netorder;
+}
+
+/*
  * init_perinterp
  *
  * Called once per "thread" (interpreter) to initialize some global context.
@@ -2657,4 +2702,7 @@ SV *	sv
 SV *
 dclone(sv)
 SV *	sv
+
+int
+last_op_in_netorder()
 

@@ -7,7 +7,7 @@ use vars qw(@ISA $VERSION);
 
 require DynaLoader;
 
-$VERSION = 1.000072;
+$VERSION = 1.000131;
 
 bootstrap RRDs $VERSION;
 
@@ -20,7 +20,7 @@ RRDs - Access rrdtool as a shared module
 
 =head1 SYNOPSIS
 
-  use RRDs::ext
+  use RRDs;
   RRDs::error
   RRDs::last ...
   RRDs::create ...
@@ -41,7 +41,7 @@ rrdtool documentation. The commandline call
 
 gets turned into
 
- RRDs::update qw(mydemo.rrd N:12:13);
+ RRDs::update ("mydemo.rrd", "N:12:13");
 
 =head2 Error Handling
 
@@ -54,14 +54,15 @@ Second, the function RRDs::error can be called to get the error message
 from the last function call. If RRDs::error does not return an error
 then the previous function has completed its task succesfully.
 
- RRDs::update qw(mydemo.rrd N:12:13);
+ use RRDs;
+ RRDs::update ("mydemo.rrd","N:12:13");
  my $ERR=RRDs::error;
  die "ERROR while updating mydemo.rrd: $ERR\n" if $ERR;
 
 =head2 Return Values
 
-The functions RRDs::last, RRDs::graph and RRDs::fetchgive return their
-findigs.
+The functions RRDs::last, RRDs::graph and RRDs::fetch return their
+findings.
 
 RRDs::last returns a single INTEGER representing the last update time.
 
@@ -78,19 +79,20 @@ RRDs::fetch is the most complex of the pack regarding return values. There are
 4 values. Two normal integers, a pointer to an array and a pointer to a
 array of pointers.
 
- my ($start,$step,$names,$data) = RRDs::fetch ... 
- print "Start:        ".localtime($start)."\n"; 
- print "Stepsize:     $step seconds\n"; 
- print "Column Names: ".join (", ", @$names)."\n";
- print "Date:\n";
- foreach my $line (@$array){
-      print "".localtime($start),"   ";
-      $start += $step; 
-      foreach my $val (@$line) {		
-           printf "%12.1f", $val;
-      }
-      print "\n";
- }
+  my ($start,$step,$names,$data) = RRDs::fetch ... 
+  print "Start:       ", scalar localtime($start), " ($start)\n";
+  print "Step size:   $step seconds\n";
+  print "DS names:    ", join (", ", @$names)."\n";
+  print "Data points: ", $#$data + 1, "\n";
+  print "Data:\n";
+  foreach my $line (@$data) {
+    print "  ", scalar localtime($start), " ($start) ";
+    $start += $step;
+    foreach my $val (@$line) {
+      printf "%12.1f ", $val;
+    }
+    print "\n";
+  }
 
 See the examples directory for more ways to use this extension.
 

@@ -1,11 +1,10 @@
-    <HTML> 
-	<HEAD> 
-	    <TITLE>RRDs - Access rrdtool as a shared module
+<HTML>
+<HEAD>
+<TITLE>RRDs</TITLE>
+<LINK REV="made" HREF="mailto:karrer@zinal.ee.ethz.ch">
+</HEAD>
 
-</TITLE> 
-	</HEAD>
-
-	<BODY>
+<BODY>
 
 <!-- INDEX BEGIN -->
 <!--
@@ -28,20 +27,15 @@
 <!-- INDEX END -->
 
 <P>
-<H1><A NAME="NAME">NAME
-
-</A></H1>
-RRDs - Access rrdtool as a shared module
-
-
+<H1><A NAME="NAME">NAME</A></H1>
 <P>
+RRDs - Access rrdtool as a shared module
 
 <P>
 <HR>
-<H1><A NAME="SYNOPSIS">SYNOPSIS
-
-</A></H1>
-<PRE>  use RRDs::ext
+<H1><A NAME="SYNOPSIS">SYNOPSIS</A></H1>
+<P>
+<PRE>  use RRDs;
   RRDs::error
   RRDs::last ...
   RRDs::create ...
@@ -50,143 +44,99 @@ RRDs - Access rrdtool as a shared module
   RRDs::fetch ...
   RRDs::tune ...
 </PRE>
-
-<P>
-
 <P>
 <HR>
-<H1><A NAME="DESCRIPTION">DESCRIPTION
-
-</A></H1>
+<H1><A NAME="DESCRIPTION">DESCRIPTION</A></H1>
 <P>
 <HR>
-<H2><A NAME="Calling_Sequence">Calling Sequence
-
-</A></H2>
+<H2><A NAME="Calling_Sequence">Calling Sequence</A></H2>
+<P>
 This module accesses rrdtool functionality directly from within perl. The
 arguments to the functions listed in the SYNOPSIS are explained in the
 regular rrdtool documentation. The commandline call
 
-
 <P>
-
 <PRE> rrdtool update mydemo.rrd N:12:13
 </PRE>
-
 <P>
-
 gets turned into
 
-
 <P>
-
-<PRE> RRDs::update qw(mydemo.rrd N:12:13);
+<PRE> RRDs::update (&quot;mydemo.rrd&quot;, &quot;N:12:13&quot;);
 </PRE>
-
-<P>
-
 <P>
 <HR>
-<H2><A NAME="Error_Handling">Error Handling
-
-</A></H2>
+<H2><A NAME="Error_Handling">Error Handling</A></H2>
+<P>
 The RRD functions will not abort your program even when they can not make
 sense out of the arguments you fed them. There are two ways to determine if
 an error has occured.
 
-
 <P>
-
 First the every function will return the value -1 if an error occured.
 Second, the function RRDs::error can be called to get the error message
 from the last function call. If RRDs::error does not return an error then
 the previous function has completed its task succesfully.
 
-
 <P>
-
-<PRE> RRDs::update qw(mydemo.rrd N:12:13);
+<PRE> use RRDs;
+ RRDs::update (&quot;mydemo.rrd&quot;,&quot;N:12:13&quot;);
  my $ERR=RRDs::error;
  die &quot;ERROR while updating mydemo.rrd: $ERR\n&quot; if $ERR;
 </PRE>
-
-<P>
-
 <P>
 <HR>
-<H2><A NAME="Return_Values">Return Values
-
-</A></H2>
-The functions RRDs::last, RRDs::graph and RRDs::fetchgive return their
-findigs.
-
+<H2><A NAME="Return_Values">Return Values</A></H2>
+<P>
+The functions RRDs::last, RRDs::graph and RRDs::fetch return their
+findings.
 
 <P>
-
 RRDs::last returns a single INTEGER representing the last update time.
 
-
 <P>
-
 <PRE> $lastupdate = RRDs::last ...
 </PRE>
-
 <P>
-
 RRDs::graph returns an pointer to an ARRAY containing the x-size and y-size
 of the created gif and results of the PRINT arguments.
 
-
 <P>
-
 <PRE> ($averages,$xsize,$ysize) = RRDs::graph ...
  print &quot;Gifsize: ${xsize}x${ysize}\n&quot;;
  print &quot;Averages: &quot;, (join &quot;, &quot;, @$averages);
 </PRE>
-
 <P>
-
 RRDs::fetch is the most complex of the pack regarding return values. There
 are 4 values. Two normal integers, a pointer to an array and a pointer to a
 array of pointers.
 
-
 <P>
-
-<PRE> my ($start,$step,$names,$data) = RRDs::fetch ... 
- print &quot;Start:        &quot;.localtime($start).&quot;\n&quot;; 
- print &quot;Stepsize:     $step seconds\n&quot;; 
- print &quot;Column Names: &quot;.join (&quot;, &quot;, @$names).&quot;\n&quot;;
- print &quot;Date:\n&quot;;
- foreach my $line (@$array){
-      print &quot;&quot;.localtime($start),&quot;   &quot;;
-      $start += $step; 
-      foreach my $val (@$line) {                
-           printf &quot;%12.1f&quot;, $val;
-      }
-      print &quot;\n&quot;;
- }
+<PRE>  my ($start,$step,$names,$data) = RRDs::fetch ... 
+  print &quot;Start:       &quot;, scalar localtime($start), &quot; ($start)\n&quot;;
+  print &quot;Step size:   $step seconds\n&quot;;
+  print &quot;DS names:    &quot;, join (&quot;, &quot;, @$names).&quot;\n&quot;;
+  print &quot;Data points: &quot;, $#$data + 1, &quot;\n&quot;;
+  print &quot;Data:\n&quot;;
+  foreach my $line (@$data) {
+    print &quot;  &quot;, scalar localtime($start), &quot; ($start) &quot;;
+    $start += $step;
+    foreach my $val (@$line) {
+      printf &quot;%12.1f &quot;, $val;
+    }
+    print &quot;\n&quot;;
+  }
 </PRE>
-
 <P>
-
 See the examples directory for more ways to use this extension.
-
-
-<P>
 
 <P>
 <HR>
-<H1><A NAME="AUTHOR">AUTHOR
-
-</A></H1>
-Tobias Oetiker <A
-HREF="MAILTO:<oeitker@ee.ethy.ch>"><oeitker@ee.ethy.ch></A>
-
-
+<H1><A NAME="AUTHOR">AUTHOR</A></H1>
 <P>
+Tobias Oetiker &lt;<A
+HREF="mailto:oeitker@ee.ethy.ch">oeitker@ee.ethy.ch</A>&gt;
 
-</DL>
-    </BODY>
+</BODY>
 
-    </HTML>
+</HTML>

@@ -54,8 +54,8 @@ Read the documentation in the doc directory. Start of with
 RRDtool. All documents are available as html and as ASCII text.  
 
 If you are looking for a more slow paced introduction, make sure to read
-Alex van den Bogaerdts rrdintro which is also available from the doc
-directory.
+Alex van den Bogaerdt's rrdtutorial which is also available from the doc
+directory. Also read his cdeftutorial and Steve Rader's rpntutorial.
  
 If you want to know about the format of the log files check
 src/rrd_format.h there are a lot of comments in there ...
@@ -64,7 +64,7 @@ How to make Tobi happy:
 -----------------------
 
 If you want to show your appreciation for RRDtool you could make me happy
-by going to www.cdnow.com/gift/oetiker@ee.ethz.ch and getting me a CD from
+by going to ee-staff.ethz.ch/~oetiker/wish and ordering a CD from
 my CD wish list ... 
 
 

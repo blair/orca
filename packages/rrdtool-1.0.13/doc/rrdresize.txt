@@ -1,43 +1,44 @@
 
 
 
-RRDRESIZE(1)                 rrdtool                 RRDRESIZE(1)
+rrdtool                                              RRDRESIZE(1)
+
 
 
 NNNNAAAAMMMMEEEE
-       rrdtool resize - alters the size of an RRA.
+     rrdtool resize - alters the size of an RRA.
 
 SSSSYYYYNNNNOOOOPPPPSSSSIIIISSSS
-       rrrrrrrrddddttttoooooooollll rrrreeeessssiiiizzzzeeee _f_i_l_e_n_a_m_e _r_r_a_-_n_u_m  GGGGRRRROOOOWWWW_|SSSSHHHHRRRRIIIINNNNKKKK _r_o_w_s
+     rrrrrrrrddddttttoooooooollll rrrreeeessssiiiizzzzeeee _f_i_l_e_n_a_m_e _r_r_a-_n_u_m  GGGGRRRROOOOWWWW|SSSSHHHHRRRRIIIINNNNKKKK _r_o_w_s
 
 DDDDEEEESSSSCCCCRRRRIIIIPPPPTTTTIIIIOOOONNNN
-       The rrrreeeessssiiiizzzzeeee function is used to modify the number of rows
-       in an RRRRRRRRAAAA.
+     The rrrreeeessssiiiizzzzeeee function is used to modify the number of rows in
+     an RRRRRRRRAAAA.
 
-       _f_i_l_e_n_a_m_e
-               the name of the RRRRRRRRDDDD you want to alter.
+     _f_i_l_e_n_a_m_e
+             the name of the RRRRRRRRDDDD you want to alter.
 
-       _r_r_a_-_n_u_m the RRRRRRRRAAAA you want to alter. You can find the number
-               using rrrrrrrrddddttttoooooooollll dddduuuummmmpppp.
+     _r_r_a-_n_u_m the RRRRRRRRAAAA you want to alter. You can find the number
+             using rrrrrrrrddddttttoooooooollll dddduuuummmmpppp.
 
-       GGGGRRRROOOOWWWW    used if you want to add extra rows to an RRA. The
-               extra rows will be inserted as the rows that are
-               oldest.
+     GGGGRRRROOOOWWWW    used if you want to add extra rows to an RRA. The
+             extra rows will be inserted as the rows that are
+             oldest.
 
-       SSSSHHHHRRRRIIIINNNNKKKK  used if you want to remove rows from an RRA. The
-               rows that will be removed are the oldest rows.
+     SSSSHHHHRRRRIIIINNNNKKKK  used if you want to remove rows from an RRA. The
+             rows that will be removed are the oldest rows.
 
-       _r_o_w_s    the number of rows you want to add or remove.
+     _r_o_w_s    the number of rows you want to add or remove.
 
 NNNNOOOOTTTTEEEESSSS
-       It is possible to abuse this tool and get strange results
-       by first removing some rows and then reinsert the same
-       amount (effectively clearing them to be Unknown). You may
-       thus end up with unknown data in one RRA while at the same
-       timestamp this data is available in another RRA.
+     It is possible to abuse this tool and get strange results by
+     first removing some rows and then reinsert the same amount
+     (effectively clearing them to be Unknown). You may thus end
+     up with unknown data in one RRA while at the same timestamp
+     this data is available in another RRA.
 
 AAAAUUUUTTTTHHHHOOOORRRR
-       Alex van den Bogaerdt <alex@ergens.op.het.net>
+     Alex van den Bogaerdt <alex@ergens.op.het.net>
 
 
 
@@ -59,8 +60,7 @@ AAAAUUUUTTTTHHHHOOOORRRR
 
 
 
+24/Oct/1999            Last change: 1.0.13                      1
 
-
-9/Aug/99                      1.0.7                             1
 
 

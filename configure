@@ -654,8 +654,8 @@ COMPRESS_ZLIB_DIR=Compress-Zlib-1.05
 DATA_DUMPER_DIR=Data-Dumper-2.101
 DIGEST_MD5_DIR=Digest-MD5-2.09
 MATH_INTERPOLATE_DIR=Math-Interpolate-1.05
-RRDTOOL_DIR=rrdtool-1.0.7.2
-STORABLE_DIR=Storable-0.6.7
+RRDTOOL_DIR=rrdtool-1.0.13
+STORABLE_DIR=Storable-0.6.9
 
 
 
@@ -1398,7 +1398,7 @@ else
   echo "$ac_t""no" 1>&6
 fi
 
-if test "x$PERL" = "xNOT_FOUND"; then
+if test "x$PERL" = xNOT_FOUND; then
   { echo "configure: error: *** Perl not found.  Please install Perl.  See INSTALL how to do this." 1>&2; exit 1; }
 else
   
@@ -1424,10 +1424,105 @@ fi
 PERL_HEAD="../config/$PERL_HEAD"
 
 
+# Determine the correct ps command to use to find out about process
+# information for itself.
+# Extract the first word of "ps", so it can be a program name with args.
+set dummy ps; ac_word=$2
+echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
+echo "configure:1433: checking for $ac_word" >&5
+if eval "test \"`echo '$''{'ac_cv_path_PS'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  case "$PS" in
+  /*)
+  ac_cv_path_PS="$PS" # Let the user override the test with a path.
+  ;;
+  ?:/*)			 
+  ac_cv_path_PS="$PS" # Let the user override the test with a dos path.
+  ;;
+  *)
+  IFS="${IFS= 	}"; ac_save_ifs="$IFS"; IFS=":"
+  ac_dummy="$PATH"
+  for ac_dir in $ac_dummy; do 
+    test -z "$ac_dir" && ac_dir=.
+    if test -f $ac_dir/$ac_word; then
+      ac_cv_path_PS="$ac_dir/$ac_word"
+      break
+    fi
+  done
+  IFS="$ac_save_ifs"
+  ;;
+esac
+fi
+PS="$ac_cv_path_PS"
+if test -n "$PS"; then
+  echo "$ac_t""$PS" 1>&6
+else
+  echo "$ac_t""no" 1>&6
+fi
+
+case "$target" in
+  *-solaris*)
+    PS_SELF="$PS -p PID -o \'rss vsz pmem time user pid comm\'"
+    ;;
+  *-linux-*)
+    PS_SELF="$PS auxp PID"
+    ;;
+  *)
+    PS_SELF="$PS aux | grep PID"
+    echo "configure: warning: *** If you know a better PS command than" 1>&2
+    echo "configure: warning: ***   '$PS_SELF'" 1>&2
+    echo "configure: warning: *** to get process information for your host," 1>&2
+    echo "configure: warning: *** please email the command the the output from" 1>&2
+    echo "configure: warning: *** ./config/config.guess to" 1>&2
+    echo "configure: warning: *** orca-developers@onelist.com" 1>&2
+    ;;
+esac
+if test "$PS_SELF"; then
+  echo $ac_n "checking for ps command""... $ac_c" 1>&6
+echo "configure:1484: checking for ps command" >&5
+  echo "$ac_t""$PS_SELF" 1>&6
+  
+fi
+# Extract the first word of "se", so it can be a program name with args.
+set dummy se; ac_word=$2
+echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
+echo "configure:1491: checking for $ac_word" >&5
+if eval "test \"`echo '$''{'ac_cv_path_SE'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  case "$SE" in
+  /*)
+  ac_cv_path_SE="$SE" # Let the user override the test with a path.
+  ;;
+  ?:/*)			 
+  ac_cv_path_SE="$SE" # Let the user override the test with a dos path.
+  ;;
+  *)
+  IFS="${IFS= 	}"; ac_save_ifs="$IFS"; IFS=":"
+  ac_dummy="$PATH:/opt/RICHPse/bin"
+  for ac_dir in $ac_dummy; do 
+    test -z "$ac_dir" && ac_dir=.
+    if test -f $ac_dir/$ac_word; then
+      ac_cv_path_SE="$ac_dir/$ac_word"
+      break
+    fi
+  done
+  IFS="$ac_save_ifs"
+  ;;
+esac
+fi
+SE="$ac_cv_path_SE"
+if test -n "$SE"; then
+  echo "$ac_t""$SE" 1>&6
+else
+  echo "$ac_t""no" 1>&6
+fi
+
 # Extract the first word of "uname", so it can be a program name with args.
 set dummy uname; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:1431: checking for $ac_word" >&5
+echo "configure:1526: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_path_UNAME'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -1463,7 +1558,7 @@ fi
 # Extract the first word of "uncompress", so it can be a program name with args.
 set dummy uncompress; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:1467: checking for $ac_word" >&5
+echo "configure:1562: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_path_UNCOMPRESS'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -1513,83 +1608,31 @@ fi
 
 
 
-# Now we check for those portions of Orca that should be built and set
-# up for installation.  The first step is to check for operating system
-# specific modules.  For Solaris hosts, orcallator.se is built and
-# installed.  This requires the additional building of a librrd.so
-# installed in libdir.  Then we check for the proper Perl modules.
-echo $ac_n "checking for solaris host for orcallator install""... $ac_c" 1>&6
-echo "configure:1523: checking for solaris host for orcallator install" >&5
-case "$target" in
-  *-solaris*)
-    BUILD_ORCALLATOR=yes
-    ORCALLATOR_SUBDIR=orcallator
-    # Add --enable-shared to the configure options for RRDtool if it is
-    # not already declared.
-    expr "$CONFIGURE_COMMAND_LINE" : "--enable-shared" >/dev/null 2>&1 || CONFIGURE_COMMAND_LINE="$CONFIGURE_COMMAND_LINE --enable-shared"
-
-    INSTALL_LIB_RRDTOOL=install_lib_rrdtool
-    MAKE_RRDTOOL=make_rrdtool
-    TEST_RRDTOOL=test_rrdtool
-    INSTALL_PERL_RRDTOOL=
-    CLEAN_RRDTOOL=clean_rrdtool
-    DISTCLEAN_RRDTOOL=distclean_rrdtool
-    ;;
-  *)
-    INSTALL_LIB_RRDTOOL=
-    BUILD_ORCALLATOR=no
-    ORCALLATOR_SUBDIR=
-    ;;
-esac
+# Always build the orcallator files regardless of the operating system.
+BUILD_ORCALLATOR=yes
+ORCALLATOR_SUBDIR=orcallator
+INSTALL_LIB_RRDTOOL=
 
 
 
-echo "$ac_t""$BUILD_ORCALLATOR" 1>&6
-if test "$BUILD_ORCALLATOR" = "yes"; then
-  # Extract the first word of "se", so it can be a program name with args.
-set dummy se; ac_word=$2
-echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:1553: checking for $ac_word" >&5
-if eval "test \"`echo '$''{'ac_cv_path_SE'+set}'`\" = set"; then
-  echo $ac_n "(cached) $ac_c" 1>&6
-else
-  case "$SE" in
-  /*)
-  ac_cv_path_SE="$SE" # Let the user override the test with a path.
-  ;;
-  ?:/*)			 
-  ac_cv_path_SE="$SE" # Let the user override the test with a dos path.
-  ;;
-  *)
-  IFS="${IFS= 	}"; ac_save_ifs="$IFS"; IFS=":"
-  ac_dummy="$PATH:/opt/RICHPse/bin"
-  for ac_dir in $ac_dummy; do 
-    test -z "$ac_dir" && ac_dir=.
-    if test -f $ac_dir/$ac_word; then
-      ac_cv_path_SE="$ac_dir/$ac_word"
-      break
-    fi
-  done
-  IFS="$ac_save_ifs"
-  ;;
-esac
-fi
-SE="$ac_cv_path_SE"
-if test -n "$SE"; then
-  echo "$ac_t""$SE" 1>&6
-else
-  echo "$ac_t""no" 1>&6
-fi
+# These commands can be used if the orcallator should not be built.
+# AC_MSG_CHECKING([for solaris host for orcallator install])
+# AC_MSG_RESULT($BUILD_ORCALLATOR)
+# BUILD_ORCALLATOR=no
+# ORCALLATOR_SUBDIR=
 
-fi
+# These commands can be used to force a build of the librrdtool library.
+# INSTALL_LIB_RRDTOOL=install_lib_rrdtool
+# MAKE_RRDTOOL=make_rrdtool
+# TEST_RRDTOOL=test_rrdtool
+# INSTALL_PERL_RRDTOOL=
+# CLEAN_RRDTOOL=clean_rrdtool
+# DISTCLEAN_RRDTOOL=distclean_rrdtool
 
-if test "$borp_cv_perl_compress_zlib" = no; then
-  MAKE_COMPRESS_ZLIB=make_compress_zlib
-  TEST_COMPRESS_ZLIB=test_compress_zlib
-  INSTALL_PERL_COMPRESS_ZLIB=install_perl_compress_zlib
-  CLEAN_COMPRESS_ZLIB=clean_compress_zlib
-  DISTCLEAN_COMPRESS_ZLIB=distclean_compress_zlib
-fi
+# This command can be used to add --enable-shared to the configure
+# options for RRDtool if it is not already declared.
+# expr "$CONFIGURE_COMMAND_LINE" : "--enable-shared" >/dev/null 2>&1 || CONFIGURE_COMMAND_LINE="$CONFIGURE_COMMAND_LINE --enable-shared"
+
 
 
 
@@ -1598,7 +1641,7 @@ fi
 
 
   echo $ac_n "checking if Perl module Data::Dumper version 2.101 is installed""... $ac_c" 1>&6
-echo "configure:1602: checking if Perl module Data::Dumper version 2.101 is installed" >&5
+echo "configure:1645: checking if Perl module Data::Dumper version 2.101 is installed" >&5
   if $PERL ./config/check_for_perl_mod Data::Dumper 2.101; then
     borp_cv_perl_data_dumper=yes
     
@@ -1622,9 +1665,9 @@ fi
 
 
 
-  echo $ac_n "checking if Perl module Digest::MD5 version 2.00 is installed""... $ac_c" 1>&6
-echo "configure:1627: checking if Perl module Digest::MD5 version 2.00 is installed" >&5
-  if $PERL ./config/check_for_perl_mod Digest::MD5 2.00; then
+  echo $ac_n "checking if Perl module Digest::MD5 version 2.09 is installed""... $ac_c" 1>&6
+echo "configure:1670: checking if Perl module Digest::MD5 version 2.09 is installed" >&5
+  if $PERL ./config/check_for_perl_mod Digest::MD5 2.09; then
     borp_cv_perl_digest_md5=yes
     
   else
@@ -1647,9 +1690,9 @@ fi
 
 
 
-  echo $ac_n "checking if Perl module Math::Interpolate version 1.04 is installed""... $ac_c" 1>&6
-echo "configure:1652: checking if Perl module Math::Interpolate version 1.04 is installed" >&5
-  if $PERL ./config/check_for_perl_mod Math::Interpolate 1.04; then
+  echo $ac_n "checking if Perl module Math::Interpolate version 1.05 is installed""... $ac_c" 1>&6
+echo "configure:1695: checking if Perl module Math::Interpolate version 1.05 is installed" >&5
+  if $PERL ./config/check_for_perl_mod Math::Interpolate 1.05; then
     borp_cv_perl_math_interpolate=yes
     
   else
@@ -1672,9 +1715,9 @@ fi
 
 
 
-  echo $ac_n "checking if Perl module RRDs version 1.000072 is installed""... $ac_c" 1>&6
-echo "configure:1677: checking if Perl module RRDs version 1.000072 is installed" >&5
-  if $PERL ./config/check_for_perl_mod RRDs 1.000072; then
+  echo $ac_n "checking if Perl module RRDs version 1.000131 is installed""... $ac_c" 1>&6
+echo "configure:1720: checking if Perl module RRDs version 1.000131 is installed" >&5
+  if $PERL ./config/check_for_perl_mod RRDs 1.000131; then
     borp_cv_perl_rdds=yes
     
   else
@@ -1697,9 +1740,9 @@ fi
 
 
 
-  echo $ac_n "checking if Perl module Storable version 0.603 is installed""... $ac_c" 1>&6
-echo "configure:1702: checking if Perl module Storable version 0.603 is installed" >&5
-  if $PERL ./config/check_for_perl_mod Storable 0.603; then
+  echo $ac_n "checking if Perl module Storable version 0.609 is installed""... $ac_c" 1>&6
+echo "configure:1745: checking if Perl module Storable version 0.609 is installed" >&5
+  if $PERL ./config/check_for_perl_mod Storable 0.609; then
     borp_cv_perl_storable=yes
     
   else
@@ -1732,7 +1775,7 @@ MKDIR="../config/mkinstalldirs"
 #	Generate the Makefiles and shell scripts with the
 #	variable substitutions.
 #--------------------------------------------------------------------
-if test "$BUILD_ORCALLATOR" = "yes"; then
+if test "$BUILD_ORCALLATOR" = yes; then
   ORCALLATOR_OUTPUT="orcallator/orcallator.cfg
                      orcallator/orcallator_running.pl
                      orcallator/restart_orcallator.sh
@@ -1933,13 +1976,15 @@ s%@GUNZIP@%$GUNZIP%g
 s%@AWK@%$AWK%g
 s%@PERL@%$PERL%g
 s%@PERL_HEAD@%$PERL_HEAD%g
+s%@PS@%$PS%g
+s%@PS_SELF@%$PS_SELF%g
+s%@SE@%$SE%g
 s%@UNAME@%$UNAME%g
 s%@UNCOMPRESS@%$UNCOMPRESS%g
 s%@COMPRESSOR@%$COMPRESSOR%g
 s%@UNCOMPRESSOR_PIPE@%$UNCOMPRESSOR_PIPE%g
 s%@ORCALLATOR_SUBDIR@%$ORCALLATOR_SUBDIR%g
 s%@INSTALL_LIB_RRDTOOL@%$INSTALL_LIB_RRDTOOL%g
-s%@SE@%$SE%g
 s%@MAKE_COMPRESS_ZLIB@%$MAKE_COMPRESS_ZLIB%g
 s%@TEST_COMPRESS_ZLIB@%$TEST_COMPRESS_ZLIB%g
 s%@INSTALL_PERL_COMPRESS_ZLIB@%$INSTALL_PERL_COMPRESS_ZLIB%g
@@ -2088,14 +2133,17 @@ rm -fr confdefs* $ac_clean_files
 test "$no_create" = yes || ${CONFIG_SHELL-/bin/sh} $CONFIG_STATUS || exit 1
 
 
-command="(cd packages/$RRDTOOL_DIR; ./configure $CONFIGURE_COMMAND_LINE --cache-file=../../config.cache)"
-echo ""
-echo "Running configure in packages/$RRDTOOL_DIR to create RRDtool and RRDs.pm."
-echo ""
-echo $command
-echo ""
-eval $command
+# Build the RRDtool library if it is needed.
+if test "$borp_cv_perl_rdds" = no; then
+  command="(cd packages/$RRDTOOL_DIR; ./configure $CONFIGURE_COMMAND_LINE --cache-file=../../config.cache)"
+  echo ""
+  echo "Running configure in packages/$RRDTOOL_DIR to create RRDtool and RRDs.pm."
+  echo ""
+  echo $command
+  echo ""
+  eval $command
+fi
 
 if test -z "$WEB_LOG"; then
-  echo "configure: warning: *** Unless you use a --with-*-log option you will not gather WWW log data." 1>&2
+  echo "configure: warning: *** Unless you use a --with-*-log option orcallator will not gather WWW log data." 1>&2
 fi

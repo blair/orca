@@ -9,8 +9,8 @@ SUFFIXES = .pod .1 .man .html .txt .pm
 CLEANFILES = *.1 *.html *.txt *-dircache *.pm
 
 POD = rrdtool.pod rrdlast.pod rrdcreate.pod rrdupdate.pod \
-	rrdgraph.pod  bin_dec_hex.pod rrdfetch.pod \
-	rrdrestore.pod rrddump.pod rrdtune.pod rrdresize.pod \
+	cdeftutorial.pod rpntutorial.pod rrdgraph.pod  bin_dec_hex.pod \
+	rrdfetch.pod rrdrestore.pod rrddump.pod rrdtune.pod rrdresize.pod \
 	rrdcgi.pod rrdtutorial.pod
 
 PMP = RRDs.pm RRDp.pm

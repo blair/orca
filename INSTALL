@@ -14,15 +14,13 @@ Outline:
 
  6) Test if the Perl modules properly compiled.
 
- 7) Doing an upgrade from Orca 0.23 or older?  Follow these steps.
+ 7) Install any necessary Perl modules.
 
- 8) Install any necessary Perl modules.
+ 8) Doing an upgrade from Orca 0.23 or older?  Follow these steps.
 
  9) Install Orca.
 
-10) Set the Unix process file descriptor limit to at least 256.
-
-11) [Solaris Only and Optional] Install orcallator.
+10) [Solaris Only and Optional] Install orcallator.
     a) Install the SE toolkit.
     b) Apply a patch to the SE 3.0 toolkit if necessary.
     c) Examine Orca/orcallator programs.
@@ -31,7 +29,7 @@ Outline:
     e) Run start_orcallator on all systems.
     f) Edit orcallator.cfg.
 
-12) Run Orca.
+11) Run Orca.
 
 
 
@@ -97,10 +95,10 @@ Outline:
     Name			Required Version	Included With Orca
     -----------------------------------------------------------------------
     Data::Dumper		2.101 or greater	2.101
-    Digest::MD5			2.00 or greater		2.09
+    Digest::MD5			2.09 or greater		2.09
     Math::IntervalSearch	1.05 or greater		1.05
-    RRDs			1.0.7.2 or greater	1.0.7.2
-    Storable			0.6.3 or greater	0.6.7
+    RRDs			1.0.13 or greater	1.0.13
+    Storable			0.6.9 or greater	0.6.9
 
     All five of these modules are included with the Orca distribution
     in the packages directory.  When you configure Orca in step 4),
@@ -169,10 +167,10 @@ Outline:
 
     Storable
 
-      http://www.perl.com/CPAN/authors/id/RAM/Storable-0.6.7.tar.gz
+      http://www.perl.com/CPAN/authors/id/RAM/Storable-0.6.9.tar.gz
 
-      % gunzip -c Storable-0.6.7.tar.gz | tar xvf -
-      % cd Storable-0.6.7
+      % gunzip -c Storable-0.6.9.tar.gz | tar xvf -
+      % cd Storable-0.6.9
       % perl Makefile.PL
       % make
       % make test
@@ -228,11 +226,18 @@ Outline:
 
     % make test_modules
 
- 7) Doing an upgrade from Orca 0.23 or older?  Follow these steps.
+ 7) Install any necessary Perl modules.
+
+    To automatically install these modules into Perl run the following
+    command:
+
+    % make install_modules
+
+ 8) Doing an upgrade from Orca 0.23 or older?  Follow these steps.
 
     Due to various changes to Orca between releases, many of the RRD,
     HTML and image filenames that Orca creates have changed names.
-    Two separate issues exist.
+    There are two separate issues.
 
     The first is that the naming scheme for all generated HTML and image
     (either PNG or GIF) files have changed.  Unless you want to leave
@@ -290,13 +295,6 @@ Outline:
        to the new scheme, then kill any running percollator.se's before
        installing and running the following commands
 
- 8) Install any necessary Perl modules.
-
-   To automatically install these modules into Perl run the following
-   command:
-
-   % make install_modules
-
  9) Install Orca.
 
     Run the following command to install Orca:
@@ -305,36 +303,7 @@ Outline:
 
     This may also install librrd.so in your $libdir.
 
-10) Set the Unix process file descriptor limit to at least 256.
-
-    Orca is designed to run with a minimum of 256 available file
-    descriptors.   If under Unix your processes have a file descriptor
-    limit less than 256, then Orca may possibly fail.
-
-    To check your default file descriptor limit, on many Unix systems
-    you can run
-
-    % ulimit -n
-
-    If this number is less than 256, then you'll need to increase your
-    limit.  This can be accomplished using the limit or ulimit command
-    in your shell, depending upon which shell you use.  See man (1)
-    ulimit or man (1) limit.
-
-    If you are running a C shell equivalent, such as csh or tcsh, then
-    you can run
-
-    % limit descriptors 256
-
-    If you have a Bourne shell equivalent, such as sh, ksh, bash, you
-    can run
-
-    % ulimit -n 256
-
-    This command should either be placed in a .login, .profile, .cshrc
-    file or run just before Orca is run.
-
-11) [Solaris Only and Optional] Install orcallator.
+10) [Solaris Only and Optional] Install orcallator.
     a) Install the SE toolkit.
 
        Perform the installation instructions as listed on the web page
@@ -399,7 +368,7 @@ Outline:
        orcallator generated files are out of date, which may signify a
        orcallator program that has died and is no longer gathering data.
 
-12) Run Orca.
+11) Run Orca.
 
     Log into the system that will run Orca and run the command:
 

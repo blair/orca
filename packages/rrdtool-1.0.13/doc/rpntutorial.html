@@ -1,0 +1,271 @@
+<HTML>
+<HEAD>
+<TITLE>rpntutorial</TITLE>
+<LINK REV="made" HREF="mailto:karrer@zinal.ee.ethz.ch">
+</HEAD>
+
+<BODY>
+
+<!-- INDEX BEGIN -->
+<!--
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#Reading_Comparison_Operators">Reading Comparison Operators</A>
+	<LI><A HREF="#Reading_the_IF_Operator">Reading the IF Operator</A>
+	<LI><A HREF="#Some_Examples">Some Examples</A>
+	<LI><A HREF="#Exercises">Exercises</A>
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+</UL>
+-->
+<!-- INDEX END -->
+
+<P>
+<H1><A NAME="NAME">NAME</A></H1>
+<P>
+rpntutorial - Reading RRDTtool RPN Expressions by Steve Rader
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION</A></H1>
+<P>
+This tutorial should help you get to grips with rrdtool RPN expressions as
+seen in CDEF arguments of rrdtool graph.
+
+<P>
+<HR>
+<H1><A NAME="Reading_Comparison_Operators">Reading Comparison Operators</A></H1>
+<P>
+The LT, LE, GT, GE and EQ RPN logic operators are not as tricky as they
+appear. These operators act on the two values on the stack preceding them
+(to the left). Read these two values on the stack from left to right
+inserting the operator in the middle. If the resulting statement is true,
+the replace the three values from the stack with ``1''. If the statement if
+false, replace the three values with ``0''.
+
+<P>
+For example think about ``2,1,GT''. This RPN expression could be read as
+``is two greater than one?'' The answer to that question is ``true''. So
+the three values should be replaced with ``1''. Thus the RPN expression
+2,1,GT evaluates to 1.
+
+<P>
+Now also consider ``2,1,LE''. This RPN expression could be read as ``is two
+less than or equal to one?''. The natural response is ``no'' and thus the
+RPN expression 2,1,LE evaluates to 0. 
+
+<P>
+<HR>
+<H1><A NAME="Reading_the_IF_Operator">Reading the IF Operator</A></H1>
+<P>
+The IF RPN logic operator can be straightforward also. The key to reading
+IF operators is to understand that the condition part of the traditional
+``if X than Y else Z'' notation has *already* been evaluated. So the IF
+operator acts on only one value on the stack: the third value to the left
+of the IF value. The second value to the left of the IF corresponds to the
+true (``Y'') branch. And the first value to the left of the IF corresponds
+to the false (``Z'') branch. Read the RPN expression ``X,Y,Z,IF'' from left
+to right like so: ``if X then Y else Z''.
+
+<P>
+For example, consider ``1,10,100,IF''. It looks bizzare to me. But when I
+read ``if 1 then 10 else 100'' it's crystal clear: 1 is true so the answer
+is 10. Note that only zero is false; all other values are true.
+``2,20,200,IF'' (``if 2 then 20 else 200'') evaluates to 20. And
+``0,1,2,IF'' (``if 0 then 1 else 2) evaluates to 2.
+
+<P>
+Notice that none of the above examples really simulate the whole ``if X
+then Y else Z'' statement. This is because computer programmers read this
+statement as ``if Some Condition then Y else Z''. So it's important to be
+able to read IF operators along with the LT, LE, GT, GE and EQ operators.
+
+<P>
+<HR>
+<H1><A NAME="Some_Examples">Some Examples</A></H1>
+<P>
+While compound expressions can look overly complex, they can be considered
+elegantly simple. To quickly comprehend RPN expressions, you must know the
+the algorithm for evaluating RPN expressions: iterate searches from the
+left to the right looking for an operator, when it's found, apply that
+operator by popping the operator and some number of values (and by
+definition, not operators) off the stack.
+
+<P>
+For example, the stack ``1,2,3,+,+'' gets ``2,3,+'' evaluated (as ``2+3'')
+during the first iteration which is replaced by 5. This results in the
+stack ``1,5,+''. Finally, ``1,5,+'' is evaluated resulting in the answer 6.
+For convenience sake, it's useful to write this set of operations as:
+
+<P>
+<PRE> 1) 1,2,3,+,+    eval is 2,3,+ = 5    result is 1,5,+
+ 2) 1,5,+        eval is 1,5,+ = 6    result is 6
+ 3) 6
+</PRE>
+<P>
+Let's use that notation to conviently solve some complex RPN expressions
+with multiple logic operators:
+
+<P>
+<PRE> 1) 20,10,GT,10,20,IF  eval is 20,10,GT = 1     result is 1,10,20,IF
+</PRE>
+<P>
+read the eval as pop ``20 is greater than 10'' so push 1 2) 1,10,20,IF eval
+is 1,10,20,IF = 10 result is 10
+
+<P>
+read pop ``if 1 then 10 else 20'' so push 10. Only 10 is left so 10 is the
+answer.
+
+<P>
+Let's read a complex RPN expression that also has the traditional
+multiplication operator:
+
+<P>
+<PRE> 1) 128,8,*,7000,GT,7000,128,8,*,IF  eval 128,8,*       result is 1024
+ 2) 1024,7000,GT,7000,128,8,*,IF     eval 1024,7000,GT  result is 0
+ 3) 0,128,8,*,IF                     eval 128,8,*       result is 1024
+ 4) 0,7000,1024,IF                                      result is 1024
+</PRE>
+<P>
+Now let's go back to the first example of multiple logic operators but
+replace the value 20 with the variable ``input'':
+
+<P>
+<PRE> 1) input,10,GT,10,input,IF  eval is input,10,GT  result is A
+</PRE>
+<P>
+Read eval as ``if input &gt; 10 then true'' and replace ``input,10,GT''
+with ``A: 2) A,10,input,IF eval is A,10,input,IF
+
+<P>
+read ``if A then 10 else input''. Now replace A it's verbose description
+and--voila!--you have a easily readable description of the expression:
+
+<P>
+<PRE> if input &gt; 10 then 10 else input
+</PRE>
+<P>
+Lastly, let's to back the first most complex example and replace the value
+128 with ``input'':
+
+<P>
+<PRE> 1) input,8,*,7000,GT,7000,input,8,*,IF  eval input,8,*     result is A
+</PRE>
+<P>
+where A is ``input * 8''
+
+<P>
+<PRE> 2) A,7000,GT,7000,input,8,*,IF          eval is A,7000,GT  result is B
+</PRE>
+<P>
+where B is ``if ((input * 8) &gt; 7000) then true''
+
+<P>
+<PRE> 3) B,7000,input,8,*,IF                  eval is input,8,*  result is C
+</PRE>
+<P>
+where C is ``input * 8''
+
+<P>
+<PRE> 4) B,7000,C,IF
+</PRE>
+<P>
+At last we have a readable decoding of the complex RPN expression with a
+variable:
+
+<P>
+<PRE> if ((input * 8) &gt; 7000) then 7000 else (input * 8)
+</PRE>
+<P>
+<HR>
+<H1><A NAME="Exercises">Exercises</A></H1>
+<P>
+Exercise 1:
+
+<P>
+Compute ``3,2,*,1,+ and ''3,2,1,+,*`` by hand. Rewrite them in traditional
+notation. Explain why they have different answers.
+
+<P>
+Answer 1:
+
+<P>
+<PRE>    3*2+1 = 7 and 3*(2+1) = 9.  These expressions have
+    different answers because the altering of the plus and 
+    times operators alter the order of their evaluation.
+</PRE>
+<P>
+Exercise 2:
+
+<P>
+One may be tempted to shorten the expression
+
+<P>
+<PRE> input,8,*,56000,GT,56000,input,*,8,IF
+</PRE>
+<P>
+by removing the redundant use of ``input,8,*'' like so:
+
+<P>
+<PRE> input,56000,GT,56000,input,IF,8,*
+</PRE>
+<P>
+Use tradition notation to show these expressions are not the same. Write an
+expression that's equivalent to the first expression but uses the LE and
+DIV operators.
+
+<P>
+Answer 2:
+
+<P>
+<PRE>    if (input &lt;= 56000/8 ) { input*8 } else { 56000 }
+    input,56000,8,DIV,LT,input,8,*,56000,IF
+</PRE>
+<P>
+Exercise 3:
+
+<P>
+Briefly explain why traditional mathematic notation requires the use of
+parentheses. Explain why RPN notation does not require the use of
+parentheses.
+
+<P>
+Answer 3:
+
+<P>
+<PRE>    Traditional mathematic expressions are evaluated by
+    doing multiplication and division first, then addition and
+    subtraction.  Perentences are used to force the evaluation of
+    addition before multiplication (etc).  RPN does not require
+    parentheses because the ordering of objects on the stack
+    can force the evaluation of addition before multiplication.
+</PRE>
+<P>
+Exercise 4:
+
+<P>
+Explain why it is desirable for the RRDtool developers to implement RPN
+notation instead of traditional mathematical notation.
+
+<P>
+Answer 4:
+
+<P>
+<PRE>    The algorithm that implements traditional mathematical
+    notation is more complex then algorithm used for RPN.
+    So implementing RPN allowed Tobias Oetiker to write less
+    code!  (The code is also less complex and therefore less
+    likely to have bugs.)
+</PRE>
+<P>
+<HR>
+<H1><A NAME="AUTHOR">AUTHOR</A></H1>
+<P>
+steve rader &lt;<A HREF="mailto:rader@wiscnet.net">rader@wiscnet.net</A>&gt;
+
+</BODY>
+
+</HTML>

@@ -1,5 +1,5 @@
 /*****************************************************************************
- * RRDtool  Copyright Tobias Oetiker, 1997,1998, 1999
+ * RRDtool 1.0.13  Copyright Tobias Oetiker, 1997,1998, 1999
  *****************************************************************************
  * rrd_tool.h   Common Header File
  *****************************************************************************
@@ -36,6 +36,14 @@ extern "C" {
 #include <string.h>
 #include <time.h>
 #include <ctype.h>
+
+#if HAVE_SYS_PARAM_H
+#  include <sys/param.h>
+#endif
+
+#ifndef MAXPATH
+#  define MAXPATH 1024
+#endif
 
 #if HAVE_MATH_H
 # include <math.h>

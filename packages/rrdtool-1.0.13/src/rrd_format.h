@@ -1,5 +1,5 @@
 /*****************************************************************************
- * RRDtool  Copyright Tobias Oetiker, 1997, 1998, 1999
+ * RRDtool 1.0.13  Copyright Tobias Oetiker, 1997, 1998, 1999
  *****************************************************************************
  * rrd_format.h  RRD Database Format header
  *****************************************************************************/
@@ -20,7 +20,7 @@
 #define RRD_VERSION   "0001"
 #define FLOAT_COOKIE  8.642135E130
 
-#if defined(WIN32) || defined(_HPUX_SOURCE)
+#if defined(WIN32)
 #define DNAN          ((double)fmod(0.0,0.0))    
 #define DINF	      ((double)log(0.0))
 #else

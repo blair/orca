@@ -1,5 +1,5 @@
 /*****************************************************************************
- * RRDtool  Copyright Tobias Oetiker, 1997, 1998, 1999
+ * RRDtool 1.0.13  Copyright Tobias Oetiker, 1997, 1998, 1999
  *****************************************************************************
  * rrd_update.c  RRD Update Function
  *****************************************************************************
@@ -109,7 +109,18 @@ rrd_update(int argc, char **argv)
 	return -1;
     }
     rra_current = rra_start = rra_begin = ftell(rrd_file);
+    /* This is defined in the ANSI C standard, section 7.9.5.3:
 
+        When a file is opened with udpate mode ('+' as the second
+        or third character in the ... list of mode argument
+        variables), both input and ouptut may be performed on the
+        associated stream.  However, ...  input may not be directly
+        followed by output without an intervening call to a file
+        positioning function, unless the input oepration encounters
+        end-of-file. */
+    fseek(rrd_file, 0, SEEK_CUR);
+
+    
     /* get exclusive lock to whole file.
      * lock gets removed when we close the file.
      */
@@ -138,7 +149,7 @@ rrd_update(int argc, char **argv)
 
     if ((tmpl_idx = malloc(sizeof(unsigned long)
 			   *(rrd.stat_head->ds_cnt+1)))==NULL){
-	rrd_set_error("allocating template_idx ...");
+	rrd_set_error("allocating tmpl_idx ...");
 	free(pdp_temp);
 	free(updvals);
 	rrd_free(&rrd);
@@ -146,35 +157,41 @@ rrd_update(int argc, char **argv)
 	return(-1);
     }
     /* initialize template redirector */
-
-    /* the first entry [0] points to zero as the first entry in an
-       update argument is always the time. The remaining entries point
-       the the index number of their respective datasource. */
+    /* default config
+       tmpl_idx[0] -> 0; (time)
+       tmpl_idx[1] -> 1; (DS 0)
+       tmpl_idx[2] -> 2; (DS 1)
+       tmpl_idx[3] -> 3; (DS 2)
+       ... */
     for (i=0;i<=rrd.stat_head->ds_cnt;i++) tmpl_idx[i]=i;
     tmpl_cnt=rrd.stat_head->ds_cnt+1;
     if (template) {
 	char *dsname;
 	int tmpl_len;
 	dsname = template;
-	template++;
 	tmpl_cnt = 1; /* the first entry is the time */
 	tmpl_len = strlen(template);
-	for(i=0;i<=tmpl_len;i++) {
+	for(i=0;i<=tmpl_len ;i++) {
 	    if (template[i] == ':' || template[i] == '\0') {
 		template[i] = '\0';
-		if ((tmpl_idx[tmpl_cnt++] = ds_match(&rrd,dsname)) == -1){
+		if (tmpl_cnt>rrd.stat_head->ds_cnt){
+  		    rrd_set_error("Template contains more DS definitions than RRD");
 		    free(updvals); free(pdp_temp);
 		    free(tmpl_idx); rrd_free(&rrd);
 		    fclose(rrd_file); return(-1);
 		}
-		/* the first element is always the time */
-		tmpl_idx[tmpl_cnt-1]++; 
-
-		/* go to the next entry on the template */
-	        dsname = &template[i+1];
-
+		if ((tmpl_idx[tmpl_cnt++] = ds_match(&rrd,dsname)) == -1){
+  		    rrd_set_error("unknown DS name '%s'",dsname);
+		    free(updvals); free(pdp_temp);
+		    free(tmpl_idx); rrd_free(&rrd);
+		    fclose(rrd_file); return(-1);
+		} else {
+		  /* the first element is always the time */
+		  tmpl_idx[tmpl_cnt-1]++; 
+		  /* go to the next entry on the template */
+		  dsname = &template[i+1];
+		}
 	    }	    
-
 	}
     }
     if ((pdp_new = malloc(sizeof(rrd_value_t)
@@ -190,7 +207,7 @@ rrd_update(int argc, char **argv)
 
     /* loop through the arguments. */
     for(arg_i=optind+1; arg_i<argc;arg_i++) {
-	char *stepper;;
+	char *stepper;
 	/* initialize all ds input to unknown except the first one
            which has always got to be set */
 	for(ii=1;ii<=rrd.stat_head->ds_cnt;ii++) updvals[ii] = "U";
@@ -208,7 +225,7 @@ rrd_update(int argc, char **argv)
 	    stepper++;
 	}
 
-	if (ii+1 != tmpl_cnt) {
+	if (ii != tmpl_cnt-1) {
 	    rrd_set_error("expected %lu data source readings (got %lu) from %s:...",
 			  tmpl_cnt-1, ii, argv[arg_i]);
 	    break;
@@ -279,7 +296,8 @@ rrd_update(int argc, char **argv)
 	    dst_idx= dst_conv(rrd.ds_def[i].dst);
 	    if((updvals[i+1][0] != 'U') &&
 	       rrd.ds_def[i].par[DS_mrhb_cnt].u_cnt >= interval) {
-		/* the data source type defines how to process the data */
+	       double rate = DNAN;
+	       /* the data source type defines how to process the data */
 		/* pdp_temp contains rate * time ... eg the bytes
 		 * transferred during the interval. Doing it this way saves
 		 * a lot of math operations */
@@ -289,25 +307,29 @@ rrd_update(int argc, char **argv)
 		case DST_COUNTER:
 		case DST_DERIVE:
 		    if(rrd.pdp_prep[i].last_ds[0] != 'U'){
-			pdp_new[i]= rrd_diff(updvals[i+1],rrd.pdp_prep[i].last_ds);
-			if(dst_idx == DST_COUNTER) {
-				/* simple overflow catcher sugestet by andres kroonmaa */
-				/* this will fail terribly for non 32 or 64 bit counters ... */
-				/* are there any others in SNMP land ? */
-			    if (pdp_new[i] < (double)0.0 ) 
-				pdp_new[i] += (double)4294967296.0 ;  /* 2^32 */
-			    if (pdp_new[i] < (double)0.0 ) 
-				pdp_new[i] += (double)18446744069414584320.0; /* 2^64-2^32 */;
-			}
+		       pdp_new[i]= rrd_diff(updvals[i+1],rrd.pdp_prep[i].last_ds);
+		       if(dst_idx == DST_COUNTER) {
+			  /* simple overflow catcher sugestet by andres kroonmaa */
+			  /* this will fail terribly for non 32 or 64 bit counters ... */
+			  /* are there any others in SNMP land ? */
+			  if (pdp_new[i] < (double)0.0 ) 
+			    pdp_new[i] += (double)4294967296.0 ;  /* 2^32 */
+			  if (pdp_new[i] < (double)0.0 ) 
+			    pdp_new[i] += (double)18446744069414584320.0; /* 2^64-2^32 */;
+		       }
+		       rate = pdp_new[i] / interval;
 		    }
-			else
-			    pdp_new[i]= DNAN;		
-		    break;
+		   else {
+		     pdp_new[i]= DNAN;		
+		   }
+		   break;
 		case DST_ABSOLUTE:
-		    pdp_new[i]= atof(updvals[i+1]);		
+		    pdp_new[i]= atof(updvals[i+1]);
+		    rate = pdp_new[i] / interval;		  
 		    break;
 		case DST_GAUGE:
 		    pdp_new[i] = atof(updvals[i+1]) * interval;
+		    rate = pdp_new[i] / interval;		   
 		    break;
 		default:
 		    rrd_set_error("rrd contains and DS type : '%s'",
@@ -315,8 +337,19 @@ rrd_update(int argc, char **argv)
 		    break;
 		}
 		/* break out of this for loop if the error string is set */
-		if (rrd_test_error())
+		if (rrd_test_error()){
 		    break;
+		}
+	       /* make sure pdp_temp is neither too large or too small
+		* if any of these occur it becomes unknown ...
+		* sorry folks ... */
+	       if ( ! isnan(rate) && 
+	            (( ! isnan(rrd.ds_def[i].par[DS_max_val].u_val) &&
+	                 rate > rrd.ds_def[i].par[DS_max_val].u_val ) ||     
+	            ( ! isnan(rrd.ds_def[i].par[DS_min_val].u_val) &&
+	                rate < rrd.ds_def[i].par[DS_min_val].u_val ))){
+		  pdp_new[i] = DNAN;
+	       }	       
 	    } else {
 		/* no news is news all the same */
 		pdp_new[i] = DNAN;
@@ -401,16 +434,7 @@ rrd_update(int argc, char **argv)
 		    rrd.pdp_prep[i].scratch[PDP_val].u_val = 
 			pdp_new[i]/(double)interval*(double)post_int;
 		}
-		/* make sure pdp_temp is neither too large or too small
-		 * if any of these occur it becomes unknown ...
-		 * sorry folks ... */
-		if (! isnan(pdp_temp[i]) && 
-		   	((! isnan(rrd.ds_def[i].par[DS_max_val].u_val) &&
-		           pdp_temp[i] > rrd.ds_def[i].par[DS_max_val].u_val) ||
-		         (! isnan(rrd.ds_def[i].par[DS_min_val].u_val) &&
-		           pdp_temp[i] < rrd.ds_def[i].par[DS_min_val].u_val))) {
-		    pdp_temp[i] = DNAN;
-		}
+
 #ifdef DEBUG
 		fprintf(stderr,
 			"PDP UPD ds[%lu]\t"

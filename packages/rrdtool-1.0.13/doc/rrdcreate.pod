@@ -51,16 +51,39 @@ source from an B<RRD>. A I<ds-name> must be 1 to 19 characters long in
 the characters [a-zA-Z0-9_].
 
 I<DST> defines the Data Source Type. It can be one of the following:
-B<GAUGE> this is for things like temperatures or number of people in a
-room. B<COUNTER> is for continuous incrementing counters like the
+
+=over 4
+
+=item B<GAUGE> 
+
+is for things like temperatures or number of people in a
+room or value of a RedHat share.
+
+=item B<COUNTER>
+
+is for continuous incrementing counters like the
 InOctets counter in a router. The B<COUNTER> data source assumes that
 the counter never decreases, except when a counter overflows.  The update
 function takes the overflow into account.  The counter is stored as a
-per-second rate. B<DERIVE> will store the
-the derivative of the line going from the last to the current value of the
-data source. This can be useful for gauges,
-for example, to measure the rate of people
-entering or leaving a room. B<ABSOLUTE> is for counters which get reset upon reading.
+per-second rate. When the counter overflows, RRDtool checks if the overflow happened at
+the 32bit or 64bit border and acts accordingly by adding an appropriate value to the result.
+
+=item B<DERIVE>
+
+will store the the derivative of the line going from the last to the current
+value of the data source. This can be useful for gauges, for example, to
+measure the rate of people entering or leaving a room. Internally, derive works exaclty like
+COUNTER but without overflow checks. So if your counter does not reset at 32 or 64 bit
+you might want to use DERIVE and combine it with a MIN value of 0.
+
+=item B<ABSOLUTE> 
+
+is for counters which get reset upon reading. This is used for fast counters
+which tend to overflow. So instead of reading them normally you reset them
+after every read to make sure you have a maximal time available before the
+next overflow.
+
+=back
 
 I<heartbeat> defines the maximum number of seconds that may pass
 between two updates of this data source before the value of the 
@@ -92,7 +115,7 @@ of the archive. The following consolidation functions are defined:
 B<AVERAGE>, B<MIN>, B<MAX>, B<LAST>.
 
 I<xff> The xfiles factor defines what part of a consolidation interval may
-be made up from I<*UNKNOWN*> data while the consolidated value is sill
+be made up from I<*UNKNOWN*> data while the consolidated value is still
 regarded as known.
 
 I<steps> defines how many of these I<primary data points> are used to

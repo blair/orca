@@ -164,7 +164,7 @@ VERSION = @VERSION@
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = tar
+TAR = gtar
 GZIP_ENV = --best
 SOURCES = $(librrd_la_SOURCES) $(librrd_private_la_SOURCES) $(rrdcgi_SOURCES) $(rrdtool_SOURCES)
 OBJECTS = $(librrd_la_OBJECTS) $(librrd_private_la_OBJECTS) $(rrdcgi_OBJECTS) $(rrdtool_OBJECTS)
@@ -337,7 +337,7 @@ distdir: $(DISTFILES)
 	done
 gdpng.lo gdpng.o : gdpng.c ../libpng-1.0.3/png.h ../zlib-1.1.3/zlib.h \
 	../zlib-1.1.3/zconf.h ../libpng-1.0.3/pngconf.h ../gd1.3/gd.h
-getopt.lo getopt.o : getopt.c ../config/config.h
+getopt.lo getopt.o : getopt.c ../config/config.h getopt.h
 getopt1.lo getopt1.o : getopt1.c ../config/config.h getopt.h
 gifsize.lo gifsize.o : gifsize.c
 parsetime.lo parsetime.o : parsetime.c rrd_tool.h ../config/config.h \

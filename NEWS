@@ -1,82 +1,193 @@
-New in Orca version 0.25.
+NEW IN ORCA 0.26
+================
+
+ 1) Due to some changes at onelist.com, the name of this mailing must
+    change.  The -help at the end of orca-help is being reserved for
+    the mailing list named "orca".  As such, I'm renaming this list to
+    orca-users@onelist.com.
+
+ 2) Major speedup in starting Orca when many different source files
+    exist and the first line of the file is used to tell Orca what
+    columns of data there are.  Now Orca caches this information in
+    the state file so that the source data files do no have to be
+    opened everytime Orca starts up.  This has a significant speed
+    improvement when the file is compressed, since a separate process
+    is normally spawned to read the file.
+
+ 3) Reduce the number of size of the open file descriptor cache to 100
+    open file descriptors since the change in 2) reduces the need for
+    as many open file descriptors.
+
+ 4) A new configuration file parameter named filename_compare was
+    added that let's Orca determine when it can flush data from loaded
+    source files.  This prevents Orca from loading in all of the data
+    and then flushing it to the disk when the amount of new data is
+    large.  See the Orca documentation for more information.
+
+ 5) Allow Orca to work with RRDtool versions newer than 1.0.7.
+
+ 6) Save Orca's state more often so that if something happens to the
+    Orca process, it does not have to reload all the data from the
+    source data files it previously read.
+
+ 7) Have Orca print the current memory usage and CPU time more often.
+    This attempts to use the proper ps command for the operating
+    system Orca was configured on.
+
+ 8) Take all of the modules in the monolithic orca script and move
+    them into their own files.  This improves readability and
+    maintainability.
+
+ 9) Require the latest versions of Data::Dumper (2.101), Digest::MD5
+    (2.09), Math::IntervalSearch (1.05), RRDs (1.0.13), and Storable
+    (0.6.9).
+
+10) Use arrays instead of hashes as the internal structure for many
+    objects.  This should speed access to object members and make
+    their memory footprint smaller.
+
+11) Use a new integer file identifier (FID) instead of the filename to
+    refer to in internal objects.  There is now a global array keyed
+    by the FID that gives the name and a hash keyed by filename that
+    returns the FID.  The FID is used where the filename previously
+    was used.  This reduces Orca's memory usage by 10%, since only one
+    copy of a long filename is needed.
+
+    These following changes are what's new in orcallator.se 1.23 and
+    the orcallator.cfg file since version 1.20 which was included with
+    Orca 0.25.  All of the changes below are taken advantage of in the
+    included orcallator.cfg and start_orcallator files.
+
+12) Include code to record and plot the NFS v2 and v3 server
+    statistics.  The new statistics are: nfss_calls, the number of NFS
+    calls to the NFS server, nfss_bad, the number of bad NFS calls per
+    second, and v{2,3}{reads,writes}, which are nfss_calls broken down
+    into NFS version 2 and NFS version 3 calls.  The sum of
+    v{2,3}{reads,writes} will be less than nfss_calls as the other
+    types of NFS calls, such as getattr and lookup, are not included.
+    Contributed by Paul Haldane <Paul.Haldane@newcastle.ac.uk>.  This
+    code is enabled by the standard -DWATCH_OS or individually by
+    -DWATCH_NFS_SERVER.  The define -DWATCH_NFS has been supperseded
+    by -DWATCH_NFS_CLIENT, but to keep backwards compatibility,
+    -DWATCH_NFS_CLIENT will be defined if -DWATCH_NFS is defined.
+
+13) When orcallator was running on a system with DiskSuite, the same
+    physical disk was listed multiple times when it appeared in the
+    same metadevice.  The solution to the problem is not to build the
+    c0t0d0 name but use the long disk name provided by the long_name
+    string. Patch contributed by Paul Haldane
+    <Paul.Haldane@newcastle.ac.uk>.
+
+14) Prevent core dumps on extremely long access log lines.
+
+NEW IN ORCA 0.25
+================
+
  1) I have moved companies from Yahoo!/GeoCities to Akamai.  My email
-    address has changed to blair@akamai.com and the old one will
-    no longer work.  Also, I have moved the my entire Orca archive
-    from www.geocities.com/~bzking/ to www.gps.caltech.edu/~blair/orca/
- 2) Fix an important bug where Orca would crash if column names mentioned
-    in the configuration file did not exist in the source data files.
+    address has changed to blair@akamai.com and the old one will no
+    longer work.  Also, I have moved the entire archive from
+    www.geocities.com/~bzking/ to www.gps.caltech.edu/~blair/orca/
+
+ 2) Fix an important bug where Orca would crash if column names
+    mentioned in the configuration file did not exist in the source
+    data files.
+
  3) Orca, when it received the HUP signal, will look for new source
-    data files the next time it runs through the main loop.  If you have
-    a constantly running Orca, this is a simpler and faster solution
-    than restarting Orca, which takes time to reread all the source files.
- 4) Add a new make target orcallator_run_at_boot which will install the
-    proper files into the proper /etc/*.d/ directories to start orcallator
-    at boot time and shut it down at halt time.
+    data files the next time it runs through the main loop.  If you
+    have a constantly running Orca, this is a simpler and faster
+    solution than restarting Orca, which takes time to reread all the
+    source files.
+
+ 4) Add a new make target orcallator_run_at_boot which will install
+    the proper files into the proper /etc/*.d/ directories to start
+    orcallator at boot time and shut it down at halt time.
+
  5) The previous default orcallator.cfg would not find compressed
     orcallator files.
+
  6) Remove the plot configuration option `optional' which made plots
     optional.  Now make plots optional by default and use the keyword
     `required' to make them required.  If a plot is required, then it
     will always display, even if there is no data loaded for it.
+
  7) Change the behavior of warnings when data requested to be plotted
     in the configuration file does not exist in the source data files.
-    Any resulting errors from this, such as cannot compile errors,
-    are only sent when the verbose level is above 1 or when the plot
-    is required.
- 8) Include Storable 0.6.7 but continue to only require Storable 0.6.3.
+    Any resulting errors from this, such as cannot compile errors, are
+    only sent when the verbose level is above 1 or when the plot is
+    required.
 
-New in Orca version 0.24.
+ 8) Include Storable 0.6.7 but continue to only require Storable
+    0.6.3.
+
+NEW IN ORCA 0.24
+================
+
  1) Installation notes.  Due to the way Orca generated image and HTML
     files are named, read the INSTALL file.  Otherwise, you will have
     some left over cruft that will waste disk space and you will have
     to reload all of your source data files.
+
  2) Orca now runs under older Perls: Perl 5.004_01 or later.
- 3) Switch to generate PNGs instead of GIFs.  They take up 1/3 less disk
-    space and are created at least 10% faster.  If you want Orca to
-    generate GIFs instead of PNGs, give it the -gifs flag.
- 4) Read in .gz files using gunzip, .Z files using uncompress, and .bz2
-    files with bunzip2.
+
+ 3) Switch to generate PNGs instead of GIFs.  They take up 1/3 less
+    disk space and are created at least 10% faster.  If you want Orca
+    to generate GIFs instead of PNGs, give it the -gifs flag.
+
+ 4) Read in .gz files using gunzip, .Z files using uncompress, and
+    .bz2 files with bunzip2.
+
  5) Add to the plot title the type of the plot (i.e. 'Yearly') in
     every image.
- 6) Add a href field for a plot.  This, if defined, appends a HREF to a
-    target name letting you point the user to a page to get more
+
+ 6) Add a href field for a plot.  This, if defined, appends a HREF to
+    a target name letting you point the user to a page to get more
     information.  The default orcallator.cfg has these added to point
     to the new documentation web page
-    http://www.geocities.com/~bzking/docs/orcallator.html for all
-    orcallator.se recorded data.
- 7) Add a new option named base that lets the user specify either a base
-    of 1000 or 1024 for autoscaling plots.  This is useful for memory
-    (base 1024) vs network (base 1000) measurements and is used in
-    generating correctly calculating the base to use in calculating
+    http://www.geocities.com/~bzking/docs/orcallator.html
+    for all orcallator.se recorded data.
+
+ 7) Add a new option named base that lets the user specify either a
+    base of 1000 or 1024 for autoscaling plots.  This is useful for
+    memory (base 1024) vs network (base 1000) measurements and is used
+    in generating correctly calculating the base to use in calculating
     the Y axis.
+
  8) The word logarithmic can now be used for a plot to create a
     logarithmic Y axis scale.
- 9) Orca no longer lists all the source files it finds to shorten verbose
-    output.  This output is now generated if the verbose level is greater
-    than one.
-10) Do not overwrite existing HTML files when creating new versions until
-    the new version is finished.  This allows people to better view
-    existing pages until the new page is completely finished.
-11) All generated HTML and image filenames are now created using
-    a different set of mappings.  Now
+
+ 9) Orca no longer lists all the source files it finds to shorten
+    verbose output.  This output is now generated if the verbose level
+    is greater than one.
+
+10) Do not overwrite existing HTML files when creating new versions
+    until the new version is finished.  This allows people to better
+    view existing pages until the new page is completely finished.
+
+11) All generated HTML and image filenames are now created using a
+   different set of mappings.  Now
       orcallator -> o
       orca       -> o
       _times_    -> _X_
       _percent_  -> _pct_
       _number_   -> _num_.
+
     All older installations of Orca will need to be renamed unless you
-    want to load in all your data again.  You can perform this renaming
-    on your files by running make upgrade, or if you have directories
-    that are not normally covered by the Orca install, run
-    src/upgrade_installation followed by the list of directories to search
-    in.  Pass the -n flag to upgrade_installation if you want to see
-    the renames that will be performed without actually performing them.
+    want to load in all your data again.  You can perform this
+    renaming on your files by running make upgrade, or if you have
+    directories that are not normally covered by the Orca install, run
+    src/upgrade_installation followed by the list of directories to
+    search in.  Pass the -n flag to upgrade_installation if you want
+    to see the renames that will be performed without actually
+    performing them.
+
 12) New HTML and image filenames are shorter, which can save 10% in
     disk space on a large installation according to du -k.  Also, now
-    plots containing arbitrary many data sources can be plotted without
-    exceeding the maximum file lengths.
-13) Add locking so that only one Orca can run on a single configuration
-    file at one time.
+    plots containing arbitrary many data sources can be plotted
+    without exceeding the maximum file lengths.
+
+13) Add locking so that only one Orca can run on a single
+    configuration file at one time.
+
 14) Include and require RRDtool 1.0.7.2 and Math::Interpolate 1.05.
     Include Data::Dumper 2.101, Digest::MD5 2.09, Storable 0.6.5, with
     Orca.
@@ -86,23 +197,27 @@ New in Orca version 0.24.
     below are taken advantage of in the included orcallator.cfg and
     start_orcallator files.
 
-15) Orcallator.se now has a web page describing the various measurements
-    it makes.  See http://www.geocities.com/~bzking/docs/orcallator.html.
-16) If the environmental variable WEB_SERVER is defined, use its value of
-    the as the name of the process to count for the number of web
+15) Orcallator.se now has a web page describing the various
+    measurements it makes.  See
+    http://www.geocities.com/~bzking/docs/orcallator.html.
+
+16) If the environmental variable WEB_SERVER is defined, use its value
+    of the as the name of the process to count for the number of web
     servers on the system.  If WEB_SERVER is not defined, then count
     number of httpd's.
-17) If the COMPRESSOR environmental variable is defined, then when a new
-    log file is opened for a new day, the just closed log file is
+
+17) If the COMPRESSOR environmental variable is defined, then when a
+    new log file is opened for a new day, the just closed log file is
     compressed using the COMPRESSOR command in the following manner:
-    system(sprintf("%s %s &", COMPRESSOR, log_file)
-    COMPRESSOR should be set to something like "gzip -9", or "compress",
-    or "bzip2 -9".  If the configure script finds both a compressor and
-    uncompressor tool, such as both gzip and gunzip, then start_orcallator
-    will inform orcallator.se to compress the log files at the end of a
+    system(sprintf("%s %s &", COMPRESSOR, log_file) COMPRESSOR should
+    be set to something like "gzip -9", or "compress", or "bzip2 -9".
+    If the configure script finds both a compressor and uncompressor
+    tool, such as both gzip and gunzip, then start_orcallator will
+    inform orcallator.se to compress the log files at the end of a
     day.
-18) New measurements.  The first column lists the define that must
-    be passed to the SE interpreter to obtain the measurement.  If you
+
+18) New measurements.  The first column lists the define that must be
+    passed to the SE interpreter to obtain the measurement.  If you
     use the WATCH_OS define, then all of these are now measured.
     WATCH_MUTEX  - ncpus - number of CPUs on the system
     WATCH_CPU    - #proc/s - 5 minute average process spawn rate if root
@@ -122,89 +237,124 @@ New in Orca version 0.24.
     WATCH_MOUNTS - mnta_* - available inodes for non-root users
     WATCH_MOUNTS - mntP_* - percentage of kilobytes used for non-root users
     WATCH_MOUNTS - mntp_* - percentage of inodes used for non-root users
+
 19) Add some smarts so that if the number of interfaces, physical
-    disks, or mounted partitions changes, then a new header is printed.
-    This will prevent column name and data mixups when the system
-    configuration changes.
-20) Prevent a division by zero in calculating the mean_disk_busy if the
-    number of disks on the system is 0.
-21) Fix a bug in the disk_mean calculation where it was being divided
-    by the wrong disk_count.  Now it should be much larger and in scale
-    with disk_peak.
-22) Increase the number of characters for each network interface from four
-    to five.
+    disks, or mounted partitions changes, then a new header is
+    printed.  This will prevent column name and data mixups when the
+    system configuration changes.
+
+20) Prevent a division by zero in calculating the mean_disk_busy if
+    the number of disks on the system is 0.  21) Fix a bug in the
+    disk_mean calculation where it was being divided by the wrong
+    disk_count.  Now it should be much larger and in scale with
+    disk_peak.
+
+22) Increase the number of characters for each network interface from
+    four to five.
+
 23) If WATCH_YAHOO is defined, then process the access log as a Yahoo!
     style access log.
-24) Restructure the code to handle different web server access log formats
-    easier.
 
-New in Orca version 0.23.
+24) Restructure the code to handle different web server access log
+    formats easier.
+
+NEW IN ORCA 0.23
+================
+
  1) Fix two important bugs in orcallator_running and start_orcallator
     which where using old PERCOLLATOR_DIR variables instead of the new
     ORCALLATOR_DIR.
 
-New in Orca version 0.22.
+NEW IN ORCA 0.22
+================
+
  1) Add a new command line option (-r) that tells Orca to only update
     the RRD data files and not to generate any HTML or GIF files.
-    This is useful if you are loading in a large amount of data in several
-    invocations of Orca and do not want to create the HTML and GIF files
-    in each run since it is time consuming.
- 2) Fix a bug where if the number of columns changed in from one source
-    file to the next source file in a files group, the column index used
-    to get a particular value is the index for the old file and not the
-    index for the new file.  This required some internal restructuring
-    the speeds Orca up slightly.
- 3) Add a new plot called quarterly that displays the last 100 days
-    of data.  This is a nice transition between the monthly and yearly
+    This is useful if you are loading in a large amount of data in
+    several invocations of Orca and do not want to create the HTML and
+    GIF files in each run since it is time consuming.
+
+ 2) Fix a bug where if the number of columns changed in from one
+    source file to the next source file in a files group, the column
+    index used to get a particular value is the index for the old file
+    and not the index for the new file.  This required some internal
+    restructuring the speeds Orca up slightly.
+
+ 3) Add a new plot called quarterly that displays the last 100 days of
+    data.  This is a nice transition between the monthly and yearly
     plots.
+
  4) A temporary fix: Skip and do not complain about input source data
     file lines containing the word timestamp in it.
+
  5) Removed some unused methods to make Orca smaller.
+
  6) Added some more documentation to orcallator.cfg.
+
  7) Make Orca slightly faster.
  
-New in Orca version 0.21.
+NEW IN ORCA 0.21
+================
+
  1) Every file containing the words percollator, percol and perc has
-    been renamed to contain the word orcallator.  A new make target named
-    migrate will change all filenames in an installed Orca directory to
-    the new names.  This `make migrate' should only be run after killing
-    any running percollator.se's and Orca processes and before installing
-    this version of Orca.
+    been renamed to contain the word orcallator.  A new make target
+    named migrate will change all filenames in an installed Orca
+    directory to the new names.  This `make migrate' should only be
+    run after killing any running percollator.se's and Orca processes
+    and before installing this version of Orca.
+
  2) Orca now includes Digest::MD5 2.07, Math::Interpolate 1.02, RRDs
-    0.99029, and Storable 0.603 in packages/ to make installation easier.
-    The configure script now determines if you have the requisite version
-    of these packages installed in your Perl and will modify the Makefiles
-    to build the necessary modules.
+    0.99029, and Storable 0.603 in packages/ to make installation
+    easier.  The configure script now determines if you have the
+    requisite version of these packages installed in your Perl and
+    will modify the Makefiles to build the necessary modules.
+
  3) Orca now displays the daily, weekly, monthly, yearly plots of all
-    measurements even if there is only one group.  Orca used to not make
-    the web pages showing the different measurements all on one page if
-    there was only one group.
+    measurements even if there is only one group.  Orca used to not
+    make the web pages showing the different measurements all on one
+    page if there was only one group.
+
  4) Add GIF width and height tags to img src's using the returned GIF
     size from RRDs::graph to speed with page rendering.
+
  5) Some minor HTML fixes to have the pages look cleaner for Netscape
     browsers.
- 6) Make use of RRDtool 0.99.12's legend formatting to clean up the GIF
-    legends and to store the minimum and maximum values of a data stream.
+
+ 6) Make use of RRDtool 0.99.12's legend formatting to clean up the
+    GIF legends and to store the minimum and maximum values of a data
+    stream.
+
  7) Remove the LAST RRA from all Orca created RRAs since it is not
     required to get the current value from an RRA.  This requires
     rebuilding all RRDs.
+
  8) Add x86 Ethernet device (elxl*) plotting to orcallator.cfg.in.
+
  9) Do group name substitution on the Y legend in GIFs.
+
 10) Orca used to delete RRD files even if they are created with new
     versions or Orca.  Now the RRD file is used if it is at least as
     new as the version a particular version of Orca needs.
+
 11) Orca now dies if an unrecognized command line option is given.
+
 12) Speed up the count_proc() routine in orcallator.se by 20%.
+
 13) Perl_glob does not die if it cannot open a directory.  It will
-    also not follow directories named .. if they happen to match
-    a regular expression.  It also only returns files matching the
+    also not follow directories named .. if they happen to match a
+    regular expression.  It also only returns files matching the
     regular expressions.
+
 14) Change all references from
     http://www.geocities.com/ResearchTriangle/Thinktank/4996/
     to
     http://www.geocities.com/~bzking/
+
 15) Speed up Orca by using Storable to do deep clones of objects
     instead of using Data::Dumper and eval.
+
 16) Replace some linear search by a hash lookup to speed up Orca.
+
 17) Fix some bugs in orcallator.se.
+
 18) Clean up some error messages.

@@ -1,5 +1,5 @@
 ## Process this file with automake to produce Makefile.in
-
+RSYNC = rsync --rsh=ssh
 # build the following subdirectories
 SUBDIRS = cgilib-0.4 config gd1.3 zlib-1.1.3 libpng-1.0.3 src doc examples contrib
 
@@ -34,13 +34,13 @@ AUTOCONF = @AUTOCONF@ --localdir=$(top_srcdir)/config
 
 # rules for building the perl module
 perl_piped: perl-piped/Makefile
-	cd perl-piped && $(MAKE)  OPTIMIZE="$(CFLAGS)"
+	cd perl-piped && $(MAKE)  OPTIMIZE="$(CFLAGS)" CC="$(CC)"
 
 perl-piped/Makefile: perl-piped/Makefile.PL
 	cd perl-piped && $(PERL) Makefile.PL
 
 perl_shared: perl-shared/Makefile
-	cd perl-shared && $(MAKE) OPTIMIZE="$(CFLAGS)"
+	cd perl-shared && $(MAKE) OPTIMIZE="$(CFLAGS)" CC="$(CC)"
 
 perl-shared/Makefile: perl-shared/Makefile.PL
 	cd perl-shared && $(PERL) Makefile.PL
@@ -59,24 +59,27 @@ all-local:	@COMP_PERL@
 
 to-docs: to-versync
 	(cd doc && $(MAKE) clean && $(MAKE))
+
 #to-autoconf
 to-versync: 
 	perl -i -p -e '"$(VERSION)" =~ /(\d+)\.(\d+)\.(\d+)/; $$v=sprintf("%1d.%02d0%02d1" ,$${1},$${2},$${3}); s|VERSION\s*=\s*[\d.]+|VERSION = $$v|' perl-*/RRD?.pm
-	perl -i -p -e 's|RRDtool\s+\d+\.\d+\.\d+|RRDtool $(VER)|' src/*.[ch]
+	perl -i -p -e 's|RRDtool\s+\d+\.\d+\.\d+ |RRDtool $(VERSION) |' src/*.[ch]
 
 to-dist: to-docs dist
 	mv $(PACKAGE)-$(VERSION).tar.gz archive
 
 to-scp: to-dist
-	scp CHANGES oetiker@tardis.ee.ethz.ch:/home/oetiker/public_html/webtools/rrdtool/pub/
-	scp archive/$(PACKAGE)-$(VERSION).tar.gz oetiker@tardis.ee.ethz.ch:/home/oetiker/public_html/webtools/rrdtool/pub/$(ARCHIVE)
-	scp CHANGES tobi@ipn.caida.org:/ipn/web/Tools/RRDtool/pub/
-	scp archive/$(PACKAGE)-$(VERSION).tar.gz tobi@ipn.caida.org:/ipn/web/Tools/RRDtool/pub/
+	$(RSYNC) CHANGES  archive/$(PACKAGE)-$(VERSION).tar.gz oetiker@tardis.ee.ethz.ch:/home/oetiker/public_html/webtools/rrdtool/pub/
+	$(RSYNC) CHANGES archive/$(PACKAGE)-$(VERSION).tar.gz tobi@ipn.caida.org:/ipn/web/Tools/RRDtool/pub/
 
-site-perl-inst:
+site-perl-inst: site-perl-install
+
+site-perl-install: perl-piped/Makefile perl-shared/Makefile
 	cd perl-piped && $(MAKE) install
 	cd perl-shared && $(MAKE) install
 
 clean-local:
-	cd perl-piped && $(MAKE) clean
-	cd perl-shared && $(MAKE) clean
+	cd perl-piped && test -f Makefile && $(MAKE) clean || true
+	cd perl-shared && test -f Makefile && $(MAKE) clean || true
+
+##END##

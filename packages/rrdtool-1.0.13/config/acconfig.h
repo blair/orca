@@ -32,21 +32,51 @@ char *strchr (), *strrchr ();
 # endif
 #endif
 
+
 #if NO_NULL_REALLOC
 # define rrd_realloc(a,b) ( (a) == NULL ? malloc( (b) ) : realloc( (a) , (b) ))
 #else
 # define rrd_realloc(a,b) realloc((a), (b))
 #endif      
 
-#if (! defined(HAVE_FINITE) && defined(HAVE_ISNAN) && defined(HAVE_ISINF))
-#define HAVE_FINITE 1
-#define finite(a) (! isnan(a) && ! isinf(a))
-#endif
+#if HAVE_MATH_H
+#  include <math.h>                                                                                                                      
+#endif                                                                                                                                   
+                                                                                                                                         
+#if HAVE_FLOAT_H                                                                                                                         
+#  include <float.h>                                                                                                                     
+#endif                                                                                                                                   
+ 
 
+/* for Solaris */
 #if (! defined(HAVE_ISINF) && defined(HAVE_FPCLASS))
 #define HAVE_ISINF 1
 #include <ieeefp.h>
 #define isinf(a) (fpclass(a) == FP_NINF || fpclass(a) == FP_PINF)
+#endif
+
+/* for OSF1 Digital Unix */
+#if (! defined(HAVE_ISINF) && defined(HAVE_FP_CLASS) && defined(HAVE_FP_CLASS_H))
+#  define HAVE_ISINF 1
+#  include <fp_class.h>
+#  define isinf(a) (fp_class(a) == FP_NEG_INF || fp_class(a) == FP_POS_INF)
+#endif
+
+/* for HP-UX 10.20 */
+#if (! defined(HAVE_ISINF) && defined(HAVE_FPCLASSIFY) )
+#  define HAVE_ISINF 1
+#  define isinf(a) (fpclassify(a) == FP_MINUS_INF || fpclassify(a) == FP_PLUS_INF)  
+#endif
+
+/* for AIX */
+#if (! defined(HAVE_ISINF) && defined(HAVE_CLASS))
+#  define HAVE_ISINF 1
+#  define isinf(a) (class(a) == FP_MINUS_INF || class(a) == FP_PLUS_INF)
+#endif
+
+#if (! defined(HAVE_FINITE) && defined(HAVE_ISNAN) && defined(HAVE_ISINF))
+#define HAVE_FINITE 1
+#define finite(a) (! isnan(a) && ! isinf(a))
 #endif
 
 #ifndef HAVE_FINITE

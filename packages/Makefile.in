@@ -171,6 +171,7 @@ clean_storable:
 	fi
 
 distclean: $(DISTCLEAN_TARGETS)
+	$(RM) Makefile
 
 distclean_compress_zlib:	clean_compress_zlib
 

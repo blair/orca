@@ -107,7 +107,7 @@ day and not Monday morning 00:00. Thus the label should be positioned
 at noon. By defining a precision of 24 hours or rather 86400 seconds,
 you make sure that this happens.
 
-=item B<-y>B<--y-grid> I<grid step>:I<label factor> (default autoconfigure)
+=item B<-y>|B<--y-grid> I<grid step>:I<label factor> (default autoconfigure)
 
 Makes vertical grid lines appear at I<grid step> interval. Every
 I<label factor> gridstep, a major grid line is printed, along with
@@ -178,13 +178,22 @@ existent.
 
 =item B<-u>|B<--upper-limit> I<value> (default autoconfigure)
 
-The maximum value to be graphed. By default This will be
-autoconfigured from the data you select with the graphing functions.
+This is not the upper limit of a graph!  But rather, this is the
+minimum upper bound of a graph.  Use this to expand graphs up.
+For example, the value 100 will result in graphs that have a upper
+bound of 100 or more.  Setting the upper limit to the maximum value
+for some DS will result in disabling RRDtool's autoscaling down (ie
+it will "expand" graphs up.)  To disable RRDtool's autoscaling up
+(to the max value for the DSs graphed), use a nifty CDEF like so:
+CDEF:mcpu=cpu,100,GT,100,cpu,IF.  If this CDEF is applied to all DSs
+in a graph, then the graph will have an upper limit of 100.
 
 =item B<-l>|B<--lower-limit> I<value> (default autoconfigure)
 
-The minimum value to be graphed. By default This will be
-autoconfigured from the data you select with the graphing functions.
+This is not the lower limit of a graph.  But rather, this is the
+maximum lower bound of a graph.  For example, the value -100 will
+result in a graph that has a lower limit of -100 or less.  Use this
+keyword to expand graphs down.
 
 =item B<-r>|B<--rigid>
 
@@ -218,11 +227,11 @@ Define a title to be written into the graph
 
 Define virtual name for a data source. This name can then be used
 in the functions explained below. The
-DEF call automatically chooses an B<RRA> which provides data in a
+DEF call automatically chooses an B<RRA> which contains I<CF> consolidated data in a
 resolution appropriate for the size of the graph to be drawn.  Ideally
 this means that one data point from the B<RRA> should be represented
 by one pixel in the graph.  If the resolution of the B<RRA> is higher
-than the resolution of the graph, the data in the RRA will be
+than the resolution of the graph, the data in the RRA will be further
 consolidated according to the consolidation function (I<CF>) chosen.
 
 =item B<CDEF:>I<vname>B<=>I<rpn-expression>
@@ -297,6 +306,12 @@ back otherwise 0.
 =item UNKN
 
 Push an I<*UNKNOWN*> value onto the stack.
+
+=item PREV
+
+Push I<*UNKNOWN*> if its at the first value of a data set or otherwise
+the value of this CDEF at the previous time step. This allows you to
+perform calculations across the data.
 
 =item INF, NEGINF
 
@@ -386,32 +401,43 @@ turn *UNKNOWN* into zero ...
  
 =back
 
-=head1 NOTE
+=head1 NOTES on legend arguments
+
+=head2 Escaping the colon
 
 In a ':' in a I<legend> argument will mark the end of the legend. To
 enter a ':' into a legend, the colon must be escaped with a backslash '\:'.
 Beware, that many environments look for backslashes themselves, so it may
 be necessary to write two backslashes so that one is passed onto rrd_graph.
 
-=head1 NOTE 2
+=head2 String Formatting
 
 The text printed below the actual graph can be formated by appending special
 escaped characters at the end of a text. When ever such a character occurs,
-all pending text is pushed onto the graph according to the character specified.
+all pending text is pushed onto the graph according to the character
+specified.
 
-Valid characters are: B<j> for justified, B<l> for left aligned, B<r>
-for right aligned and B<c> for centered. In the next section there is an example
-showing how to use centered formating. 
+Valid markers are: B<\j> for justified, B<\l> for left aligned, B<\r> for
+right aligned and B<\c> for centered. In the next section there is an
+example showing how to use centered formating.
 
-A special case is COMMENT:\s this inserts some additional vertical space before
-placing the next row of legends. 
+Normally there are two space characters inserted between every two items
+printed into the graph. The space following a string can be suppressed by
+putting a B<\g> at the end of the string. The B<\g> also squshes any space
+inside the string if it is at the very end of the string. This can be used
+in connection with B<%s> to supress empty unit strings.
 
-=head1 NOTE 3
+ GPRINT:a:MAX:%lf%s\g
+ 
+A special case is COMMENT:B<\s> this inserts some additional vertical space
+before placing the next row of legends.
+
+=head1 NOTE on Return Values
 
 Whenever rrd_graph gets called, it prints a line telling the size of
 the gif it has just created to STDOUT. This line looks like this: XSIZExYSIZE.
 
-=head1 EXAMPLE
+=head1 EXAMPLE 1
 
   rrdtool graph demo.gif --title="Demo Graph" \
           DEF:cel=demo.rrd:exhaust:AVERAGE \
@@ -419,7 +445,7 @@ the gif it has just created to STDOUT. This line looks like this: XSIZExYSIZE.
           LINE2:cel#00a000:"D. Celsius" \
           LINE2:far#ff0000:"D. Fahrenheit\c"
 
-=head1 EXAMPLE2
+=head1 EXAMPLE 2
 
 This example demonstrates the syntax for using IF and UN to set
 I<*UNKNOWN*> values to 0.  This technique is useful if you are
@@ -445,7 +471,7 @@ will pop off the 3 values and replace them with 0.  If idat1 had a
 real value like 7942099, then the stack would have 0,0,7942099 and the
 real value would be the replacement.  
 
-=head1 EXAMPLE3
+=head1 EXAMPLE 3
 
 This example shows two ways to use the INF function. First it makes
 the background change color during half of the hours. Then, it uses
@@ -475,18 +501,18 @@ The second CDEF looks if any of val1,val2,val3,val4 is unknown. It does so by
 checking the outcome of sum(val1,val2,val3,val4). Again, INF is returned when
 the condition is true, UNKN is used to not plot the data.
 
-The different items are plotted in a particular order. First do the background,+then use a
-normal area to overlay it with data. Stack the other data until they+are all plotted. Last but
+The different items are plotted in a particular order. First do the background, then use a
+normal area to overlay it with data. Stack the other data until they are all plotted. Last but
 not least, overlay everything with eye-hurting red
 to signal any unknown data.
 
 Note that this example assumesthat your data is in the positive half of the y-axis
 otherwhise you would would have to add NEGINF in order to extend the coverage
 of the rea to whole graph.
-  
+
 =head1 AUTHOR
 
-Tobias Oetiker <oetiker@ee.ethz.ch>
+Tobias Oetiker E<lt>oetiker@ee.ethz.chE<gt>
 
 =head1 REFERENCES
 

@@ -23,10 +23,6 @@ The argument parser uses the same semantics as you are used from your c shell.
 
 =over 8
 
-=item B<--goodfor>|B<-g> I<seconds>
-
-Specify the number of seconds this page should remain valid. This will prompt
-the rrdcgi to output a Last-Modified and a Expire header.
 
 =item B<--filter>
 
@@ -66,9 +62,35 @@ CGI interface.
 
 =over 8
 
+=item RRD::GOODFOR I<seconds>
+
+Specify the number of seconds this page should remain valid. This will prompt
+the rrdcgi to output a Last-Modified, an Expire and if the number of
+seconds is I<negative> a Refresh headers.
+
 =item RRD::INCLUDE I<filename>
 
 Include the contents of the given file into the page returned from the cgi
+
+=item RRD::SETENV I<variable> I<value>
+
+If you want to present your graphs in another time zone than your own, you
+could use
+
+ <RRD::SETENV TZ UTC>
+
+to make sure everything is presented in Universal Time. Note that the
+values permitted to TZ depend on your OS.
+
+=item RRD::TIME::LAST I<rrd-file> I<strftime-format>
+
+This gets replaced by the last modification time of the selected RRD. The
+time is I<strftime>-formated with the string specified in the second argument.
+
+=item RRD::TIME::NOW I<strftime-format>
+
+This gets replaced by the current time of day. The
+time is I<strftime>-formated with the string specified in the argument.
 
 =back
 
@@ -104,7 +126,7 @@ number of the B<PRINT> argument. This first B<PRINT> has I<number> 0.
 
 =back
 
-=head1 EXAMPLE
+=head1 EXAMPLE 1
 
 The example below creates a web pages with a single RRD graph.
 
@@ -147,6 +169,31 @@ you want to use a source for your graph.
  </P>
  </BODY>
  </HTML>
+
+=head1 EXAMPLE 3
+
+This example shows how to handle the case where the RRD, graphs and
+cgi-bins are seperate directories
+
+ #!/.../bin/rrdcgi
+ <HTML>
+ <HEAD><TITLE>RRDCGI Demo</TITLE></HEAD>
+ <BODY>
+ <H1>RRDCGI test Page</H1>
+ <RRD::GRAPH
+  /.../web/gifs/testhvt.gif
+  --imginfo '<IMG SRC=/.../gifs/%s WIDTH=%lu HEIGHT=%lu >'
+  --lazy --start -1d --end now
+  DEF:http_src=/.../rrds/test.rrd:http_src:AVERAGE
+  AREA:http_src#00ff00:http_src
+ >
+ </BODY>
+ </HTML>
+
+Note 1: Replace /.../ with the relevant directories
+
+Note 2: The SRC=/.../gifs should be paths from the view of the
+webserver/browser
 
 =head1 AUTHOR
 

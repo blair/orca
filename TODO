@@ -1,3 +1,7 @@
+XXX Fix the bug where if a legend is listed in a plot {} then the
+XXX number of colored boxes in the generated plot are more than the
+XXX data that appears there.
+
 This is a pretty comprehensive to-do list for Orca and the related data
 gathering tools.  Any comments and additions to this list are welcome.
 

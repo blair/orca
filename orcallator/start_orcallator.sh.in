@@ -48,7 +48,7 @@ export COMPRESSOR OUTDIR WEB_LOG
 # Check if orcallator is already running.
 pids=`/usr/ucb/ps auxww | $AWK '/orcallator.se/ && !/awk/ {print $2}'`
 if test "$pids" != ""; then
-  echo "Percollator already running.  Exiting."
+  echo "Orcallator already running.  Exiting."
   exit 1
 fi
 

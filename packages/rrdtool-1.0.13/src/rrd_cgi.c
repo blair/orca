@@ -1,5 +1,5 @@
 /*****************************************************************************
- * RRDtool  Copyright Tobias Oetiker, 1997, 1998, 1999
+ * RRDtool 1.0.13  Copyright Tobias Oetiker, 1997, 1998, 1999
  *****************************************************************************
  * rrd_cgi.c  RRD Web Page Generator
  *****************************************************************************/
@@ -38,16 +38,26 @@ char* drawgraph(long, char **);
 /* return PRINT functions from last rrd_graph call */
 char* drawprint(long, char **);
 
+/* pretty-print the <last></last> value for some.rrd via strftime() */
+char* printtimelast(long, char **);
+
+/* pretty-print current time */
+char* printtimenow(long,char **);
+
 /* set an evironment variable */
 char* rrdsetenv(long, char **);
 
 /* include the named file at this point */
 char* includefile(long, char **);
 
+/* for how long is the output of the cgi valid ? */
+char* rrdgoodfor(long, char **);
+
 /** http protocol needs special format, and GMT time **/
 char *http_time(time_t *);
 
 
+static long goodfor=0;
 static char **calcpr=NULL;
 static void calfree (void){
   if (calcpr) {
@@ -65,37 +75,37 @@ char * stralloc(char *str){
   strcpy(nstr,str);
   return(nstr);
 }
+
 int main(int argc, char *argv[]) {
   long length;
   char *buffer;
   char *server_url = NULL;
   long i;
-  long goodfor=0;
   long filter=0;
-  long refresh=0;
+#ifdef MUST_DISABLE_SIGFPE
+  signal(SIGFPE,SIG_IGN);
+#endif
+#ifdef MUST_DISABLE_FPMASK
+  fpsetmask(0);
+#endif
+  /* what do we get for cmdline arguments?
+  for (i=0;i<argc;i++)
+  printf("%d-'%s'\n",i,argv[i]); */
   while (1){
       static struct option long_options[] =
       {
-	  {"goodfor",        required_argument, 0, 'g'},
 	  {"filter",          no_argument, 0, 'f'},
-	  {"refresh",        no_argument, 0, 'r'},
 	  {0,0,0,0}
       };
       int option_index = 0;
       int opt;
-      opt = getopt_long(argc, argv, "g:fr", 
+      opt = getopt_long(argc, argv, "f", 
 			long_options, &option_index);
       if (opt == EOF)
 	  break;
       switch(opt) {
-      case 'g': 
-	  goodfor=atol(optarg);
-	  break;
       case 'f':
 	  filter=1;
-	  break;
-	  case 'r':
-	  refresh=1;
 	  break;
       case '?':
             printf("unknown commandline option '%s'\n",argv[optind-1]);
@@ -108,17 +118,19 @@ int main(int argc, char *argv[]) {
       cgiArg = cgiInit ();
       server_url = getenv("SERVER_URL");
   }
+
   if (optind != argc-1) { 
-      fprintf (stderr, "Command line error. Expected Input file name! %d\n",optind);
-      exit(1);
+     fprintf(stderr, "ERROR: expected a filename\n");
+     exit(1);
+  } else {
+     length  = readfile(argv[optind], &buffer, 1);
   }
-
-  length  = readfile(argv[optind], &buffer, 1);
-
+   
   if(rrd_test_error()){
       fprintf(stderr, "ERROR: %s\n",rrd_get_error());
       exit(1);
   }
+
 
   if(filter==0) {
   /* pass 1 makes only sense in cgi mode */
@@ -131,12 +143,15 @@ int main(int argc, char *argv[]) {
 
   /* pass 2 */
   for (i=0;buffer[i] != '\0'; i++){    
+      i +=parse(&buffer,i,"<RRD::GOODFOR ",rrdgoodfor);
+      i += parse(&buffer,i,"<RRD::SETENV ",rrdsetenv);
       i += parse(&buffer,i,"<RRD::INCLUDE ",includefile);
+      i += parse(&buffer,i,"<RRD::TIME::LAST ",printtimelast);
+      i += parse(&buffer,i,"<RRD::TIME::NOW ",printtimenow);
   }
 
   /* pass 3 */
   for (i=0;buffer[i] != '\0'; i++){    
-    i += parse(&buffer,i,"<RRD::SETENV ",rrdsetenv);
     i += parse(&buffer,i,"<RRD::GRAPH ",drawgraph);
     i += parse(&buffer,i,"<RRD::PRINT ",drawprint);
   }
@@ -144,14 +159,14 @@ int main(int argc, char *argv[]) {
   if (filter==0){
       printf ("Content-Type: text/html\n"
 	      "Content-Length: %d\n", strlen(buffer));
-      if (goodfor > 0){
+      if (labs(goodfor) > 0){
 		  time_t now;
 		  now = time(NULL);
 		  printf ("Last-Modified: %s\n",http_time(&now));
-		  now += goodfor;
+		  now += labs(goodfor);
 		  printf ("Expires: %s\n",http_time(&now));
-		  if (refresh) {
-			printf("Refresh: %ld\n", goodfor);
+	          if (goodfor < 0) {
+ 	            printf("Refresh: %ld\n", labs(goodfor));
 		  }
       }
       printf ("\n");
@@ -178,6 +193,20 @@ char* rrdsetenv(long argc, char **args){
   } else {
     return stralloc("[ERROR: setenv faild because not enough arguments were defined]");
   }
+  return stralloc("");
+}
+
+char* rrdgoodfor(long argc, char **args){
+  if (argc == 1) {
+      goodfor = atol(args[0]);
+  } else {
+    return stralloc("[ERROR: goodfor expected 1 argument]");
+  }
+   
+  if (goodfor == 0){
+     return stralloc("[ERROR: goodfor value must not be 0]");
+  }
+   
   return stralloc("");
 }
 
@@ -332,13 +361,58 @@ char* drawgraph(long argc, char **args){
 }
 
 char* drawprint(long argc, char **args){
-  if (argc>=1 && calcpr != NULL){
+  if (argc==1 && calcpr){
     long i=0;
     while (calcpr[i] != NULL) i++; /*determine number lines in calcpr*/
     if (atol(args[0])<i-1)
-      return calcpr[atol(args[0])+1];    
+      return stralloc(calcpr[atol(args[0])+1]);    
   }
   return stralloc("[ERROR: RRD::PRINT argument error]");
+}
+
+char* printtimelast(long argc, char **args) {
+  time_t last;
+  struct tm tm_last;
+  char *buf;
+  if ( argc == 2 ) {
+    buf = malloc(255);
+    if (buf == NULL){	
+	return stralloc("[ERROR: allocating strftime buffer]");
+    };
+    last = rrd_last(argc+1, args-1); 
+    if (rrd_test_error()) {
+      char *err = malloc((strlen(rrd_get_error())+20)*sizeof(char));
+      sprintf(err, "[ERROR: %s]",rrd_get_error());
+      rrd_clear_error();
+      return err;
+    }
+    tm_last = *localtime(&last);
+    strftime(buf,254,args[1],&tm_last);
+    return buf;
+  }
+  if ( argc < 2 ) {
+    return stralloc("[ERROR: too few arguments for RRD::TIME::LAST]");
+  }
+  return stralloc("[ERROR: not enough arguments for RRD::TIME::LAST]");
+}
+
+char* printtimenow(long argc, char **args) {
+  time_t now = time(NULL);
+  struct tm tm_now;
+  char *buf;
+  if ( argc == 1 ) {
+    buf = malloc(255);
+    if (buf == NULL){	
+	return stralloc("[ERROR: allocating strftime buffer]");
+    };
+    tm_now = *localtime(&now);
+    strftime(buf,254,args[0],&tm_now);
+    return buf;
+  }
+  if ( argc < 1 ) {
+    return stralloc("[ERROR: too few arguments for RRD::TIME::NOW]");
+  }
+  return stralloc("[ERROR: not enough arguments for RRD::TIME::NOW]");
 }
 
 /* scan aLine until an unescaped '>' arives */
@@ -470,7 +544,7 @@ int parse(char **buf, long i, char *tag,
   memmove ((*buf)+i+valln,end,strlen(end)+1);
   if (val != NULL ) memmove ((*buf)+i,val, valln);
   free(val);
-  return valln;
+  return valln > 0 ? valln-1: valln;
 }
 
 char *

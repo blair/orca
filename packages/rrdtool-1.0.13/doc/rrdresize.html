@@ -1,11 +1,10 @@
-    <HTML> 
-	<HEAD> 
-	    <TITLE>resize - alters the size of an RRA.
+<HTML>
+<HEAD>
+<TITLE>rrdresize</TITLE>
+<LINK REV="made" HREF="mailto:karrer@zinal.ee.ethz.ch">
+</HEAD>
 
-</TITLE> 
-	</HEAD>
-
-	<BODY>
+<BODY>
 
 <!-- INDEX BEGIN -->
 <!--
@@ -22,105 +21,64 @@
 <!-- INDEX END -->
 
 <P>
-<H1><A NAME="NAME">NAME
-
-</A></H1>
-rrdtool resize - alters the size of an RRA.
-
-
+<H1><A NAME="NAME">NAME</A></H1>
 <P>
+rrdtool resize - alters the size of an RRA.
 
 <P>
 <HR>
-<H1><A NAME="SYNOPSIS">SYNOPSIS
-
-</A></H1>
+<H1><A NAME="SYNOPSIS">SYNOPSIS</A></H1>
+<P>
 <STRONG>rrdtool</STRONG>  <STRONG>resize</STRONG>  <EM>filename</EM>  <EM>rra-num</EM>    <STRONG>GROW</STRONG><EM>|</EM><STRONG>SHRINK</STRONG>  <EM>rows</EM>
 
 
 
-
-<P>
-
 <P>
 <HR>
-<H1><A NAME="DESCRIPTION">DESCRIPTION
-
-</A></H1>
+<H1><A NAME="DESCRIPTION">DESCRIPTION</A></H1>
+<P>
 The <STRONG>resize</STRONG> function is used to modify the number of rows in an <STRONG>RRA</STRONG>.
 
-
-<P>
-
 <DL>
-<DT><STRONG><A NAME="item_filename">filename 
-
-</A></STRONG><DD>
+<DT><STRONG><A NAME="item_filename">filename</A></STRONG><DD>
+<P>
 the name of the <STRONG>RRD</STRONG> you want to alter.
 
-
+<DT><STRONG><A NAME="item_rra">rra-num</A></STRONG><DD>
 <P>
-
-<DT><STRONG><A NAME="item_rra">rra-num 
-
-</A></STRONG><DD>
 the <STRONG>RRA</STRONG> you want to alter. You can find the number using <STRONG>rrdtool dump</STRONG>.
 
-
+<DT><STRONG><A NAME="item_GROW">GROW</A></STRONG><DD>
 <P>
-
-<DT><STRONG><A NAME="item_GROW">GROW 
-
-</A></STRONG><DD>
 used if you want to add extra rows to an RRA. The extra rows will be
 inserted as the rows that are oldest.
 
-
+<DT><STRONG><A NAME="item_SHRINK">SHRINK</A></STRONG><DD>
 <P>
-
-<DT><STRONG><A NAME="item_SHRINK">SHRINK 
-
-</A></STRONG><DD>
 used if you want to remove rows from an RRA. The rows that will be removed
 are the oldest rows.
 
-
+<DT><STRONG><A NAME="item_rows">rows</A></STRONG><DD>
 <P>
-
-<DT><STRONG><A NAME="item_rows">rows 
-
-</A></STRONG><DD>
 the number of rows you want to add or remove.
-
-
-<P>
 
 </DL>
 <P>
 <HR>
-<H1><A NAME="NOTES">NOTES
-
-</A></H1>
+<H1><A NAME="NOTES">NOTES</A></H1>
+<P>
 It is possible to abuse this tool and get strange results by first removing
 some rows and then reinsert the same amount (effectively clearing them to
 be Unknown). You may thus end up with unknown data in one RRA while at the
 same timestamp this data is available in another RRA.
 
-
-<P>
-
 <P>
 <HR>
-<H1><A NAME="AUTHOR">AUTHOR
-
-</A></H1>
-Alex van den Bogaerdt <A
-HREF="MAILTO:<alex@ergens.op.het.net>"><alex@ergens.op.het.net></A>
-
-
+<H1><A NAME="AUTHOR">AUTHOR</A></H1>
 <P>
+Alex van den Bogaerdt &lt;<A
+HREF="mailto:alex@ergens.op.het.net">alex@ergens.op.het.net</A>&gt;
 
-</DL>
-    </BODY>
+</BODY>
 
-    </HTML>
+</HTML>

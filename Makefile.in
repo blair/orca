@@ -50,8 +50,7 @@ distclean: $(DISTCLEAN_RRDTOOL)
 	$(RM) config.cache config.log config.status Makefile
 
 to-autoconf:
-	aclocal -I config --output=config/aclocal.m4
-	autoconf --localdir=config
+	aclocal -I config --output=config/aclocal.m4 && autoconf --localdir=config
 
 configure: configure.in
 	$(MAKE) to-autoconf

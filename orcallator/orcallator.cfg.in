@@ -34,8 +34,21 @@ find_times		0:10 1:00 6:00 12:00 19:00
 warn_email		root@localhost
 late_interval		interval + 30
 
-# This defines where the find the source data files and the format of those
-# files.
+# This defines where the find the source data files and the format of
+# those files.  Notes about the fields:
+# find_files
+#   You'll notice that all but the first () has the form (?:...).
+#   This tells Perl to match the expression but not save the matched
+#   text in the $1, $2, variables.  Orca uses the matched text to
+#   generate a subgroup name, which is used to place files into
+#   different subgroups.  Here, only the hostname should be used to
+#   generate a subgroup name, hence all the (?:...) for matching
+#   anything else.
+# interval
+#   The interval here must match the interval used by orcallator to
+#   record data.  Do not change this, as it has an effect on the
+#   generated RRD data files.
+
 group orcallator {
 find_files		@ORCALLATOR_DIR@/(.*)/(?:(?:orcallator)|(?:percol))-\d{4}-\d{2}-\d{2}(?:\.(?:Z|gz|bz2))?
 column_description	first_line
@@ -43,6 +56,16 @@ date_source		column_name timestamp
 date_format		%s
 interval		300
 reopen			1
+filename_compare	sub {
+			  my ($ay, $am, $ad) = $a =~ /-(\d{4})-(\d\d)-(\d\d)/;
+			  my ($by, $bm, $bd) = $b =~ /-(\d{4})-(\d\d)-(\d\d)/;
+			  if (my $c = (( $ay       <=>  $by) ||
+			               ( $am       <=>  $bm) ||
+			               (($ad >> 3) <=> ($bd >> 3)))) {
+			    return 2*$c;
+			  }
+			  $ad <=> $bd;
+			}
 }
 
 html_top_title		Yahoo!/GeoCities Host Status
@@ -486,14 +509,54 @@ href			http://www.gps.caltech.edu/~blair/orca/docs/orcallator.html#sleeps_mutex_
 }
 
 plot {
-title			%g NFS Call Rate
+title			%g NFS Server Call Rate
+source			orcallator
+data			nfss_calls
+data			v2reads
+data			v2writes
+data			v3reads
+data			v3writes
+data			nfss_bad
+data_type		counter
+line_type		area
+line_type		area
+line_type		stack
+line_type		stack
+line_type		stack
+line_type		stack
+legend			NFS server calls/s
+y_legend		NFS Server Calls/s
+data_min		0
+href			http://www.gps.caltech.edu/~blair/orca/docs/orcallator.html#NFS_server_call_rate
+}
+
+plot {
+title			%g NFS Server Call Distribution
+source			orcallator
+data			v2reads
+data			v2writes
+data			v3reads
+data			v3writes
+data_type		counter
+line_type		area
+line_type		stack
+line_type		stack
+line_type		stack
+line_type		stack
+y_legend		NFS Server Calls/s
+data_min		0
+href			http://www.gps.caltech.edu/~blair/orca/docs/orcallator.html#NFS_server_call_distribution
+}
+
+plot {
+title			%g NFS Client Call Rate
 source			orcallator
 data			nfs_call/s
 line_type		area
-legend			NFS calls/s
-y_legend		NFS Calls/s
+legend			NFS client calls/s
+y_legend		NFS Client Calls/s
 data_min		0
-href			http://www.gps.caltech.edu/~blair/orca/docs/orcallator.html#NFS_call_rate
+href			http://www.gps.caltech.edu/~blair/orca/docs/orcallator.html#NFS_client_call_rate
 }
 
 plot {
@@ -541,7 +604,7 @@ href			http://www.gps.caltech.edu/~blair/orca/docs/orcallator.html#disk_system_w
 plot {
 title			%g Disk Run Percent
 source			orcallator
-data			disk_runp_(c\d+t\d+d\d+)
+data			disk_runp_((?:c\d+t\d+d\d+)|(?:md\d+))
 line_type		line2
 legend			$1
 y_legend		Run Percent

@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "getopt.h"
+#include <getopt.h>
 #include <rrd_tool.h>
 
 #ifndef	WANT_AT_STYLE_TIMESPEC

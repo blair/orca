@@ -1,6 +1,6 @@
 #!./perl
 
-# $Id: canonical.t,v 0.6 1998/06/04 16:08:24 ram Exp $
+# $Id: canonical.t,v 0.6.1.1 2000/03/02 22:20:53 ram Exp $
 #
 #  Copyright (c) 1995-1998, Raphael Manfredi
 #  
@@ -8,7 +8,10 @@
 #  as specified in the README file that comes with the distribution.
 #  
 # $Log: canonical.t,v $
-# Revision 0.6  1998/06/04 16:08:24  ram
+# Revision 0.6.1.1  2000/03/02 22:20:53  ram
+# patch9: added test case for "undef" bug in hashes
+#
+# Revision 0.6  1998/06/04  16:08:24  ram
 # Baseline for first beta release.
 #
 
@@ -17,7 +20,7 @@ BEGIN { push @INC, "../blib" }
 use Storable qw(freeze thaw dclone);
 use vars qw($debugging $verbose);
 
-print "1..5\n";
+print "1..8\n";
 
 sub ok {
     my($testno, $ok) = @_;
@@ -126,3 +129,18 @@ $x3 = freeze($a3);
 # may report a false negative.
 
 ok 5, ($x1 ne $x2) || ($x1 ne $x3);    
+
+
+# Ensure refs to "undef" values are properly shared
+# Same test as in t/dclone.t to ensure the "canonical" code is also correct
+
+my $hash;
+push @{$$hash{''}}, \$$hash{a};
+ok 6, $$hash{''}[0] == \$$hash{a};
+
+my $cloned = dclone(dclone($hash));
+ok 7, $$cloned{''}[0] == \$$cloned{a};
+
+$$cloned{a} = "blah";
+ok 8, $$cloned{''}[0] == \$$cloned{a};
+

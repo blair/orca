@@ -14,7 +14,7 @@ the <TT>shared-demo.pl</TT>.
 <P><RRD::GRAPH cgi-demo1.gif 
 	    --lower-limit 0
 	    --start 'end-10h'
-	    --title "Graph in Localtime"
+	    --title "Graph in Localtime <RRD::TIME::NOW %c>"
             DEF:alpha=shared-demo.rrd:a:AVERAGE
             DEF:beta=shared-demo.rrd:b:AVERAGE
             AREA:alpha#0022e9:"Trees on Mars"

@@ -75,7 +75,7 @@ PNG_LIB_DIR = @PNG_LIB_DIR@
 RANLIB = @RANLIB@
 ZLIB_LIB_DIR = @ZLIB_LIB_DIR@
 
-SUBDIRS = log2rrd rrd-file-icon trytime
+SUBDIRS = log2rrd rrd-file-icon trytime rrdproc rrdlastds add_ds killspike rrdfetchnames
 
 contribdir = $(prefix)/contrib
 contrib_DATA = README
@@ -92,7 +92,7 @@ VERSION = @VERSION@
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = tar
+TAR = gtar
 GZIP_ENV = --best
 all: all-redirect
 .SUFFIXES:

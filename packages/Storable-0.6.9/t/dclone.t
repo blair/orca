@@ -1,6 +1,6 @@
 #!./perl
 
-# $Id: dclone.t,v 0.6 1998/06/04 16:08:25 ram Exp $
+# $Id: dclone.t,v 0.6.1.1 2000/03/02 22:21:05 ram Exp $
 #
 #  Copyright (c) 1995-1998, Raphael Manfredi
 #  
@@ -8,7 +8,10 @@
 #  as specified in the README file that comes with the distribution.
 #
 # $Log: dclone.t,v $
-# Revision 0.6  1998/06/04 16:08:25  ram
+# Revision 0.6.1.1  2000/03/02 22:21:05  ram
+# patch9: added test case for "undef" bug in hashes
+#
+# Revision 0.6  1998/06/04  16:08:25  ram
 # Baseline for first beta release.
 #
 
@@ -16,7 +19,7 @@ require 't/dump.pl';
 
 use Storable qw(dclone);
 
-print "1..6\n";
+print "1..9\n";
 
 $a = 'toto';
 $b = \$a;
@@ -54,4 +57,18 @@ print "ok 5\n";
 
 print "not " unless &dump($foo) eq &dump($r);
 print "ok 6\n";
+
+# Ensure refs to "undef" values are properly shared during cloning
+my $hash;
+push @{$$hash{''}}, \$$hash{a};
+print "not " unless $$hash{''}[0] == \$$hash{a};
+print "ok 7\n";
+
+my $cloned = dclone(dclone($hash));
+print "not " unless $$cloned{''}[0] == \$$cloned{a};
+print "ok 8\n";
+
+$$cloned{a} = "blah";
+print "not " unless $$cloned{''}[0] == \$$cloned{a};
+print "ok 9\n";
 

@@ -1,4 +1,135 @@
-Wed Oct 20 18:19:15 PDT 1999
+Thu Mar  9 12:23:24 PST 2000
+
+	Remove from the INSTALL file the instructions to increase the
+	file descriptor limit to 256.  This should no longer be
+	necessary with the improvements to the code.
+
+Thu Mar  9 12:20:39 PST 2000
+
+	Reduce the number of open files for the open file descriptor
+	cache from roughly 200 to 100.  Change the code so that if a
+	open of a file or pipe fails, then close two open file
+	descriptors and try again.  It used to be that an attempt
+	would be made if only a pipe failed.
+
+Wed Mar  8 12:02:07 PST 2000
+
+	Due to some changes at onelist.com, the name of this mailing
+	must change.  The -help at the end of orca-help is being
+	reserved for the mailing list named "orca".  As such, I'm
+	renaming this list to orca-users@onelist.com.  All references
+	to the old name in the package were similarly changed.
+
+Sun Mar  5 20:27:38 PST 2000
+
+	Include and require Storable 0.6.9.
+
+Wed Mar  1 14:40:26 PST 2000
+
+	Require the latest versions of all the modules Orca uses.
+
+Wed Mar  1 13:33:00 PST 2000
+
+	Only build RRDtool if it is needed.
+
+Tue Feb 29 17:43:15 PST 2000
+
+	To prevent Orca from performing all the gunzip, uncompress,
+	and bunzip2 system calls to get the first line of the source
+	file, store the first line in the state file and use it when
+	constructing the Orca::SourceFile object.
+
+Tue Feb 29 12:16:22 PST 2000
+
+	Update orcallator.cfg.in to plot the NFS server calls per
+	second and also the v{2,3}{reads,writes}.
+
+Tue Feb 29 12:02:45 PST 2000
+
+	Update the POD documentation for data_type by copying the
+	exact text from the rrdcreate.pod file.
+
+Sat Feb 26 13:29:16 PST 2000
+
+	If Orca::OpenFileHash::open tries to open a pipe for
+	compressed input and it cannot be opened, then shrink the
+	maximum number of open file descriptors and close enough
+	descriptors to attempt the pipe again.
+
+Fri Feb 25 17:15:37 PST 2000
+
+	Upgrade to orcallator.se 1.23.  When orcallator was running on
+	a system with DiskSuite, the same physical disk was listed
+	multiple times when it appeared in the same metadevice.  The
+	solution to the problem is not to build the c0t0d0 name but
+	use the long disk name provided by the long_name string.
+	Patch contributed by Paul Haldane
+	<Paul.Haldane@newcastle.ac.uk>.
+
+	To facilitate Orca loading in a huge amount of data in one
+	pass, add a new group configuration file parameter that tells
+	Orca how to sort the filenames and when data loaded from them
+	can be flushed to disk.  The new parameters name is
+	"filename_compare" and takes a Perl subroutine that behaves
+	like a subroutine given to sort.  Data is flushed to disk when
+	the subroutine returns a number greater than 1.
+
+Fri Feb 25 16:49:44 PST 2000
+
+	Save the state more often so that if Orca quits in the middle,
+	it does not have to reload all the data from the files again,
+	even if the data has already been loaded into the RRD files.
+
+Fri Feb 25 16:35:29 PST 2000
+
+	Have configure determine the best ps commmand to run to get
+	information on the current running Orca process.
+
+	Finish splitting up the monolithic orca.pl.in into separate
+	modules.
+
+Fri Feb 25 12:44:43 PST 2000
+
+	start_orcallator.sh refers to percollator.  Change it to refer
+	to orcallator.
+
+	If two different groups had the same subgroup, then Orca would
+	list both group's subgroup file IDs for both subgroups.  Fix
+	this bug.
+
+	Rename Orca::FileIDs to Orca::SourceFileIDs.
+
+Fri Feb 18 13:00:19 PST 2000
+
+	Apply a patch to Orca::ImageFile so that the legends are
+	properly created with the newer RRDtool.
+
+Fri Feb 18 12:19:14 PST 2000
+
+	Include and require RRDtool 1.0.13.
+
+Thu Feb 17 13:13:39 PST 2000
+
+	Include orcallator.se 1.22, which includes the following
+	changes: Include code to record NFS v2 and v3 server
+	statistics.  The new statistics are: nfss_calls, the number of
+	NFS calls to the NFS server, nfss_bad, the number of bad NFS
+	calls per second, and v{2,3}{reads,writes}, which are
+	nfss_calls broken down into NFS version 2 and NFS version 3
+	calls.  The sum of v{2,3}{reads, writes} will be less than
+	nfss_calls as the other types of NFS calls, such as getattr
+	and lookup, are not included.  Contributed by Paul Haldane
+	<Paul.Haldane@newcastle.ac.uk>.  This code is enabled by the
+	standard -DWATCH_OS or individually by -DWATCH_NFS_SERVER.
+	The define -DWATCH_NFS has been supperseded by
+	-DWATCH_NFS_CLIENT, but to keep backwards compatibility,
+	-DWATCH_NFS_CLIENT will be defined if -DWATCH_NFS is defined.
+
+        Include orcallator.se 1.21, which includes the following
+        changes: Prevent core dumps on extremely long access log
+        lines.
+
+Wed Oct 20 17:39:19 PDT 1999
 
 	Release Orca 0.25.
 
@@ -9,15 +140,15 @@ Wed Oct 20 17:37:01 PDT 1999
 
 	Include Storable 0.607 but continue to only require 0.603.
 
-	Add a mention in the POD that sending a HUP to the Orca process
-	forces it to look for new files in the next loop.  This is faster
-	than restarting Orca.
+	Add a mention in the POD that sending a HUP to the Orca
+	process forces it to look for new files in the next loop.
+	This is faster than restarting Orca.
 
-	Change the behavior of warnings when data requested to be plotted
-	in the configuration file does not exist in the source data files.
-	Any resulting errors from this, such as cannot compile errors,
-	are only sent when the verbose level is above 1 or when the plot
-	is required.
+	Change the behavior of warnings when data requested to be
+	plotted in the configuration file does not exist in the source
+	data files.  Any resulting errors from this, such as cannot
+	compile errors, are only sent when the verbose level is above
+	1 or when the plot is required.
 
 	Did some renaming of classes and variables in limited places:
 	Orca::SourceDataFile -> Orca::SourceFile
@@ -225,7 +356,15 @@ Tue Aug 17 11:50:34 PDT 1999
 
 	Include and require Math::Interpolate 1.04.
 
+	No longer have Orca::RRDFile be a subclass of Orca::DataFile, since
+	Orca::DataFile now handles FIDs and the FID namespace should not be
+	polluted by the RRD filenames.
+
 Mon Aug 16 12:11:48 PDT 1999
+
+	Design a new module, Orca::FileIDs, for managing the long lists
+	of long filenames for memory and CPU speed improvements.  Now all
+	classes use File IDentifiers (FIDs) instead of filenames.
 
 	Add locking on a particular configuration file.  Make a directory
 	using the configuration filename.
@@ -324,6 +463,8 @@ Wed Jul 14 11:04:09 PDT 1999
 	Switch to use PNGs instead of GIFs.  They take up 1/3 less space
 	than GIFs and at least 10% less time to generate.
 
+	Rename all variables and comments containing GIF to image.
+
 	Revamp the INSTALL document to reflect the new * -> _times_
 	change and add some documentation of the file descriptor limit.
 
@@ -400,6 +541,10 @@ Thu Jun 10 09:39:36 PDT 1999
 	makes sense.  However, for people running a tiny web server with
 	only a few processes, this does not make sense, so a separate
 	plot is created.  Noted by Paul Company <paul.company@plpt.com>.
+
+Tue Jun  8 15:16:43 PDT 1999
+
+	Begin the break up orca.pl into separate files for each module.
 
 Tue Jun  8 10:57:39 PDT 1999
 

@@ -8,3 +8,4 @@
 /* Define if you have the <math.h> header file.  */
 #define HAVE_MATH_H 1
 
+#define rrd_realloc(a,b) realloc((a), (b))

@@ -11,14 +11,27 @@ extern "C" {
 #endif
 
 #include "../src/rrd_tool.h"
-
+#ifndef PL_na
+#define PL_na na
+#endif
 #define rrdcode(name) \
 		argv = (char **) malloc((items+1)*sizeof(char *));\
 		argv[0] = "dummy";\
-		for (i = 0; i < items; i++) argv[i+1] = (char *) SvPV(ST(i),na);\
+		for (i = 0; i < items; i++) { \
+		    char *handle=argv[i+1] = (char *) SvPV(ST(i),PL_na);\
+		    /* actually copy the data to make sure possible modifications \
+		       on the argv data does not backfire into perl */ \
+		    argv[i+1] = (char *) malloc((strlen(handle)+1)*sizeof(char)); \
+		    strcpy(argv[i+1],handle); \
+ 	        } \
 		optind=0; opterr=0; \
 		rrd_clear_error();\
-		RETVAL=name(items+1,argv); free(argv);\
+		RETVAL=name(items+1,argv); \
+		for (i=0; i < items; i++) {\
+		    free(argv[i+1]);\
+		} \
+		free(argv);\
+		\
 		if (rrd_get_error() != NULL) XSRETURN_UNDEF;
 
 
@@ -87,6 +100,19 @@ rrd_update(...)
 		RETVAL
 
 
+int
+rrd_tune(...)
+	PROTOTYPE: @	
+	PREINIT:
+        int i;
+	char **argv;
+	CODE:
+		rrdcode(rrd_tune);
+       	        RETVAL = 1;
+	OUTPUT:
+		RETVAL
+
+
 void
 rrd_graph(...)
 	PROTOTYPE: @	
@@ -98,10 +124,20 @@ rrd_graph(...)
 	PPCODE:
 		argv = (char **) malloc((items+1)*sizeof(char *));
 		argv[0] = "dummy";
-		for (i = 0; i < items; i++) argv[i+1] = (char *) SvPV(ST(i),na);
+		for (i = 0; i < items; i++) { 
+		    char *handle=argv[i+1] = (char *) SvPV(ST(i),PL_na);
+		    /* actually copy the data to make sure possible modifications
+		       on the argv data does not backfire into perl */ 
+		    argv[i+1] = (char *) malloc((strlen(handle)+1)*sizeof(char));
+		    strcpy(argv[i+1],handle);
+ 	        }
 		optind=0; opterr=0; 
 		rrd_clear_error();
-		rrd_graph(items+1,argv,&calcpr,&xsize,&ysize); free(argv);
+		rrd_graph(items+1,argv,&calcpr,&xsize,&ysize); 
+		for (i=0; i < items; i++) {
+		    free(argv[i+1]);
+		}
+		free(argv);
 
 		if (rrd_test_error()) {
 			if(calcpr)
@@ -135,11 +171,20 @@ rrd_fetch(...)
 	PPCODE:
 		argv = (char **) malloc((items+1)*sizeof(char *));
 		argv[0] = "dummy";
-		for (i = 0; i < items; i++) argv[i+1] = (char *) SvPV(ST(i),na);
+		for (i = 0; i < items; i++) { 
+		    char *handle=argv[i+1] = (char *) SvPV(ST(i),PL_na);
+		    /* actually copy the data to make sure possible modifications
+		       on the argv data does not backfire into perl */ 
+		    argv[i+1] = (char *) malloc((strlen(handle)+1)*sizeof(char));
+		    strcpy(argv[i+1],handle);
+ 	        }
 		optind=0; opterr=0; 
 		rrd_clear_error();
 		rrd_fetch(items+1,argv,&start,&end,&step,&ds_cnt,&ds_namv,&data); 
 		if (rrd_test_error()) XSRETURN_UNDEF;
+		for (i=0; i < items; i++) {
+		    free(argv[i+1]);
+		}
 		free(argv);
 		/* convert the ds_namv into perl format */
 		names=newAV();
@@ -163,19 +208,6 @@ rrd_fetch(...)
 		PUSHs(sv_2mortal(newSViv(step)));
 		PUSHs(sv_2mortal(newRV_noinc((SV*)names)));
 		PUSHs(sv_2mortal(newRV_noinc((SV*)retar)));
-
-int
-rrd_tune(...)
-	PROTOTYPE: @	
-	PREINIT:
-        int i;
-	char **argv;
-	CODE:
-		rrdcode(rrd_tune);
-       	        RETVAL = 1;
-	OUTPUT:
-		RETVAL
-
 
 
 

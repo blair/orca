@@ -1,6 +1,7 @@
 Changes			Time::HiRes extension
 fallback/const-c.inc	Fallback code for constants
 fallback/const-xs.inc	Fallback code for constants
+hints/dec_osf.pl	Hints for Time::HiRes for named architecture
 hints/dynixptx.pl	Hints for Time::HiRes for named architecture
 hints/irix.pl		Hints for Time::HiRes for named architecture
 hints/sco.pl		Hints for Time::HiRes for named architecture

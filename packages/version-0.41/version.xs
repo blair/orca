@@ -228,7 +228,7 @@ PPCODE:
 		    vnumify(req),vnormal(req),vnumify(sv),vnormal(sv));
     }
 
-    if ( sv_derived_from(sv, "version") )
+    if ( SvOK(sv) && sv_derived_from(sv, "version") )
 	PUSHs(vnumify(sv));
     else
 	PUSHs(sv);

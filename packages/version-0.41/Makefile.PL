@@ -12,6 +12,6 @@ WriteMakefile(
 	# Un-comment this if you add C files to link with later:
     'OBJECT'		=> '$(O_FILES)', # link all the C files too
     dist		=> {
-	PREOP => 'svn log | gnuify-changelog.pl > ${DISTVNAME}/Changes',
+	PREOP => 'svn log > ${DISTVNAME}/Changes',
 			    },
 );

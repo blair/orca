@@ -1,4 +1,4 @@
-version 0.39
+version 0.41
 ====================
 
 Provides the same version objects as included in Perl v5.9.0 (and hopefully in

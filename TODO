@@ -1,3 +1,34 @@
+From Hans-Werner Jouy:
+
+   Is it possilbe to use different config files with a "include
+   xxx.conf" in the main configuration?  This makes sense when you use
+   different collectors (i.e. for different architectures), a change
+   in the collecting scripts then corresponds with the same include
+   files. In this way different maintainers can modify independly from
+   each other.
+
+From Hans-Werner Jouy:
+
+    Orca is a bit pricky about changing columns in a single
+    machine. but sometimes I dont get all the columns, like nfs when
+    no (auto-) mount is active. I have to fill all the missing info
+    with zero inside the collecting script,, but it schould read
+    "momentarily no data".
+
+Fix lib/Orca/OldState.pm to handle missing data files that are pointed
+to.
+
+Update procallator to the latest version.
+
+Remove the percol listing in find_files in procallator.cfg and
+	orca_services.cfg.
+
+Update orca_services to 1.7.2 or 2.0.
+
+Update procallator's install and Makefile.
+
+Code review procallator.
+
 * Bug: If there is no match made in a find_files, then handle this case.
   See the message in my Sent box at 11/8/2000 4:00 PM with a subject
   Unable to view orca graphs.

@@ -5,6 +5,7 @@ exec_prefix           = @exec_prefix@
 libdir                = @libdir@
 INSTALL               = @INSTALL@
 MKDIR                 = @MKDIR@
+PERL                  = @PERL@
 
 all: Makefile \
      orca_logo.gif.hex \
@@ -14,17 +15,17 @@ all: Makefile \
 # Create a hex file representation of orca_logo.gif that can be stored
 # inside orca.pl.
 orca_logo.gif.hex: orca_logo.gif
-	perl -e 'while (sysread(STDIN, $$b, 35)){print unpack("h*", $$b),"\n"}' < $< > $@
+	$(PERL) -e 'while (sysread(STDIN, $$b, 35)){print unpack("h*", $$b),"\n"}' < $< > $@
 
 # Create a hex file representation of rrdtool_logo.gif that can be
 # stored inside orca.pl.
 rrdtool_logo.gif.hex: rrdtool_logo.gif
-	perl -e 'while (sysread(STDIN, $$b, 35)){print unpack("h*", $$b),"\n"}' < $< > $@
+	$(PERL) -e 'while (sysread(STDIN, $$b, 35)){print unpack("h*", $$b),"\n"}' < $< > $@
 
 # Create a hex file representation of rothschild_image_logo.png that
 # can be stored inside orca.pl.
 rothschild_image_logo.png.hex: rothschild_image_logo.png
-	perl -e 'while (sysread(STDIN, $$b, 35)){print unpack("h*", $$b),"\n"}' < $< > $@
+	$(PERL) -e 'while (sysread(STDIN, $$b, 35)){print unpack("h*", $$b),"\n"}' < $< > $@
 
 install: all
 	$(MKDIR) $(libdir)/Orca
@@ -50,14 +51,15 @@ install: all
 	    $(INSTALL) -m 0644 $$f $(libdir)/$$d; \
 	  done \
 	done
+	@echo 'cd ..; svnversion . 2>/dev/null'
 	@current_rev="`cd ..; svnversion . 2>/dev/null`"; \
 	if test "$$current_rev" != "" && \
            test "$$current_rev" != "exported"; then \
 	  echo "Found good svnversion for `cd ..; pwd`: $$current_rev"; \
-	  echo @PERL@ -w -p -i \
+	  echo $(PERL) -w -p -i \
 	    -e 's/^(\$$ORCA_VER_REVISION\s*=\s*).*/$${1}"'$$current_rev'";/' \
 	    $(libdir)/Orca/Constants.pm; \
-	  @PERL@ -w -p -i \
+	  $(PERL) -w -p -i \
 	    -e 's/^(\$$ORCA_VER_REVISION\s*=\s*).*/$${1}"'$$current_rev'";/' \
 	    $(libdir)/Orca/Constants.pm; \
 	fi

@@ -176,7 +176,7 @@ Outline:
     Math::IntervalSearch    >= 1.05        >= 1.05      1.05
     RRDs                    >= 1.000401    >= 1.0.40    1.0.40
     Storable                >= 2.06        >= 2.06      2.06
-    Time::HiRes             No required by Orca         1.42
+    Time::HiRes             Not required by Orca        1.42
 
     All seven of these modules are included with the Orca distribution
     in the packages directory.  When you configure Orca in step 3),

@@ -3,7 +3,10 @@ gather data for it.
 
 Please email submissions to the FAQ to orca-users@orcaware.com.
 
-Version: 1.13 Nov 7, 2002.
+# $HeadURL$
+# $LastChangedDate$
+# $LastChangedBy$
+# $LastChangedRevision$
 
 General
 -------
@@ -14,6 +17,11 @@ General
   1.3) Why are there random characters at the end of my HTML and GIF
        or PNG images names, i.e.
        o_host3_disk_runp_c0t6d0...disk_runp_c-4QyP2ziXlrwXj8eG_n_A.html?
+  1.4) What should I use, NFS or rsync, to get my data from my clients
+       to the Orca server?  Should I push my data to the server from
+       the clients or have my server pull my data?
+  1.5) How should I set up ssh access securely without entering a
+       password everytime a process needs to contact a remote system?
 
 Warning Messages
 ----------------
@@ -117,6 +125,76 @@ General
        used by Orca is to calculate the MD5 hash of the full length
        filename, trim the filename down and insert the MD5 into the
        short filename, which will guarantee uniqueness.
+
+  1.4) What should I use, NFS or rsync, to get my data from my clients
+       to the Orca server?  Should I push my data to the server from
+       the clients or have my server pull my data?
+
+       [Answer written by Sean O'Neill <sean@seanoneill.info>.]
+
+       Yeah, NFS is a total pain for more reasons than just security.
+
+       rsync is the way to go.  By default, it uses ssh as it's
+       transport application vs. rsh.  Don't use rsh for the obvious
+       reasons.
+
+       But you need to really think about what this means in regards
+       to security.  First, your security group is probably going to
+       be nervous about anything that allows for unattended
+       password-less access between servers.  But you also need to
+       figure out if you want to PUSH or PULL your Orca data.
+
+       If you have a Orca server that ssh's into the remote systems
+       and rsync's down the data (e.g. PULL), this one machine would
+       have ssh access to LOTS of other systems and would probably
+       make any security group very nervous about that machine.
+
+       If you have the remote systems rsync their data to the Orca
+       server (e.g. PUSH), then you have lots of other machines with
+       ssh access to ONE system.  This generally makes security a
+       /little/ less nervous.
+
+       Some folks on the list have multiple Orca servers because of
+       the system resources required by Orca.  Its a CPU/memory hog at
+       times.  Also, pushing data into a box is generally an
+       asynchronous activity (from the Orca server's point of view) so
+       it will take in as many as the box will support.
+
+       If the Orca server is PULLING data, you need some script to
+       keep track of what systems to pull data from, have logic to
+       make it less serial to get the data down faster, etc etc -
+       e.g. its more of a headache IMHO.
+
+  1.5) How should I set up ssh access securely without entering a
+       password everytime a process needs to contact a remote system?
+
+       To get ssh working, use key authentication.  One easy way to
+       use key authentication is to use the keychain tool at
+
+       http://www.gentoo.org/proj/en/keychain.xml
+
+       The first keychain article introduces the concepts behind
+       RSA/DSA key authentication and shows you how to set up
+       primitive (with passphrase) RSA/DSA authentication:
+
+       http://www-106.ibm.com/developerworks/library/l-keyc.html
+
+       The second article shows you how to use keychain to set up
+       secure, password-less ssh access in an extremely convenient
+       way.  keychain also provides a clean, secure way for cron jobs
+       to take advantage of RSA/DSA keys without having to use
+       insecure unencrypted private keys.
+
+       http://www-106.ibm.com/developerworks/linux/library/l-keyc2/
+
+       A third keychain article shows you how to use ssh-agent's
+       authentication forwarding mechanism.
+
+       http://www-106.ibm.com/developerworks/linux/library/l-keyc3/
+
+       Even with these methods, when a system reboots, a person will
+       need to manually log into the system, su into the account, run
+       keychain and enter the passphrase to unlock the RSA/DSA keys.
 
 Warning Messages
 ----------------

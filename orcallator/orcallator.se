@@ -8,6 +8,12 @@
 //
 // Portions copied from percollator.se written by Adrian Cockroft.
 //
+// Version 1.33:   Jul 10, 2002	In check_output_log_filename(), stat() was
+//				was being passed a stat_t by value, instead of
+//				a pointer to a stat_t.  Only the return value
+//				from stat() was being used, so this bug had
+//				no effect upon the logic of the code.  Problem
+//				noted by Richard Pettit <richp@setoolkit.com>.
 // Version 1.32:   Oct 24, 2001	Fix a problem where the web access log file
 //				pointer instead of the file descriptor was
 //				being passed to fstat().  Fix a problem where
@@ -853,7 +859,7 @@ check_output_log_filename(tm_t now) {
   string output_directory = getenv("OUTDIR");
   string output_filename;
   string compressed_filename;
-  stat_t log_file_stat;
+  stat_t log_file_stat[1];
   tm_t   then;
   char   tm_buf[32];
   int    file_number;

@@ -165,8 +165,9 @@ sub DESTROY {
         <td width="334">
           <font face="verdana,geneva,arial,helvetica" size="2">
              Funding for Orca provided by renowned fashion
-             <a href="http://www.rothschildimage.com/">image consultant</a>,
-             <a href="http://www.rothschildimage.com/">Ashley Rothschild</a>.
+             <a href="http://www.rothschildimage.com/">image consultant</a>
+             and <a href="http://www.rothschildimage.com/seminars.html">extreme
+             makeover</a> guru, Ashley Rothschild.
            </font>
         </td>
         <td width="20">&nbsp;&nbsp;</td>

@@ -339,6 +339,37 @@ struct io_dev_info_t {
   uint          _rcnt;          // Count of elements in run state
 };
 
+// SE appears to have a bug - occasionally kio.nread is erroneously set to 0.
+// This function is used to re-read data for a given kstat.
+ulong get_new_kstat_data(kstat_t okp[1]) {
+  ulong         ul;
+  kstat_ctl_t   kc[1];
+  kstat_t       nkp[1];
+  kstat_t       rkp[1];
+
+  // Return old data if no match found
+  rkp = okp;
+  // Initialize kstat control structure
+  kc[0] = kstat_open();
+  // Traverse the chain looking for matching kstat
+  for (ul=kc[0].kc_chain; ul!=0; ul=nkp[0].ks_next) {
+    nkp[0] = *((kstat_t *) ul);
+    if (nkp[0].ks_type     == okp[0].ks_type &&
+        nkp[0].ks_class    == okp[0].ks_class &&
+        nkp[0].ks_name     == okp[0].ks_name &&
+        nkp[0].ks_instance == okp[0].ks_instance ) {
+      if (kstat_read(kc, nkp, 0) == -1) {
+        perror("get_new_kstat_data:kstat_read error");
+        exit(1);
+      }
+      rkp = nkp;
+      break;
+    }
+  }
+  kstat_close(kc);
+  return  rkp[0].ks_data;
+}
+
 // Define globals for tracking kstat io data.
 io_dev_info_t   ORCA_io_dev_info[];
 int             ORCA_io_dev_count=0;
@@ -408,6 +439,17 @@ orca_io_info_update() {
         }
         ORCA_io_dev_info[iodev].short_name   = nkp[0].ks_name;
         ORCA_io_dev_info[iodev].dev_class    = nkp[0].ks_class;
+
+        // Check if kio data is valid, and re-read kstat if it is not.
+        // At this time, only kio.nread appears to have occasional problems,
+        // but we check the other three just in case.
+        // It is possible for these statistics to be 0, in such case
+        // kio data will remain the same.
+        if (kio.writes == 0 || kio.nwritten == 0 ||
+            kio.reads  == 0 || kio.nread    == 0) {
+          kio = *((kstat_io_t *) get_new_kstat_data(nkp));
+        }
+
         ORCA_io_dev_info[iodev]._writes      = kio.writes;
         ORCA_io_dev_info[iodev]._nwritten    = kio.nwritten;
         ORCA_io_dev_info[iodev]._wlastupdate = kio.wlastupdate;
@@ -421,6 +463,15 @@ orca_io_info_update() {
         ORCA_io_dev_info[iodev]._rtime       = kio.rtime;
         ORCA_io_dev_info[iodev]._rcnt        = kio.rcnt;
         ORCA_io_dev_count++;
+      }
+      // Check if kio data is valid, and re-read kstat if it is not.
+      // At this time, only kio.nread appears to have occasional problems,
+      // but we check the other three just in case.
+      if (kio.writes   < ORCA_io_dev_info[iodev]._writes ||
+          kio.nwritten < ORCA_io_dev_info[iodev]._nwritten ||
+          kio.reads    < ORCA_io_dev_info[iodev]._reads ||
+          kio.nread    < ORCA_io_dev_info[iodev]._nread) {
+        kio = *((kstat_io_t *) get_new_kstat_data(nkp));
       }
 
       elapsed_etime = (kio.wlastupdate-ORCA_io_dev_info[iodev]._wlastupdate);

@@ -18,40 +18,40 @@
 //
 
 // The default sampling interval in seconds.
-#define SAMPLE_INTERVAL		300
+#define SAMPLE_INTERVAL         300
 
 // The maximum number of columns of data.
-#define MAX_COLUMNS		2048
+#define MAX_COLUMNS             2048
 
 // Enable kstat io measuring code.
-#define USE_KSTAT_IO		1
+#define USE_KSTAT_IO            1
 
 // If WATCH_OS is defined, then measure every part of the operating
 // system.
 #ifdef WATCH_OS
-#define WATCH_CPU		1
-#define WATCH_MUTEX		1
-#define WATCH_NET		1
-#define WATCH_TCP		1
-#define WATCH_NFS_CLIENT	1
-#define WATCH_NFS_SERVER	1
-#define WATCH_MOUNTS		1
-#define WATCH_DISK		1
-#define WATCH_DNLC		1
-#define WATCH_INODE		1
-#define WATCH_RAM		1
-#define WATCH_PAGES		1
+#define WATCH_CPU               1
+#define WATCH_MUTEX             1
+#define WATCH_NET               1
+#define WATCH_TCP               1
+#define WATCH_NFS_CLIENT        1
+#define WATCH_NFS_SERVER        1
+#define WATCH_MOUNTS            1
+#define WATCH_DISK              1
+#define WATCH_DNLC              1
+#define WATCH_INODE             1
+#define WATCH_RAM               1
+#define WATCH_PAGES             1
 #endif
 
 // Keep backwards compatibility with WATCH_HTTPD.
 #ifdef WATCH_HTTPD
-#define WATCH_WEB		1
+#define WATCH_WEB               1
 #endif
 
 // Keep backwards compatibility with WATCH_NFS.
 #ifdef WATCH_NFS
 #ifndef WATCH_NFS_CLIENT
-#define WATCH_NFS_CLIENT	1
+#define WATCH_NFS_CLIENT        1
 #endif
 #endif
 
@@ -93,103 +93,103 @@
 
 // Define this macro which returns the size index for a file of a
 // particular size.  This saves the overhead of a function call.
-#define WWW_SIZE_INDEX(size, size_index)			\
-  if (size < 1024) {						\
-    size_index=0;		/* Under 1KB   */		\
-  } else {							\
-    if (size < 10240) {						\
-      size_index=1;		/* Under 10K   */		\
-    } else {							\
-      if (size < 102400) {					\
-        size_index=2;		/* Under 100KB */		\
-      } else {							\
-        if (size < 1048576) {					\
-          size_index=3;		/* Under 1MB   */		\
-        } else {						\
-          size_index=4;		/* Over 1MB    */		\
-        }							\
-      }								\
-    }								\
-  }								\
+#define WWW_SIZE_INDEX(size, size_index)                        \
+  if (size < 1024) {                                            \
+    size_index=0;               /* Under 1KB   */               \
+  } else {                                                      \
+    if (size < 10240) {                                         \
+      size_index=1;             /* Under 10K   */               \
+    } else {                                                    \
+      if (size < 102400) {                                      \
+        size_index=2;           /* Under 100KB */               \
+      } else {                                                  \
+        if (size < 1048576) {                                   \
+          size_index=3;         /* Under 1MB   */               \
+        } else {                                                \
+          size_index=4;         /* Over 1MB    */               \
+        }                                                       \
+      }                                                         \
+    }                                                           \
+  }                                                             \
   dwnld_size[size_index]++;
 
 // Handle the reply code from the server.
-#define WWW_REPLY_CODE(word)					\
-  if (word == "304") {						\
-    httpop_condgets++;						\
-  }								\
-  else {							\
-    first_byte = word;						\
-    if (first_byte[0] == '4' || first_byte[0] == '5') {		\
-      httpop_errors++;						\
-    }								\
-  }								\
+#define WWW_REPLY_CODE(word)                                    \
+  if (word == "304") {                                          \
+    httpop_condgets++;                                          \
+  }                                                             \
+  else {                                                        \
+    first_byte = word;                                          \
+    if (first_byte[0] == '4' || first_byte[0] == '5') {         \
+      httpop_errors++;                                          \
+    }                                                           \
+  }                                                             \
 
 // Handle the method of the object served.  This define only works
 // with non-proxy servers.
-#define WWW_METHOD1(word)					\
-  switch (word) {						\
-    case "get":							\
-    case "GET":							\
-      httpop_gets++;						\
-      break;							\
-    case "post":						\
-    case "POST":						\
-      httpop_posts++;						\
-      break;							\
-    case "head":						\
-    case "HEAD":						\
-      ishead = 1;						\
-      httpop_condgets++;					\
+#define WWW_METHOD1(word)                                       \
+  switch (word) {                                               \
+    case "get":                                                 \
+    case "GET":                                                 \
+      httpop_gets++;                                            \
+      break;                                                    \
+    case "post":                                                \
+    case "POST":                                                \
+      httpop_posts++;                                           \
+      break;                                                    \
+    case "head":                                                \
+    case "HEAD":                                                \
+      ishead = 1;                                               \
+      httpop_condgets++;                                        \
       break;
 
 #ifdef WATCH_SQUID
-#define WWW_METHOD2						\
-    case "icp_query":						\
-    case "ICP_QUERY":						\
-      squid_icp_queries++;					\
+#define WWW_METHOD2                                             \
+    case "icp_query":                                           \
+    case "ICP_QUERY":                                           \
+      squid_icp_queries++;                                      \
       break;
 #else
 #define WWW_METHOD2
 #endif
 
-#define WWW_METHOD_END						\
-    default:							\
-      break; 							\
+#define WWW_METHOD_END                                          \
+    default:                                                    \
+      break;                                                    \
   }
 #define WWW_METHOD(word) WWW_METHOD1(word) WWW_METHOD2 WWW_METHOD_END
 #endif
 #endif
 
 // Put all rules here so they can be accessed by the handle functions.
-lr_cpu_t	lr_cpu$cpu;
-lr_cpu_t	tmp_lr_cpu;
-lr_mutex_t	lr_mutex$m;
-lr_mutex_t	tmp_lr_mutex;
-lr_net_t	lr_net$nr;
-lr_net_t	tmp_lr_net;
-lr_tcp_t	lr_tcp$tcp;
-lr_tcp_t	tmp_lr_tcp;
-lr_rpcclient_t	lr_rpcclient$r;
-lr_rpcclient_t	tmp_lr_rpcclient;
-lr_disk_t	lr_disk$dr;
-lr_disk_t	tmp_lr_disk;
-lr_dnlc_t	lr_dnlc$dnlc;
-lr_dnlc_t	tmp_lr_dnlc;
-lr_inode_t	lr_inode$inode;
-lr_inode_t	tmp_lr_inode;
-lr_ram_t	lr_ram$ram;
-lr_ram_t	tmp_lr_ram;
-lr_swapspace_t	lr_swapspace$s;
-lr_swapspace_t	tmp_lr_swapspace;
-lr_kmem_t	lr_kmem$kmem;
-lr_kmem_t	tmp_lr_kmem;
+lr_cpu_t        lr_cpu$cpu;
+lr_cpu_t        tmp_lr_cpu;
+lr_mutex_t      lr_mutex$m;
+lr_mutex_t      tmp_lr_mutex;
+lr_net_t        lr_net$nr;
+lr_net_t        tmp_lr_net;
+lr_tcp_t        lr_tcp$tcp;
+lr_tcp_t        tmp_lr_tcp;
+lr_rpcclient_t  lr_rpcclient$r;
+lr_rpcclient_t  tmp_lr_rpcclient;
+lr_disk_t       lr_disk$dr;
+lr_disk_t       tmp_lr_disk;
+lr_dnlc_t       lr_dnlc$dnlc;
+lr_dnlc_t       tmp_lr_dnlc;
+lr_inode_t      lr_inode$inode;
+lr_inode_t      tmp_lr_inode;
+lr_ram_t        lr_ram$ram;
+lr_ram_t        tmp_lr_ram;
+lr_swapspace_t  lr_swapspace$s;
+lr_swapspace_t  tmp_lr_swapspace;
+lr_kmem_t       lr_kmem$kmem;
+lr_kmem_t       tmp_lr_kmem;
 
-ks_system_misc	kstat$misc;
-ks_system_misc	tmp_kstat_misc;
+ks_system_misc  kstat$misc;
+ks_system_misc  tmp_kstat_misc;
 #ifdef WATCH_TCP
-tcp		tcp$tcp;
-tcp		tmp_tcp;
+tcp             tcp$tcp;
+tcp             tmp_tcp;
 #endif
 #ifdef WATCH_PAGES
 ks_system_pages kstat$pages;
@@ -197,102 +197,102 @@ ks_system_pages tmp_kstat_pages;
 #endif
 
 // Put application globals here.
-string		nodename;			// Name of this machine.
-string		program_name;			// Name of this program.
-int		hz;				// Clock tick rate.
-int		page_size;			// Page size in bytes.
-long		boot_time;			// Boot time of the system.
-long		interval = SAMPLE_INTERVAL;	// Sampling interval.
+string          nodename;                   // Name of this machine.
+string          program_name;               // Name of this program.
+int             hz;                         // Clock tick rate.
+int             page_size;                  // Page size in bytes.
+long            boot_time;                  // Boot time of the system.
+long            interval = SAMPLE_INTERVAL; // Sampling interval.
 
 #ifdef WATCH_CPU
-int		can_read_kernel = 0;		// If the kernel can be read.
-int		kvm$mpid;			// The last created PID.
+int             can_read_kernel = 0;        // If the kernel can be read.
+int             kvm$mpid;                   // The last created PID.
 
 // These variables store the mpid before and after the standard interval.
-int		mpid_previous;
-int		mpid_current;
-ulonglong	mpid_then;
-ulonglong	mpid_now;
+int             mpid_previous;
+int             mpid_current;
+ulonglong       mpid_then;
+ulonglong       mpid_now;
 
 // These variables store the mpid before and after 5 second intervals.
-int		mpid5_previous;
-int		mpid5_current;
-ulonglong	mpid5_then;
-ulonglong	mpid5_now;
-double		mpid5_rate;
+int             mpid5_previous;
+int             mpid5_current;
+ulonglong       mpid5_then;
+ulonglong       mpid5_now;
+double          mpid5_rate;
 #endif
 
 #ifdef WATCH_MOUNTS
-mnttab_t	mnt$mnt;
-mnttab_t	tmp_mnt;
+mnttab_t        mnt$mnt;
+mnttab_t        tmp_mnt;
 #endif
 
 #ifdef WATCH_NFS_SERVER
-ks_nfs_server	kstat$nfs;
-ks_nfs_server	tmp_nfs;
-ks_rfs_proc_v2	kstat$rfsproccnt_v2;
-ks_rfs_proc_v2	tmp_rfsproccnt_v2;
-ks_rfs_proc_v3	kstat$rfsproccnt_v3;
-ks_rfs_proc_v3	tmp_rfsproccnt_v3;
+ks_nfs_server   kstat$nfs;
+ks_nfs_server   tmp_nfs;
+ks_rfs_proc_v2  kstat$rfsproccnt_v2;
+ks_rfs_proc_v2  tmp_rfsproccnt_v2;
+ks_rfs_proc_v3  kstat$rfsproccnt_v3;
+ks_rfs_proc_v3  tmp_rfsproccnt_v3;
 #endif
 
 // Variables for handling the httpd access log.
 #ifdef WATCH_WEB
-string		www_search_url              = getenv("SEARCHURL");
-string		www_server_proc_name        = getenv("WEB_SERVER");
-string		www_server_secure_proc_name = getenv("WEB_SERVER_SECURE");
-string		www_log_filename            = getenv("WEB_LOG");
-string		www_gateway                 = getenv("GATEWAY");
-ulong		www_log_fp;
-uint		www_gatelen;
-stat_t		www_log_stat[1];
-ulong		www_log_ino;
-long		www_log_size;
+string          www_search_url              = getenv("SEARCHURL");
+string          www_server_proc_name        = getenv("WEB_SERVER");
+string          www_server_secure_proc_name = getenv("WEB_SERVER_SECURE");
+string          www_log_filename            = getenv("WEB_LOG");
+string          www_gateway                 = getenv("GATEWAY");
+ulong           www_log_fp;
+uint            www_gatelen;
+stat_t          www_log_stat[1];
+ulong           www_log_ino;
+long            www_log_size;
 
-double		www_interval;		// Hi-res interval time.
-ulonglong	www_then;
-ulonglong	www_now;
+double          www_interval;               // Hi-res interval time.
+ulonglong       www_then;
+ulonglong       www_now;
 
-double		www5_interval;		// Actual hi-res 5 second interval.
-ulonglong	www5_then;
-ulonglong	www5_now;
+double          www5_interval;              // Actual hi-res 5 second interval.
+ulonglong       www5_then;
+ulonglong       www5_now;
 
-double		httpops;
-double		httpops5;
-double		gateops;
-double		dtmp;
+double          httpops;
+double          httpops5;
+double          gateops;
+double          dtmp;
 
-long		httpop_gets;
-long		httpop_condgets; // HEAD or code = 304 conditional get no data.
-long		httpop_posts;
-long		httpop_cgi_bins;
-long		httpop_searches;
-long		httpop_errors;
-long		dwnld_size[5]; // [0] < 1K, [1] < 10K, [2] < 100K, [3] < 1M, [4] >= 1M
-long		dwnld_totalz;  // Total size counted from log.
+long            httpop_gets;
+long            httpop_condgets;  // HEAD or code = 304 conditional get no data.
+long            httpop_posts;
+long            httpop_cgi_bins;
+long            httpop_searches;
+long            httpop_errors;
+long            dwnld_size[5];    // [0]<1K, [1]<10K, [2]<100K, [3]<1M, [4]>=1M
+long            dwnld_totalz;     // Total size counted from log.
 
 #if WATCH_PROXY || WATCH_SQUID || WATCH_YAHOO
 // If we're watching a Yahoo log, then take the transfer time to be the
 // processing time.
-double		www_dwnld_time_sum;	   // Transfer time.
-double		www_dwnld_time_by_size[5]; // Mean transfer time by size bin.
+double          www_dwnld_time_sum;        // Transfer time.
+double          www_dwnld_time_by_size[5]; // Mean transfer time by size bin.
 #endif
 #if WATCH_PROXY || WATCH_SQUID
-long		prxy_squid_indirect;   // # hits that go via PROXY,SOCKS,parent
-long		prxy_squid_cache_hits; // # hits returned from cache.
+long            prxy_squid_indirect;   // # hits that go via PROXY,SOCKS,parent
+long            prxy_squid_cache_hits; // # hits returned from cache.
 #endif
 
 #ifdef WATCH_PROXY
-long		prxy_cache_writes; // Number of writes and updates to cache.
-long		prxy_uncacheable;  // Number of explicitly uncacheable httpops.
-				   // Any extra is errors or incomplete ops.
+long            prxy_cache_writes; // Number of writes and updates to cache.
+long            prxy_uncacheable;  // Number of explicitly uncacheable httpops.
+                                   // Any extra is errors or incomplete ops.
 #endif
 
 #ifdef WATCH_SQUID
-long		squid_cache_misses;
-long		squid_icp_requests;
-long		squid_icp_queries;
-long		squid_client_http;
+long            squid_cache_misses;
+long            squid_icp_requests;
+long            squid_icp_queries;
+long            squid_client_http;
 #endif
 
 #endif
@@ -309,51 +309,51 @@ long		squid_client_http;
 // kstat$disk interface.  Global data shared between function calls.
 struct io_dev_info_t {
   // Exposed interface that matches kstat.
-  string	long_name;
-  string	short_name;
-  double	reads;
-  double	kreads;
-  double	writes;
-  double	kwrites;
-  double	avg_wait;
-  double	avg_serv;
-  double	service;
-  double	wait_percent;
-  double	run_percent;
+  string        long_name;
+  string        short_name;
+  double        reads;
+  double        kreads;
+  double        writes;
+  double        kwrites;
+  double        avg_wait;
+  double        avg_serv;
+  double        service;
+  double        wait_percent;
+  double        run_percent;
 
   // Hidden internal registers to track sys_kstats counters.
-  int		_number;	// kstat disk #
-  ulonglong	_nread;		// Number of bytes read
-  ulonglong	_nwritten;	// Number of bytes written
-  uint		_reads;		// Number of read operations
-  uint		_writes;	// Number of write operations
-  longlong	_wtime;		// Cumulative wait (pre-service) time
-  longlong	_wlentime;	// Cumulative wait length*time product
-  longlong	_wlastupdate;	// Last time wait queue changed
-  longlong	_rtime;		// Cumulative run (service) time
-  longlong	_rlentime;	// Cumulative run length*time product
-  longlong	_rlastupdate;	// Last time run queue changed
-  uint		_wcnt;		// Count of elements in wait state
-  uint		_rcnt;		// Count of elements in run state
+  int           _number;        // kstat disk #
+  ulonglong     _nread;         // Number of bytes read
+  ulonglong     _nwritten;      // Number of bytes written
+  uint          _reads;         // Number of read operations
+  uint          _writes;        // Number of write operations
+  longlong      _wtime;         // Cumulative wait (pre-service) time
+  longlong      _wlentime;      // Cumulative wait length*time product
+  longlong      _wlastupdate;   // Last time wait queue changed
+  longlong      _rtime;         // Cumulative run (service) time
+  longlong      _rlentime;      // Cumulative run length*time product
+  longlong      _rlastupdate;   // Last time run queue changed
+  uint          _wcnt;          // Count of elements in wait state
+  uint          _rcnt;          // Count of elements in run state
 };
 
 // Define global for tracking raw disk data.
-io_dev_info_t	ORCA_io_dev_info[];
-int		ORCA_io_dev_count=0;
-int		ORCA_max_io_dev_count=0;
+io_dev_info_t   ORCA_io_dev_info[];
+int             ORCA_io_dev_count=0;
+int             ORCA_max_io_dev_count=0;
 
 orca_io_info_update() {
-  int		iodev;
-  int		index;
-  ulong       ul;
-  kstat_ctl_t kc[1];
-  kstat_t     nkp[1];
-  kstat_io_t  kio;
+  int           iodev;
+  int           index;
+  ulong         ul;
+  kstat_ctl_t   kc[1];
+  kstat_t       nkp[1];
+  kstat_io_t    kio;
 
-  double      read_writes;
-  double      big_etime;
-  double      elapsed_etime;
-  double      hz_etime;
+  double        read_writes;
+  double        big_etime;
+  double        elapsed_etime;
+  double        hz_etime;
 
   // Initialize kstat control structure
   kc[0] = kstat_open();
@@ -416,7 +416,7 @@ orca_io_info_update() {
           ORCA_io_dev_count++;
         }
 
-        elapsed_etime = (kio.wlastupdate - ORCA_io_dev_info[iodev]._wlastupdate);
+        elapsed_etime = (kio.wlastupdate-ORCA_io_dev_info[iodev]._wlastupdate);
         if (elapsed_etime == 0) {
           elapsed_etime = NANOSEC;
         }
@@ -440,7 +440,7 @@ orca_io_info_update() {
         }
 
         // Update the counters.
-        ORCA_io_dev_info[iodev].run_percent  = 100.0 * (kio.rtime  - ORCA_io_dev_info[iodev]._rtime) / elapsed_etime;
+        ORCA_io_dev_info[iodev].run_percent  = 100.0 * (kio.rtime - ORCA_io_dev_info[iodev]._rtime) / elapsed_etime;
         ORCA_io_dev_info[iodev].wait_percent = 100.0 * (kio.wtime - ORCA_io_dev_info[iodev]._wtime) / elapsed_etime;
         ORCA_io_dev_info[iodev]._writes      = kio.writes;
         ORCA_io_dev_info[iodev]._nwritten    = kio.nwritten;
@@ -462,28 +462,28 @@ orca_io_info_update() {
 #endif // USE_KSTAT_IO
 
 // Variables for handling output.
-string		compress = getenv("COMPRESSOR"); // How to compress logs.
-ulong		out_log_fp;			// File pointer to the logging file.
-string		col_comment[MAX_COLUMNS];	// Comments for each column.
-string		col_data[MAX_COLUMNS];		// Data for each column.
-string		col_previous_comment[MAX_COLUMNS]; // Previous comments.
-int		current_column = 0;		// The current column.
-int		previous_number_columns = -1;	// Number columns printed last.
-int		print_header = 1;		// Flag to flush header.
+string  compress = getenv("COMPRESSOR");   // How to compress logs.
+ulong   out_log_fp;                        // File pointer to the logging file.
+string  col_comment[MAX_COLUMNS];          // Comments for each column.
+string  col_data[MAX_COLUMNS];             // Data for each column.
+string  col_previous_comment[MAX_COLUMNS]; // Previous comments.
+int     current_column = 0;                // The current column.
+int     previous_number_columns = -1;      // Number columns printed last.
+int     print_header = 1;                  // Flag to flush header.
 
 // This is a list of the extensions the compress programs add to the
 // compress filename.
 #define NUMBER_COMPRESS_SUFFIXES 3
-string		compression_suffixes[NUMBER_COMPRESS_SUFFIXES] = {".Z",
-                                                                  ".gz",
-                                                                  ".bz2"};
+string  compression_suffixes[NUMBER_COMPRESS_SUFFIXES] = {".Z",
+                                                          ".gz",
+                                                          ".bz2"};
 
 // Add one column of comments and data to the buffers.
 put_output(string comment, string data)
 {
   if (current_column >= MAX_COLUMNS) {
     fprintf(stderr, "%s: too many columns (%d).  Increase MAX_COLUMNS.\n",
-    	    program_name, current_column);
+                program_name, current_column);
     exit(1);
   }
 
@@ -528,18 +528,18 @@ print_output() {
 // previous days log file if the environmental variable COMPRESSOR is
 // set.
 check_output_log_filename(tm_t now) {
-  string output_directory = getenv("OUTDIR");
-  string output_filename;
-  string compressed_filename;
-  stat_t log_file_stat[1];
-  tm_t   then;
-  char   tm_buf[32];
-  int    file_number;
-  int    need_new_log_file;
-  int    exists_uncompressed;
-  int    exists_compressed;
-  int    result;
-  int    i;
+  string        output_directory = getenv("OUTDIR");
+  string        output_filename;
+  string        compressed_filename;
+  stat_t        log_file_stat[1];
+  tm_t          then;
+  char          tm_buf[32];
+  int           file_number;
+  int           need_new_log_file;
+  int           exists_uncompressed;
+  int           exists_compressed;
+  int           result;
+  int           i;
 
   if (output_directory == nil) {
     // No output directory so use stdout.
@@ -649,10 +649,10 @@ check_output_log_filename(tm_t now) {
 
 int main(int argc, string argv[])
 {
-  utsname_t u[1];
-  long      now;
-  long      sleep_till;	// Time to sleep to.
-  tm_t      tm_now;
+  utsname_t     u[1];
+  long          now;
+  long          sleep_till;        // Time to sleep to.
+  tm_t          tm_now;
 
   // Get the nodename of the machine.
   uname(u);
@@ -1195,31 +1195,31 @@ measure_net()
 //  }
     current_count++;
     put_output(sprintf("%5sIpkt/s", tmp_lr_net.names[i]),
-	       sprintf("%11.3f", GLOBAL_net[i].ipackets));
+               sprintf("%11.3f", GLOBAL_net[i].ipackets));
     put_output(sprintf("%5sOpkt/s", tmp_lr_net.names[i]),
-	       sprintf("%11.3f", GLOBAL_net[i].opackets));
+               sprintf("%11.3f", GLOBAL_net[i].opackets));
     put_output(sprintf("%5sInKB/s", tmp_lr_net.names[i]),
-	       sprintf("%11.3f", GLOBAL_net[i].ioctets/1024.0));
+               sprintf("%11.3f", GLOBAL_net[i].ioctets/1024.0));
     put_output(sprintf("%5sInDtSz/p", tmp_lr_net.names[i]),
-	       sprintf("%11.3f", GLOBAL_net[i].idtsize));
+               sprintf("%11.3f", GLOBAL_net[i].idtsize));
     put_output(sprintf("%5sInOvH%%/p", tmp_lr_net.names[i]),
-	       sprintf("%11.3f", GLOBAL_net[i].ihdrovhd));
+               sprintf("%11.3f", GLOBAL_net[i].ihdrovhd));
     put_output(sprintf("%5sOuKB/s", tmp_lr_net.names[i]),
-	       sprintf("%11.3f", GLOBAL_net[i].ooctets/1024.0));
+               sprintf("%11.3f", GLOBAL_net[i].ooctets/1024.0));
     put_output(sprintf("%5sOuDtSz/p", tmp_lr_net.names[i]),
-	       sprintf("%11.3f", GLOBAL_net[i].odtsize));
+               sprintf("%11.3f", GLOBAL_net[i].odtsize));
     put_output(sprintf("%5sOuOvH%%/p", tmp_lr_net.names[i]),
-	       sprintf("%11.3f", GLOBAL_net[i].ohdrovhd));
+               sprintf("%11.3f", GLOBAL_net[i].ohdrovhd));
     put_output(sprintf("%5sIErr/s", tmp_lr_net.names[i]),
-	       sprintf("%11.3f", GLOBAL_net[i].ierrors));
+               sprintf("%11.3f", GLOBAL_net[i].ierrors));
     put_output(sprintf("%5sOErr/s", tmp_lr_net.names[i]),
-	       sprintf("%11.3f", GLOBAL_net[i].oerrors));
+               sprintf("%11.3f", GLOBAL_net[i].oerrors));
     put_output(sprintf("%5sColl%%", tmp_lr_net.names[i]),
-	       sprintf("%10.3f", GLOBAL_net[i].collpercent));
+               sprintf("%10.3f", GLOBAL_net[i].collpercent));
     put_output(sprintf("%5sNoCP/s", tmp_lr_net.names[i]),
-	       sprintf("%11.3f", GLOBAL_net[i].nocanput));
+               sprintf("%11.3f", GLOBAL_net[i].nocanput));
     put_output(sprintf("%5sDefr/s", tmp_lr_net.names[i]),
-	       sprintf("%11.3f", GLOBAL_net[i].defer));
+               sprintf("%11.3f", GLOBAL_net[i].defer));
   }
 
   // If the number of up interfaces changes, then print new headers.
@@ -1651,8 +1651,8 @@ accesslog(string buf) {
 #ifdef DINKY
   printf("time: %s %f total %f\n", word, xf, xfer_sum);
 #endif
-  word   = strtok(nil, " ");			/* Client IP address.      */
-  logtag = strtok(nil, "/");			/* Log tag.                */
+  word   = strtok(nil, " ");                      /* Client IP address.      */
+  logtag = strtok(nil, "/");                      /* Log tag.                */
   if (logtag == nil) {
     return;
   }
@@ -1669,12 +1669,12 @@ accesslog(string buf) {
     squid_cache_misses++;
   }
 
-  word = strtok(nil, " ");			/* Reply code.             */
+  word = strtok(nil, " ");                        /* Reply code.             */
   if (word == nil) {
     return;
   }
   WWW_REPLY_CODE(word)
-  word = strtok(nil, " ");			/* Size sent to client.    */
+  word = strtok(nil, " ");                        /* Size sent to client.    */
   if (word == nil) {
     return;
   }
@@ -1682,7 +1682,7 @@ accesslog(string buf) {
   WWW_SIZE_INDEX(z, size_index)
   www_dwnld_time_by_size[size_index] += xf;
 
-  request = strtok(nil, " ");			/* Request method.         */
+  request = strtok(nil, " ");                     /* Request method.         */
   if (request == nil) {
     return;
   }
@@ -1692,7 +1692,7 @@ accesslog(string buf) {
     dwnld_totalz += z;
   }
 
-  word = strtok(nil, " ");			/* URL.                    */
+  word = strtok(nil, " ");                        /* URL.                    */
   if (word == nil) {
     return;
   }
@@ -1702,8 +1702,8 @@ accesslog(string buf) {
   if (word =~ www_search_url) {
     httpop_searches++;
   }
-  strtok(nil, " ");				/* Optional user identity. */
-  word = strtok(nil, "/");			/* Hierarchy.              */
+  strtok(nil, " ");                               /* Optional user identity. */
+  word = strtok(nil, "/");                        /* Hierarchy.              */
   if (word == nil) {
     return;
   }
@@ -1711,11 +1711,11 @@ accesslog(string buf) {
     prxy_squid_indirect++;
   }
 #if 0
-  word = strtok(nil, " ");			/* Hostname.               */
+  word = strtok(nil, " ");                        /* Hostname.               */
   if (word == nil) {
     return;
   }
-  word = strtok(nil, " ");			/* Content-type.           */
+  word = strtok(nil, " ");                        /* Content-type.           */
   if (word == nil) {
     return;
   }
@@ -1729,10 +1729,10 @@ accesslog(string buf) {
    * only appear if they are enabled via the YahooLogOptions configuration
    * directive.
    *
-   *     IP Address		(8 hex digits)
-   *     Timestamp		(time_t as 8 hex digits)
-   *     Processing Time	(in microseconds, as 8 hex digits)
-   *     Bytes Sent		(8 hex digits)
+   *     IP Address             (8 hex digits)
+   *     Timestamp              (time_t as 8 hex digits)
+   *     Processing Time        (in microseconds, as 8 hex digits)
+   *     Bytes Sent             (8 hex digits)
    *     URL
    *     [^Er referrer]  (CONFIG)
    *     [^Em method]    (CONFIG)
@@ -1794,17 +1794,17 @@ accesslog(string buf) {
     dwnld_totalz += z;
   }
 
-#else	/* common or Netscape proxy formats */
-  strtok(nil, " ");		/* -.           */
-  strtok(nil, " ");		/* -.           */
-  strtok(nil, " [");		/* date.        */
-  strtok(nil, " ");		/* zone].       */
-  strtok(nil, " \"");		/* GET or POST. */
+#else        /* common or Netscape proxy formats */
+  strtok(nil, " ");              /* -.           */
+  strtok(nil, " ");              /* -.           */
+  strtok(nil, " [");             /* date.        */
+  strtok(nil, " ");              /* zone].       */
+  strtok(nil, " \"");            /* GET or POST. */
   if (word == nil) {
     return;
   }
   WWW_METHOD(word)
-  word = strtok(nil, " ");	/* URL.         */
+  word = strtok(nil, " ");       /* URL.         */
   if (word == nil) {
     return;
   }
@@ -1829,7 +1829,7 @@ accesslog(string buf) {
     }
   }
   WWW_REPLY_CODE(word)
-  word = strtok(nil, " ");	/* Bytes transferred. */
+  word = strtok(nil, " ");       /* Bytes transferred.       */
   if (word == nil) {
     return;
   }
@@ -1840,16 +1840,16 @@ accesslog(string buf) {
   }
   WWW_SIZE_INDEX(z, size_index)
 #ifdef WATCH_PROXY
-  strtok(nil, " ");		/* Status from server.      */
-  strtok(nil, " ");		/* Length from server.      */
-  strtok(nil, " ");		/* Length from client POST. */
-  strtok(nil, " ");		/* Length POSTed to remote. */
-  strtok(nil, " ");		/* Client header request.   */
-  strtok(nil, " ");		/* Proxy header response.   */
-  strtok(nil, " ");		/* Proxy header request.    */
-  strtok(nil, " ");		/* Server header response.  */
-  strtok(nil, " ");		/* Transfer total seconds.  */
-  word = strtok(nil, " ");	/* Route.                   */
+  strtok(nil, " ");              /* Status from server.      */
+  strtok(nil, " ");              /* Length from server.      */
+  strtok(nil, " ");              /* Length from client POST. */
+  strtok(nil, " ");              /* Length POSTed to remote. */
+  strtok(nil, " ");              /* Client header request.   */
+  strtok(nil, " ");              /* Proxy header response.   */
+  strtok(nil, " ");              /* Proxy header request.    */
+  strtok(nil, " ");              /* Server header response.  */
+  strtok(nil, " ");              /* Transfer total seconds.  */
+  word = strtok(nil, " ");       /* Route.                   */
   if (word == nil) {
     return;
   }
@@ -1859,9 +1859,9 @@ accesslog(string buf) {
       strncmp(word, "SOCKS", 5) == 0) {
     prxy_squid_indirect++;
   }
-  strtok(nil, " ");		/* Client finish status.    */
-  strtok(nil, " ");		/* Server finish status.    */
-  word = strtok(nil, " ");	/* Cache finish status.     */
+  strtok(nil, " ");              /* Client finish status.    */
+  strtok(nil, " ");              /* Server finish status.    */
+  word = strtok(nil, " ");       /* Cache finish status.     */
   if (word == nil) {
     return;
   }
@@ -1888,7 +1888,7 @@ accesslog(string buf) {
     default:
       break;
   }
-  word = strtok(nil, " [");		/* [transfer total time x.xxx. */
+  word = strtok(nil, " [");      /* [transfer total time x.xxx. */
   if (word == nil) {
     return;
   }

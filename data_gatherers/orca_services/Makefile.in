@@ -55,10 +55,14 @@ install: all
 	  echo $(INSTALL) $$file $(libexecdir); \
 	  $(INSTALL) $$file $(libexecdir); \
 	done
-	if test -r $(sysconfdir)/orca_services.cfg; then \
-	  cp -p $(sysconfdir)/orca_services.cfg $(sysconfdir)/orca_services.cfg.`date +%Y-%m-%d-%H:%M:%S`; \
+	@if test -r $(sysconfdir)/orca_services.cfg; then \
+	  date="`date +%Y-%m-%d-%H:%M:%S`"; \
+	  echo $(INSTALL) -m 0644 orca_services.cfg $(sysconfdir)/orca_services.cfg.$$date; \
+	  $(INSTALL) -m 0644 orca_services.cfg $(sysconfdir)/orca_services.cfg.$$date; \
+	else \
+	  echo $(INSTALL) -m 0644 orca_services.cfg $(sysconfdir); \
+	  $(INSTALL) -m 0644 orca_services.cfg $(sysconfdir); \
 	fi
-	$(INSTALL) -m 0644 orca_services.cfg $(sysconfdir)
 
 orca_services_run_at_boot: all
 	test "$(INIT_D_DIR)"

@@ -82,7 +82,7 @@ sub new {
   $name = name_to_fsname($name, $max_length);
 
   # Create the paths to the html directory and subdirectories.
-  my $html_dir     = "$config_global{html_dir}/$subgroup_name";
+  my $html_dir = "$config_global{html_dir}/$subgroup_name";
 
   # Create the html_dir directories if necessary.
   unless (-d $html_dir) {
@@ -241,13 +241,12 @@ sub add_additional_plot {
 
     # For those attributes of the new plot that are array references
     # and need to be indexed for the particular data being plotted,
-    # copy them over.  Skip the 'creates' attribute which is not used
-    # for plotting and skip the color attribute as the color is
-    # treated
-    # specially.
+    # copy them over.  Skip the 'created_orca_images' attribute which
+    # is not used for plotting and skip the color attribute as the
+    # color is treated specially.
     for my $attribute (keys %$new_plot_ref) {
       next if $attribute eq 'color';
-      next if $attribute eq 'creates';
+      next if $attribute eq 'created_orca_images';
       next unless UNIVERSAL::isa($new_plot_ref->{$attribute}, 'ARRAY');
       $existing_plot_ref->{$attribute}[$i] = $new_plot_ref->{$attribute}[$j];
     }

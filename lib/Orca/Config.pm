@@ -729,7 +729,7 @@ sub check_config {
 
     # Create an array for each plot that will have a list of images that
     # were generated from this plot.
-    $plot->{creates} = [];
+    $plot->{created_orca_images} = [];
 
     # Set any optional plot parameters to '' if it isn't defined in
     # the configuration file.

@@ -257,24 +257,25 @@ sub get_date_column {
 
 # XXX
 # Utility function make a deep clone one of the plots in the
-# config_plots array, except for the 'creates' hash key.  This should
-# really be a method for a single plot, but the plot is not an object
-# right now, so it doesn't have any methods that can be given to it.
+# config_plots array, except for the 'created_orca_images' hash key.
+# This should really be a method for a single plot, but the plot is
+# not an object right now, so it doesn't have any methods that can be
+# given to it.
 sub deep_clone_plot {
-  my $plot             = shift;
-  my $restore_creates  = shift;
+  my $plot                        = shift;
+  my $restore_created_orca_images = shift;
 
-  # Be careful not to make a deep copy of the 'creates' reference,
-  # since it can cause recursion.
-  my $creates          = delete $plot->{creates};
-  my $new_plot         = dclone($plot);
-  $plot->{creates}     = $creates;
-  if ($restore_creates) {
-    $new_plot->{creates} = $creates;
+  # Be careful not to make a deep copy of the 'created_orca_images'
+  # reference, since it can cause recursion.
+  my $created_orca_images      = delete $plot->{created_orca_images};
+  my $new_plot                 = dclone($plot);
+  $plot->{created_orca_images} = $created_orca_images;
+  if ($restore_created_orca_images) {
+    $new_plot->{created_orca_images} = $created_orca_images;
   }
 
   if (wantarray) {
-    ($new_plot, $creates);
+    ($new_plot, $created_orca_images);
   } else {
     $new_plot;
   }
@@ -518,12 +519,12 @@ sub add_plots {
       # caused the match.  Then create string form of the plot object
       # using Data::Dumper::Dumper and replace all of the $1, $2,
       # ... with what was matched in the first data source.
-      my $creates;
-      ($plot, $creates)    = deep_clone_plot($plot, 0);
+      my $created_orca_images;
+      ($plot, $created_orca_images) = deep_clone_plot($plot, 0);
       $plot->{data}[0][$regexp_element_index] = $column_description;
-      my $d                = Data::Dumper->Dump([$plot], [qw(plot)]);
-      $plot->{creates}     = $creates;
-      my $count            = 1;
+      my $d = Data::Dumper->Dump([$plot], [qw(plot)]);
+      $plot->{created_orca_images} = $created_orca_images;
+      my $count = 1;
       foreach my $match (@matches) {
         $d =~ s/\$$count/$match/mge;
         $d =~ s/\(.+\)/$match/mge;
@@ -795,7 +796,7 @@ sub add_plots {
                                     \@my_rrds);
       $image_files_ref->{hash}{$all_names_with_subgroup} = $image;
       push(@{$image_files_ref->{list}}, $image);
-      push(@{$config_plots[$old_i]{creates}}, $image);
+      push(@{$config_plots[$old_i]{created_orca_images}}, $image);
     }
 
     # Put into each RRD the images that are generated from it.

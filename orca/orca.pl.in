@@ -794,8 +794,8 @@ sub create_html_files {
 
   # Go through all of the configured plots.
   foreach my $config_plot (@config_plots) {
-    my $plot_creates = $config_plot->{creates};
-    next unless @$plot_creates;
+    my $created_orca_images = $config_plot->{created_orca_images};
+    next unless @$created_orca_images;
 
     my $group_index = $config_plot->{source_index};
     my $group_name  = $config_groups_names[$group_index];
@@ -812,7 +812,7 @@ sub create_html_files {
     # have the same legend name.
     my %image_legend_no_subgroup;
     my %same_legends_image_list;
-    foreach my $image (@$plot_creates) {
+    foreach my $image (@$created_orca_images) {
       my $legend_no_subgroup = replace_subgroup_name($image->plot_ref->{title},
                                                      '');
       $image_legend_no_subgroup{$image} = $legend_no_subgroup;

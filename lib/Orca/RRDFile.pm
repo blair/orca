@@ -224,7 +224,7 @@ sub flush_data {
     RRDs::create @options;
 
     if (my $error = RRDs::error) {
-      warn "$0: RRDs::create error: '$rrd_filename' $error\n";
+      warn "$0: RRDs::create(", join(', ', @options), ") failed: $error\n";
       return;
     }
   }

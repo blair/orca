@@ -1,4 +1,6 @@
-require 5.004;
+#!perl -w
+
+BEGIN { require 5.004 }
 use strict;
 use Config qw(%Config);
 use ExtUtils::MakeMaker;
@@ -20,6 +22,7 @@ push(@extra, 'INSTALLDIRS'  => 'perl') if $] >= 5.008;
 WriteMakefile(
     'NAME'	   => 'Digest::MD5',
     'VERSION_FROM' => 'MD5.pm',
+    'PREREQ_PM'    => { 'File::Spec' => 0 },
     @extra,
     'dist'         => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
 );
@@ -98,18 +101,18 @@ int main(int argc, char** argv, char** env)
 EOT
 
     my $cc_cmd = "$Config{cc} $Config{ccflags} -I$Config{archlibexp}/CORE";
-    my $exe = "u32align$Config{_exe}";
+    my $exe = "u32align$Config{exe_ext}";
     $cc_cmd .= " -o $exe";
     my $rc;
     $rc = system("$cc_cmd $Config{ldflags} u32align.c $Config{libs}");
     if ($rc) {
 	print "Can't compile test program.  Will ensure alignment to play safe.\n\n";
-	unlink("u32align.c", $exe, "u32align$Config{_o}");
+	unlink("u32align.c", $exe, "u32align$Config{obj_ext}");
 	return 0;
     }
 
     $rc = system("./$exe");
-    unlink("u32align.c", $exe, "u32align$Config{_o}");
+    unlink("u32align.c", $exe, "u32align$Config{obj_ext}");
 
     return 1 unless $rc;
 

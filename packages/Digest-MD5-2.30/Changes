@@ -1,3 +1,12 @@
+2003-10-09   Gisle Aas <gisle@ActiveState.com>
+
+   Release 2.30
+
+   Some tweaks to make the module build on perl-5.004 and
+   perl-5.005 again.
+
+
+
 2003-10-06   Gisle Aas <gisle@ActiveState.com>
 
    Release 2.29

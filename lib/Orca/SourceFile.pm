@@ -553,16 +553,18 @@ sub add_plots {
     # not changing the original plot structure.  Look through each
     # element of each data and look for names appearing in the column
     # description array.  If there is a match for this file, then
-    # convert the element to index the @_ array where the data will be
-    # pulled from.  If there is not a match, then see if the element
-    # matches a name from one of the other column names from the same
+    # replace the column name with the Perl code that indexes the @_
+    # array for use in a dynamically generated anonymous subroutine.
+    # If there is no match, then see if the element matches a name
+    # from one of the other column names from other files in the same
     # group.  In this case the data argument for this file will not be
     # used.
 
-    # To allow data gathering program to send unknown values to Orca,
-    # check if any of the substituted values equals 'U' and return
-    # immediately the value 'U' to pass to RRDtool.  Keep track of the
-    # substituted values.
+    # This hash is keyed by the Perl expression that indexes the @_
+    # array in the dynamically generated anonymous subroutine.  The
+    # keys of this hash are checked later on to see if the value is
+    # undefined or 'U', in which case the subroutine returns 'U'
+    # early instead of evaluating the entire data expression.
     my %substituted_values;
 
     my @datas;
@@ -599,18 +601,17 @@ sub add_plots {
       }
     }
 
-    # Because users may place code into the data statements that do not
-    # have any substitutions, then the only way to check for the validity
-    # is to create valid anonymous subroutines and try them.  Invalid
-    # ones will either return undef or fail to compile.  If the plot is
-    # required, then replace invalid subroutines with one that returns 0.
-    # Here the results of eval'ing a test subroutine on a data is kept.
-    # The cached result is either a 1 or a 0.  To test the subroutine,
-    # pass the newly created subroutine a fake array of numbers, where the
-    # array has as manay elements as there are in one line from the file.
-    # If it is an invalid subroutine but the plot is required, then set
-    # the subroutine to return 'U', which is RRD's way of declaring
-    # undefined data.
+    # Because users may place code into the data statements that do
+    # not have any substitutions, then the only way to check for the
+    # validity is to create valid anonymous subroutines and try them.
+    # Invalid ones will either return undef or fail to compile.  If
+    # the plot is required, then replace invalid subroutines with one
+    # that returns the character 'U', which is RRD's way of declaring
+    # undefined data.  Here the results of eval'ing a test subroutine
+    # on a data is kept.  The cached result is either a 1 or a 0.  To
+    # test the subroutine, pass the newly created subroutine a fake
+    # array of numbers, where the array has as many elements as there
+    # are in one line from the file.
     my @fake_numbers = 1 .. @column_description;
     my @substituted_data_expressions;
     my $one_ok_data = 0;
@@ -619,9 +620,23 @@ sub add_plots {
       if (defined $datas[$j]) {
         my $sub_expr = "sub {\n";
         foreach my $s (sort keys %substituted_values) {
-          $sub_expr .= "  if (!defined($s) || $s eq 'U') {    return 'U';\n  }\n";
+          $sub_expr .= "  if (!defined($s) || $s eq 'U') { return 'U'; }\n";
         }
-        $data_expression  = "@{$datas[$j]}";
+
+        # The extra set of parentheses around the data statement are
+        # added to cause a compile failure in the subroutine if the
+        # column name in the data expression has a # in it and the
+        # file does not have that column name in it.  Otherwise, the
+        # expression may compile successfully, but return undef.  For
+        # example, for the data expression
+        #   data #httpds
+        # the subroutine will be
+        #   sub {
+        #     return #httpds;
+        #   }
+        # Adding the parentheses around '#httpds' will cause a compile
+        # failure because the opening parenthesis is not closed.
+        $data_expression  = "(@{$datas[$j]})";
         $sub_expr        .= "  $data_expression;\n}";
         my $sub_expr_md5  = md5($data_expression);
         my $eval_result   = $choose_data_sub_cache{$sub_expr_md5};
@@ -640,12 +655,12 @@ sub add_plots {
             $eval_result = 0;
             $@ =~ s/\s+$//g;
             my $m = $old_i + 1;
-            $message = "$0: warning: cannot compile '$sub_expr' for " .
+            $message = "$0: warning: cannot compile\n$sub_expr\nfor " .
                        "plot #$m 'data @{$plot->{data}[$j]}': $@\n";
           } elsif (!defined $test_value) {
             $eval_result = 0;
             my $m = $old_i + 1;
-            $message = "$0: warning: testing of '$sub_expr' for " .
+            $message = "$0: warning: testing of\n$sub_expr\nfor " .
                        "plot #$m 'data @{$plot->{data}[$j]}' yielded " .
                        "an undefined value.\n";
           }

@@ -8,6 +8,19 @@
 //
 // Portions copied from percollator.se written by Adrian Cockroft.
 //
+// Version 1.32:   Oct 24, 2001	Fix a problem where the web access log file
+//				pointer instead of the file descriptor was
+//				being passed to fstat().  Fix a problem where
+//				the cached web access log stat() information
+//				wasn't being erased if the log file was
+//				successfully stat()ed but then fopen() failed.
+//				Rename variables used to keep track of open
+//				file pointers and file stat() information to
+//				be clearer: ofile to out_log_fp, www_fd to
+//				www_log_fp, www_stat to www_log_stat, www_ino
+//				to www_log_ino and www_size to www_log_size.
+//				Problem noted by Jeremy McCarty
+//				<jeremy@nd.edu>.
 // Version 1.31:   Oct 21, 2001	Instead of naming the output files percol-*,
 //				name them orcallator-*.  Always define
 //				USE_RAWDISK to use the new raw disk code.
@@ -452,11 +465,11 @@ string		www_search_url       = getenv("SEARCHURL");
 string		www_server_proc_name = getenv("WEB_SERVER");
 string		www_log_filename     = getenv("WEB_LOG");
 string		www_gateway          = getenv("GATEWAY");
-ulong		www_fd;
+ulong		www_log_fp;
 uint		www_gatelen;
-stat_t		www_stat[1];
-ulong		www_ino;
-long		www_size;
+stat_t		www_log_stat[1];
+ulong		www_log_ino;
+long		www_log_size;
 
 double		www_interval;		// Hi-res interval time.
 ulonglong	www_then;
@@ -772,7 +785,7 @@ raw_disk_update() {
 
 // Variables for handling output.
 string		compress = getenv("COMPRESSOR"); // How to compress logs.
-ulong		ofile;				// File pointer to the logging file.
+ulong		out_log_fp;			// File pointer to the logging file.
 string		col_comment[MAX_COLUMNS];	// Comments for each column.
 string		col_data[MAX_COLUMNS];		// Data for each column.
 string		col_previous_comment[MAX_COLUMNS]; // Previous comments.
@@ -806,13 +819,13 @@ print_columns(string data[])
 {
   int i;
   for (i=0; i<current_column; ++i) {
-    fprintf(ofile, "%s", data[i]);
+    fprintf(out_log_fp, "%s", data[i]);
     if (i != current_column-1) {
-      fputc(' ', ofile);
+      fputc(' ', out_log_fp);
     }
   }
-  fputc('\n', ofile);
-  fflush(ofile);
+  fputc('\n', out_log_fp);
+  fflush(out_log_fp);
 }
 
 // Flush all of the stored output.
@@ -831,10 +844,11 @@ print_output() {
   current_column          = 0;
 }
 
-// Sets ofile to the output file pointer.  Creates or appends to the
-// log file if OUTDIR is set, otherwise sets the file pointer to STDOUT.
-// It start a new log file each day.  It compresses the previous days
-// log file if the environmental variable COMPRESSOR is set.
+// Sets out_log_fp to the output file pointer.  Creates or appends to
+// the log file if OUTDIR is set, otherwise sets the file pointer to
+// STDOUT.  It start a new log file each day.  It compresses the
+// previous days log file if the environmental variable COMPRESSOR is
+// set.
 check_output_log_filename(tm_t now) {
   string output_directory = getenv("OUTDIR");
   string output_filename;
@@ -850,9 +864,9 @@ check_output_log_filename(tm_t now) {
 
   if (output_directory == nil) {
     // No output directory so use stdout.
-    if (ofile == 0) {
-      //  First time, so print header and set ofile.
-      ofile        = stdout;
+    if (out_log_fp == 0) {
+      //  First time, so print header and set out_log_fp.
+      out_log_fp   = stdout;
       print_header = 1;
     }
     return;
@@ -877,9 +891,9 @@ check_output_log_filename(tm_t now) {
   // Maintain daily output log files in OUTDIR.
   if (need_new_log_file != 0) {
     // Close and optionally compress the existing output file.  The
-    // first time through ofile will be 0.
-    if (ofile != 0) {
-      if (fclose(ofile) != 0) {
+    // first time through out_log_fp will be 0.
+    if (out_log_fp != 0) {
+      if (fclose(out_log_fp) != 0) {
         perror("cannot close output log file");
       }
       if (compress != nil) {
@@ -922,8 +936,8 @@ check_output_log_filename(tm_t now) {
     }
 
     // Open the file for appending.
-    ofile = fopen(output_filename, "a");
-    if (ofile == 0) {
+    out_log_fp = fopen(output_filename, "a");
+    if (out_log_fp == 0) {
       perror("cannot open output log file");
       exit(1);
     }
@@ -1081,16 +1095,16 @@ initialize()
   // Initialize the web server watching variables.  Move the file pointer
   // to the end of the web access log and note the current time.
   if (www_log_filename != nil) {
-    www_fd   = fopen(www_log_filename, "r");
-    www_ino  = 0;
-    www_size = 0;
-    if (www_fd != 0) {
-      if (fstat(www_fd, www_stat) == 0) {
-        www_ino  = www_stat[0].st_ino;
-        www_size = www_stat[0].st_size;
+    www_log_fp   = fopen(www_log_filename, "r");
+    www_log_ino  = 0;
+    www_log_size = 0;
+    if (www_log_fp != 0) {
+      if (fstat(fileno(www_log_fp), www_log_stat) == 0) {
+        www_log_ino  = www_log_stat[0].st_ino;
+        www_log_size = www_log_stat[0].st_size;
       }
       // Move to the end of the file.
-      fseek(www_fd, 0, 2);
+      fseek(www_log_fp, 0, 2);
     }
   }
 
@@ -2111,9 +2125,9 @@ measure_web(long sleep_till)
       sleep(5);
 #endif
       now = time(0);
-      if (www_fd != 0) {
+      if (www_log_fp != 0) {
         buf[BUFSIZ-1] = 127;
-        while (fgets(buf, BUFSIZ, www_fd) != nil) {
+        while (fgets(buf, BUFSIZ, www_log_fp) != nil) {
           httpops += 1.0;
           if (www_gatelen > 0) {
             if (strncmp(buf, www_gateway, www_gatelen) == 0) {
@@ -2129,7 +2143,7 @@ measure_web(long sleep_till)
           while (buf[BUFSIZ-1] == 0    &&
                  buf[BUFSIZ-2] != '\n') {
             buf[BUFSIZ-1] = 127;
-            if (fgets(buf, BUFSIZ, www_fd) == nil) {
+            if (fgets(buf, BUFSIZ, www_log_fp) == nil) {
               break;
             }
           }
@@ -2139,24 +2153,23 @@ measure_web(long sleep_till)
       /*
        * See if the file has been switched or truncated.
        */
-      if (stat(www_log_filename, www_stat) == 0) {
-        if (www_ino != www_stat[0].st_ino || www_size > www_stat[0].st_size) {
+      if (stat(www_log_filename, www_log_stat) == 0) {
+        if (www_log_ino  != www_log_stat[0].st_ino ||
+            www_log_size >  www_log_stat[0].st_size) {
           /*
-           * Close the old log file.
+           * Close the old log file and open the new one.
            */
-          if (www_fd != 0) {
-            fclose(www_fd);
+          if (www_log_fp != 0) {
+            fclose(www_log_fp);
           }
 
-          /*
-           * The log file has changed, open the new one.
-           */
-          www_fd = fopen(www_log_filename, "r");
-          if (www_fd != 0) {
-            fstat(www_fd, www_stat);
-            www_ino = www_stat[0].st_ino;
+          www_log_fp = fopen(www_log_filename, "r");
+          if (www_log_fp != 0) {
+            fstat(fileno(www_log_fp), www_log_stat);
+            www_log_ino   = www_log_stat[0].st_ino;
+            www_log_size  = www_log_stat[0].st_size;
             buf[BUFSIZ-1] = 127;
-            while(fgets(buf, BUFSIZ, www_fd) != nil) {
+            while(fgets(buf, BUFSIZ, www_log_fp) != nil) {
               httpops += 1.0;
               if (www_gatelen > 0) {
                 if (strncmp(buf, www_gateway, www_gatelen) == 0) {
@@ -2172,15 +2185,21 @@ measure_web(long sleep_till)
               while (buf[BUFSIZ-1] == 0    &&
                      buf[BUFSIZ-2] != '\n') {
                 buf[BUFSIZ-1] = 127;
-                if (fgets(buf, BUFSIZ, www_fd) == nil) {
+                if (fgets(buf, BUFSIZ, www_log_fp) == nil) {
                   break;
                 }
               }
             }
+          } else {
+            www_log_ino  = 0;
+            www_log_size = 0;
           }
+        } else {
+          /*
+           * Remember size for next time.
+           */
+          www_log_size = www_log_stat[0].st_size;
         }
-        /* Remember size for next time. */
-        www_size = www_stat[0].st_size;
       }
 
       www5_now      = gethrtime();

@@ -8,15 +8,19 @@ require			Orca 0.264
 # expression ^\\?\.{0,2}/, which matches /, ./, ../, and \./.
 base_dir		@RRD_DIR@/orcallator
 
-# rrd_dir specifies the location of the generated RRD data files.
+# rrd_dir specifies the location of the generated RRD data files.  If
+# rrd_dir is a relative path, then it is made relative to base_dir if
+# base_dir is set.
 rrd_dir			.
 
 # state_file specifies the location of the state file that remembers
-# the modification time of each source data file.
+# the modification time of each source data file.  If state_file is a
+# relative path, then it is made relative to base_dir is base_dir is
+# set.
 state_file		orca.state
 
 # html_dir specifies the top of the HTML tree created by Orca.
-html_dir		@HTML_DIR@
+html_dir		@HTML_DIR@/orcallator
 
 # By default create .meta tag files for all PNGs or GIFs so that the
 # web browser will automatically reload them.
@@ -80,6 +84,10 @@ filename_compare	sub {
 html_top_title		Yahoo!/GeoCities Host Status
 
 html_page_header
+  <div style="position:absolute;left:0px;top:0px; width:100%;display:none;z-index:1">
+    Funding for Orca provided by <a href="http://www.rothschildimage.com/">
+        The Rothschild Image</a>.
+  </div>
   <a href="http://geocities.yahoo.com/home/">
     <img border=0 alt="Yahoo!/GeoCities"
      src="http://a372.g.akamaitech.net/7/372/27/5fd49246b3dc72/us.yimg.com/i/geo/ygeo.gif"
@@ -91,6 +99,39 @@ html_page_footer
   <font face="Arial,Helvetica">
     These plots brought to you by your local system administrator.
   </font>
+
+plot {
+title			%g System Overview
+source			orcallator
+data			state_c / 2
+data			state_D / 2
+data			state_N / 2
+data			state_t / 2
+data			state_n / 2
+data			state_s / 2
+data			state_r / 2
+data			state_k / 2
+data			state_m / 2
+data			state_d / 2
+data			state_i / 2
+line_type		line3
+summary_format		%8.2lf %S
+legend			CPU power
+legend			Disk
+legend			Network
+legend			TCP/IP stack
+legend			NFS RPC client
+legend			Swap space
+legend			RAM demand
+legend			Kernel memory
+legend			Kernel contention
+legend			DNLC
+legend			Inode cache
+y_legend		Severity level
+data_min		0
+plot_min		0
+href			http://www.orcaware.com/orca/docs/orcallator.html#system_overview
+}
 
 plot {
 title			%g Average # Processes in Run Queue (Load Average)
@@ -591,6 +632,7 @@ plot {
 title			%g Disk Run Percent
 source			orcallator
 data			disk_runp_((?:c\d+t\d+d\d+)|(?:[ms]d\d+))
+data			disk_runp_((?:c\d+t\d+d\d+)|(?:c\d+d\d+)|(?:[ms]d\d+))
 line_type		line2
 legend			$1
 y_legend		Run Percent

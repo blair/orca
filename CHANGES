@@ -1,3 +1,28 @@
+This file is no longer being maintained as of Orca's 0.27b3 release.
+The modifications to Orca are now being tracked in the Subversion
+source code repository.
+
+You can view Orca's change log in one of two ways:
+
+1) Using a Subversion binary and running
+
+   svn log http://svn.orcaware.com:8000/repos/trunk/orca/
+
+   This output will be long, so you may want to pipe it to your
+   favorite paging program.
+
+2) Browsing the archives of commit emails sent out from the Subversion
+   server when a commit is performed.  The archive is available at
+
+   http://www.orcaware.com/pipermail/orca-checkins/
+
+   You can also put yourself on the Orca-checkins mailing list that
+   receives the commit emails by going to
+
+   http://www.orcaware.com/mailman/listinfo/orca-checkins
+
+
+
 Thu Nov  7 14:53:39 PST 2002 <blair@orcaware.com> Blair Zajac
 
 	* Release Orca version 0.27b3.

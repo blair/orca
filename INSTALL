@@ -195,7 +195,7 @@ Outline:
 
     RRDs
 
-      http://people.ee.ethz.ch/~oetiker/webtools/rrdtool/pub
+      http://people.ee.ethz.ch/~oetiker/webtools/rrdtool/pub/
 
       RRDs is the Perl module that comes with RRDtool, a package
       written by Tobias Oetiker.

@@ -1,5 +1,28 @@
+NEW IN ORCA 0.27
+================
+
+ Released November 14, 2002.
+
+ 1) In orcallator.cfg:
+    Add support for Znyz Network's 100 Mbit interfaces known by the
+      znb device name.
+    Fix a typo in matching on the dmfe 100 Mbit interface statistics.
+ 2) In orcallator/orcallator_running.pl.in:
+    Have it work with the new orcallator-YYYY-MM-DD and
+      orcallator-YYYY-MM-DD.XXX style file names.
+    Warn if the orcallator or percol file is newer than the current
+      time.
+ 3) In orca_services:
+    Complete the rename from orcaservices to orca_services by changing
+    any references to orcaservices to orca_servers in the files
+    themselves.  The file names were properly renamed previously, but
+    not all of the file contents were.
+
+
 NEW IN ORCA 0.27b3
 ==================
+
+ Released November 7, 2002.
 
  1) Now require Perl version 5.005_03 instead of 5.004_01.  Perl
     versions older than this are very broken and cannot even load
@@ -99,8 +122,11 @@ included orcallator.cfg and start_orcallator files.
     MAX_RAWDISKS from 512 to 1024.  Reformat and modify the usage
     message to fit the new WEB_SERVER_SECURE environmental variable.
 
+
 NEW IN ORCA 0.27b2
 ==================
+
+ Released October 2, 2001.
 
  1) Orca has a new home page:
 
@@ -174,8 +200,11 @@ orcallator.cfg and start_orcallator files.
 
 10) In orcallator.se, increase MAX_COLUMNS from 512 to 2048.
 
+
 NEW IN ORCA 0.27b1
 ==================
+
+ Released May 10, 2001.
 
  1) By default, now create an hourly plot that shows the last 1.5
     hours of data.  Add a global "generate_hourly_plot" configuration
@@ -358,6 +387,8 @@ orcallator.cfg and start_orcallator files.
 NEW IN ORCA 0.26
 ================
 
+ Released March 10, 2000.
+
  1) Due to some changes at onelist.com, the name of this mailing must
     change.  The -help at the end of orca-help is being reserved for
     the mailing list named "orca".  As such, I'm renaming this list to
@@ -441,6 +472,8 @@ orcallator.cfg and start_orcallator files.
 NEW IN ORCA 0.25
 ================
 
+ Released October 20, 1999.
+
  1) I have moved companies from Yahoo!/GeoCities to Akamai.  My email
     address has changed to blair@akamai.com and the old one will no
     longer work.  Also, I have moved the entire archive from
@@ -480,6 +513,8 @@ NEW IN ORCA 0.25
 
 NEW IN ORCA 0.24
 ================
+
+ Released October 14, 1999.
 
  1) Installation notes.  Due to the way Orca generated image and HTML
     files are named, read the INSTALL file.  Otherwise, you will have
@@ -621,6 +656,8 @@ start_orcallator files.
 NEW IN ORCA 0.23
 ================
 
+ Released May 27, 1999.
+
  1) Fix two important bugs in orcallator_running and start_orcallator
     which where using old PERCOLLATOR_DIR variables instead of the new
     ORCALLATOR_DIR.
@@ -628,6 +665,8 @@ NEW IN ORCA 0.23
 
 NEW IN ORCA 0.22
 ================
+
+  Released May 26, 1999.
 
  1) Add a new command line option (-r) that tells Orca to only update
     the RRD data files and not to generate any HTML or GIF files.
@@ -657,6 +696,8 @@ NEW IN ORCA 0.22
 
 NEW IN ORCA 0.21
 ================
+
+ Relased May 17, 1999.
 
  1) Every file containing the words percollator, percol and perc has
     been renamed to contain the word orcallator.  A new make target

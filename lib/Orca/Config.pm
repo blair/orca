@@ -496,11 +496,10 @@ sub check_config {
       }
     }
 
-    # Exit now if there were any required options that were not set
-    # since use of then will cause uninitialized warnings.
-    if ($required_error) {
-      return $number_errors;
-    }
+    # Do not continue checking this group if there were any required
+    # options that were not set since use of then will cause
+    # uninitialized warnings from Perl later on.
+    next if $required_error;
 
     # Set any optional group parameters to '' if it isn't defined in
     # the configuration file.
@@ -695,11 +694,10 @@ sub check_config {
       }
     }
 
-    # Exit now if there were any required options that were not set
-    # since use of then will cause uninitialized warnings.
-    if ($required_error) {
-      return $number_errors;
-    }
+    # Do not continue checking this plot if there were any required
+    # options that were not set since use of then will cause
+    # uninitialized warnings from Perl later on.
+    next if $required_error;
 
     # Create an array for each plot that will have a list of images that
     # were generated from this plot.

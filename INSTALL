@@ -176,7 +176,7 @@ Outline:
     Digest::MD5             >= 2.33        >= 2.33      2.33
     Math::IntervalSearch    >= 1.05        >= 1.05      1.05
     RRDs                    >= 1.000461    >= 1.0.46    1.0.46
-    Storable                >= 2.12        >= 2.12      2.12
+    Storable                >= 2.13        >= 2.13      2.13
     Time::HiRes             Not required by Orca        1.59
     version                 >= 0.39        >= 0.39      0.39
 
@@ -268,10 +268,10 @@ Outline:
 
     Storable
 
-      http://www.perl.com/CPAN/authors/id/A/AM/AMS/Storable-2.12.tar.gz
+      http://www.perl.com/CPAN/authors/id/A/AM/AMS/Storable-2.13.tar.gz
 
-      % gunzip -c Storable-2.12.tar.gz | tar xvf -
-      % cd Storable-2.12
+      % gunzip -c Storable-2.13.tar.gz | tar xvf -
+      % cd Storable-2.13
       % perl Makefile.PL
       % make
       % make test

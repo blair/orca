@@ -1,7 +1,7 @@
 # Orca::SourceFile: Manage the watching and loading of source data files.
 #
 # Copyright (C) 1998-1999 Blair Zajac and Yahoo!, Inc.
-# Copyright (C) 1999-2002 Blair Zajac.
+# Copyright (C) 1999-2004 Blair Zajac.
 
 package Orca::SourceFile;
 

@@ -1,7 +1,7 @@
 # Orca::RRDFile: Manage RRD file creation and updating.
 #
 # Copyright (C) 1998-1999 Blair Zajac and Yahoo!, Inc.
-# Copyright (C) 1999-2002 Blair Zajac.
+# Copyright (C) 1999-2004 Blair Zajac.
 
 package Orca::RRDFile;
 

@@ -1204,7 +1204,7 @@ measure_misc(long now, tm_t tm_now)
 orca_sleep_till(long sleep_till)
 {
   timeval_t now[1];
-  ulong     time_to_sleep;
+  long      time_to_sleep;
 
   gettimeofday(now, 0);
   time_to_sleep = sleep_till - now[0].tv_sec;

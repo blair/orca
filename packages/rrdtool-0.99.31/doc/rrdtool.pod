@@ -171,7 +171,7 @@ rrdcreate, rrdupdate, rrdgraph, rrddump, rrdfetch, rrdtune, rrdlast
 
 =head1 BUGS
 
-There must be plenty ... this is alpha code ;-) ...
+Bugs ? Features !
 
 =head1 AUTHOR
 

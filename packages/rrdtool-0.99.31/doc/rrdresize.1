@@ -93,7 +93,7 @@
 .nr % 0
 .rr F
 .\}
-.TH RRDs 3 "19990527.00" "25/May/99" "rrdtool"
+.TH RRDRESIZE 1 "19990525.23" "25/May/99" "rrdtool"
 .UC
 .if n .hy 0
 .if n .na
@@ -188,91 +188,35 @@
 .\}
 .rm #[ #] #H #V #F C
 .SH "NAME"
-RRDs \- Access rrdtool as a shared module
+rrdtool resize \- alters the size of an RRA.
 .SH "SYNOPSIS"
-.PP
-.Vb 8
-\&  use RRDs::ext
-\&  RRDs::error
-\&  RRDs::last ...
-\&  RRDs::create ...
-\&  RRDs::update ...
-\&  RRDs::graph ...
-\&  RRDs::fetch ...
-\&  RRDs::tune ...
-.Ve
+\fBrrdtool\fR \fBresize\fR \fIfilename\fR \fIrra-num\fR  \fBGROW\fR\fI|\fR\fBSHRINK\fR \fIrows\fR
 .SH "DESCRIPTION"
-.Sh "Calling Sequence"
-This module accesses rrdtool functionality directly from within perl. The
-arguments to the functions listed in the \s-1SYNOPSIS\s0 are explained in the regular
-rrdtool documentation. The commandline call
-.PP
-.Vb 1
-\& rrdtool update mydemo.rrd N:12:13
-.Ve
-gets turned into
-.PP
-.Vb 1
-\& RRDs::update qw(mydemo.rrd N:12:13);
-.Ve
-.Sh "Error Handling"
-The \s-1RRD\s0 functions will not abort your program even when they can not make
-sense out of the arguments you fed them. There are two ways to determine if
-an error has occured.
-.PP
-First the every function will return the value \-1 if an error occured.
-Second, the function RRDs::error can be called to get the error message
-from the last function call. If RRDs::error does not return an error
-then the previous function has completed its task succesfully.
-.PP
-.Vb 3
-\& RRDs::update qw(mydemo.rrd N:12:13);
-\& my $ERR=RRDs::error;
-\& die "ERROR while updating mydemo.rrd: $ERR\en" if $ERR;
-.Ve
-.Sh "Return Values"
-The functions RRDs::last, RRDs::graph and RRDs::fetchgive return their
-findigs.
-.PP
-RRDs::last returns a single \s-1INTEGER\s0 representing the last update time.
-.PP
-.Vb 1
-\& $lastupdate = RRDs::last ...
-.Ve
-RRDs::graph returns an pointer to an \s-1ARRAY\s0 containing the x-size and y-size of the
-created gif and results of the \s-1PRINT\s0 arguments.
-.PP
-.Vb 3
-\& ($averages,$xsize,$ysize) = RRDs::graph ...
-\& print "Gifsize: ${xsize}x${ysize}\en";
-\& print "Averages: ", (join ", ", @averages);
-.Ve
-RRDs::fetch is the most complex of the pack regarding return values. There are
-4 values. Two normal integers, a pointer to an array and a pointer to a
-array of pointers.
-.PP
-.Vb 13
-\& my ($start,$step,$names,$data) = RRDs::fetch ... 
-\& print "Start:        ".localtime($start)."\en"; 
-\& print "Stepsize:     $step seconds\en"; 
-\& print "Column Names: ".join (", ", @$names)."\en";
-\& print "Date:\en";
-\& foreach my $line (@$array){
-\&      print "".localtime($start),"   ";
-\&      $start += $step; 
-\&      foreach my $val (@$line) {                
-\&           printf "%12.1f", $val;
-\&      }
-\&      print "\en";
-\& }
-.Ve
-See the examples directory for more ways to use this extension.
+The \fBresize\fR function is used to modify the number of rows in
+an \fBRRA\fR.
+.Ip "\fIfilename\fR " 8
+the name of the \fB\s-1RRD\s0\fR you want to alter.
+.Ip "\fIrra-num\fR " 8
+the \fB\s-1RRA\s0\fR you want to alter. You can find the number using \fBrrdtool dump\fR.
+.Ip "\fB\s-1GROW\s0\fR " 8
+used if you want to add extra rows to an \s-1RRA\s0. The extra rows will be inserted
+as the rows that are oldest.
+.Ip "\fB\s-1SHRINK\s0\fR " 8
+used if you want to remove rows from an \s-1RRA\s0. The rows that will be removed
+are the oldest rows.
+.Ip "\fIrows\fR " 8
+the number of rows you want to add or remove.
+.SH "NOTES"
+It is possible to abuse this tool and get strange results
+by first removing some rows and then reinsert the same amount (effectively
+clearing them to be Unknown). You may thus end up with unknown data in one
+RRA while at the same timestamp this data is available in another RRA.
 .SH "AUTHOR"
-Tobias Oetiker <oeitker@ee.ethy.ch>
+Alex van den Bogaerdt <alex@ergens.op.het.net>
 
 .rn }` ''
-.IX Title "RRDs 3"
-.IX Name "RRDs - Access rrdtool as a shared module"
+.IX Title "RRDRESIZE 1"
+.IX Name "rrdtool resize - alters the size of an RRA."
 
 .IX Header "NAME"
 
@@ -280,11 +224,17 @@ Tobias Oetiker <oeitker@ee.ethy.ch>
 
 .IX Header "DESCRIPTION"
 
-.IX Subsection "Calling Sequence"
+.IX Item "\fIfilename\fR "
 
-.IX Subsection "Error Handling"
+.IX Item "\fIrra-num\fR "
 
-.IX Subsection "Return Values"
+.IX Item "\fB\s-1GROW\s0\fR "
+
+.IX Item "\fB\s-1SHRINK\s0\fR "
+
+.IX Item "\fIrows\fR "
+
+.IX Header "NOTES"
 
 .IX Header "AUTHOR"
 

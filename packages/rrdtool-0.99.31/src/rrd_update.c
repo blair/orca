@@ -1,5 +1,5 @@
 /*****************************************************************************
- * RRDTOOL 0.99.29 Copyright Tobias Oetiker, 1997, 1998, 1999
+ * RRDTOOL 0.99.31 Copyright Tobias Oetiker, 1997, 1998, 1999
  *****************************************************************************
  * rrd_update.c  RRD Update Function
  *****************************************************************************
@@ -224,7 +224,7 @@ rrd_update(int argc, char **argv)
 	
 	if(current_time <= rrd.live_head->last_up){
 	    rrd_set_error("illegal attempt to update using time %ld when "
-			  "last update time is %ld (minimum one second step ",
+			  "last update time is %ld (minimum one second step)",
 			  current_time, rrd.live_head->last_up);
 	    break;
 	}

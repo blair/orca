@@ -1,5 +1,5 @@
 /*****************************************************************************
- * RRDTOOL 0.99.29 Copyright Tobias Oetiker, 1997, 1998, 1999
+ * RRDTOOL 0.99.31 Copyright Tobias Oetiker, 1997, 1998, 1999
  *****************************************************************************
  * rrd_tool.c  Startup wrapper
  *****************************************************************************
@@ -72,6 +72,9 @@ void PrintUsage(void)
 	   "\t\t[--data-source-type|-d ds-name:DST\n"
 	   "\t\t[--data-source-rename|-r old-name:new-name\n"
 	   "\t\t[--minimum|-i ds-name:min] [--maximum|-a ds-name:max]\n\n"
+
+	   " * resize - alter the lenght of one of the RRAs in an RRD\n\n"
+	   "\trrdtool resize filename rranum GROW|SHRINK rows\n\n"
 
 	   "RRD TOOL is distributed under the Terms of the GNU General\n"
 	   "Public License Version 2. (www.gnu.org/copyleft/gpl.html)\n\n"
@@ -160,6 +163,8 @@ int HandleInputLine(int argc, char **argv, FILE* out)
 	rrd_create(argc-1, &argv[1]);
     else if (strcmp("dump", argv[1]) == 0)
 	rrd_dump(argc-1, &argv[1]);
+    else if (strcmp("resize", argv[1]) == 0)
+	rrd_resize(argc-1, &argv[1]);
     else if (strcmp("last", argv[1]) == 0)
         printf("%ld\n",rrd_last(argc-1, &argv[1]));
     else if (strcmp("update", argv[1]) == 0)

@@ -1,5 +1,5 @@
 /*****************************************************************************
- * RRDTOOL 0.99.29 Copyright Tobias Oetiker, 1997,1998, 1999
+ * RRDTOOL 0.99.31 Copyright Tobias Oetiker, 1997,1998, 1999
  *****************************************************************************
  * rrd_tool.h   Common Header File
  *****************************************************************************
@@ -94,12 +94,14 @@ int    rrd_fetch(int argc, char **argv,
 int    rrd_dump(int argc, char **argv);
 int    rrd_tune(int argc, char **argv);
 time_t rrd_last(int argc, char **argv);
+int    rrd_resize(int argc, char **argv);
 
 /* HELPER FUNCTIONS */
 void rrd_set_error(char *fmt,...);
 void rrd_clear_error(void);
 int  rrd_test_error(void);
 char *rrd_get_error(void);
+int  LockRRD(FILE *);
 
 int rrd_create_fn(char *file_name, rrd_t *rrd);
 int rrd_fetch_fn(char *filename, enum cf_en cf_idx,

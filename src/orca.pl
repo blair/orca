@@ -17,7 +17,7 @@ $Data::Dumper::Deepcopy = 1;
 
 # This is the version of Orca.
 use vars qw($VERSION);
-$VERSION = '0.21';
+$VERSION = '0.22';
 
 # This is the version number used in creating the DS names in RRDs.
 # This should be updated any time a new version of Orca needs some new
@@ -28,31 +28,43 @@ my $ORCA_RRD_VERSION = 19990222;
 # The number of seconds in one day.
 my $day_seconds = 24*60*60;
 
-# These define the different RRAs to create, how far back in time they
-# go, how many primary data points go into a consolidated data point,
-# and the default how to create RRAs.  The first array holds the names
-# of the different plot types to create.  The second array holds the
-# number of 300 intervals are used to create a consolidated data
-# point.  The third array is the number of consolidated data points
-# held in the RRA. The first one is every 5 minutes for 200 hours, the
-# second is every 30 minutes for 31 days, the third is every 2 hours
-# for 100 days, and the last is every day for 3 years.  The last array
+# These define the name of the different RRAs create in each RRD file,
+# how many primary data points go into a consolidated data point, and
+# how far back in time they go.
+#
+# The first RRA one is every 5 minutes for 200 hours, the second is
+# every 30 minutes for 31 days, the third is every 2 hours for 100
+# days, and the last is every day for 3 years.
+#
+# The first array holds the names of the different plot types to
+# create.  The second array holds the number of 300 second intervals
+# are used to create a consolidated data point.  The third array is
+# the number of consolidated data points held in the RRA.
+my @rra_plot_type = qw(daily weekly monthly yearly);
+my @rra_pdp_count =   (    1,     6,     24,   288);
+my @rra_row_count =   ( 2400,  1488,   1200,  1098);
+
+# Define the different plots to create.  These settings do not need to
+# be exactly the same as the RRA definitions, but they can be.  Here
+# create a quarterly plot (100 days) between the monthly and yearly
+# plots.  Only update the quarterly plot daily.  The last array here
 # holds the number of days back in time to plot in the GIF.  Be
 # careful to not increase this so much that the number of data points
 # to plot are greater than the number of pixels available for the GIF,
 # otherwise there will be a 30% slowdown due to a reduction
 # calculation to resample the data to the lower resolution for the
 # plot.  For example, with 40 days of 2 hour data, there are 480 data
-# points.  For no slowdown to occur, the GIF should be atleast 480
+# points.  For no slowdown to occur, the GIF should be atleast 481
 # pixels wide.
-my @rra_plot_type = qw(daily weekly monthly yearly);
-my @rra_pdp_count =   (    1,     6,     24,   288);
-my @rra_row_count =   ( 2400,  1488,   1200,  1098);
-my @rra_days_back =   (  1.5,  10.0,   40.0, 500.0);
+my @gif_plot_type = (@rra_plot_type[0..2], 'quarterly', $rra_plot_type[3]);
+my @gif_pdp_count = (@rra_pdp_count[0..2], @rra_pdp_count[3, 3]);
+my @gif_days_back = (  1.5,  10,  40, 100, 428);
+# Data points ->    (432  , 480, 480, 100, 428);
 
 # These are command line options.
-my $opt_verbose   = 0;
-my $opt_once_only = 0;
+my $opt_verbose         = 0;
+my $opt_once_only       = 0;
+my $opt_rrd_update_only = 0;
 
 # Set up a signal handler to force looking for new files.
 my $force_find_files = 0;
@@ -269,28 +281,6 @@ sub change_weight {
   1;
 }
 
-sub list {
-  keys %{$_[0]->{_hash}};
-}
-
-sub select {
-  my ($self, $timeout) = @_;
-
-  my $read_in = $self->{_vec};
-  my $read_out;
-
-  my $found = select($read_out=$read_in, undef, undef, $timeout);
-
-  return () unless $found;
-
-  my @found;
-  while (my ($filename, $fileno) = each %{$self->{_filenos}}) {
-    push(@found, $filename) if vec($read_out, $fileno, 1);
-  }
-
-  @found;
-}
-
 sub get_fd {
   my ($self, $filename) = @_;
 
@@ -300,38 +290,6 @@ sub get_fd {
   else {
     return;
   }
-}
-
-sub sysread_readline {
-  my ($self, $filename) = @_;
-
-  return unless defined $self->{_hash}{$filename};
-
-  # If there is no \n in the buffer, then attempt load more data from
-  # the file.
-  my $pos = index($self->{_buffer}{$filename}, "\n");
-  if ($pos == -1) {
-    my $buffer;
-    my $bytes = sysread($self->{_hash}{$filename}{fd},
-                        $buffer,
-                        1 << 14,
-                        0);
-    $self->{_buffer}{$filename} .= $buffer;
-  }
-
-  # Find the first \n and return all the characters up to and
-  # including that point.
-  $pos = index($self->{_buffer}{$filename}, "\n");
-  my $line = '';
-  if ($pos != -1) {
-    $pos++;
-    $line = substr($self->{_buffer}{$filename}, 0, $pos);
-    $self->{_buffer}{$filename} = substr($self->{_buffer}{$filename},
-                                         $pos,
-                                         length($self->{_buffer}{$filename})-$pos);
-  }
-
-  $line;
 }
 
 sub is_open {
@@ -361,8 +319,8 @@ sub new {
                     _last_stat_time => -1,
                     _file_dev       => -1,
                     _file_ino       => -1,
-                    _file_mtime     => -1},
-             $class;
+                    _file_mtime     => -1
+             }, $class;
   $self->update_stat;
   $self;
 }
@@ -398,8 +356,7 @@ sub update_stat {
   # instead.
   my $time = time;
   if ($time > $self->{_last_stat_time} + 1) {
-    my @stat = stat($self->{_filename});
-    if (@stat) {
+    if (my @stat = stat($self->{_filename})) {
       $self->{_file_dev}   = $stat[0];
       $self->{_file_ino}   = $stat[1];
       $self->{_file_mtime} = $stat[9];
@@ -502,7 +459,8 @@ sub new {
     _interval           => int($config_files->{$files_key}{interval}+0.5),
     _expire             => $config_options->{expire_gifs},
     _gif_height         => 0,
-    _gif_width          => 0
+    _gif_width          => 0,
+    _graph_options      => []
   }, $class;
 
   # If the GIF already exists, then use its last modification time to
@@ -511,133 +469,31 @@ sub new {
   # assume that the GIF needs to be recreated.  This data will cause
   # the GIF to be created if the GIF does not exist.
   my $plot_end_time = $self->plot_end_time;
-  foreach my $plot_type (@rra_plot_type) {
-    $self->{"_${plot_type}_update_time"} = -1;
+  foreach my $plot_type (@gif_plot_type) {
     my @stat = stat("$gif_basename-$plot_type.gif");
     if (@stat and $stat[9] <= $plot_end_time) {
       $self->{"_${plot_type}_update_time"} = $stat[9];
     }
-  }
-
-  $self;
-}
-
-sub add_rrds {
-  my $self = shift;
-
-  $self->{_my_rrd_list} = [ &::unique(@{$self->{_my_rrd_list}}, @_) ];
-
-  $self;
-}
-
-sub files_key {
-  $_[0]->{_files_key};
-}
-
-sub gif_width {
-  $_[0]->{_gif_width};
-}
-
-sub gif_height {
-  $_[0]->{_gif_height};
-}
-
-# For this GIF return a string that can be used to size the image
-# properly in HTML.  The output from this subroutine is either an
-# empty string or the size of the image.
-sub gif_img_src_size {
-  if ($_[0]->{_gif_height} and $_[0]->{_gif_width}) {
-    return "width=$_[0]->{_gif_width} height=$_[0]->{_gif_height}";
-  }
-  else {
-    return "";
-  }
-}
-
-sub group {
-  $_[0]->{_group};
-}
-
-sub name {
-  $_[0]->{_name};
-}
-
-sub no_group_name {
-  $_[0]->{_no_group_name};
-}
-
-sub plot_ref {
-  $_[0]->{_plot_ref};
-}
-
-sub rrds {
-  @{$_[0]->{_my_rrd_list}};
-}
-
-# Calculate the time of the last data point entered into the RRD that
-# this gif will use.
-sub plot_end_time {
-  my $self = shift;
-
-  my $plot_end_time = -1;
-  foreach my $rrd_key (@{$self->{_my_rrd_list}}) {
-    my $update_time = $self->{_all_rrd_ref}{$rrd_key}->rrd_update_time;
-    $plot_end_time  = $update_time if $update_time > $plot_end_time;
-  }
-
-  $plot_end_time;
-}
-
-sub plot {
-  my $self = shift;
-
-  # Make the plots and specify how far back in time to plot.
-  my $plot_made = 0;
-  for (my $i=0; $i<@rra_plot_type; ++$i) {
-    if ($self->_plot($rra_plot_type[$i],
-                     $rra_days_back[$i],
-                     $rra_pdp_count[$i])) {
-      $plot_made = 1;
+    else {
+      $self->{"_${plot_type}_update_time"} = -1;
     }
   }
 
-  $plot_made;
+  $self->_update_graph_options;
 }
 
-sub _plot {
-  my ($self, $plot_type, $days_back, $rra_pdp_count) = @_;
+sub _update_graph_options {
+  my $self = shift;
 
-  # Get the time stamp of the last data point entered into the RRDs
-  # that are used to generate this GIF.
-  my $plot_end_time = $self->plot_end_time;
+  my $plot_ref = $self->{_plot_ref};
+  my $group    = $self->{_group};
 
-  # Determine if the plot needs to be generated.  First see if there
-  # has been data flushed to the RRD that needs to be plotted.
-  # Otherwise, see if the does not file exists or if the time
-  # corresponding to the last data point is newer than the GIF.  Take
-  # into account that a new plot does not need to be generated until a
-  # primary data point has been added.  Primary data points are added
-  # after a data point falls into a new bin, where the bin ends on
-  # multiples of the sampling iterval.
-  my $interval        = $self->{_interval};
-  $rra_pdp_count      = int($rra_pdp_count*300.0/$interval + 0.5);
-  $rra_pdp_count      = 1 if $rra_pdp_count < 1;
-  my $plot_age        = $rra_pdp_count*$interval;
-  my $time_update_key = "_${plot_type}_update_time";
-  if (int($self->{$time_update_key}/$plot_age) == int($plot_end_time/$plot_age)) {
-    return;
-  }
-
-  # Generate the options that will be the same for each plot type.
-  my $plot_ref  = $self->{_plot_ref};
-  my $group     = $self->{_group};
+  # Create the options for RRDs::graph that do not change across any
+  # invocations of RRDs::graph.
   my @options = (
-    '-e', $plot_end_time,
-    '-v', ::replace_group_name($plot_ref->{y_legend}, $group),
     '-t', ::replace_group_name($plot_ref->{title}, $group),
-    '-w', $plot_ref->{plot_width},
-    '-h', $plot_ref->{plot_height}
-    );
+    '-v', ::replace_group_name($plot_ref->{y_legend}, $group)
+  );
   # Add the lower-limit and upper-limit flags if defined.
   if (defined $plot_ref->{plot_min}) {
     push(@options, '-l', $plot_ref->{plot_min});
@@ -684,17 +540,133 @@ sub _plot {
                    "GPRINT:average$i:MAX:Max\\: %f\\l"
         );
   }
-  push(@options, 'COMMENT:\s',
-                 'COMMENT:Last data entered at ' .
-                 localtime($plot_end_time) . '.');
+
+  $self->{_graph_options} = \@options;
+
+  $self;
+}
+
+sub add_rrds {
+  my $self = shift;
+
+  $self->{_my_rrd_list} = [ &::unique(@{$self->{_my_rrd_list}}, @_) ];
+
+  $self->_update_graph_options;
+}
+
+sub files_key {
+  $_[0]->{_files_key};
+}
+
+sub gif_width {
+  $_[0]->{_gif_width};
+}
+
+sub gif_height {
+  $_[0]->{_gif_height};
+}
+
+# For this GIF return a string that can be used to size the image
+# properly in HTML.  The output from this subroutine is either an
+# empty string or the size of the image.
+sub gif_img_src_size {
+  if ($_[0]->{_gif_height} and $_[0]->{_gif_width}) {
+    return "width=$_[0]->{_gif_width} height=$_[0]->{_gif_height}";
+  }
+  else {
+    return '';
+  }
+}
+
+sub group {
+  $_[0]->{_group};
+}
+
+sub name {
+  $_[0]->{_name};
+}
+
+sub no_group_name {
+  $_[0]->{_no_group_name};
+}
+
+sub plot_ref {
+  $_[0]->{_plot_ref};
+}
+
+sub rrds {
+  @{$_[0]->{_my_rrd_list}};
+}
+
+# Calculate the time of the last data point entered into the RRD that
+# this gif will use.
+sub plot_end_time {
+  my $self = shift;
+
+  my $plot_end_time = -1;
+  foreach my $rrd_key (@{$self->{_my_rrd_list}}) {
+    my $update_time = $self->{_all_rrd_ref}{$rrd_key}->rrd_update_time;
+    $plot_end_time  = $update_time if $update_time > $plot_end_time;
+  }
+
+  $plot_end_time;
+}
+
+sub plot {
+  my $self = shift;
+
+  # Make the plots and specify how far back in time to plot.
+  my $plot_made = 0;
+  for (my $i=0; $i<@gif_plot_type; ++$i) {
+    if ($self->_plot($gif_plot_type[$i],
+                     $gif_days_back[$i],
+                     $gif_pdp_count[$i])) {
+      $plot_made = 1;
+    }
+  }
+
+  $plot_made;
+}
+
+sub _plot {
+  my ($self, $plot_type, $gif_days_back, $gif_pdp_count) = @_;
+
+  # Get the time stamp of the last data point entered into the RRDs
+  # that are used to generate this GIF.
+  my $plot_end_time = $self->plot_end_time;
+
+  # Determine if the plot needs to be generated.  First see if there
+  # has been data flushed to the RRD that needs to be plotted.
+  # Otherwise, see if the does not file exists or if the time
+  # corresponding to the last data point is newer than the GIF.  Take
+  # into account that a new plot does not need to be generated until a
+  # primary data point has been added.  Primary data points are added
+  # after a data point falls into a new bin, where the bin ends on
+  # multiples of the sampling iterval.
+  my $interval        = $self->{_interval};
+  $gif_pdp_count      = int($gif_pdp_count*300.0/$interval + 0.5);
+  $gif_pdp_count      = 1 if $gif_pdp_count < 1;
+  my $plot_age        = $gif_pdp_count*$interval;
+  my $time_update_key = "_${plot_type}_update_time";
+  if (int($self->{$time_update_key}/$plot_age) == int($plot_end_time/$plot_age)) {
+    return;
+  }
 
   my $gif_filename = "$self->{_gif_basename}-$plot_type.gif";
   print "  Creating `$gif_filename'.\n" if $opt_verbose > 1;
 
+  my $plot_ref  = $self->{_plot_ref};
+
   my ($graph_return, $gif_width, $gif_height) =
-    RRDs::graph $gif_filename,
-                '-s', ($plot_end_time-$days_back*$day_seconds),
-                @options;
+    RRDs::graph
+      $gif_filename,
+      @{$self->{_graph_options}},
+      '-s', ($plot_end_time-$gif_days_back*$day_seconds),
+      '-e', $plot_end_time,
+      '-w', $plot_ref->{plot_width},
+      '-h', $plot_ref->{plot_height},
+      'COMMENT:\s',
+      'COMMENT:Last data entered at ' . localtime($plot_end_time) . '.';
   if (my $error = RRDs::error) {
     warn "$0: warning: cannot create `$gif_filename': $error\n";
   }
@@ -747,7 +719,7 @@ use vars qw(@ISA);
 @ISA = qw(Orca::DataFile);
 
 sub new {
-  unless (@_ == 8) {
+  unless (@_ == 7) {
     confess "$0: Orca::RRDFile::new passed incorrect number of arguments.\n";
   }
 
@@ -757,12 +729,7 @@ sub new {
       $files_key,
       $group,
       $name,
-      $plot_ref,
-      $choose_data_sub) = @_;
-
-  unless (ref($choose_data_sub) eq 'CODE') {
-    confess "$0: Orca::RRDFile::new not passed a valid CODE ref for choosing data.\n";
-  }
+      $plot_ref) = @_;
 
   # Remove any special characters from the unique name and do some
   # replacements.
@@ -784,11 +751,11 @@ sub new {
   return unless $self;
   $self->{_name}             = $name;
   $self->{_new_data}         = {};
-  $self->{_choose_data_sub}  = $choose_data_sub;
   $self->{_created_gifs}     = {};
   $self->{_plot_ref}         = $plot_ref;
   $self->{_interval}         = int($config_files->{$files_key}{interval}+0.5);
   $self->{_rrd_version}      = $ORCA_RRD_VERSION;
+  $self->{_choose_data_subs} = {};
 
   # See if the RRD file meets two requirements. The first is to see if
   # the last update time can be sucessfully read.  The second is to
@@ -855,33 +822,22 @@ sub created_gifs {
   values %{$_[0]->{_created_gifs}};
 }
 
-# Given a row of data from a source data file, take the required data
-# from it.
-# Call:   $self->(unix_epoch_time, element1, element2, element3, ...);
-# Return: 0 timestamp older than latest data point in RRD
-#         1 data added to queue
-#        -1 undefined value returned from data choosing subroutine
+# Queue a list of (time, value) data pairs.  Return the number of data
+# pairs sucessfully queued.
+# Call:   $self->(unix_epoch_time1, value1, unix_epoch_time2, value2, ...);
 sub queue_data {
-  unless (@_ > 2) {
-    confess "$0: internal error: queue_data passed too few arguments.\n";
-  }
-  my ($self, $time) = splice(@_, 0, 2);
+  my $self = shift;
 
-  return 0 if $time <= $self->{_rrd_update_time};
-
-  my $value = &{$self->{_choose_data_sub}}(@_);
-  my $saw_undefined = 0;
-  if (defined $value) {
+  my $count = 0;
+  my $rrd_update_time = $self->{_rrd_update_time};
+  while (@_ > 1) {
+    my ($time, $value) = splice(@_, 0, 2);
+    next if $time <= $rrd_update_time;
     $self->{_new_data}{$time} = $value;
-  }
-  else {
-    $saw_undefined = 1;
-    my $filename = $self->filename;
-    warn "$0: undefined value not sent to `$filename' at time ",
-         scalar localtime($time), " ($time).\n";
+    ++$count;
   }
 
-  $saw_undefined ? -1 : 1;
+  $count;
 }
 
 sub flush_data {
@@ -968,6 +924,30 @@ sub flush_data {
   return 1;
 }
 
+package Orca::Config::Plot;
+
+use Carp;
+
+sub new {
+  unless (@_ == 2) {
+    confess "$0: Orca::Config::Plot::new passed incorrect number of arguments.\n";
+  }
+
+  bless $_[1], $_[0];
+}
+
+package Orca::Config::FilesGroup;
+
+use Carp;
+
+sub new {
+  unless (@_ == 2) {
+    confess "$0: Orca::Config::FilesGroup::new passed incorrect number of arguments.\n";
+  }
+
+  bless $_[1], $_[0];
+}
+
 package Orca::SourceDataFile;
 
 use Carp;
@@ -976,10 +956,6 @@ use Storable 0.603 qw(dclone);
 use vars qw(@ISA);
 
 @ISA = qw(Orca::DataFile);
-
-# This is a static variable that caches the anonymous subroutines that
-# return the correct data from the input file.
-my %read_value_subs;
 
 # This is a static variable that lists all of the column names for a
 # particular files key.
@@ -993,7 +969,8 @@ my %first_line_cache;
 # These are caches for the different objects that are used to add a
 # plot.
 my %all_rrds_cache;
-my %my_rrds_cache;
+my %my_rrd_list_cache;
+my %choose_data_sub_cache;
 
 sub new {
   unless (@_ == 10) {
@@ -1018,9 +995,10 @@ sub new {
   $self->{_date_source}        = $date_source;
   $self->{_date_format}        = $date_format;
   $self->{_warn_email}         = $warn_email;
-  $self->{_my_rrd_hash}        = {};
+  $self->{_my_rrd_list}        = [];
   $self->{_all_rrd_ref}        = undef;
   $self->{_files_keys}         = {};
+  $self->{_choose_data_sub}    = undef;
 
   $self->{_column_description} = $column_description;
   $self->{_last_data_time}     = -1;
@@ -1078,10 +1056,10 @@ sub add_files_keys {
   }
 }
 
-# Return 1 if the source data file is current or not.  Alsot note the
-# day that this test was performed.  This lets the code ignore files
-# that are not current because a new file was generated for the next
-# day.
+# Return 1 if the source data file is current or 0 otherwise.  Also
+# note the day that this test was performed.  This lets the code
+# ignore files that are not current because a new file was generated
+# for the next day.
 sub is_current {
   my $self = shift;
 
@@ -1206,10 +1184,19 @@ sub add_plots {
   my $plot_key  = join("\200", $files_key, $group, @column_description);
   my $cache_key = md5($plot_key);
   if (defined $all_rrds_cache{$cache_key}) {
-    $self->{_all_rrd_ref} = $all_rrds_cache{$cache_key};
-    $self->{_my_rrd_hash} = $my_rrds_cache{$cache_key};
+    $self->{_all_rrd_ref}     = $all_rrds_cache{$cache_key};
+    $self->{_my_rrd_list}     = $my_rrd_list_cache{$cache_key};
+    $self->{_choose_data_sub} = $choose_data_sub_cache{$cache_key};
     return 1;
   }
+
+  # Use this hash to keep a list of RRDs that this file uses.
+  my %my_rrd_list;
+
+  # This is the source for an anonymous subroutine that given a row
+  # from a source data file returns a hash keyed by RRD name with the
+  # values calculated from the row.
+  my $choose_data_expr = "sub {\n  return (\n";
 
   # Go through each plot to create and process it for this file.
   my @regexp_pos          = map { 0 } (1..@$config_plots);
@@ -1398,12 +1385,12 @@ sub add_plots {
     # the same files key.  In this case the data argument for this
     # file will not be used.
     my @datas;
-    my $optional = $plot->{optional};
     foreach my $one_data (@{$plot->{data}}) {
       push(@datas, [@$one_data]);
     }
+    my $optional  = $plot->{optional};
     my $match_any = 0;
-    for (my $j=0; $j<@datas; $j++) {
+    for (my $j=0; $j<@datas; ++$j) {
       my $match_one_data = 0;
       for (my $k=0; $k<@{$datas[$j]}; ++$k) {
         my $element = $datas[$j][$k];
@@ -1433,38 +1420,39 @@ sub add_plots {
 
     # At this point we have a plot to create.
 
-    # For each data source, create an executable subroutine that takes
-    # a row of elements and returns the requested value.  Also create
-    # an unique Orca data file name for this plot and a name for this
-    # plot that does not include the group.
+    # For each data source in this plot, try to create an anonymous
+    # subroutine to see if the eval succeeds.  Place each data source
+    # into a large anonymous subroutine that takes a single row of data
+    # from an input source file and returns a hash keyed by the named
+    # used for a RRD and the value calculated using the input row of
+    # data.  Also create an unique Orca data file name for this plot
+    # and a name for this plot that does not include the group.
     my @my_rrds;
     my @no_group_name;
     my @group_name;
     for (my $j=0; $j<@datas; ++$j) {
 
-      my $working_data    = defined $datas[$j];
-      my $choose_data_sub = undef;
-      my $data_name = join('_', @{$plot->{data}[$j]});
+      my $expr         = "@{$datas[$j]}";
+      my $sub_expr_sub = undef;
+      my $data_name    = join('_', @{$plot->{data}[$j]});
 
-      if ($working_data) {
-        my $expr      = "sub {\n  return @{$datas[$j]};\n}\n";
-        my $expr_hash = md5($expr);
+      if (defined $datas[$j]) {
+        my $sub_expr     = "sub {\n  return $expr;\n}\n";
+        my $sub_expr_md5 = md5($sub_expr);
 
-        unless (defined ($choose_data_sub = $read_value_subs{$expr_hash})) {
+        unless (defined ($sub_expr_sub = $choose_data_sub_cache{$sub_expr_md5})) {
           {
             local $SIG{__WARN__} = sub { die $_[0] };
-            $choose_data_sub     = eval $expr;
+            $sub_expr_sub        = eval $sub_expr;
           }
           if ($@) {
+            $sub_expr_sub = undef;
             unless ($optional) {
               my $m = $old_i + 1;
-              warn "$0: warning: bad evaluation of commands for plot #$m `data @{$plot->{data}[$j]}'.\nOutput: $@\n";
+              warn "$0: warning: bad evaluation of commands for plot #$m `data @{$plot->{data}[$j]}':\n$sub_expr\nOutput: $@\n";
             }
-            $choose_data_sub = undef;
           }
-          else {
-            $read_value_subs{$expr_hash} = $choose_data_sub;
-          }
+          $choose_data_sub_cache{$sub_expr_md5} = $sub_expr_sub;
         }
       }
 
@@ -1473,20 +1461,21 @@ sub add_plots {
       push(@group_name, $name);
 
       # Create a new RRD only if it doesn't already exist and if a
-      # valid get data subroutine is created.
-      if ($choose_data_sub) {
+      # valid get data subroutine is created.  Keep the
+      # choose_data_sub for this file.
+      if (defined $sub_expr_sub) {
+        $choose_data_expr .= "    '$name', $expr,\n";
         unless (defined $rrd_data_files_ref->{$name}) {
           my $rrd_file = Orca::RRDFile->new($config_options,
                                             $config_files,
                                             $files_key,
                                             $group,
                                             $name,
-                                            $plot,
-                                            $choose_data_sub);
+                                            $plot);
           $rrd_data_files_ref->{$name} = $rrd_file;
         }
-        $self->{_all_rrd_ref} = $rrd_data_files_ref;
-        $self->{_my_rrd_hash}{$name}++;
+        $self->{_all_rrd_ref}             = $rrd_data_files_ref;
+        $my_rrd_list{$name}               = 1;
         push(@my_rrds, $name);
       }
     }
@@ -1519,8 +1508,21 @@ sub add_plots {
     }
   }
 
-  $all_rrds_cache{$cache_key} = $self->{_all_rrd_ref};
-  $my_rrds_cache{$cache_key}  = $self->{_my_rrd_hash};
+  $choose_data_expr .= "  );\n}\n";
+  {
+    local $SIG{__WARN__} = sub { die $_[0] };
+    $self->{_choose_data_sub} = eval $choose_data_expr;
+  }
+  if ($@) {
+    my $m = $old_i + 1;
+    die "$0: warning: bad evaluation of command for plot #$m:\n$choose_data_expr\nOutput: $@\n";
+  }
+
+  $all_rrds_cache{$cache_key}        = $self->{_all_rrd_ref};
+  $choose_data_sub_cache{$cache_key} = $self->{_choose_data_sub};
+  my $tmp                            = [sort keys %my_rrd_list];
+  $my_rrd_list_cache{$cache_key}     = $tmp;
+  $self->{_my_rrd_list}              = $tmp;
 
   1;
 }
@@ -1575,7 +1577,7 @@ sub load_new_data {
   # of any RRD files that depend on this source file.
   my $last_data_time = $self->{_last_data_time};
   unless ($load_data) {
-    foreach my $rrd_key (keys %{$self->{_my_rrd_hash}}) {
+    foreach my $rrd_key (@{$self->{_my_rrd_list}}) {
       if ($self->{_all_rrd_ref}{$rrd_key}->rrd_update_time < $last_data_time) {
         $load_data = 1;
         last;
@@ -1602,13 +1604,19 @@ sub load_new_data {
   my $use_file_mtime    = $self->{_date_source}[0] eq 'file_mtime';
   my $number_added      = 0;
   my $close_once_done   = 0;
+  my $number_columns    = @{$self->{_column_description}};
   while (my $line = <$fd>) {
+    # Skip the line if the word timestamp appears in it.  This is a
+    # temporary fix for orcallator.se to place a new information line
+    # in the output file when it starts up.
+    next if $line =~ /timestamp/;
+
     my @line = split(' ', $line);
 
     # Skip this input line if 1) the file uses the first line to
     # define the column names, 2) the number of columns loaded is not
     # equal to the number of columns in the column description.
-    if ($self->{_first_line} and @line != @{$self->{_column_description}}) {
+    if ($self->{_first_line} and @line != $number_columns) {
       warn "$0: number of columns in line $. of `$filename' does not match column description.\n";
       next;
     }
@@ -1618,19 +1626,24 @@ sub load_new_data {
 
     # If the file status from the source data file is greater than
     # zero, then it means the file has changed in some way, so we need
-    # to do updates for all plots.  Load the available data and push
-    # it to the plots.
+    # to do updates for all plots.  Load the available data, calculate
+    # the value that needs to go to each RRD and push the value to the
+    # RRD.
     my $add = 0;
-    foreach my $rrd_key (keys %{$self->{_my_rrd_hash}}) {
-      my $result = $self->{_all_rrd_ref}{$rrd_key}->queue_data($time, @line);
-      if ($result == 1) {
-        if ($opt_verbose > 2 and !$add) {
-          print "  Loaded `@line' at ", scalar localtime($time), " ($time).\n";
+    my %values = &{$self->{_choose_data_sub}}(@line);
+    foreach my $rrd_key (@{$self->{_my_rrd_list}}) {
+      my $value = $values{$rrd_key};
+      if (defined $value) {
+        if ($self->{_all_rrd_ref}{$rrd_key}->queue_data($time, $value)) {
+          if ($opt_verbose > 2 and !$add) {
+            print "  Loaded `@line' at ", scalar localtime($time), " ($time).\n";
+          }
+          $add = 1;
         }
-        $add = 1;
       }
-      elsif ($result == -1) {
+      else {
         $close_once_done = 1;
+        warn "$0: internal error: expecting RRD name `$rrd_key' but no data loaded from `" . $self->filename . "' at time ", scalar localtime($time), " ($time).\n";
       }
     }
     ++$number_added if $add;
@@ -1668,13 +1681,13 @@ sub load_new_data {
 }
 
 sub rrds {
-  keys %{$_[0]->{_my_rrd_hash}};
+  @{$_[0]->{_my_rrd_list}};
 }
 
 package main;
 
 sub Usage {
-  die "usage: $0 [-o] [-v] config_file\n";
+  die "usage: $0 [-o] [-r] [-v] config_file\n";
 }
 
 while (@ARGV and $ARGV[0] =~ /^-\w/) {
@@ -1684,6 +1697,9 @@ while (@ARGV and $ARGV[0] =~ /^-\w/) {
   }
   elsif ($arg eq '-v') {
     ++$opt_verbose;
+  }
+  elsif ($arg eq '-r') {
+    ++$opt_rrd_update_only;
   }
   else {
     Usage;
@@ -1907,6 +1923,7 @@ sub watch_data_sources {
       }
       foreach my $rrd (sort {$a->name cmp $b->name} values %this_group_rrds) {
         $rrd->flush_data;
+        next if $opt_rrd_update_only;
         foreach my $gif ($rrd->created_gifs) {
           next if $gif->rrds > 1;
           $gif->plot;
@@ -1919,21 +1936,24 @@ sub watch_data_sources {
       &save_state($config_options->{state_file}, $new_found_files_ref);
     }
 
-    # Plot the data in each gif.
-    print "Updating GIFs.\n" if $opt_verbose;;
-    foreach my $gif (@{$gif_files_ref->{list}}) {
-      $gif->plot;
-    }
+    # Create the HTML and GIF files now.
+    unless ($opt_rrd_update_only) {
+      # Plot the data in each gif.
+      print "Updating GIFs.\n" if $opt_verbose;;
+      foreach my $gif (@{$gif_files_ref->{list}}) {
+        $gif->plot;
+      }
 
-    # Make the HTML files.
-    if ($found_new_files) {
-      &create_html_files($config_options,
-                         $config_files,
-                         $config_plots,
-                         $new_found_files_ref,
-                         $group_files_ref,
-                         $gif_files_ref);
-      $found_new_files = 0;
+      # Make the HTML files.
+      if ($found_new_files) {
+        &create_html_files($config_options,
+                           $config_files,
+                           $config_plots,
+                           $new_found_files_ref,
+                           $group_files_ref,
+                           $gif_files_ref);
+        $found_new_files = 0;
+      }
     }
 
     # Return now if this loop is being run only once.
@@ -2055,7 +2075,7 @@ sub create_html_files {
     # Create the HTML code for the main index.html file.
     my $group_basename = strip_key_name($html_group);
     my $element = "<table border=2><tr><td><b>$html_group</b></td></tr>\n<tr><td>\n";
-    foreach my $plot_type (@rra_plot_type) {
+    foreach my $plot_type (@gif_plot_type) {
       $element      .= "<a href=\"$group_basename-$plot_type.html\">";
       my $Plot_Type  = Capatialize($plot_type);
       $element      .= "$Plot_Type</a><br>\n";
@@ -2072,7 +2092,7 @@ sub create_html_files {
     # Create the daily, weekly, monthly, yearly, and all HTML files
     # for this group.
     my @html_files;
-    foreach my $plot_type (@rra_plot_type, 'all') {
+    foreach my $plot_type (@gif_plot_type, 'all') {
       my $href      = "$group_basename-$plot_type.html";
       my $filename  = "$html_dir/$href";
       my $Plot_Type = Capatialize($plot_type);
@@ -2228,7 +2248,7 @@ sub create_html_files {
         # yearly, and all plots.  Use the legend name to create this
         # list.
         $legend_html_files{$legend_no_group} = [];
-        foreach my $plot_type (@rra_plot_type, 'all') {
+        foreach my $plot_type (@gif_plot_type, 'all') {
           my $href      = "$no_group_name-$plot_type.html";
           my $filename  = "$html_dir/$href";
           my $Plot_Type = Capatialize($plot_type);
@@ -2276,7 +2296,7 @@ sub create_html_files {
         # Create the HTML code that goes into the main index.html that
         # links to these other HTML files.
         my $element = "<td><b>$legend_no_group</b></td>\n";
-        foreach my $plot_type (@rra_plot_type, 'all') {
+        foreach my $plot_type (@gif_plot_type, 'all') {
           $element .= "<td><a href=\"$no_group_name-$plot_type.html\">";
           $element .= Capatialize($plot_type) . "</a></td>\n";
         }
@@ -2308,7 +2328,7 @@ sub create_html_files {
       my $gif_filename = $with_group_name;
       $gif_filename    = $gif->group . "/$gif_filename" if $sub_dir;
       my $gif_size     = $gif->gif_img_src_size;
-      foreach my $plot_type (@rra_plot_type) {
+      foreach my $plot_type (@gif_plot_type) {
         my $Plot_Type = Capatialize($plot_type);
         $summarize_html->print("<hr>\n<h2>$Plot_Type $legend_with_group</h2>\n",
                                "<img src=\"$gif_filename-$plot_type.gif\"",
@@ -2455,7 +2475,7 @@ sub unique {
   foreach my $element (@_) {
     unless (defined $a{$element}) {
       push(@unique, $element);
-      $a{$element}++;
+      $a{$element} = 1;
     }
   }
   @unique;
@@ -2529,7 +2549,7 @@ sub find_files {
 
     # Now for each file, create the Orca::SourceDataFile object that
     # manages that file and the GIFs that get generated from the file.
-    # Delete from the list of filenames those files that have
+    # Delete from the list of filenames those files that have not
     # successfully created Orca::SourceDataFile objects.
     for (my $i=0; $i<@filenames;) {
       my $filename = $filenames[$i];
@@ -2795,10 +2815,15 @@ sub check_config {
     die "$0: error: must define at least one `files' in `$config_filename'.\n";
   }
 
-  # For each files parameter there are required options.
+  # For each files parameter there are required options.  Convert the
+  # unblessed reference to a hash to a Orca::Config::FilesGroup
+  # object.
   foreach my $files_key (keys %$config_files) {
+    my $files_group = Orca::Config::FilesGroup->new($config_files->{$files_key});
+    $config_files->{$files_key} = $files_group;
+
     foreach my $option (@cc_required_files) {
-      unless (defined $config_files->{$files_key}{$option}) {
+      unless (defined $files_group->{$option}) {
         die "$0: error: must define `$option' for `files $files_key' in `$config_filename'.\n";
       }
     }
@@ -2806,20 +2831,20 @@ sub check_config {
     # Optional files options will be set to '' here if they haven't
     # been set by the user.
     foreach my $option (@cc_optional_files) {
-      unless (defined $config_files->{$files_key}{$option}) {
-        $config_files->{$files_key}{$option} = '';
+      unless (defined $files_group->{$option}) {
+        $files_group->{$option} = '';
       }
     }
 
     # Check that the date_source is either column_name followed by a
     # column name or file_mtime for the file modification time.  If a
     # column_name is used, then the date_format is required.
-    my $date_source = $config_files->{$files_key}{date_source}[0];
+    my $date_source = $files_group->{date_source}[0];
     if ($date_source eq 'column_name') {
-      unless (@{$config_files->{$files_key}{date_source}} == 2) {
+      unless (@{$files_group->{date_source}} == 2) {
         die "$0: error: incorrect number of arguments for `date_source' for `files $files_key'.\n";
       }
-      unless (defined $config_files->{$files_key}{date_format}) {
+      unless (defined $files_group->{date_format}) {
         die "$0: error: must define `date_format' with `date_source columns ...' for `files $files_key'.\n";
       }
     }
@@ -2828,7 +2853,7 @@ sub check_config {
         die "$0: error: illegal argument for `date_source' for `files $files_key'.\n";
       }
     }
-    $config_files->{$files_key}{date_source}[0] = $date_source;
+    $files_group->{date_source}[0] = $date_source;
 
     # Check that we have a valid regular expression for find_files and
     # get a unique list of them.  Also to see if the find_files match
@@ -2841,23 +2866,23 @@ sub check_config {
     # since this will match single character files and directories.
     my $sub_dir = 0;
     my %find_files;
-    my $number_finds = @{$config_files->{$files_key}{find_files}};
+    my $number_finds = @{$files_group->{find_files}};
     for (my $i=0; $i<$number_finds; ++$i) {
-      my $orig_find = $config_files->{$files_key}{find_files}[$i];
+      my $orig_find = $files_group->{find_files}[$i];
       my $find = $orig_find;
       $find =~ s:^\\./::;
       $find =~ s:/\\./:/:g;
       $find = $orig_find unless $find;
-      $config_files->{$files_key}{find_files}[$i] = $find;
+      $files_group->{find_files}[$i] = $find;
       my $test_string = 'abcdefg';
       local $SIG{__WARN__} = sub { die $_[0] };
       eval { $test_string =~ /$find/ };
       die "$0: error: illegal regular expression in `find_files $orig_find' for `files $files_key' in `$config_filename':\n$@\n" if $@;
-      $find_files{$find}++;
+      $find_files{$find} = 1;
       $sub_dir = 1 if $find =~ m:\(.+\):;
     }
-    $config_files->{$files_key}{find_files} = [sort keys %find_files];
-    $config_files->{$files_key}{sub_dir}    = $sub_dir || $config_options->{sub_dir};
+    $files_group->{find_files} = [sort keys %find_files];
+    $files_group->{sub_dir}    = $sub_dir || $config_options->{sub_dir};
   }
 
   # There must be at least one plot.
@@ -2868,91 +2893,94 @@ sub check_config {
   # Foreach plot there are required options.  Create default options
   # if the user has not done so.
   for (my $i=0; $i<@$config_plots; ++$i) {
+    my $plot = Orca::Config::Plot->new($config_plots->[$i]);
+    $config_plots->[$i] = $plot;
+
     my $j = $i + 1;
     foreach my $option (@cc_required_plots) {
-      unless (defined $config_plots->[$i]{$option}) {
+      unless (defined $plot->{$option}) {
         die "$0: error: must define `$option' for `plot' #$j in `$config_filename'.\n";
       }
     }
 
     # Create an array for each plot that will have a list of GIFs that
     # were generated from this plot.
-    $config_plots->[$i]{creates} = [];
+    $plot->{creates} = [];
 
     # Optional options will be set to '' here if they haven't been set
     # by the user.
     foreach my $option (@cc_optional_plots) {
-      unless (defined $config_plots->[$i]{$option}) {
-        $config_plots->[$i]{$option} = '';
+      unless (defined $plot->{$option}) {
+        $plot->{$option} = '';
       }
     }
 
     # Set the default plot width and height.
-    $config_plots->[$i]{plot_width}  = 500 unless $config_plots->[$i]{plot_width};
-    $config_plots->[$i]{plot_height} = 125 unless $config_plots->[$i]{plot_height};
+    $plot->{plot_width}  = 500 unless $plot->{plot_width};
+    $plot->{plot_height} = 125 unless $plot->{plot_height};
 
     # Set the plot minimum and maximum values to U unless they are
     # set.
-    unless (defined $config_plots->[$i]{data_min}) {
-      $config_plots->[$i]{data_min} = 'U';
+    unless (defined $plot->{data_min}) {
+      $plot->{data_min} = 'U';
     }
-    unless (defined $config_plots->[$i]{data_max}) {
-      $config_plots->[$i]{data_max} = 'U';
+    unless (defined $plot->{data_max}) {
+      $plot->{data_max} = 'U';
     }
 
     # The data type must be either gauge, absolute, or counter.
-    if (defined $config_plots->[$i]{data_type}) {
-      my $type = substr($config_plots->[$i]{data_type}, 0, 1);
+    if (defined $plot->{data_type}) {
+      my $type = substr($plot->{data_type}, 0, 1);
       if ($type eq 'g' or $type eq 'G') {
-        $config_plots->[$i]{data_type} = 'GAUGE';
+        $plot->{data_type} = 'GAUGE';
       }
       elsif ($type eq 'c' or $type eq 'C') {
-        $config_plots->[$i]{data_type} = 'COUNTER';
+        $plot->{data_type} = 'COUNTER';
       }
       elsif ($type eq 'a' or $type eq 'A') {
-        $config_plots->[$i]{data_type} = 'ABSOLUTE';
+        $plot->{data_type} = 'ABSOLUTE';
       }
       elsif ($type eq 'd' or $type eq 'D') {
-        $config_plots->[$i]{data_type} = 'DERIVE';
+        $plot->{data_type} = 'DERIVE';
       }
       else {
-        die "$0: error: `data_type $config_plots->[$i]{data_type}' for `plot' #$j in `$config_filename' must be gauge, counter, derive, or absolute.\n";
+        die "$0: error: `data_type $plot->{data_type}' for `plot' #$j in `$config_filename' must be gauge, counter, derive, or absolute.\n";
       }
     }
     else {
-      $config_plots->[$i]{data_type} = 'GAUGE';
+      $plot->{data_type} = 'GAUGE';
     }
 
     # The data source needs to be a valid files key.
-    my $source = $config_plots->[$i]{source};
+    my $source = $plot->{source};
     unless (defined $config_files->{$source}) {
       die "$0: error: plot #$j `source $source' references non-existant `files' in `$config_filename'.\n";
     }
-    unless ($config_plots->[$i]{source}) {
+    unless ($plot->{source}) {
       die "$0: error: plot #$j `source $source' requires one files_key argument in `$config_filename'.\n";
     }
 
     # Set the legends of any columns not defined.
-    unless (defined $config_plots->[$i]{legend}) {
-      $config_plots->[$i]{legend} = [];
+    unless (defined $plot->{legend}) {
+      $plot->{legend} = [];
     }
-    my $number_datas = @{$config_plots->[$i]{data}};
-    for (my $k=@{$config_plots->[$i]{legend}}; $k<$number_datas; ++$k) {
-      $config_plots->[$i]{legend}[$k] = "@{$config_plots->[$i]{data}[$k]}";
+    my $number_datas = @{$plot->{data}};
+    for (my $k=@{$plot->{legend}}; $k<$number_datas; ++$k) {
+      $plot->{legend}[$k] = "@{$plot->{data}[$k]}";
     }
 
     # Set the colors of any data not defined.
-    unless (defined $config_plots->[$i]{color}) {
-      $config_plots->[$i]{color} = [];
+    unless (defined $plot->{color}) {
+      $plot->{color} = [];
     }
-    for (my $k=@{$config_plots->[$i]{color}}; $k<$number_datas; ++$k) {
-      $config_plots->[$i]{color}[$k] = $::cc_default_colors[$k];
+    for (my $k=@{$plot->{color}}; $k<$number_datas; ++$k) {
+      $plot->{color}[$k] = $::cc_default_colors[$k];
     }
 
     # Check each line type setting.
     for (my $k=0; $k<$number_datas; ++$k) {
-      if (defined $config_plots->[$i]{line_type}[$k]) {
-      my $line_type = $config_plots->[$i]{line_type}[$k];
+      if (defined $plot->{line_type}[$k]) {
+      my $line_type = $plot->{line_type}[$k];
         if ($line_type =~ /^line([123])$/i) {
           $line_type = "LINE$1";
         }
@@ -2965,34 +2993,36 @@ sub check_config {
         else {
           die "$0: error: plot #$j illegal `line_type' `$line_type'.\n";
         }
-        $config_plots->[$i]{line_type}[$k] = $line_type;
+        $plot->{line_type}[$k] = $line_type;
       }
       else {
-        $config_plots->[$i]{line_type}[$k] = 'LINE1';
+        $plot->{line_type}[$k] = 'LINE1';
       }
     }
 
     # If the generic y_legend is not set, then set it equal to the
     # first legend.
-    unless (defined $config_plots->[$i]{y_legend}) {
-      $config_plots->[$i]{y_legend} = $config_plots->[$i]{legend}[0];
+    unless (defined $plot->{y_legend}) {
+      $plot->{y_legend} = $plot->{legend}[0];
     }
 
     # If the title is not set, then set it equal to all of the legends
     # with the group name prepended.
-    unless (defined $config_plots->[$i]{title}) {
+    unless (defined $plot->{title}) {
       my $title = '%G ';
       for (my $k=0; $k<$number_datas; ++$k) {
-        $title .= $config_plots->[$i]{legend}[$k];
+        $title .= $plot->{legend}[$k];
         $title .= " & " if $k < $number_datas-1;
       }
-      $config_plots->[$i]{title} = $title;
+      $plot->{title} = $title;
     }
   }
 
-  # Create the necessary GIF files in the HTML directory.  This should
-  # include orga.gif and rrdtool.gif.  Convert the hexadecimal forms
-  # stored in the DATA section to the raw GIF form on disk.
+  # Create the necessary GIF files in the HTML directory unless only
+  # RRD files should be updated.  This should include orga.gif and
+  # rrdtool.gif.  Convert the hexadecimal forms stored in the DATA
+  # section to the raw GIF form on disk.
+  return if $opt_rrd_update_only;
   my $gif_filename = '';
   while (<main::DATA>) {
     chomp;
@@ -3093,10 +3123,10 @@ sub process_config_line {
                                      data
                                      legend
                                      line_type);
-    @pcl_filepath_elements      = qw(state_file
-                                     data_dir
+    @pcl_filepath_elements      = qw(data_dir
                                      find_files
-                                     html_dir);
+                                     html_dir
+                                     state_file);
     @pcl_no_arg_elements        = qw(flush_regexps
                                      optional
                                      rigid_min_max);
@@ -3169,7 +3199,7 @@ sub process_config_line {
   # Handle options for plot.
   if ($pcl_plot_index !~ /^-/) {
     if ($key eq '}') {
-      $pcl_plot_index++;
+      ++$pcl_plot_index;
       $pcl_plot_index = "-$pcl_plot_index";
       return;
     }
@@ -3300,7 +3330,7 @@ orca - Make HTML & GIF plots of daily, weekly, monthly & yearly data
 
 =head1 SYNOPSIS
 
-  orca [-v [-v [-v]]] [-o] configuration_file
+  orca [-o] [-r] [-v [-v [-v]]] configuration_file
 
 =head1 DESCRIPTION
 
@@ -3352,15 +3382,20 @@ here.
 
 =head1 COMMAND LINE OPTIONS
 
-Orca has only two command line options.  They are:
-
-B<-v>: Verbose.  Have Orca spit out more verbose messages.  As you add
-more B<-v>'s to the command line, more messages are sent out.  Any more
-than three B<-v>'s are not used by Orca.
+Orca has only three command line options.  They are:
 
 B<-o>: Once.  This tells Orca to go through the steps of finding files,
 updating the RRDs, updating the GIFs, and creating the HTML files once.
 Normally, Orca loops continuously looking for new and updated files.
+
+B<-r>: RRD only.  Have Orca only update its RRD files.  Do not generate
+any HTML or GIF files.  This is useful if you are loading in a large
+amount of data in several invocations of Orca and do not want to create
+the HTML and GIF files in each run since it is time consuming.
+
+B<-v>: Verbose.  Have Orca spit out more verbose messages.  As you add
+more B<-v>'s to the command line, more messages are sent out.  Any more
+than three B<-v>'s are not used by Orca.
 
 After the command line options are listed, Orca takes one more argument
 which is the name of the configuration file to use.  Sample configuration
@@ -3373,9 +3408,9 @@ Because Orca is extremely IO intensive, I recommend that the host that
 locally mounts the web server content be the same machine that runs Orca.
 In addition, the RRD data files that Orca uses also require a good amount
 of IO.  The machine running Orca should always have the B<data_dir>
-directory locally mounted.  It is more important this B<data_dir> be
-locally stored than B<html_dir> for performance concerns.  The two options
-B<data_dir> and B<html_dir> are described in more detail below.
+directory locally mounted.  It is more important this B<data_dir>
+be locally stored than B<html_dir> for performance concerns.  The two
+options B<data_dir> and B<html_dir> are described in more detail below.
 
 =head1 INSTALLATION AND CONFIGURATION
 
@@ -3479,7 +3514,8 @@ By default, nobody is emailed.
 
 If B<expire_gifs> is set then .meta files will be created for all
 generated GIF files.  If the Apache web server 1.3.2 or greater is being
-used, then the following modifications must added to srm.conf:
+used, then the following modifications must added to srm.conf or
+httpd.conf.
 
   < 
   < #MetaDir .web

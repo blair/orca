@@ -124,7 +124,7 @@ Outline:
    -----------------------------------------------------------------------
    Digest::MD5 version		2.00 or greater		2.07
    Math::IntervalSearch		1.00 or greater		1.02
-   RRDs version			0.99.29 or greater	0.99.29
+   RRDs version			0.99.29 or greater	0.99.31
    Storable			0.603 or greater	0.603
 
    All four of these modules are included with the Orca distribution

@@ -1,0 +1,126 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>resize - alters the size of an RRA.
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+<!--
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#NOTES">NOTES</A>
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+</UL>
+-->
+<!-- INDEX END -->
+
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+rrdtool resize - alters the size of an RRA.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<STRONG>rrdtool</STRONG>  <STRONG>resize</STRONG>  <EM>filename</EM>  <EM>rra-num</EM>    <STRONG>GROW</STRONG><EM>|</EM><STRONG>SHRINK</STRONG>  <EM>rows</EM>
+
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+The <STRONG>resize</STRONG> function is used to modify the number of rows in an <STRONG>RRA</STRONG>.
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_filename">filename 
+
+</A></STRONG><DD>
+the name of the <STRONG>RRD</STRONG> you want to alter.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_rra">rra-num 
+
+</A></STRONG><DD>
+the <STRONG>RRA</STRONG> you want to alter. You can find the number using <STRONG>rrdtool dump</STRONG>.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_GROW">GROW 
+
+</A></STRONG><DD>
+used if you want to add extra rows to an RRA. The extra rows will be
+inserted as the rows that are oldest.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_SHRINK">SHRINK 
+
+</A></STRONG><DD>
+used if you want to remove rows from an RRA. The rows that will be removed
+are the oldest rows.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_rows">rows 
+
+</A></STRONG><DD>
+the number of rows you want to add or remove.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="NOTES">NOTES
+
+</A></H1>
+It is possible to abuse this tool and get strange results by first removing
+some rows and then reinsert the same amount (effectively clearing them to
+be Unknown). You may thus end up with unknown data in one RRA while at the
+same timestamp this data is available in another RRA.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHOR">AUTHOR
+
+</A></H1>
+Alex van den Bogaerdt <A
+HREF="MAILTO:<alex@ergens.op.het.net>"><alex@ergens.op.het.net></A>
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

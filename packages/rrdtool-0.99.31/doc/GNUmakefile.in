@@ -17,7 +17,7 @@ SHELL = /bin/sh
 VER = `date +%Y%m%d.%H`
 
 POD = rrdtool.pod rrdlast.pod rrdcreate.pod rrdupdate.pod rrdgraph.pod RRDs.pm RRDp.pm \
-	rrdfetch.pod rrddump.pod rrdtune.pod
+	rrdfetch.pod rrddump.pod rrdtune.pod rrdresize.pod
 
 MAN = $(POD:.pod=.1) $(POD:.pl=.1) $(POD:.pm=.3) 
 TXT = $(MAN:.1=.txt) $(POD:.3=.txt)

@@ -1,3 +1,63 @@
+Wed May 26 17:54:26 PDT 1999
+
+	Release version 0.22.
+
+Wed May 26 12:10:42 PDT 1999
+
+	Move the portions of the code that generate the RRDs::graph
+	options that do not change between invocations to the
+	_update_graph_options method.  This method gets called when the
+	Orca::GIFFile is constructed and any time add_rrds is called.
+	This speeds Orca up slightly.
+
+	Include RRDtool 0.99.31 but continue to only require 0.99.29.
+
+	Add a new quarterly plot that shows the last 100 days.  This is
+	a nice transition between the monthly and yearly plots.
+
+	Change the number of days shown in the yearly plot from 500 to
+	428, which is one year and two months.  Reducing the number
+	of days from 500 by at least one day will speed up the GIF
+	generation time because by default the plot portion of the GIFs
+	are 500 pixels wide.
+
+	Add two new classes Orca::Config::Plot and
+	Orca::Config::FilesGroup that do not do anything yet but
+	will provide an object-oriented interface to config_plots and
+	config_files.  Currently all the values in @$config_plots and
+	%$config_files are now bless objects instead of unblessed objects.
+
+Thu May 20 10:59:26 PDT 1999
+
+	Put a closing ) in a error message in RRDtool 0.99.29.1.
+
+	Fix a bug in queue_data where it was sending data to
+	rrd_update that was already in the RRD file.
+
+Wed May 19 10:43:48 PDT 1999
+
+	Restructured the code so each Orca::SourceDataFile has only
+	one anonymous subroutine to read in all the valued from a single
+	line of the source data file.  This sped Orca up slightly.
+
+	Add a -r option to Orca to have it not create any HTML or
+	GIF files and only update the RRD files.
+
+	Fix a bug where if the number of columns changed in from one
+	source file to the next source file in a files group, the
+	column index used to get a particular value is the old index
+	for the old file and not the new index for the new file.  This
+	fix involved having the Orca::SourceDataFile object run the
+	anonymous subroutines to pick the correct data from a line
+	instead of Orca::RRDFile.
+
+	Remove some unused methods: Orca::OpenFileHash::list,
+	Orca::OpenFileHash::select, Orca::OpenFileHash::sysread_readline
+	Add some more documentation to orcallator.cfg.
+
+	Skip a line in an input source data file if the word timestamp
+	is found in it.  This is a temporary fix.
+
 Mon May 17 16:26:17 PDT 1999
 
 	Release version 0.21.

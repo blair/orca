@@ -1,3 +1,23 @@
+New in version 0.22.
+ 1) Add a new command line option (-r) that tells Orca to only update
+    the RRD data files and not to generate any HTML or GIF files.
+    This is useful if you are loading in a large amount of data in several
+    invocations of Orca and do not want to create the HTML and GIF files
+    in each run since it is time consuming.
+ 2) Fix a bug where if the number of columns changed in from one source
+    file to the next source file in a files group, the column index used
+    to get a particular value is the index for the old file and not the
+    index for the new file.  This required some internal restructuring
+    the speeds Orca up slightly.
+ 3) Add a new plot called quarterly that displays the last 100 days
+    of data.  This is a nice transition between the monthly and yearly
+    plots.
+ 4) A temporary fix: Skip and do not complain about input source data
+    file lines containing the word timestamp in it.
+ 5) Removed some unused methods to make Orca smaller.
+ 6) Added some more documentation to orcallater.cfg.
+ 7) Make Orca slightly faster.
+ 
 New in version 0.21.
  1) Every file containing the words percollator, percol and perc has
     been renamed to contain the word orcallator.  A new make target named

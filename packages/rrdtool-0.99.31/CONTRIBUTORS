@@ -25,6 +25,7 @@ Debugging and code contributions
         Jeremy Fischer <jeremy@pobox.com> (Makefile changes & RPM builds)
         Alan Lichty <alan_lichty@eli.net>
         Steen Linden <Steen.Linden@ebone.net>
+        Alex van den Bogaerdt <alex@ergens.op.het.net> (rrd_resize.c)
 
 Documentation
 

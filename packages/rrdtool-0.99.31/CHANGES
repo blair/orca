@@ -1,5 +1,10 @@
-0.99.29b
-0) from blair .. fix for Makefile.in
+0.99.31
+From: Tobi
+0) hmpf ... forgot to add rrdresize.pod and friends to MANIFEST
+ 
+0.99.30
+From: Alex
+0) We can now alter the number of rows in an RRA with rrd_resize
 
 0.99.29
 From: Blair

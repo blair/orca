@@ -651,7 +651,7 @@ CONFIGURE_COMMAND_LINE=${1+"$@"}
 # The path packages gets added where necessary.
 DIGEST_MD5_DIR=Digest-MD5-2.07
 MATH_INTERPOLATE_DIR=Math-Interpolate-1.02
-RRDTOOL_DIR=rrdtool-0.99.29.1
+RRDTOOL_DIR=rrdtool-0.99.31
 STORABLE_DIR=Storable-0.6@3
 
 

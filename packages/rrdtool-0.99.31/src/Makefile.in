@@ -25,7 +25,7 @@ HEADERS = rrd_tool.h rrd_format.h getopt.h parsetime.h
 
 SRCLIB = rrd_fetch.c rrd_create.c rrd_dump.c rrd_graph.c rrd_tune.c\
 	rrd_open.c rrd_diff.c rrd_last.c rrd_update.c rrd_format.c rrd_error.c\
-	getopt.c getopt1.c parsetime.c
+	getopt.c getopt1.c parsetime.c rrd_resize.c
 
 SRC = $(SRCLIB) rrd_tool.c
 

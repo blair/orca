@@ -9,8 +9,8 @@ SHELL = /bin/sh
 ### Things you might NOT want to play with ... 
 ###
 
-VER  = 0.99.29
-PVER = 0.99029 
+VER  = 0.99.31
+PVER = 0.99031
 
 ARCHIVE = rrdtool-$(VER).tar.gz
 DIRNAME = rrdtool-$(VER)

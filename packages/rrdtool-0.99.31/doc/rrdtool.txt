@@ -61,7 +61,7 @@ DDDDEEEESSSSCCCCRRRRIIIIPPPPTTTTIIIIOOOONNNN
 
 
 
-12/Feb/99                  19990426.22                          1
+16/May/99                  19990525.23                          1
 
 
 
@@ -127,7 +127,7 @@ RRDTOOL(1)                   rrdtool                   RRDTOOL(1)
 
 
 
-12/Feb/99                  19990426.22                          2
+16/May/99                  19990525.23                          2
 
 
 
@@ -193,7 +193,7 @@ RRDTOOL(1)                   rrdtool                   RRDTOOL(1)
 
 
 
-12/Feb/99                  19990426.22                          3
+16/May/99                  19990525.23                          3
 
 
 
@@ -213,7 +213,7 @@ SSSSEEEEEEEE AAAALLLLSSSSOOOO
        rrdtune, rrdlast
 
 BBBBUUUUGGGGSSSS
-       There must be plenty ... this is alpha code ;-) ...
+       Bugs ? Features !
 
 AAAAUUUUTTTTHHHHOOOORRRR
        Tobias Oetiker <oetiker@ee.ethz.ch>
@@ -259,6 +259,6 @@ AAAAUUUUTTTTHHHHOOOORRRR
 
 
 
-12/Feb/99                  19990426.22                          4
+16/May/99                  19990525.23                          4
 
 

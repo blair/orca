@@ -52,11 +52,14 @@ doc/rrdgraph.1
 doc/rrdgraph.html
 doc/rrdgraph.pod
 doc/rrdgraph.txt
-doc/rrdintro.pod
 doc/rrdlast.1
 doc/rrdlast.html
 doc/rrdlast.pod
 doc/rrdlast.txt
+doc/rrdresize.1
+doc/rrdresize.html
+doc/rrdresize.pod
+doc/rrdresize.txt
 doc/rrdtool.1
 doc/rrdtool.html
 doc/rrdtool.pod
@@ -112,6 +115,7 @@ src/rrd_format.c
 src/rrd_format.h
 src/rrd_graph.c
 src/rrd_open.c
+src/rrd_resize.c
 src/rrd_last.c
 src/rrd_tool.c
 src/rrd_tool.h

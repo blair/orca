@@ -404,7 +404,7 @@ GIF:
       CDEF:kmh=myspeed,3600,*                         \
       CDEF:fast=kmh,100,GT,100,0,IF                   \
       CDEF:over=kmh,100,GT,kmh,100,-,0,IF             \
-      CDEF:good=kmh,0,kmh,100,GT,IF                   \
+      CDEF:good=kmh,100,GT,0,kmh,IF                   \
       HRULE:100#0000FF:"Maximum allowed"              \
       AREA:good#00FF00:"Good speed"                   \
       AREA:fast#550000:"Too fast"                     \

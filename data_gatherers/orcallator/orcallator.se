@@ -97,6 +97,10 @@
 #include <tcp_class.se>
 #include <tcp_rules.se>
 
+#ifdef WATCH_WORKLOAD
+#include <workinfo_class.se>
+#endif
+
 #ifdef WATCH_MOUNTS
 #include <mnt_class.se>
 #include <statvfs.se>
@@ -1025,6 +1029,11 @@ measure_os(long now, tm_t tm_now)
   // Take care of page allocations.
 #ifdef WATCH_PAGES
   measure_pages();
+#endif
+
+  // Get workload data
+#ifdef WATCH_WORKLOAD
+  measure_workload();
 #endif
 }
 
@@ -2406,3 +2415,45 @@ put_httpd()
 #endif
 }
 #endif
+
+#ifdef WATCH_WORKLOAD
+measure_workload()
+{
+  work_info_class_t ww;
+  double            millisecs_per_switch;
+
+  ww.number = -1;
+#ifndef WORKLOAD_TOTAL
+  refresh$(ww);
+#endif // WORKLOAD_TOTAL
+  for (refresh$(ww); ww.number != -1; refresh$(ww)) {
+    put_output(sprintf("%s_cnt", ww.w.name), sprintf("%4d", ww.w.count));
+    put_output(sprintf("%s_lwpcnt", ww.w.name), sprintf("%4d", ww.w.info.lwp_count));
+
+    if (ww.w.cnt == 0) {
+      millisecs_per_switch = ww.w.info.vcontexts + ww.w.info.icontexts;
+      if (millisecs_per_switch > 0.0) {
+        millisecs_per_switch = 1000 * (ww.w.info.user_time + ww.w.info.system_time) / millisecs_per_switch;
+      }
+
+      put_output(sprintf("%s_usr%%", ww.w.name), sprintf("%6.1f", 100.0*ww.w.info.user_time));
+      put_output(sprintf("%s_sys%%", ww.w.name), sprintf("%6.1f", 100.0*(ww.w.info.system_time +
+                                                                         ww.w.info.trap_time)));
+      put_output(sprintf("%s_cpwt%%", ww.w.name), sprintf("%5.0f", 100.0*(ww.w.info.cpu_wait_time)));
+      put_output(sprintf("%s_chld%%", ww.w.name), sprintf("%5.0f", 100.0*ww.w.info.child_time));
+      put_output(sprintf("%s_sizeM", ww.w.name), sprintf("%7d", ww.w.info.vmem_size/1024));
+      put_output(sprintf("%s_pf", ww.w.name), sprintf("%4d", ww.w.info.maj_faults));
+      put_output(sprintf("%s_pgwt%%", ww.w.name), sprintf("%6.0f", 100.0*(ww.w.info.text_pf_time +
+                                                                          ww.w.info.data_pf_time +
+                                                                          ww.w.info.kernel_pf_time)));
+      put_output(sprintf("%s_ulkwt%%", ww.w.name), sprintf("%6.0f", 100.0*ww.w.info.user_lock_time));
+      put_output(sprintf("%s_ioK", ww.w.name), sprintf("%6.0f", ww.w.info.charios/1024.0));
+      put_output(sprintf("%s_sysc", ww.w.name), sprintf("%6d", ww.w.info.syscalls));
+      put_output(sprintf("%s_vctx", ww.w.name), sprintf("%6d", ww.w.info.vcontexts));
+      put_output(sprintf("%s_ictx", ww.w.name), sprintf("%6d", ww.w.info.icontexts));
+      put_output(sprintf("%s_msps", ww.w.name), sprintf("%6.2f", millisecs_per_switch));
+    }
+  }
+  return;
+}
+#endif // WATCH_WORKLOAD

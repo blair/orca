@@ -35,12 +35,10 @@ all: Makefile $(TARGETS)
 
 install: all
 	$(MKDIR) $(bindir)
-	@if test "`echo $(BIN_TARGETS)`"; then \
-	  for file in $(BIN_TARGETS); do \
-	    echo $(INSTALL) $$file $(bindir); \
-	    $(INSTALL) $$file $(bindir); \
-	  done; \
-	fi
+	@for file in `echo $(BIN_TARGETS)`; do \
+	  echo $(INSTALL) $$file $(bindir); \
+	  $(INSTALL) $$file $(bindir); \
+	done
 
 clean:
 	$(RM) $(TARGETS)

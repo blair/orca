@@ -47,18 +47,14 @@ install: all
 	$(MKDIR) $(sysconfdir)
 	$(MKDIR) $(RAW_ORCA_SERVICES_DIR)
 	$(MKDIR) $(RRD_ORCA_SERVICES_DIR)
-	@if test "`echo $(BIN_TARGETS)`"; then \
-	  for file in $(BIN_TARGETS); do \
-	    echo $(INSTALL) $$file $(bindir); \
-	    $(INSTALL) $$file $(bindir); \
-	  done; \
-	fi
-	@if test "`echo $(LIBEXEC_TARGETS)`"; then \
-	  for file in $(LIBEXEC_TARGETS); do \
-	    echo $(INSTALL) $$file $(libexecdir); \
-	    $(INSTALL) $$file $(libexecdir); \
-	  done; \
-	fi
+	@for file in `echo $(BIN_TARGETS)`; do \
+	  echo $(INSTALL) $$file $(bindir); \
+	  $(INSTALL) $$file $(bindir); \
+	done
+	@for file in `echo $(LIBEXEC_TARGETS)`; do \
+	  echo $(INSTALL) $$file $(libexecdir); \
+	  $(INSTALL) $$file $(libexecdir); \
+	done
 	@if test -r $(sysconfdir)/orca_services.cfg; then \
 	  date="`date +%Y-%m-%d-%H:%M:%S`"; \
 	  echo $(INSTALL) -m 0644 orca_services.cfg $(sysconfdir)/orca_services.cfg.$$date; \

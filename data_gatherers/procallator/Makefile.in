@@ -44,12 +44,10 @@ install: all
 	$(MKDIR) $(bindir)
 	$(MKDIR) $(RAW_PROCALLATOR_DIR)
 	$(MKDIR) $(RRD_PROCALLATOR_DIR)
-	@if test "`echo $(BIN_TARGETS)`"; then \
-	  for file in $(BIN_TARGETS); do \
-	    echo $(INSTALL) $$file $(bindir); \
-	    $(INSTALL) $$file $(bindir); \
-	  done; \
-	fi
+	@for file in `echo $(BIN_TARGETS)`; do \
+	  echo $(INSTALL) $$file $(bindir); \
+	  $(INSTALL) $$file $(bindir); \
+	done
 	@if test -r $(sysconfdir)/procallator.cfg; then \
 	  date="`date +%Y-%m-%d-%H:%M:%S`"; \
 	  echo $(INSTALL) -m 0644 procallator.cfg $(sysconfdir)/procallator.cfg.$$date; \

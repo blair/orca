@@ -42,12 +42,10 @@ install: all
 	$(MKDIR) $(sysconfdir)
 	$(MKDIR) $(RAW_WINALLATOR_DIR)
 	$(MKDIR) $(RRD_WINALLATOR_DIR)
-	@if test "`echo $(BIN_TARGETS)`"; then \
-	  for file in $(BIN_TARGETS); do \
-	    echo $(INSTALL) $$file $(bindir); \
-	    $(INSTALL) $$file $(bindir); \
-	  done; \
-	fi
+	@for file in `echo $(BIN_TARGETS)`; do \
+	  echo $(INSTALL) $$file $(bindir); \
+	  $(INSTALL) $$file $(bindir); \
+	done
 	@if test -r $(sysconfdir)/winallator.cfg; then \
 	  date="`date +%Y-%m-%d-%H:%M:%S`"; \
 	  echo $(INSTALL) -m 0644 winallator.cfg $(sysconfdir)/winallator.cfg.$$date; \

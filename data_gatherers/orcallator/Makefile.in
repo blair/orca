@@ -48,12 +48,10 @@ install: all
 	$(MKDIR) $(sysconfdir)
 	$(MKDIR) $(RAW_ORCALLATOR_DIR)
 	$(MKDIR) $(RRD_ORCALLATOR_DIR)
-	@if test "`echo $(BIN_TARGETS)`"; then \
-	  for file in $(BIN_TARGETS); do \
-	    echo $(INSTALL) $$file $(bindir); \
-	    $(INSTALL) $$file $(bindir); \
-	  done; \
-	fi
+	@for file in `echo $(BIN_TARGETS)`; do \
+	  echo $(INSTALL) $$file $(bindir); \
+	  $(INSTALL) $$file $(bindir); \
+	done
 	$(INSTALL) -m 0644 orcallator.se $(libdir)
 	@if test -r $(sysconfdir)/orcallator.cfg; then \
 	  date="`date +%Y-%m-%d-%H:%M:%S`"; \

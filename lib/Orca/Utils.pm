@@ -14,13 +14,24 @@ use Orca::Config        qw(%config_global);
 use Orca::SourceFileIDs qw(new_fids);
 use vars qw(@EXPORT_OK @ISA $VERSION);
 
-@EXPORT_OK = qw(email_message
-                gcd name_to_fsname
+@EXPORT_OK = qw(capatialize
+                email_message
+                gcd
+                name_to_fsname
                 perl_glob
+                print_running_stats
                 recursive_mkdir
                 unique);
 @ISA       = qw(Exporter);
 $VERSION   = substr q$Revision: 0.01 $, 10;
+
+# Take a string and capatialize only the first character of the
+# string.
+sub capatialize {
+  my $string = shift;
+  substr($string, 0, 1) = uc(substr($string, 0, 1));
+  $string;
+}
 
 # Email the list of people a message.
 sub email_message {
@@ -186,6 +197,23 @@ sub perl_glob {
   }
 
   return @_ ? @results : new_fids(@results);
+}
+
+# Print a message on the statistics of this running process.  Note the
+# starting time of the script.
+my $start_time = time;
+sub print_running_stats {
+  my $ps_self = '@PS_SELF@';
+  if ($ps_self) {
+    $ps_self =~ s/PID/$$/g;
+    system($ps_self);
+  }
+
+  my $time_span = time - $start_time;
+  my $minutes   = int($time_span/60);
+  my $seconds   = $time_span - 60*$minutes;
+
+  printf "Current running time is %d:%02d minutes.\n", $minutes, $seconds;
 }
 
 # Given a directory name, attempt to make all necessary directories.

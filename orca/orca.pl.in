@@ -58,13 +58,14 @@ use Orca::Config        qw(load_config
 use Orca::OldState      qw($orca_old_state
                            load_old_state
                            save_old_state);
-use Orca::Utils         qw(name_to_fsname perl_glob unique);
+use Orca::Utils         qw(capatialize
+                           name_to_fsname
+                           perl_glob
+                           print_running_stats
+                           unique);
 use Orca::SourceFile;
 use Orca::SourceFileIDs qw(@sfile_fids);
 use Orca::HTMLFile      qw($html_hr);
-
-# Note the starting time of the script.
-my $start_time = time;
 
 # Remember the original working directory because it will be needed to
 # remove the locking directory.
@@ -231,7 +232,7 @@ sub clean_up_and_quit {
 
   # Print the given message and any running statistics.
   if ($can_print) {
-    &running_stats;
+    &print_running_stats if $opt_verbose;
     print $message if $message;
   }
 
@@ -371,7 +372,7 @@ sub watch_data_sources {
       }
     }
 
-    &running_stats;
+    &print_running_stats if $opt_verbose;
 
     # Because the amount of data loaded from the source data files can
     # be large, go through each subgroup of source files, load all of
@@ -538,14 +539,6 @@ sub watch_data_sources {
       }
     }
   }
-}
-
-# Take a string and capatialize only the first character of the
-# string.
-sub capatialize {
-  my $string = shift;
-  substr($string, 0, 1) = uc(substr($string, 0, 1));
-  $string;
 }
 
 # Sort subgroup names depending upon the type of characters in the
@@ -1136,23 +1129,6 @@ sub find_files {
   undef %$orca_old_state;
 
   return ($found_new_files, \%new_found_files, \@subgroup_fids);
-}
-
-# Print a message on the statistics of this running process.
-sub running_stats {
-  return unless $opt_verbose;
-
-  my $ps_self = '@PS_SELF@';
-  if ($ps_self) {
-    $ps_self =~ s/PID/$$/g;
-    system($ps_self);
-  }
-
-  my $time_span = time - $start_time;
-  my $minutes   = int($time_span/60);
-  my $seconds   = $time_span - 60*$minutes;
-
-  printf "Current running time is %d:%02d minutes.\n", $minutes, $seconds;
 }
 
 __END__

@@ -24,8 +24,8 @@ Outline:
     a) Install the SE toolkit.
     b) Apply a patch to the SE 3.0 toolkit if necessary.
     c) Examine Orca/orcallator programs.
-    d) Install orcallator boot and halt time start/stop scripts
-       in /etc/rc?.d/.
+    d) Install orcallator boot and halt time start/stop scripts in
+       /etc/init.d/ and /etc/rc?.d/.
     e) Run start_orcallator on all systems.
     f) Edit orcallator.cfg.
 
@@ -428,20 +428,24 @@ Outline:
          orcallator_running - run to see if any orcallators are not running
 
     d) Install orcallator boot and halt time start/stop scripts in
-       /etc/rc?.d/.
+       /etc/init.d/ and /etc/rc?.d/.
 
-       If you wish to have orcallator run when the machine boots, you
-       can install the included S99orcallator file into the proper
-       /etc/*.d/ directories.  To make installing this easier, you can
-       say
+       If you want to have orcallator run when the machine boots, you
+       can manually copy data_gatherers/orcallator/S99orcallator into
+       /etc/init.d/orcallator and set up symbolic links from that file
+       to the appropriate K* and S* files in /etc/rc?.d/.
+
+       To make installing this easier, you can run
 
        % make orcallator_run_at_boot
 
-       from either the top level Makefile or the orcallator/Makefile.
-       It will remove any old orcallator files and install
-       S99orcallator into /etc/init.d/orcallator,
-       /etc/init.d/rc0.d/K01orcallator,
-       /etc/init.d/rc1.d/K01orcallator and /etc/rc3.d/S99orcallator.
+       from either the top of the Orca source tree or from the
+       data_gatherers/orcallator directory.  This will first delete
+       any existing start and stop scripts in the locations it will
+       install files into.  By default, it will copy S99orcallator
+       into /etc/init.d/orcallator and create symbolic links to
+       /etc/init.d/rc0.d/K01orcallator, /etc/init.d/rc1.d/K01orcallator,
+       /etc/init.d/rc2.d/K01orcallator, and /etc/rc3.d/S99orcallator.
 
     e) Run start_orcallator on all systems.
 

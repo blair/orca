@@ -68,11 +68,13 @@ orcallator_run_at_boot: all
 	-$(RM) $(INIT_D_DIR)/orcallator
 	-$(RM) $(RCX_D_CONTAINING_DIR)/rc0.d/K01orcallator
 	-$(RM) $(RCX_D_CONTAINING_DIR)/rc1.d/K01orcallator
+	-$(RM) $(RCX_D_CONTAINING_DIR)/rc2.d/K01orcallator
 	-$(RM) $(RCX_D_CONTAINING_DIR)/rc3.d/S99orcallator
 	$(INSTALL) -m 0744 S99orcallator $(INIT_D_DIR)/orcallator
-	ln $(INIT_D_DIR)/orcallator $(RCX_D_CONTAINING_DIR)/rc0.d/K01orcallator
-	ln $(INIT_D_DIR)/orcallator $(RCX_D_CONTAINING_DIR)/rc1.d/K01orcallator
-	ln $(INIT_D_DIR)/orcallator $(RCX_D_CONTAINING_DIR)/rc3.d/S99orcallator
+	ln -s $(INIT_D_DIR)/orcallator $(RCX_D_CONTAINING_DIR)/rc0.d/K01orcallator
+	ln -s $(INIT_D_DIR)/orcallator $(RCX_D_CONTAINING_DIR)/rc1.d/K01orcallator
+	ln -s $(INIT_D_DIR)/orcallator $(RCX_D_CONTAINING_DIR)/rc2.d/K01orcallator
+	ln -s $(INIT_D_DIR)/orcallator $(RCX_D_CONTAINING_DIR)/rc3.d/S99orcallator
 
 clean:
 	$(RM) $(TARGETS)

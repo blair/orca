@@ -12,9 +12,9 @@ my @stats_dirs = ('@VAR_DIR@/orca_services');
 
 foreach my $stats_dir (@stats_dirs) {
 
-  die "$0: unable to change to `$stats_dir'" unless chdir $stats_dir;
+  die "$0: unable to change to '$stats_dir'" unless chdir $stats_dir;
 
-  die "$0: unable to open `.' for reading: $!\n" unless opendir(DIR, '.');
+  die "$0: unable to open '.' for reading: $!\n" unless opendir(DIR, '.');
 
   my @hosts = sort grep { $_ !~ /^\./ } readdir(DIR);
 

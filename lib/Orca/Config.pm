@@ -251,8 +251,8 @@ sub compile_sub {
   }
 
   if ($@) {
-    warn "$0: cannot evalulate `$option' in $where in ",
-         "`$config_filename':\n   $expr\nOutput: $@\n";
+    warn "$0: cannot evalulate '$option' in $where in ",
+         "'$config_filename':\n   $expr\nOutput: $@\n";
     return;
   } else {
     return $sub;
@@ -279,8 +279,8 @@ sub compile_late_interval {
   local $SIG{__WARN__} = \&die_when_called;
   eval '&$sub(3.1415926) + 0;';
   if ($@) {
-    warn "$0: cannot execute `late_interval' in $where in ",
-         "`$config_filename':\n   $expr\nOutput: $@\n";
+    warn "$0: cannot execute 'late_interval' in $where in ",
+         "'$config_filename':\n   $expr\nOutput: $@\n";
     return;
   } else {
     return $sub;
@@ -317,22 +317,22 @@ sub check_config {
     if (@require == 2) {
       my ($require_what, $require_version) = @require;
       unless ($require_what eq 'Orca') {
-        warn "$0: error: `require' only accepts `Orca' as first argument in ",
-             "`$config_filename'.\n";
+        warn "$0: error: 'require' only accepts 'Orca' as first argument in ",
+             "'$config_filename'.\n";
         ++$number_errors;
       }
       if ($require_version !~ /^\d+(?:\.\d*)?$/ and
           $require_version !~ /^\.\d+$/) {
         ++$number_errors;
-        warn "$0: error: `require' second argument `$require_version' is not ",
-             "a number in `$config_filename'.\n";
+        warn "$0: error: 'require' second argument '$require_version' is not ",
+             "a number in '$config_filename'.\n";
       } elsif ($ORCA_VERSION < $require_version) {
         ++$number_errors;
         warn "$0: Orca version $ORCA_VERSION less than required version ",
-             "$require_version specified in `$config_filename'.\n";
+             "$require_version specified in '$config_filename'.\n";
       }
     } else {
-      warn "$0: error: `require' needs two arguments in `$config_filename'.\n";
+      warn "$0: error: 'require' needs two arguments in '$config_filename'.\n";
       ++$number_errors;
     }
   }
@@ -343,7 +343,7 @@ sub check_config {
     if (defined $config_global{base_dir}) {
       $config_global{rrd_dir} = $config_global{base_dir};
     } else {
-      warn "$0: error: must set `rrd_dir' in `$config_filename'.\n";
+      warn "$0: error: must set 'rrd_dir' in '$config_filename'.\n";
       ++$number_errors;
     }
   }
@@ -352,7 +352,7 @@ sub check_config {
   my $required_error = 0;
   foreach my $option (@cc_required_global) {
     unless (defined $config_global{$option}) {
-      warn "$0: error: must set `$option' in `$config_filename'.\n";
+      warn "$0: error: must set '$option' in '$config_filename'.\n";
       $required_error = 1;
       ++$number_errors;
     }
@@ -361,7 +361,7 @@ sub check_config {
   # Quit now if there were any required options that were not set
   # since use of then will cause uninitialized warnings.
   if ($required_error) {
-    die "$0: loading configuration file `$config_filename' got ",
+    die "$0: loading configuration file '$config_filename' got ",
         "$number_errors error(s).\n";
   }
 
@@ -369,7 +369,7 @@ sub check_config {
   foreach my $dir_key ('html_dir', 'rrd_dir') {
     my $dir = $config_global{$dir_key};
     unless (-d $dir) {
-      warn "$0: error: please create $dir_key `$dir'.\n";
+      warn "$0: error: please create $dir_key '$dir'.\n";
       ++$number_errors;
     }
   }
@@ -391,7 +391,7 @@ sub check_config {
   my $mfl = $config_global{max_filename_length};
   if (defined $mfl) {
     unless ($mfl =~ /^\d+$/ and $mfl > 63) {
-      warn "$0: error: max_filename_length `$mfl' is not a number > 63.\n";
+      warn "$0: error: max_filename_length '$mfl' is not a number > 63.\n";
       ++$number_errors;
     }
   } else {
@@ -421,20 +421,20 @@ sub check_config {
       # and minutes will only be positive, so check for hours > 23 and
       # minutes > 59.
       unless ($hours < 24) {
-        warn "$0: warning: ignoring find_times `$find_time': hours must be ",
+        warn "$0: warning: ignoring find_times '$find_time': hours must be ",
              "less than 24.\n";
         ++$number_errors;
         next;
       }
       unless ($minutes < 60) {
-        warn "$0: warning: ignoring find_times `$find_time': minutes must be ",
+        warn "$0: warning: ignoring find_times '$find_time': minutes must be ",
              "less than 60.\n";
         ++$number_errors;
         next;
       }
       push(@find_times, $hours + $minutes/60.0);
     } else {
-      warn "$0: warning: ignoring find_times `$find_time': illegal format.\n";
+      warn "$0: warning: ignoring find_times '$find_time': illegal format.\n";
       ++$number_errors;
     }
   }
@@ -466,14 +466,14 @@ sub check_config {
   # There must be at least one timespan plot.
   unless (@IMAGE_PLOT_TYPES) {
     warn "$0: error: generate_*_plots parameters turn off all plots in ",
-         "`$config_filename'.\n";
+         "'$config_filename'.\n";
     ++$number_errors;
   }
 
   # There must be at least one group.
   unless (@config_groups) {
-    warn "$0: error: must define at least one `group' in ",
-         "`$config_filename'.\n";
+    warn "$0: error: must define at least one 'group' in ",
+         "'$config_filename'.\n";
     ++$number_errors;
   }
 
@@ -485,8 +485,8 @@ sub check_config {
     $required_error = 0;
     foreach my $option (@cc_required_group) {
       unless (defined $group->{$option}) {
-        warn "$0: error: must set `$option' for `group $group_name' ",
-             "in `$config_filename'.\n";
+        warn "$0: error: must set '$option' for 'group $group_name' ",
+             "in '$config_filename'.\n";
         $required_error = 1;
         ++$number_errors;
       }
@@ -495,7 +495,7 @@ sub check_config {
     # Quit now if there were any required options that were not set
     # since use of then will cause uninitialized warnings.
     if ($required_error) {
-      die "$0: loading configuration file `$config_filename' got ",
+      die "$0: loading configuration file '$config_filename' got ",
           "$number_errors error(s).\n";
     }
 
@@ -513,8 +513,8 @@ sub check_config {
 
     # Check that the interval is a number.
     unless ($group->{interval} =~ /^\d+$/ and $group->{interval} > 0) {
-      warn "$0: error: interval `$group->{interval}' for `group $group_name' ",
-           "is not an integer greater than 0 in `$config_filename'.\n";
+      warn "$0: error: interval '$group->{interval}' for 'group $group_name' ",
+           "is not an integer greater than 0 in '$config_filename'.\n";
       ++$number_errors;
     }
 
@@ -522,7 +522,7 @@ sub check_config {
     # global one.
     my $expr;
     if ($expr = $group->{late_interval}) {
-      $sub = compile_late_interval("`group $group_name'",
+      $sub = compile_late_interval("'group $group_name'",
                                    $config_filename,
                                    $expr);
       if ($sub) {
@@ -541,12 +541,12 @@ sub check_config {
       my $value;
       eval '$value = &$sub($group->{interval});';
       if ($@) {
-        warn "$0: cannot execute `late_interval' in `group $group_name' in ",
-             "`$config_filename':\n   $expr\nOutput: $@\n";
+        warn "$0: cannot execute 'late_interval' in 'group $group_name' in ",
+             "'$config_filename':\n   $expr\nOutput: $@\n";
         ++$number_errors;
       } elsif ($value !~ /^\d+$/ and $value <= 0) {
-        warn "$0: `late_interval' in `group $group_name' did not generate an ",
-             "integer `$value' greater than 0.\n";
+        warn "$0: 'late_interval' in 'group $group_name' did not generate an ",
+             "integer '$value' greater than 0.\n";
         ++$number_errors;
       }
       $group->{late_interval} = $value;
@@ -557,8 +557,8 @@ sub check_config {
     # generate the RRDs.  The second interval is the interval before
     # the file is considered late and is larger than the data update
     # interval.  This interval is calculated by using the mathematical
-    # expression given in the `late_interval' configuration option.
-    # If `late_interval' is not defined, then it gets defaulted to the
+    # expression given in the 'late_interval' configuration option.
+    # If 'late_interval' is not defined, then it gets defaulted to the
     # data update interval.  The last interval is the interval to use
     # to tell the program when to attempt to read the file next.
     # Because it can take some time for the source files to be
@@ -578,7 +578,7 @@ sub check_config {
               $group->{filename_compare} :
               'sub { $a cmp $b }';
       if (compile_sub('filename_compare',
-                      "`group $group_name'",
+                      "'group $group_name'",
                       $config_filename,
                       $expr)) {
         # This subroutine looks fine.  Now change all the variables to
@@ -586,7 +586,7 @@ sub check_config {
         $expr =~ s/\$a(\W)/\$sfile_fids[\$a]$1/g;
         $expr =~ s/\$b(\W)/\$sfile_fids[\$b]$1/g;
         $sub  = compile_sub('filename_compare',
-                            "group `$group_name'",
+                            "group '$group_name'",
                             $config_filename,
                             $expr);
         if ($sub) {
@@ -610,12 +610,12 @@ sub check_config {
     $group->{date_parse} = 0;
     if ($date_source eq 'column_name') {
       if (@{$group->{date_source}} != 2) {
-        warn "$0: error: incorrect number of arguments for `date_source' for ",
-             "`group $group_name'.\n";
+        warn "$0: error: incorrect number of arguments for 'date_source' for ",
+             "'group $group_name'.\n";
         ++$number_errors;
       } elsif (my $expr = $group->{date_parse}) {
         unless ($group->{date_parse} = compile_sub('date_parse',
-                                                   "group `$group_name'",
+                                                   "group '$group_name'",
                                                    $config_filename,
                                                    $expr)) {
           ++$number_errors;
@@ -623,8 +623,8 @@ sub check_config {
       }
     } else {
       unless ($date_source eq 'file_mtime') {
-        warn "$0: error: illegal argument for `date_source' for ",
-             "`group $group_name'.\n";
+        warn "$0: error: illegal argument for 'date_source' for ",
+             "'group $group_name'.\n";
         ++$number_errors;
       }
     }
@@ -659,9 +659,9 @@ sub check_config {
       local $SIG{__WARN__} = \&die_when_called;
       eval { $test_string =~ /$find/ };
       if ($@) {
-        warn "$0: error: illegal regular expression in `find_files ",
-             "$orig_find' for `files $group_name' in ",
-             "`$config_filename':\n$@\n";
+        warn "$0: error: illegal regular expression in 'find_files ",
+             "$orig_find' for 'files $group_name' in ",
+             "'$config_filename':\n$@\n";
         ++$number_errors;
       } else {
         $find_files{$find} = 1;
@@ -672,7 +672,7 @@ sub check_config {
 
   # There must be at least one plot.
   unless (@config_plots) {
-    warn "$0: error: must define at least one `plot' in `$config_filename'.\n";
+    warn "$0: error: must define at least one 'plot' in '$config_filename'.\n";
     ++$number_errors;
   }
 
@@ -686,8 +686,8 @@ sub check_config {
     foreach my $option (@cc_required_plot) {
       unless (defined $plot->{$option}) {
         $required_error = 1;
-        warn "$0: error: must set `$option' for `plot' #$j in ",
-             "`$config_filename'.\n";
+        warn "$0: error: must set '$option' for 'plot' #$j in ",
+             "'$config_filename'.\n";
         ++$number_errors;
       }
     }
@@ -695,7 +695,7 @@ sub check_config {
     # Quit now if there were any required options that were not set
     # since use of then will cause uninitialized warnings.
     if ($required_error) {
-      die "$0: loading configuration file `$config_filename' got ",
+      die "$0: loading configuration file '$config_filename' got ",
           "$number_errors error(s).\n";
     }
 
@@ -755,8 +755,8 @@ sub check_config {
       } else {
         $data_type = 'GAUGE';
         my $l      = $k + 1;
-        warn "$0: error: `plot' #$j `data_type #$l `$data_type' in ",
-             "`$config_filename' must be gauge, counter, derive, or ",
+        warn "$0: error: 'plot' #$j 'data_type #$l '$data_type' in ",
+             "'$config_filename' must be gauge, counter, derive, or ",
              "absolute.\n";
         ++$number_errors;
       }
@@ -768,15 +768,15 @@ sub check_config {
     # group's name with its index.
     my $source = delete $plot->{source};
     unless (defined $source) {
-      warn "$0: error: plot #$j `source $source' requires one group_name ",
-           "argument in `$config_filename'.\n";
+      warn "$0: error: plot #$j 'source $source' requires one group_name ",
+           "argument in '$config_filename'.\n";
       ++$number_errors;
       next;
     }
     my $source_index = $pcl_group_name_to_index{$source};
     unless (defined $source_index) {
-      warn "$0: error: plot #$j `source $source' references non-existant ",
-           "`group' in `$config_filename'.\n";
+      warn "$0: error: plot #$j 'source $source' references non-existant ",
+           "'group' in '$config_filename'.\n";
       ++$number_errors;
       next;
     }
@@ -814,7 +814,7 @@ sub check_config {
       } else {
         $line_type = 'LINE1';
         my $l      = $k + 1;
-        warn "$0: error: `plot' #$j illegal `line_type' #$l `$line_type'.\n";
+        warn "$0: error: 'plot' #$j illegal 'line_type' #$l '$line_type'.\n";
         ++$number_errors;
       }
       $plot->{line_type}[$k] = $line_type;
@@ -840,7 +840,7 @@ sub check_config {
   }
 
   if ($number_errors) {
-    die "$0: loading configuration file `$config_filename' got ",
+    die "$0: loading configuration file '$config_filename' got ",
         "$number_errors error(s).\n";
   }
 
@@ -880,8 +880,8 @@ sub process_config_line {
       push(@line, 1) unless @line;
     } else {
       unless (@line) {
-        warn "$0: warning: option `$key' needs arguments in ",
-             "`$config_filename' line $line_number.\n";
+        warn "$0: warning: option '$key' needs arguments in ",
+             "'$config_filename' line $line_number.\n";
         ++$number_errors;
         return;
       }
@@ -923,7 +923,7 @@ sub process_config_line {
     $pcl_elements_ref        = \%pcl_group_elements;
     $pcl_keep_as_array_ref   = \%pcl_group_keep_as_array;
     $pcl_append_elements_ref = \%pcl_group_append_elements;
-    $label                   = "group `$pcl_group_name'";
+    $label                   = "group '$pcl_group_name'";
   } elsif (substr($pcl_plot_index, 0, 1) ne '-') {
     $index_ref               = \$pcl_plot_index;
     $config_ref              = \@config_plots;
@@ -942,8 +942,8 @@ sub process_config_line {
     }
 
     unless ($pcl_elements_ref->{$key}) {
-      warn "$0: warning: directive `$key' unknown for $label at line ",
-           "$line_number in `$config_filename'.\n";
+      warn "$0: warning: directive '$key' unknown for $label at line ",
+           "$line_number in '$config_filename'.\n";
       ++$number_errors;
       return;
     }
@@ -962,8 +962,8 @@ sub process_config_line {
     }
 
     if (defined $config_ref->[$$index_ref]{$key}) {
-      warn "$0: warning: `$key' for $label already defined at line ",
-           "$line_number in `$config_filename'.\n";
+      warn "$0: warning: '$key' for $label already defined at line ",
+           "$line_number in '$config_filename'.\n";
       ++$number_errors;
       return;
     }
@@ -991,23 +991,23 @@ sub process_config_line {
   if ($key eq 'group') {
     unless (@line) {
       die "$0: error: group needs a group name followed by { at ",
-          "line $line_number in `$config_filename'.\n"
+          "line $line_number in '$config_filename'.\n"
     }
     $pcl_group_index =~ s:^-::;
     $pcl_group_name =  shift(@line);
     unless (@line == 1 and $line[0] eq '{' ) {
       if ($pcl_group_name eq '{') {
-        warn "$0: warning: 'group_name {' required after `group' at ",
-             "line $line_number in `$config_filename'.\n";
+        warn "$0: warning: 'group_name {' required after 'group' at ",
+             "line $line_number in '$config_filename'.\n";
       } else {
-        warn "$0: warning: '{' required after `group $pcl_group_name' at ",
-             "line $line_number in `$config_filename'.\n";
+        warn "$0: warning: '{' required after 'group $pcl_group_name' at ",
+             "line $line_number in '$config_filename'.\n";
       }
       ++$number_errors;
     }
     if (defined $pcl_group_name_to_index{$pcl_group_name}) {
-      warn "$0: warning: `group $key' at line $line_number in ",
-           "`$config_filename' previously defined.\n";
+      warn "$0: warning: 'group $key' at line $line_number in ",
+           "'$config_filename' previously defined.\n";
       ++$number_errors;
     }
     $config_groups[$pcl_group_index]{index}      = $pcl_group_index;
@@ -1023,15 +1023,15 @@ sub process_config_line {
     unless (@line == 1 and $line[0] eq '{') {
       $label = "@line";
       $label = " $label" if $label;
-      warn "$0: warning: '{' required immediately after plot in `plot$label' ",
-           "at line $line_number in `$config_filename'.\n";
+      warn "$0: warning: '{' required immediately after plot in 'plot$label' ",
+           "at line $line_number in '$config_filename'.\n";
       ++$number_errors;
     }
     return;
   }
 
-  warn "$0: warning: unknown directive `$key' at line $line_number in ",
-       "`$config_filename'.\n";
+  warn "$0: warning: unknown directive '$key' at line $line_number in ",
+       "'$config_filename'.\n";
   ++$number_errors;
 }
 
@@ -1039,7 +1039,7 @@ sub load_config {
   my $config_filename = shift;
 
   open(CONFIG, $config_filename) or
-    die "$0: error: cannot open `$config_filename' for reading: $!\n";
+    die "$0: error: cannot open '$config_filename' for reading: $!\n";
 
   # These values hold the information from the config file.
   my %options;
@@ -1080,7 +1080,7 @@ sub load_config {
   }
 
   close(CONFIG) or
-    warn "$0: error in closing `$config_filename': $!\n";
+    warn "$0: error in closing '$config_filename': $!\n";
 
   check_config($config_filename);
 }

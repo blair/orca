@@ -59,7 +59,7 @@ sub new {
   my $dir = "$config_global{rrd_dir}/" .
             name_to_fsname("${group_name}_${subgroup_name}", 0);
   unless (-d $dir) {
-    warn "$0: making directory `$dir'.\n";
+    warn "$0: making directory '$dir'.\n";
     recursive_mkdir($dir);
   }
   my $rrd_filename = "$dir/$data_expression.rrd";
@@ -86,7 +86,7 @@ sub new {
   if (-e $rrd_filename) {
     my $update_time = RRDs::last $rrd_filename;
     if (my $error = RRDs::error) {
-      warn "$0: RRDs::last error: `$rrd_filename' $error\n";
+      warn "$0: RRDs::last error: '$rrd_filename' $error\n";
     } else {
       if (open(RRDFILE, "<$rrd_filename")) {
         my $version = '';
@@ -97,7 +97,7 @@ sub new {
           }
         }
         close(RRDFILE) or
-          warn "$0: error in closing `$rrd_filename' for reading: $!\n";
+          warn "$0: error in closing '$rrd_filename' for reading: $!\n";
 
         # Compare the version number of file to the required version.
         if (length($version)) {
@@ -105,10 +105,10 @@ sub new {
             $self->[I_RRD_UPDATE_TIME] = $update_time;
             $self->[I_RRD_VERSION]     = $version;
           } else {
-            warn "$0: old version $version RRD `$rrd_filename' found: will create new version $ORCA_RRD_VERSION file.\n";
+            warn "$0: old version $version RRD '$rrd_filename' found: will create new version $ORCA_RRD_VERSION file.\n";
           }
         } else {
-          warn "$0: unknown version RRD `$rrd_filename' found: will create new version $ORCA_RRD_VERSION file.\n";
+          warn "$0: unknown version RRD '$rrd_filename' found: will create new version $ORCA_RRD_VERSION file.\n";
         }
       }
     }
@@ -208,7 +208,7 @@ sub flush_data {
 
     # Now do the actual creation.
     if ($opt_verbose) {
-      print "  Creating RRD `$rrd_filename'";
+      print "  Creating RRD '$rrd_filename'";
       if ($opt_verbose > 2) {
         print " with options ", join(' ', @options[1..$#options]);
       }
@@ -217,7 +217,7 @@ sub flush_data {
     RRDs::create @options;
 
     if (my $error = RRDs::error) {
-      warn "$0: RRDs::create error: `$rrd_filename' $error\n";
+      warn "$0: RRDs::create error: '$rrd_filename' $error\n";
       return;
     }
   }
@@ -233,7 +233,7 @@ sub flush_data {
   if (my $error = RRDs::error) {
     warn "$0: warning: cannot put data starting at ",
          scalar localtime($times[0]),
-         " ($times[0]) into `$rrd_filename': $error\n";
+         " ($times[0]) into '$rrd_filename': $error\n";
     return 0;
   }
 

@@ -91,7 +91,7 @@ case "$SE_VERSION" in
 esac
 
 # Get the hostname without the fully qualified part; that is, trim off
-# anything past the first `.'.
+# anything past the first '.'.
 uname=`$UNAME -n | $CUT -d. -f1`
 
 # Make sure the hostname can be found.

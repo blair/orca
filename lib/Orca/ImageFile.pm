@@ -80,7 +80,7 @@ sub new {
 
   # Create the html_dir directories if necessary.
   unless (-d $html_dir) {
-    warn "$0: making directory `$html_dir'.\n";
+    warn "$0: making directory '$html_dir'.\n";
     recursive_mkdir($html_dir);
   }
   my $image_basename = "$html_dir/$name";
@@ -310,7 +310,7 @@ sub _plot {
   }
 
   my $image_filename = "$self->[I_IMAGE_BASENAME]-$plot_type.$IMAGE_SUFFIX";
-  print "  Creating `$image_filename'.\n" if $opt_verbose > 1;
+  print "  Creating '$image_filename'.\n" if $opt_verbose > 1;
 
   my $plot_ref = $self->[I_PLOT_REF];
 
@@ -326,14 +326,14 @@ sub _plot {
       'COMMENT:\s',
       'COMMENT:Last data entered at ' . localtime($plot_end_time) . '.';
   if (my $error = RRDs::error) {
-    warn "$0: warning: cannot create `$image_filename': $error\n";
+    warn "$0: warning: cannot create '$image_filename': $error\n";
     return;
   } else {
     $self->[$time_update_index] = $plot_end_time;
     $self->[I_IMAGE_HEIGHT]     = $image_height;
     $self->[I_IMAGE_WIDTH]      = $image_width;
     utime $plot_end_time, $plot_end_time, $image_filename or
-      warn "$0: warning: cannot change mtime for `$image_filename': $!\n";
+      warn "$0: warning: cannot change mtime for '$image_filename': $!\n";
 
     # Expire the image at the correct time using a META file if
     # requested.
@@ -343,9 +343,9 @@ sub _plot {
                    _expire_string($plot_end_time + $plot_age + 30),
                    "\n";
         close(META) or
-          warn "$0: warning: cannot close `$image_filename.meta': $!\n";
+          warn "$0: warning: cannot close '$image_filename.meta': $!\n";
       } else {
-        warn "$0: warning: cannot open `$image_filename.meta' for writing: $!\n";
+        warn "$0: warning: cannot open '$image_filename.meta' for writing: $!\n";
       }
     }
   }

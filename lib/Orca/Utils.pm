@@ -167,14 +167,14 @@ sub perl_glob {
   # Find all of the files in the current directory that match the
   # first regular expression.
   unless (opendir(GLOB_DIR, "$current_dir")) {
-    warn "$0: error: cannot opendir `$current_dir': $!\n";
+    warn "$0: error: cannot opendir '$current_dir': $!\n";
     return ();
   }
 
   my @matches = grep { /^$first_regexp$/ } readdir(GLOB_DIR);
 
   closedir(GLOB_DIR) or
-    warn "$0: warning: cannot closedir `$current_dir': $!\n";
+    warn "$0: warning: cannot closedir '$current_dir': $!\n";
 
   # If the last path element is being used as the regular expression,
   # then just return the list of matching files with the current
@@ -187,7 +187,7 @@ sub perl_glob {
   # Otherwise we need to look into the directories below the current
   # directory.  Also create the next regular expression to use that is
   # made up of the remaining file path elements.  Make sure not to
-  # process any directories named `..'.
+  # process any directories named '..'.
   my @results;
   my $new_regexp = join('/', @regexp_elements);
   foreach my $new_dir (grep { $_ ne '..' and -d "$current_dir/$_" } @matches) {
@@ -229,7 +229,7 @@ sub recursive_mkdir {
     $path = "$path/$element";
     next if -d $path;
     unless (mkdir($path, 0755)) {
-      die "$0: error: unable to create `$path': $!\n";
+      die "$0: error: unable to create '$path': $!\n";
     }
   }
 }

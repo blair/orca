@@ -16,14 +16,14 @@ foreach my $stats_dir (@stats_dirs) {
   $stats_dir =~ s#/+$##g;
 
   unless (opendir(DIR, $stats_dir)) {
-    warn "$0: cannot opendir `$stats_dir': $!\n";
+    warn "$0: cannot opendir '$stats_dir': $!\n";
     next;
   }
 
   my @hosts = sort grep { $_ !~ /^\./ } readdir(DIR);
 
   closedir(DIR)
-    or warn "$0: error in closedir `$stats_dir': $!\n";
+    or warn "$0: error in closedir '$stats_dir': $!\n";
 
   print "Now checking $stats_dir\n";
 
@@ -39,7 +39,7 @@ foreach my $stats_dir (@stats_dirs) {
     next unless -d $host_dir;
 
     unless (opendir(DIR, $host_dir)) {
-      warn "$0: cannot opendir `$host_dir': $!\n";
+      warn "$0: cannot opendir '$host_dir': $!\n";
       next;
     }
 
@@ -48,7 +48,7 @@ foreach my $stats_dir (@stats_dirs) {
                             $_ =~ $orcallator_re } readdir(DIR);
 
     closedir(DIR)
-      or warn "$0: error in closedir `$host_dir': $!\n";
+      or warn "$0: error in closedir '$host_dir': $!\n";
 
     # Of the files with today's date in it, determine which one was
     # last modified.
@@ -57,7 +57,7 @@ foreach my $stats_dir (@stats_dirs) {
       my $file = "$host_dir/$f";
       my @stat = stat($file);
       unless (@stat) {
-        warn "$0: cannot stat `$file': $!\n";
+        warn "$0: cannot stat '$file': $!\n";
         next;
       }
       $files{"$host/$f"} = $stat[9];
@@ -65,7 +65,7 @@ foreach my $stats_dir (@stats_dirs) {
 
     @files = keys %files;
     unless (@files) {
-      warn "For host `$host', there is no $orcallator_base* or ",
+      warn "For host '$host', there is no $orcallator_base* or ",
            "$percol_base*.\n";
       next;
     }

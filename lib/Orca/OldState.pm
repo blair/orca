@@ -35,11 +35,11 @@ sub load_old_state {
   my $state_file = shift;
 
   unless (open(STATE, $state_file)) {
-    warn "$0: warning: cannot open state file `$state_file' for reading: $!\n";
+    warn "$0: warning: cannot open state file '$state_file' for reading: $!\n";
     return;
   }
 
-  print "Loading state from `$state_file'.\n" if $opt_verbose;
+  print "Loading state from '$state_file'.\n" if $opt_verbose;
 
   # Get the first line which contains the hash key name.  Check that
   # the first field is _filename.
@@ -48,7 +48,7 @@ sub load_old_state {
   chomp($line);
   my @keys = split(' ', $line);
   unless ($keys[0] eq '_filename') {
-    warn "$0: warning: ignoring state file `$state_file': incorrect first field.\n";
+    warn "$0: warning: ignoring state file '$state_file': incorrect first field.\n";
     return;
   }
 
@@ -57,7 +57,7 @@ sub load_old_state {
   while (<STATE>) {
     my @line = split;
     if (@line != 3 && @line < 8) {
-      warn "$0: incorrect number of elements on line $. of `$state_file'.\n";
+      warn "$0: incorrect number of elements on line $. of '$state_file'.\n";
       next;
     }
 
@@ -78,7 +78,7 @@ sub load_old_state {
   }
 
   close(STATE) or
-    warn "$0: warning: cannot close `$state_file' for reading: $!\n";
+    warn "$0: warning: cannot close '$state_file' for reading: $!\n";
 
   1;
 }
@@ -91,7 +91,7 @@ sub save_old_state {
 
   my ($state_file, $state_ref) = @_;
 
-  print "Saving state into `$state_file'.\n" if $opt_verbose;
+  print "Saving state into '$state_file'.\n" if $opt_verbose;
 
   if (open(STATE, "> $state_file.tmp")) {
 
@@ -127,18 +127,18 @@ sub save_old_state {
             $print_warning = !rename("$state_file.tmp", $state_file);
           } else {
             $print_warning = 0;
-            warn "$0: warning: cannot unlink old `$state_file': $!\n";
+            warn "$0: warning: cannot unlink old '$state_file': $!\n";
           }
         }
         if ($print_warning) {
-          warn "$0: warning: cannot rename `$state_file.tmp' to `$state_file': $!\n";
+          warn "$0: warning: cannot rename '$state_file.tmp' to '$state_file': $!\n";
         }
       }
     } else {
-      warn "$0: warning: cannot close `$state_file' for writing: $!\n";
+      warn "$0: warning: cannot close '$state_file' for writing: $!\n";
     }
   } else {
-    warn "$0: warning: cannot open state file `$state_file.tmp' for writing: $!\n";
+    warn "$0: warning: cannot open state file '$state_file.tmp' for writing: $!\n";
   }
 }
 

@@ -51,7 +51,7 @@ sub register_fid_arrays {
     } else {
       my ($type, $symbol) = unpack('a1a*', $ref);
       unless ($type eq '@') {
-        confess "$0: internal error: Orca::SourceFileIDs::register_fid_arrays passed non-array variable name `$ref'.\n";
+        confess "$0: internal error: Orca::SourceFileIDs::register_fid_arrays passed non-array variable name '$ref'.\n";
       }
       if ($symbol =~ /::/) {
         confess "$0: internal error: Orca::SourceFileIDs::register_fid_arrays cannot pass somebody else's variables.\n";

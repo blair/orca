@@ -34,7 +34,7 @@ sub new {
 
   local *FD;
   unless (open(FD, "> $filename.htm")) {
-    $@ = "cannot open `$filename.htm' for writing: $!";
+    $@ = "cannot open '$filename.htm' for writing: $!";
     return;
   }
 
@@ -178,9 +178,9 @@ END
 
   my $filename = $self->[I_FILENAME];
   close($self->[I_FD]) or
-    warn "$0: warning: cannot close `$filename.htm': $!\n";
+    warn "$0: warning: cannot close '$filename.htm': $!\n";
   rename("$filename.htm", $filename) or
-    warn "$0: cannot rename `$filename.htm' to `$filename': $!\n";
+    warn "$0: cannot rename '$filename.htm' to '$filename': $!\n";
 }
 
 1;

@@ -34,7 +34,7 @@ find_times		0:10 1:00 6:00 12:00 19:00
 
 # This defines the email address of people to warn when a file that is
 # being updated constantly stops being updated.  For mathematical
-# expressions use the word `interval' to get the interval number for
+# expressions use the word 'interval' to get the interval number for
 # the data source.
 warn_email		root@localhost
 late_interval		interval + 30

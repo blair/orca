@@ -71,7 +71,7 @@ my $col1_format = "%${col1_length}s ";
 for (my $a=0; $a<@ARGV; ++$a) {
   my $file = $ARGV[$a];
   open(FILE, $file) or
-    die "$0: unable to open `$file' for reading: $!\n";
+    die "$0: unable to open '$file' for reading: $!\n";
 
   # Read the file and on each line look for redefinitions of the
   # column names.

@@ -22,7 +22,7 @@ fi
 # The Orca Subversion repository contains RRDtool, which has its own
 # automake, autoconf and libtool setup.  When checking out Orca from
 # Subversion, it does not preserve the relative timestamps of the
-# build environment, which can cause `make' to rebuild RRDtool's build
+# build environment, which can cause 'make' to rebuild RRDtool's build
 # environment.
 #
 # To work around this, touch the build files in chronological order.

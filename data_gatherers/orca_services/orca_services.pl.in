@@ -248,8 +248,8 @@ if (open(P, "> $PidFile")) {
     print P "$$\n";
     close P;
 } else {
-    &logit("can't save pid (can't write to \`$PidFile')");
-    warn "$progname: can't save pid (can't write to \`$PidFile')\n";
+    &logit("can't save pid (can't write to '$PidFile')");
+    warn "$progname: can't save pid (can't write to '$PidFile')\n";
 }
 
 

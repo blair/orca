@@ -92,7 +92,7 @@ BEGIN {
 
   foreach my $title (@CONST_IMAGE_PLOT_TYPES) {
     unless (defined $CONST_IMAGE_PLOT_INFO{$title}) {
-      die "$0: internal error: element `$title' in ",
+      die "$0: internal error: element '$title' in ",
           "\@CONST_IMAGE_PLOT_TYPES is not a key in ",
           "\%CONST_IMAGE_PLOT_INFO.\n";
     }

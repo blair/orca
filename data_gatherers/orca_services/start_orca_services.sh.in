@@ -32,7 +32,7 @@ variable_is_set_or_exit CUT
 variable_is_set_or_exit UNAME
 
 # Get the hostname without the fully qualified part; that is, trim off
-# anything past the first `.'.
+# anything past the first '.'.
 uname=`$UNAME -n | $CUT -d. -f1`
 
 # The directory these files go into is $RAW_ORCA_SERVICES_DIR/HOSTNAME.

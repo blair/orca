@@ -59,7 +59,7 @@ sub save_variables {
       $type eq '@' ? \@ {"${caller_package}::$symbol"} :
       $type eq '%' ? \% {"${caller_package}::$symbol"} :
       do {
-        confess "$0: internal error: Orca::NewState::save_variables cannot save `$var'.\n";
+        confess "$0: internal error: Orca::NewState::save_variables cannot save '$var'.\n";
       }
     );
     use strict;
@@ -105,21 +105,21 @@ sub load {
 
   return unless -r $filename;
 
-  print "Loading state from `$filename'.\n" if $opt_verbose;
+  print "Loading state from '$filename'.\n" if $opt_verbose;
 
   if (open(STATE, $filename)) {
     binmode(STATE);
     my $result = $self->_load_state($filename, \*STATE);
     close(STATE) or
-      warn "$0: error in closing `$filename' for reading: $!\n";
+      warn "$0: error in closing '$filename' for reading: $!\n";
     if (defined $result) {
       return $result;
     } else {
-      warn "$0: cannot use state file `$filename'.\n";
+      warn "$0: cannot use state file '$filename'.\n";
       return;
     }
   } else {
-    warn "$0: cannot open `$filename' for reading: $!.\n";
+    warn "$0: cannot open '$filename' for reading: $!.\n";
     return;
   }
 }
@@ -137,28 +137,28 @@ return;
   my $line = <$fd>;
   chomp($line);
   unless ($line) {
-    warn "$0: ignoring unknown version state file `$filename'.\n";
+    warn "$0: ignoring unknown version state file '$filename'.\n";
     return;
   }
   if ($line =~ /_filename/) {
-    warn "$0: ignoring old state file `$filename'.\n";
+    warn "$0: ignoring old state file '$filename'.\n";
     return;
   }
   my ($version, $number_objects) = $line =~ /(\d+\.\d+)\D+(\d+)/;
   unless ($version) {
-    warn "$0: ignoring unknown version state file `$filename'.\n";
+    warn "$0: ignoring unknown version state file '$filename'.\n";
     return;
   }
   if ($version < $required_version) {
-    warn "$0: ignoring old $version state file `$filename' when version $required_version is required.\n";
+    warn "$0: ignoring old $version state file '$filename' when version $required_version is required.\n";
     return;
   }
   unless ($number_objects) {
-    warn "$0: cannot detmine number of objects in state file `$filename'.\n";
+    warn "$0: cannot detmine number of objects in state file '$filename'.\n";
     return;
   }
   unless ($number_objects == @store_restore_list) {
-    warn "$0: incorrect number of saved objects in state file `$filename'.\n";
+    warn "$0: incorrect number of saved objects in state file '$filename'.\n";
     return;
   }
 
@@ -182,10 +182,10 @@ return;
     };
   }
   if ($@) {
-    warn "$0: warning: cannot read state file `$filename': $@\n";
+    warn "$0: warning: cannot read state file '$filename': $@\n";
     return;
   } elsif (!$ok) {
-    warn "$0: warning: cannot load data from state file `$filename': $!\n";
+    warn "$0: warning: cannot load data from state file '$filename': $!\n";
     return;
   }
 
@@ -212,10 +212,10 @@ sub flush {
 
   my ($self, $filename) = @_;
   my $tmp_filename      = "$filename.tmp";
-  print "Saving state into `$filename'.\n" if $opt_verbose;
+  print "Saving state into '$filename'.\n" if $opt_verbose;
 
   unless (open(STATE, "> $tmp_filename")) {
-    warn "$0: cannot open `$tmp_filename' for writing: $!\n";
+    warn "$0: cannot open '$tmp_filename' for writing: $!\n";
     return;
   }
 
@@ -229,23 +229,23 @@ sub flush {
   }
 
   unless ($result) {
-    warn "$0: error in writing to `$tmp_filename': $!\n";
+    warn "$0: error in writing to '$tmp_filename': $!\n";
   }
 
   unless (close(STATE)) {
     $result = 0;
-    warn "$0: error in closing `$tmp_filename' for writing: $!\n";
+    warn "$0: error in closing '$tmp_filename' for writing: $!\n";
   }
 
   unless ($result) {
-    warn "$0: cannot flush state to file `$tmp_filename': $!\n";
+    warn "$0: cannot flush state to file '$tmp_filename': $!\n";
     unlink($tmp_filename) or
-      warn "$0: error in unlinking `$tmp_filename': $!\n";
+      warn "$0: error in unlinking '$tmp_filename': $!\n";
     return;
   }
 
   unless (rename($tmp_filename, $filename)) {
-    warn "$0: cannot rename `$tmp_filename' to `$filename': $!\n";
+    warn "$0: cannot rename '$tmp_filename' to '$filename': $!\n";
     return;
   }
 

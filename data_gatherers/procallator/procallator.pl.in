@@ -33,7 +33,7 @@ my $DEST_DIR = "$OUT_DIR/$hostname";
 # Create output directory if needed.
 unless (-d $DEST_DIR) {
     unless (mkdir($DEST_DIR, 0755)) {
-        die "$0: cannot create destiniation directory `$DEST_DIR': $!\n";
+        die "$0: cannot create destiniation directory '$DEST_DIR': $!\n";
     }
 }
 

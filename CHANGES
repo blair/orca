@@ -127,11 +127,11 @@ Thu Oct  3 00:28:49 PDT 2002 <blair@orcaware.com> Blair Zajac
 
 Sat Aug 24 20:39:35 PDT 2002 <blair@orcaware.com> Blair Zajac
 
-	* src/orca.pl.in: At the top of the `Available Targets' and
-	  `Available Data Sets' HTML pages, add a link back to the top
+	* src/orca.pl.in: At the top of the 'Available Targets' and
+	  'Available Data Sets' HTML pages, add a link back to the top
 	  so that the user does not have to use the browser's back
-	  button.  Add `<br /><br />' after any plots so that on the
-	  `All' plots, there is some vertical separation between the
+	  button.  Add '<br /><br />' after any plots so that on the
+	  'All' plots, there is some vertical separation between the
 	  plots when viewed by the Opera browser.
 
 Thu Aug 22 21:24:43 PDT 2002 <blair@orcaware.com> Blair Zajac
@@ -186,11 +186,11 @@ Sun Aug 11 20:12:38 PDT 2002 <blair@orcaware.com> Blair Zajac
 
 Wed Aug  7 19:57:45 PDT 2002 <blair@orcaware.com> Blair Zajac
 
-	* Makefile.in: Restructure the `all' and `install' rules so
+	* Makefile.in: Restructure the 'all' and 'install' rules so
 	  that if make fails in one subdirectory, then the top level
 	  make fail fail immediately.  Previously, all subdirectories
 	  would be built, regardless if there was a failure in any one
-	  subdirectory.  Do not do this for `clean' and `distclean',
+	  subdirectory.  Do not do this for 'clean' and 'distclean',
 	  because they should always clean up as much as they can,
 	  regardless of any sub-make failures.
 	* configure.in: Rename all borp_* variables to orca_*.  Fix a
@@ -397,7 +397,7 @@ Fri Nov  9 10:04:28 PST 2001 <blair@orcaware.com> Blair Zajac
 Thu Nov  8 10:49:58 PST 2001 <blair@orcaware.com> Blair Zajac
 
 	* FAQ: Add an answer to describe the message: "Warning: file
-	  `.../orcallator/host1/orcallator-2001-11-06-000' did exist
+	  '.../orcallator/host1/orcallator-2001-11-06-000' did exist
 	  and is now gone."
 
 Sat Nov  3 08:04:26 PST 2001 <blair@orcaware.com> Blair Zajac
@@ -624,10 +624,10 @@ Fri Sep 28 17:13:43 PDT 2001 <blair@orcaware.com> Blair Zajac
 	  if WATCH_MUTEX defined.
 	* orcallator/orcallator.se: Upgrade to orcallator.se 1.28b5.
 	  Add three parameters that vmstat outputs, #runque, vmstat's
-	  `r' column, which is the number of processes in the run
-	  queue waiting to run on a CPU, #waiting, vmstat's `b'
+	  'r' column, which is the number of processes in the run
+	  queue waiting to run on a CPU, #waiting, vmstat's 'b'
 	  column, which is the number of processes blocked for
-	  resourceses (I/O, paging), and #swpque, vmstat's `w', the
+	  resourceses (I/O, paging), and #swpque, vmstat's 'w', the
 	  number of proceses runnable but swapped out.  Increase
 	  MAX_COLUMNS from 512 to 2048.  Check [wr]lentime to see if
 	  an EMC is using a fake disk for control.  EMC disks have a
@@ -955,7 +955,7 @@ Thu Feb  8 15:55:29 PST 2001
 Wed Feb  7 16:43:26 PST 2001
 
 	* The previous fix for the
-	    `Use on uninitialized value in array element at (eval X)
+	    'Use on uninitialized value in array element at (eval X)
 	    line 1, <DATA> line Y'
 	  warning did not work on Perl 5.004_05.  Modify the fix so
 	  that it will work on this older version of Perl.
@@ -981,7 +981,7 @@ Mon Feb  5 14:48:32 PST 2001
 Mon Feb  5 11:59:48 PST 2001
 
 	* src/orca.pl.in: Fix the warning message in src/orca.pl.in
-	    `Use on uninitialized value in array element at (eval X)
+	    'Use on uninitialized value in array element at (eval X)
 	    line 1, <DATA> line Y'
 	  when Orca was run with Perl 5.6.0.  The problem was that the
 	  filename_compare subroutine was eval'ed in Orca::Config
@@ -1094,7 +1094,7 @@ Mon Apr 17 10:43:14 PDT 2000
 	  option named date_parse, which is an arbitrary Perl
 	  subroutine that is given two arguments, the first being the
 	  name of the file where the data is loaded and the second the
-	  string from the `date_source' column that contains some time
+	  string from the 'date_source' column that contains some time
 	  information.  The subroutine should return the Unix epoch
 	  time.  If this option is not specified, then Orca assumes
 	  that the string holds the Unix epoch time.
@@ -1906,7 +1906,7 @@ Wed May 12 09:31:43 PDT 1999
 	  current directory.
 
 	* Perl_glob will only return found files and no other type.
-	  It will also not follow any directories named `..'.
+	  It will also not follow any directories named '..'.
 
 	* Include RRDtool 0.99.29.1 with Orca.  This includes a
 	  Makefile patch and does not include a new version of RRDs.pm
@@ -1925,7 +1925,7 @@ Tue May 11 16:24:09 PDT 1999
 	  eval.
 
 	* Do not prepend base_dir to any paths if they begin with
-	  either `/' or `./'.
+	  either '/' or './'.
 
 	* Require and include RRDtool 0.99.29 with Orca.
 

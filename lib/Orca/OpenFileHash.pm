@@ -79,7 +79,7 @@ sub open {
   my $open_error = 0;
   while (!open(FD, $filename)) {
     my $num_current_open_files = keys %{$self->[I_HASH]};
-    warn "$0: warning: cannot open `$filename' for reading: $!\n";
+    warn "$0: warning: cannot open '$filename' for reading: $!\n";
     warn "$0: warning: there are current $num_current_open_files open source ",
          "files.\n";
     return unless $num_current_open_files;
@@ -95,7 +95,7 @@ sub open {
   }
 
   if ($open_error) {
-    warn "$0: warning: finally able to open `$filename' for reading.\n";
+    warn "$0: warning: finally able to open '$filename' for reading.\n";
   }
 
   $self->add($fid, $weight, *FD, $is_pipe);
@@ -144,11 +144,11 @@ sub close {
   unless ($close_value) {
     if ($is_pipe) {
       if ($is_eof) {
-        warn "$0: warning: cannot close pipe for `$filename': ",
+        warn "$0: warning: cannot close pipe for '$filename': ",
              "[$close_value \$?=$?] $!\n" if $opt_verbose > 1;
       }
     } else {
-      warn "$0: warning: cannot close `$filename': [$close_value] $!\n";
+      warn "$0: warning: cannot close '$filename': [$close_value] $!\n";
     }
   }
 

@@ -152,9 +152,9 @@ sub new {
         $self->[I_FIRST_LINE] = 1;
         @column_description = split(' ', $line);
       } else {
-        warn "$0: warning: no first_line for `$filename' yet.\n";
+        warn "$0: warning: no first_line for '$filename' yet.\n";
         $open_file_cache->close($fid) or
-          warn "$0: warning: cannot close `$filename' for reading: $!\n";
+          warn "$0: warning: cannot close '$filename' for reading: $!\n";
         return;
       }
     }
@@ -240,7 +240,7 @@ sub get_date_column {
   }
 
   unless ($found > -1) {
-    warn "$0: warning: cannot find date `$date_column_name' in `$sfile_fids[$fid]'.\n";
+    warn "$0: warning: cannot find date '$date_column_name' in '$sfile_fids[$fid]'.\n";
 warn "@{$self->[I_COLUMN_DESCRIPTION]}\n";
     return;
   }
@@ -366,7 +366,7 @@ sub add_plots {
       $regexp_pos[$i] = @column_description;
 
       # Start by making a deep copy of the plot.  Be careful not to make
-      # a deep copy of the `creates' reference, since it can cause
+      # a deep copy of the 'creates' reference, since it can cause
       # recursion.  Replace the regular expression in the first data
       # with the name of the column that caused the match.
       my $creates          = delete $plot->{creates};
@@ -483,7 +483,7 @@ sub add_plots {
       ++$regexp_pos[$i];
 
       # Start by making a deep copy of the plot.  Be careful not to make
-      # a deep copy of the `creates' reference, since it can cause
+      # a deep copy of the 'creates' reference, since it can cause
       # recursion.  Replace the regular expression in the first data
       # with the name of the column that caused the match.  Then create
       # string form of the plot object using Data::Dumper::Dumper and
@@ -554,8 +554,8 @@ sub add_plots {
         } elsif (defined $group_column_names[$group_index]{$element}) {
           my $m = $old_i + 1;
           if ($required) {
-            warn "$0: $element in `data @{$plot->{data}[$j]}' in plot #$m ",
-                 "not replaced since it is not in file `",
+            warn "$0: $element in 'data @{$plot->{data}[$j]}' in plot #$m ",
+                 "not replaced since it is not in file '",
                  $self->filename, "'.\n";
           }
           $datas[$j] = undef;
@@ -566,7 +566,7 @@ sub add_plots {
       if (!$match_one_data and $opt_verbose > 1) {
         my $m = $old_i + 1;
         warn "$0: warning: no substitutions performed for ",
-             "`data @{$plot->{data}[$j]}' in plot #$m in `",
+             "'data @{$plot->{data}[$j]}' in plot #$m in '",
              $self->filename, "'.\n";
       }
     }
@@ -612,11 +612,11 @@ sub add_plots {
             $eval_result = 0;
             $@ =~ s/\s+$//g;
             my $m = $old_i + 1;
-            $message = "$0: warning: cannot compile `$sub_expr' for plot #$m `data @{$plot->{data}[$j]}': $@\n";
+            $message = "$0: warning: cannot compile '$sub_expr' for plot #$m 'data @{$plot->{data}[$j]}': $@\n";
           } elsif (!defined $test_value) {
             $eval_result = 0;
             my $m = $old_i + 1;
-            $message = "$0: warning: testing of `$sub_expr' for plot #$m `data @{$plot->{data}[$j]}' yielded an undefined value.\n";
+            $message = "$0: warning: testing of '$sub_expr' for plot #$m 'data @{$plot->{data}[$j]}' yielded an undefined value.\n";
           }
           if ($message and ($required or $opt_verbose > 1)) {
             warn $message;
@@ -765,7 +765,7 @@ sub load_new_data {
   my $fd          = $open_file_cache->get_fd($fid);
   my $load_data   = $file_status != 0;
   if ($file_status == -1) {
-    my $message = "file `$sfile_fids[$fid]' did exist and is now gone.";
+    my $message = "file '$sfile_fids[$fid]' did exist and is now gone.";
     email_message($config_global{warn_email}, $message);
     warn "$0: warning: $message\n";
     unless ($fd) {
@@ -784,7 +784,7 @@ sub load_new_data {
   if ($old_is_current and
       !$self->[I_IS_CURRENT] and
       ($old_is_current_day == $current_day)) {
-    my $message = "file `$sfile_fids[$fid]' was current and now is not.";
+    my $message = "file '$sfile_fids[$fid]' was current and now is not.";
     warn "$0: warning: $message\n";
     email_message($config_global{warn_email}, $message);
   }
@@ -818,7 +818,7 @@ sub load_new_data {
   my $opened_new_fd = 0;
   unless ($fd) {
     unless ($fd = $open_file_cache->open($fid, $file_mtime)) {
-      warn "$0: warning: cannot open `$sfile_fids[$fid]' for reading: $!\n";
+      warn "$0: warning: cannot open '$sfile_fids[$fid]' for reading: $!\n";
       return 0;
     }
     <$fd> if $self->[I_FIRST_LINE];
@@ -853,7 +853,7 @@ sub load_new_data {
     # define the column names, 2) the number of columns loaded is not
     # equal to the number of columns in the column description.
     if ($self->[I_FIRST_LINE] and @line != $number_columns) {
-      warn "$0: number of columns in line $. of `$sfile_fids[$fid]' does not ",
+      warn "$0: number of columns in line $. of '$sfile_fids[$fid]' does not ",
            "match column description.\n";
       next;
     }
@@ -880,14 +880,14 @@ sub load_new_data {
       if (defined $value) {
         if ($self->[I_ALL_RRD_REF]{$rrd_key}->queue_data($time, $value)) {
           if ($opt_verbose > 2 and !$add) {
-            print "  Loaded `@line' at ", scalar localtime($time), " ($time).\n";
+            print "  Loaded '@line' at ", scalar localtime($time), " ($time).\n";
           }
           $add = 1;
         }
       } else {
         $close_once_done = 1;
-        warn "$0: internal error: expecting RRD name `$rrd_key' but no data ",
-             "loaded from `", $self->filename, "' at time ",
+        warn "$0: internal error: expecting RRD name '$rrd_key' but no data ",
+             "loaded from '", $self->filename, "' at time ",
              scalar localtime($time), " ($time).\n";
       }
     }
@@ -909,7 +909,7 @@ sub load_new_data {
   # should be reopened next time.
   if ($file_status == 2 and !$opened_new_fd) {
     $open_file_cache->close($fid) or
-      warn "$0: warning: cannot close `$sfile_fids[$fid]' for reading: $!\n";
+      warn "$0: warning: cannot close '$sfile_fids[$fid]' for reading: $!\n";
     # Setting the last_read_time to -1 will force load_new_data to
     # read it.
     $self->[I_LAST_READ_TIME] = -1;
@@ -919,7 +919,7 @@ sub load_new_data {
            $self->[I_REOPEN]  or
            $open_file_cache->is_pipe($fid)) {
     $open_file_cache->close($fid) or
-      warn "$0: warning: cannot close `$sfile_fids[$fid]' for reading: $!\n";
+      warn "$0: warning: cannot close '$sfile_fids[$fid]' for reading: $!\n";
   }
 
   $number_added;

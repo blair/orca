@@ -116,7 +116,7 @@ if ($opt_generate_gifs) {
 Usage("no configuration file specified") unless @ARGV == 1;
 my $config_filename = shift;
 unless (-r $config_filename) {
-  die "$0: no configuration file `$config_filename' to read.\n";
+  die "$0: no configuration file '$config_filename' to read.\n";
 }
 load_config($config_filename);
 
@@ -138,7 +138,7 @@ $SIG{__DIE__} = \&catch_die;
 
 # Now try to create the locking directory.
 unless (mkdir($locking_directory, 0755)) {
-  die "$0: cannot create locking directory `$locking_directory': $!\n";
+  die "$0: cannot create locking directory '$locking_directory': $!\n";
 }
 $rmdir_locking_directory = 1;
 
@@ -154,7 +154,7 @@ if ($opt_daemon and !$opt_log_filename) {
 }
 if ($opt_log_filename) {
   open(STDOUT, ">>$opt_log_filename") or
-    die "$0: cannot open `$opt_log_filename' for writing: $!\n";
+    die "$0: cannot open '$opt_log_filename' for writing: $!\n";
 }
 
 # If Orca should daemonize itself, then do so now.  Find POSIX::setsid
@@ -168,8 +168,8 @@ if ($opt_daemon) {
   if ($@) {
     die "$0: cannot get setsid since eval '$expr' failed: $@\n";
   }
-  chdir('/')               or die "$0: cannot chdir `/': $!\n";
-  open(STDIN, '/dev/null') or die "$0: cannot read `/dev/null': $!\n";
+  chdir('/')               or die "$0: cannot chdir '/': $!\n";
+  open(STDIN, '/dev/null') or die "$0: cannot read '/dev/null': $!\n";
   defined(my $pid = fork)  or die "$0: cannot fork: $!\n";
   exit if $pid;
   POSIX::setsid()          or die "$0: cannot start a new session: $!\n";
@@ -216,7 +216,7 @@ sub clean_up_and_quit {
       unless (chdir($start_cwd)) {
         $ok = 0;
         if ($can_print) {
-          warn "$0: cannot chdir `$start_cwd': $!\n";
+          warn "$0: cannot chdir '$start_cwd': $!\n";
         }
       }
     }
@@ -224,7 +224,7 @@ sub clean_up_and_quit {
     if ($ok and -d $locking_directory) {
       unless (rmdir($locking_directory)) {
         if ($can_print) {
-          warn "$0: cannot rmdir `$locking_directory': $!\n";
+          warn "$0: cannot rmdir '$locking_directory': $!\n";
         }
       }
     }
@@ -269,7 +269,7 @@ sub create_static_images {
     if ($image_filename) {
       if (/CLOSE/) {
         close(ORCA_WRITE) or
-          warn "$0: error in closing `$image_filename' for writing: $!\n";
+          warn "$0: error in closing '$image_filename' for writing: $!\n";
         $image_filename = '';
       } else {
         chomp;
@@ -283,14 +283,14 @@ sub create_static_images {
         # binary mode.
         binmode ORCA_WRITE;
       } else {
-        warn "$0: cannot open `$image_filename' for writing: $!\n";
+        warn "$0: cannot open '$image_filename' for writing: $!\n";
         $image_filename = '';
       }
     }
   }
   if ($image_filename) {
     close(ORCA_WRITE) or
-      warn "$0: error in closing `$image_filename' for writing: $!\n";
+      warn "$0: error in closing '$image_filename' for writing: $!\n";
     $image_filename = '';
   }
 }
@@ -440,7 +440,7 @@ sub watch_data_sources {
               $this_subgroup_rrds{$rrd} = $rrd_data_files_ref->{$rrd};
             }
             if ($opt_verbose) {
-              printf "  Read %5d data point%s from `$sfile_fids[$fid]'.\n",
+              printf "  Read %5d data point%s from '$sfile_fids[$fid]'.\n",
                 $number, $number > 1 ? 's' : '';
             }
           }
@@ -597,7 +597,7 @@ sub create_html_files {
     $make_html_all_page = 0;
   }
 
-  print "Creating HTML files in `$html_dir/'.\n" if $opt_verbose;
+  print "Creating HTML files in '$html_dir/'.\n" if $opt_verbose;
 
   # Create the main HTML index.html file.
   my $index_html = Orca::HTMLFile->new($index_filename,
@@ -1010,8 +1010,8 @@ sub find_files {
       push(@fids, perl_glob($regexp));
     }
     unless (@fids) {
-      warn "$0: warning: no files found for `find_files' for `group ",
-           "$group_name' in `$config_filename'.\n";
+      warn "$0: warning: no files found for 'find_files' for 'group ",
+           "$group_name' in '$config_filename'.\n";
       next;
     }
 
@@ -1036,7 +1036,7 @@ sub find_files {
         }
       }
       unless (defined $subgroup) {
-        warn "$0: warning: internal error: found `$filename' but no ",
+        warn "$0: warning: internal error: found '$filename' but no ",
              "regexp match for it.\n";
         next;
       }
@@ -1087,7 +1087,7 @@ sub find_files {
           print "  $sfile_fids[$fid]\n" if $opt_verbose > 2;
           my $data_file = Orca::SourceFile->new($group_index, $fid);
           unless ($data_file) {
-            warn "$0: warning: cannot process `$sfile_fids[$fid]'.\n";
+            warn "$0: warning: cannot process '$sfile_fids[$fid]'.\n";
             splice(@fids, $j, 1);
             next;
           }
@@ -1120,7 +1120,7 @@ sub find_files {
   my @found_files = keys %new_found_files;
 
   unless (@found_files) {
-    die "$0: no data files found.  Make sure `find_files' parameter is set ",
+    die "$0: no data files found.  Make sure 'find_files' parameter is set ",
         "properly.\n";
   }
 
@@ -1738,7 +1738,7 @@ that somehow represent time into an Unix epoch time usable by Orca,
 the B<date_source> parameter can be used.  The value for B<date_parse>
 is a Perl subroutine that accepts two arguments, the first being the
 name of the file where the data is loaded and the second the string
-from the `date_source' column that contains some time information.
+from the 'date_source' column that contains some time information.
 The subroutine should return the Unix epoch time.  If this parameter
 is not specified, then Orca assumes that the string holds the Unix
 epoch time.
@@ -2274,7 +2274,7 @@ than summary_format's, then the last specified summary_format will be
 used for all of the data summary lines that were not given a
 summary_format.  In the example above, there are four data's and only
 two summary_format's.  The format '%4.1f %s' will be used for the
-`things' and `something_else' data summary lines.
+'things' and 'something_else' data summary lines.
 
 =back
 

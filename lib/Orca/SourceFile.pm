@@ -346,7 +346,8 @@ sub add_plots {
       $i = $oldest_regexp_index;
     }
 
-    my $plot = $config_plots[$i];
+    my $original_plot = $config_plots[$i];
+    my $plot = $original_plot;
 
     # Skip this plot if the source group indexes does not match.
     # Increment the index of the next plot to handle.
@@ -383,7 +384,10 @@ sub add_plots {
     }
 
     # 1) Regular expression match in the first data with no additional datas.
+    my $plot_has_only_one_data_with_regexp = 0;
     if ($number_datas == 1 and $regexp_element_index != -1) {
+
+      $plot_has_only_one_data_with_regexp = 1;
 
       # If we've gone up to the last column to match, then go on.
       if ($regexp_pos[$i] >= @column_description) {
@@ -743,10 +747,43 @@ sub add_plots {
       }
     }
 
-    # Generate a new plot for these data.
-    my $image;
-    my $all_names_with_subgroup = join(',', @names_with_subgroup);
-    if (defined ($image = $image_files_ref->{hash}{$all_names_with_subgroup})){
+    # Generate a name for this image that is used to look up already
+    # created Orca::Image objects.  Normally, the name will contain
+    # all the column names that matched the data lines in the
+    # configuration file.  However, if a plot has only one data line
+    # and that data line has a regular expression match in it, then
+    # this method will generate a different image for all input data
+    # files that contain different combinations of matching column
+    # names.  For this case, do not store the column names that match,
+    # use a stringified form of the original data line with a
+    # 'volatile' tag in it to help ensure that there are no name
+    # collisions.  Also, shorten the two arrays that contain the
+    # matching column names to a contain single element with the name
+    # of the data line that generated the image with no mention of the
+    # names of the matched columns.
+    my $all_names_with_subgroup;
+    if ($plot_has_only_one_data_with_regexp) {
+      $all_names_with_subgroup = join('_',
+                                      $group_name,
+                                      $subgroup_name,
+                                      lc($plot->{data_type}[0]),
+                                      'volatile',
+                                      @{$original_plot->{data}[0]});
+      @my_short_rrds = ($all_names_with_subgroup);
+      @names_without_subgroup = (join('_',
+                                      $group_name,
+                                      lc($plot->{data_type}[0]),
+                                      'volatile',
+                                      @{$original_plot->{data}[0]}));
+    } else {
+      $all_names_with_subgroup = join(',', sort @names_with_subgroup);
+    }
+
+    my $image = $image_files_ref->{hash}{$all_names_with_subgroup};
+    if (defined $image) {
+      if ($plot_has_only_one_data_with_regexp) {
+        $image->add_additional_plot($plot);
+      }
       $image->add_rrds(@my_rrds);
     } else {
       $image = Orca::ImageFile->new($group_index,

@@ -23,7 +23,8 @@ use Orca::Constants qw($opt_generate_gifs
                        $INCORRECT_NUMBER_OF_ARGS);
 use Orca::Config    qw(%config_global
                        @config_groups
-                       @config_plots);
+                       @config_plots
+                       data_index_to_color);
 use Orca::Utils     qw(name_to_fsname recursive_mkdir);
 
 use vars            qw($VERSION);
@@ -213,6 +214,60 @@ sub _update_graph_options {
   $self->[I_GRAPH_OPTIONS] = \@options;
 
   $self;
+}
+
+# Merge in any new data sources in a plot into an existing image.
+sub add_additional_plot {
+  unless (@_ == 2) {
+    confess "$0: Orca::ImageFile::add_additional_plot ",
+            $INCORRECT_NUMBER_OF_ARGS;
+  }
+
+  my ($self, $new_plot_ref) = @_;
+
+  my %existing_legends;
+  my $existing_plot_ref = $self->[I_PLOT_REF];
+
+  foreach my $legend (@{$existing_plot_ref->{legend}}) {
+    $existing_legends{$legend} = 1;
+  }
+
+  my $i = @{$existing_plot_ref->{legend}};
+  my $number_legends_in_new_plot = @{$new_plot_ref->{legend}};
+  my $number_plots_added = 0;
+  for (my $j=0; $j<$number_legends_in_new_plot; ++$j) {
+    next if $existing_legends{$new_plot_ref->{legend}[$j]};
+    ++$number_plots_added;
+
+    # For those attributes of the new plot that are array references
+    # and need to be indexed for the particular data being plotted,
+    # copy them over.  Skip the 'creates' attribute which is not used
+    # for plotting and skip the color attribute as the color is
+    # treated
+    # specially.
+    for my $attribute (keys %$new_plot_ref) {
+      next if $attribute eq 'color';
+      next if $attribute eq 'creates';
+      next unless UNIVERSAL::isa($new_plot_ref->{$attribute}, 'ARRAY');
+      $existing_plot_ref->{$attribute}[$i] = $new_plot_ref->{$attribute}[$j];
+    }
+
+    # If the color was not already specified for this particular plot
+    # and for this particular data index, then there were no more
+    # colors in the plot definition, so get the proper color from the
+    # configuration file.  Do not copy the color from the new plot,
+    # since the new plot in the merged image will have a different
+    # index into the color list.
+    unless (defined $existing_plot_ref->{color}[$i]) {
+      $existing_plot_ref->{color}[$i] = data_index_to_color($i);
+    }
+
+    ++$i;
+  }
+
+  if ($number_plots_added) {
+    $self->_update_graph_options;
+  }
 }
 
 sub add_rrds {

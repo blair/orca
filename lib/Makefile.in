@@ -40,6 +40,17 @@ install: all
 	  done; \
 	fi
 
+	$(MKDIR) $(libdir)/SE/3.2.1
+	@for f in SE/3.2.1/*; do					\
+		$(INSTALL) -m 0644 $$f $(libdir)/SE/3.2.1;		\
+		echo $(INSTALL) -m 0644 $$f $(libdir)/SE/3.2.1;		\
+	done
+	$(MKDIR) $(libdir)/SE/3.3
+	@for f in SE/3.3/*; do						\
+		$(INSTALL) -m 0644 $$f $(libdir)/SE/3.3;		\
+		echo $(INSTALL) -m 0644 $$f $(libdir)/SE/3.3;		\
+	done
+
 clean:
 
 distclean: clean

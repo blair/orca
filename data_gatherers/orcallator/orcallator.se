@@ -8,6 +8,38 @@
 //
 // Portions copied from percollator.se written by Adrian Cockroft.
 //
+// Version 1.38:   Jan 14, 2003 Additions by Sean O'Neill
+//                              Added several new variables for Orca to collect
+//                              and graph including:
+//                              pgrec/s - page reclaims (include pageout)
+//                              pgfrec/s - page reclaims from free list
+//                              pgin/s - pageins
+//                              pages_in/s - pages paged in
+//                              pgout/s - pageouts
+//                              pages_out/s - pages paged out
+//                              dfree/s - pages freed by daemon or auto
+//                              min_fault/s - minor page faults 
+//                                            (pvm.hat_fault + pvm.as_fault)
+//                              maj_fault/s - major page faults
+//                              prot_fault/s - protection faults
+//                              cow_fault/s - copy-on-write faults
+//                              zfod/s - zero-fill-on-demand faults
+//                              interrupts/s - interrupts including clock
+//                              intrthreads/s - interrupts as threads
+//                                              (below clock)
+//                              system_calls/s
+//                              context_switches/s
+//                              invol_switches/s - involuntary context switches
+//                              traps/s
+//                              forks/s
+//                              vforks/s
+//                              execs/s
+//                              namei/s - pathname lookups
+//                              ufsiget/s - ufs_iget() calls
+//                              ufsdirblk/s - directory blocks read
+//                              ufsinopage/s - inodes taken with no attached 
+//                                             pages
+//
 // Version 1.37:   Dec 28, 2002	Improved algorithm in raw_disk_map() which
 //				detects the end of the GLOBAL_disk_info array.
 //				To deal with occasions when the first disk is a
@@ -339,7 +371,8 @@
 
 #include <p_iostat_class.se>
 #include <p_netstat_class.se>
-#include <p_vmstat_class.se>
+//#include <p_vmstat_class.se>
+#include <orca_p_vmstat_class.se>
 #include <pure_rules.se>
 #include <live_rules.se>
 #include <mib.se>
@@ -1523,6 +1556,31 @@ measure_cpu()
   put_output("#waiting", sprintf("%8.2f", pvm.waiting + 0.0));
   put_output(" #swpque", sprintf("%8.2f", pvm.swpque + 0.0));
   put_output("scanrate", sprintf("%8.3f", pvm.scan + 0.0));
+  put_output("pgrec/s",      sprintf("%8.3f", pvm.pgrec + 0.0));
+  put_output("pgfrec/s",     sprintf("%8.3f", pvm.pgfrec + 0.0));
+  put_output("pgin/s",       sprintf("%8.3f", pvm.pgin + 0.0));
+  put_output("pages_in/s",   sprintf("%8.3f", pvm.pages_in + 0.0));
+  put_output("pgout/s",      sprintf("%8.3f", pvm.pgout + 0.0));
+  put_output("pages_out/s",  sprintf("%8.3f", pvm.pages_out + 0.0));
+  put_output("dfree/s",      sprintf("%8.3f", pvm.dfree + 0.0));
+  put_output("min_fault/s",  sprintf("%8.3f", pvm.hat_fault + pvm.as_fault + 0.0))
+;
+  put_output("maj_fault/s",  sprintf("%8.3f", pvm.maj_fault + 0.0));
+  put_output("prot_fault/s", sprintf("%8.3f", pvm.prot_fault + 0.0));
+  put_output("cow_fault/s",  sprintf("%8.3f", pvm.cow_fault + 0.0));
+  put_output("zfod/s",       sprintf("%8.3f", pvm.zfod + 0.0));
+  put_output("interrupts/s",    sprintf("%8.3f", pvm.interrupts + 0.0));
+  put_output("intrthread/s",    sprintf("%8.3f", pvm.intrthread + 0.0));
+  put_output("system_calls/s",  sprintf("%8.3f", pvm.system_calls + 0.0));
+  put_output("context_switches/s",  sprintf("%8.3f", pvm.context_switches + 0.0));
+  put_output("invol_switches/s",    sprintf("%8.3f", pvm.invol_switches + 0.0));
+  put_output("traps/s",             sprintf("%8.3f", pvm.trap + 0.0));
+  put_output("forks/s",             sprintf("%8.3f", pvm.sysfork + 0.0));
+  put_output("vforks/s",            sprintf("%8.3f", pvm.sysvfork + 0.0));
+  put_output("execs/s",             sprintf("%8.3f", pvm.sysexec + 0.0));
+  put_output("namei/s",             sprintf("%8.3f", pvm.namei + 0.0));
+  put_output("ufsiget/s",           sprintf("%8.3f", pvm.ufsiget + 0.0));
+  put_output("ufsdirblk/s",         sprintf("%8.3f", pvm.ufsdirblk + 0.0));
 
   // Calculate the rate of new process spawning.
   if (can_read_kernel != 0) {
@@ -1893,9 +1951,13 @@ measure_dnlc()
 #ifdef WATCH_INODE
 measure_inode()
 {
+  p_vmstat pvm;
+
   put_output("inod_ref/s", sprintf("%10.3f", tmp_lr_inode.refrate));
   put_output("inod_hit%",  sprintf("%9.3f",  tmp_lr_inode.hitrate));
   put_output("inod_stl/s", sprintf("%10.3f", tmp_lr_inode.iprate));
+  put_output("ufsinopage/s", sprintf("%8.3f", pvm.ufsinopage + 0.0));
+
 }
 #endif
 

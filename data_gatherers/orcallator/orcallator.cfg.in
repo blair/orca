@@ -533,6 +533,57 @@ href			http://www.orcaware.com/orca/docs/orcallator.html#sleeps_mutex_rate
 }
 
 plot {
+title			%g Interrupts/s, System Calls/s & Traps/s
+source			orcallator
+data			interrupts/s
+data			intrthread/s
+data			system_calls/s
+data			traps/s
+line_type		area
+line_type		line1
+line_type		line1
+line_type		line1
+legend			Interrupts
+legend			Interrupts as threads
+legend			System Calls
+legend			Traps
+y_legend		calls/s
+data_min		0
+}
+
+plot {
+title			%g Forks/s, Vforks/s & Execs/s
+source			orcallator
+data			forks/s
+data			vforks/s
+data			execs/s
+line_type		area
+line_type		line1
+line_type		line1
+legend			forks/s
+legend			vforks/s
+legend			execs/s
+y_legend		calls/s
+data_min		0
+}
+
+plot {
+title			%g Context Switches/s
+source			orcallator
+data			context_switches/s - invol_switches/s
+data			invol_switches/s
+data			context_switches/s
+line_type		area
+line_type		stack
+line_type		line1
+legend			Voluntary Switches/s
+legend			Involuntary Switches/s
+legend			Total
+y_legend		Switches/s
+data_min		0
+}
+
+plot {
 title			%g NFS Server Call Rate
 source			orcallator
 data			nfss_calls
@@ -737,11 +788,30 @@ href			http://www.orcaware.com/orca/docs/orcallator.html#cache_reference_rate
 }
 
 plot {
+title			%g Pathname lookups, UFS iget calls & UFS dir. block reads/s
+source			orcallator
+data			namei/s
+data			ufsiget/s
+data			ufsdirblk/s
+line_type		area
+line_type		line1
+line_type		line1
+legend			namei/s
+legend			ufsiget/s
+legend			ufsdirblk/s
+y_legend		calls/s
+data_min		0
+}
+
+plot {
 title			%g Cache Inode Steal Rate
 source			orcallator
 data			inod_stl/s
+data			ufsinopage/s
 line_type		area
+line_type		line1
 legend			Inode w/page steals/s
+legend			Inode wo/page steals/s
 y_legend		Steals/s
 data_min		0
 href			http://www.orcaware.com/orca/docs/orcallator.html#inode_steal_rate
@@ -815,6 +885,68 @@ color			00ff00
 color			ff0000
 color			0000ff
 href			http://www.orcaware.com/orca/docs/orcallator.html#page_usage
+}
+
+plot {
+title			%g Pageins/s & Pageouts/s
+source			orcallator
+data			pgin/s
+data			pgout/s
+line_type		area
+line_type		line1
+legend			Page Ins
+legend			Page Outs
+y_legend		Events/s
+data_min		0
+plot_min		0
+}
+
+plot {
+title			%g Pages PagedIn & Pages PagedOut & Pages Freed/s
+source			orcallator
+data			pages_in/s
+data			pages_out/s
+data			dfree/s
+line_type		area
+line_type		line1
+line_type		line1
+legend			Pages Paged In
+legend			Pages Paged Out
+legend			Pages Freed
+y_legend		Pages/s
+data_min		0
+plot_min		0
+}
+
+plot {
+title			%g Major, Minor & Protection Page Faults/s
+source			orcallator
+data			maj_fault/s
+data			min_fault/s
+data			prot_fault/s
+line_type		area
+line_type		line1
+line_type		line1
+legend			Major Faults
+legend			Minor Faults
+legend			Protection Faults
+y_legend		Faults/s
+data_min		0
+plot_min		0
+}
+
+plot {
+title			%g Copy-on-write & Zero-fill-on-demand Page Faults/s
+source			orcallator
+data			cow_fault/s
+data			zfod/s
+line_type		area
+line_type		line1
+legend			Copy-on-write
+legend			Zero-fill-on-demand
+y_legend		Faults/s
+data_min		0
+plot_min		0
 }
 
 plot {

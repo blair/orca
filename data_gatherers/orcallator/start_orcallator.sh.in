@@ -13,6 +13,12 @@ EXPR=@EXPR@
 UNAME=@UNAME@
 RAW_ORCALLATOR_DIR=@VAR_DIR@/orcallator
 SE=@SE@
+SE_VERSION=`$SE -version | nawk '{print $4}'`
+if [ "$SE_VERSION" != "3.2.1" -a "$SE_VERSION" != "3.3" ]; then
+   echo "SE version MUST be 3.3 or 3.2.1 .. please upgrade SE."
+   echo "See http://www.setoolkit.com for more information."
+   exit 1
+fi
 
 # WEB_LOG contains the location of the web server log file that
 # orcallator.se should read.
@@ -103,7 +109,7 @@ fi
 
 # Now start the logging.
 echo "Starting logging"
-nohup $SE $SE_PATCHES -DWATCH_OS $WATCH_WEB $libdir/orcallator.se &
+nohup $SE $SE_PATCHES -DWATCH_OS $WATCH_WEB -I$libdir/SE/$SE_VERSION $libdir/orcallator.se &
 
 # Write the PID of orcallator to a file to make killing easier.
 pid=$!

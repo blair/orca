@@ -257,7 +257,7 @@ class work_info_class_t {
     }
 
     if (number != -1) {                            // Data is available
-      if (number < wc) {
+      if (number > -1 && number < wc) {
         w = wi[++number];                          // Return next workload data
       } else {
         w = wi[0];                                 // Set w to Total data

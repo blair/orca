@@ -686,10 +686,10 @@ sub create_html_files {
           warn "$0: warning: cannot create Orca::HTMLFile object: $@.\n";
           next;
         }
-        push (@html_files, {fd        => $fd,
-                            href      => $href,
-                            plot_type => $plot_type,
-                            Plot_Type => $Plot_Type});
+        push(@html_files, {fd        => $fd,
+                           href      => $href,
+                           plot_type => $plot_type,
+                           Plot_Type => $Plot_Type});
       }
 
       # At the top of the various time span HTML files add HREFs to the

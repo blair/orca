@@ -12,7 +12,8 @@ t/HiRes.t		Test for Time::HiRes
 HiRes.xs		Time::HiRes extension
 Makefile.PL		Time::HiRes extension
 MANIFEST		Time::HiRes extension
+ppport.h		Devel::PPPort code
 README			Time::HiRes extension
 TODO			Time::HiRes extension
 typemap			Time::HiRes extension
-META.yml                                 Module meta-data (added by MakeMaker)
+META.yml		Module meta-data (added by MakeMaker)

@@ -71,11 +71,12 @@ my $i_bottom = I_BOTTOM;
 sub DESTROY {
   my $self = shift;
 
-  print { $self->[I_FD] } <<END;
-    $self->[$i_bottom]
+  if ($self->[$i_bottom] =~ /\S/) {
+    print { $self->[I_FD] } $self->[$i_bottom], "\n<br />\n", $html_hr, "\n";
+  }
 
-    <br />
-    $html_hr
+  print { $self->[I_FD] } <<END;
+
     <table cellpadding="0" border="0">
       <tr valign="bottom">
         <td width="186">

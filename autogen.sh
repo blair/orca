@@ -1,8 +1,7 @@
 #!/bin/sh
 
-echo "$0: checking installation..."
-
 # Check for autoconf 2.53 or newer.
+echo "$0: checking for autoconf 2.53 or newer..."
 ac_version=`${AUTOCONF:-autoconf} --version 2>/dev/null|head -1|sed -e 's/^[^0-9]*//' -e 's/[a-z]* *$//'`
 if test -z "$ac_version"; then
   echo "$0: autoconf not found."
@@ -27,13 +26,13 @@ fi
 # environment.
 #
 # To work around this, touch the build files in chronological order.
-echo "$0: touching RRDtool build files to preserve relative timestamps"
+echo "$0: touching RRDtool build files to preserve relative timestamps..."
 find packages -name configure.in -o -name Makefile.am | xargs touch
 sleep 2
 find packages -name configure -o -name Makefile.in -o -name stamp-h\* | xargs touch
 
-echo "$0: building configuration files"
-
+# Now create configure and it's associated build files.
+echo "$0: creating configure and associated build files..."
 aclocal -I config --output=config/aclocal.m4
 autoconf --include=config
 rm -fr autom4te*.cache

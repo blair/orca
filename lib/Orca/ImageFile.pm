@@ -249,12 +249,15 @@ sub add_additional_plot {
     # For those attributes of the new plot that are array references
     # and need to be indexed for the particular data being plotted,
     # copy them over.  Skip the 'created_orca_images' attribute which
-    # is not used for plotting and skip the color attribute as the
-    # color is treated specially.
+    # is not used for plotting.  Skip the color attribute as the color
+    # is treated specially below.  Skip the hrule attribute as the
+    # hrule's do not change as additional data sources are added to an
+    # image.
     for my $attribute (keys %$new_plot_ref) {
+      next unless UNIVERSAL::isa($new_plot_ref->{$attribute}, 'ARRAY');
       next if $attribute eq 'color';
       next if $attribute eq 'created_orca_images';
-      next unless UNIVERSAL::isa($new_plot_ref->{$attribute}, 'ARRAY');
+      next if $attribute eq 'hrule';
       $existing_plot_ref->{$attribute}[$i] = $new_plot_ref->{$attribute}[$j];
     }
 

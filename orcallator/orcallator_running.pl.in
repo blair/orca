@@ -7,35 +7,90 @@ use strict;
 use POSIX qw(strftime);
 
 # Set this to the list of directories that contain the output from
-# percollator.se.
+# orcallator.se.
 my @stats_dirs = ('@VAR_DIR@/orcallator');
 
+my $now = time;
+
 foreach my $stats_dir (@stats_dirs) {
+  $stats_dir =~ s#/+$##g;
 
-  die "$0: unable to change to `$stats_dir'" unless chdir $stats_dir;
-
-  die "$0: unable to open `.' for reading: $!\n" unless opendir(DIR, '.');
+  unless (opendir(DIR, $stats_dir)) {
+    warn "$0: cannot opendir `$stats_dir': $!\n";
+    next;
+  }
 
   my @hosts = sort grep { $_ !~ /^\./ } readdir(DIR);
 
-  closedir(DIR);
+  closedir(DIR)
+    or warn "$0: error in closedir `$stats_dir': $!\n";
 
-  print "Now in $stats_dir\n";
+  print "Now checking $stats_dir\n";
 
-  my $percol = strftime("percol-%Y-%m-%d", localtime());
+  my $date            = strftime("%Y-%m-%d", localtime());
+  my $orcallator_base = "orcallator-$date";
+  my $percol_base     = "percol-$date";
+
+  my $orcallator_re   = qr/^$orcallator_base/;
+  my $percol_re       = qr/^$percol_base/;
 
   foreach my $host (@hosts) {
-    my $file = "$host/$percol";
-    unless (-f $file) {
-      warn "$0: $file does not exist.\n";
+    my $host_dir = "$stats_dir/$host";
+    next unless -d $host_dir;
+
+    unless (opendir(DIR, $host_dir)) {
+      warn "$0: cannot opendir `$host_dir': $!\n";
       next;
     }
-    my $age = (-M $file)*(24*60);
-    if ( $age > 8) {
-      $file= sprintf "%35s", $file;
-      $age = sprintf "%8.2f", $age;
-      warn "$0: $file is $age minutes old.\n";
+
+    # Look for files that have the current date in it.
+    my @files = sort grep { $_ =~ $percol_re or
+                            $_ =~ $orcallator_re } readdir(DIR);
+
+    closedir(DIR)
+      or warn "$0: error in closedir `$host_dir': $!\n";
+
+    # Of the files with today's date in it, determine which one was
+    # last modified.
+    my %files;
+    foreach my $f (@files) {
+      my $file = "$host_dir/$f";
+      my @stat = stat($file);
+      unless (@stat) {
+        warn "$0: cannot stat `$file': $!\n";
+        next;
+      }
+      $files{"$host/$f"} = $stat[9];
+    }
+
+    @files = keys %files;
+    unless (@files) {
+      warn "For host `$host', there is no $orcallator_base* or ",
+           "$percol_base*.\n";
       next;
+    }
+
+    @files = sort { $files{$b} <=> $files{$a} } keys %files;
+
+    my $latest_filename = $files[0];
+    my $latest_mtime    = $files{$latest_filename};
+
+    my $age = $now - $latest_mtime;
+
+    my $in_future;
+    if ($age < 0) {
+      $in_future = 1;
+      $age       = -$age;
+    }
+
+    my $minutes     = $age/60;
+    my $seconds     = $age%60;
+    my $date_string = sprintf "%35s is %5d:%02d minutes",
+                              $latest_filename, $minutes, $seconds;
+    if ($in_future) {
+      warn "$date_string in the future; fix clock\n";
+    } elsif ($minutes > 8) {
+      warn "$date_string old\n";
     }
   }
 }

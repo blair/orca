@@ -8,6 +8,12 @@
 //
 // Portions copied from percollator.se written by Adrian Cockroft.
 //
+// Version 1.40:   Feb 23, 2003 John ???
+//                              Posted to orca-user list on Oct 25, 2000
+//                              with Subject "Re: Interest in more disk based
+//                              statistics"
+//                              Add disk service time data collection.
+//
 // Version 1.39:   Feb 18, 2003 Burkhardt Schopp
 //                              B.Schopp@gmx.de
 //                              Modified struct RawDisk long_name object to
@@ -1854,6 +1860,9 @@ measure_disk()
     put_output(sprintf("disk_runp_%s", RAW_disk[i].long_name),
                sprintf("%16.5f", RAW_disk[i].run_percent));
 
+    put_output(sprintf("disk_svct_%s", RAW_disk[i].long_name),
+               sprintf("%16.5f", RAW_disk[i].service));
+
     // Comments from Damon Atkins <Damon.Atkins@nabaus.com.au>.  Check
     // [wr]lentime to see if an EMC is using a fake disk for control.
     // EMC disks have a fake disk which commands are run over to
@@ -1886,6 +1895,9 @@ measure_disk()
     disk_count++;
     put_output(sprintf("disk_runp_%s", GLOBAL_disk[i].info.long_name),
                sprintf("%16.5f", GLOBAL_disk[i].run_percent));
+
+    put_output(sprintf("disk_svct_%s", GLOBAL_disk[i].info.long_name),
+               sprintf("%16.5f", GLOBAL_disk[i].service));
 
     // Comments from Damon Atkins <Damon.Atkins@nabaus.com.au>.  Check
     // [wr]lentime to see if an EMC is using a fake disk for control.

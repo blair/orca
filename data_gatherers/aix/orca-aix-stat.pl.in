@@ -175,12 +175,37 @@ while ($iterations-- > 0) {
     }
     @upt = split(/ +/,);
     $uptd = $upt[3];
-    $nusr = $upt[6];
     $up_day = $uptd * 24 * 60 * 60;
-    if (/days,\s+(\S+):(\S+), /) {
+    $up_hrs = 0;
+    $up_min = 0;
+
+    if (/day(?:s?),\s+(\S+)\s+min(?:s?),/) {
+      $nusr = $upt[7];
+      $up_min = $1 * 60;
+    } elsif (/day(?:s?),\s+(\S+)\s+hr(?:s?),/) {
+      $nusr = $upt[7];
+      $up_hrs = $1 * 60 * 60;
+    } elsif (/day(?:s?),\s+(\S+):(\S+), /) {
+      $nusr = $upt[6];
       $up_hrs = $1 * 60 * 60;
       $up_min = $2 * 60;
+    } elsif ($_ !~ /day/) {
+      $up_day = 0;
+      if (/\s+(\S+):(\S+),/) {
+        $nusr = $upt[4];
+        $up_hrs = $1 * 60 * 60;
+        $up_min = $2 * 60;
+      } elsif (/\s+(\S+)\s+min(?:s?),/) {
+        $nusr = $upt[5];
+        $up_min = $1 * 60;
+      } elsif (/\s+(\S+)\s+hr(?:s?),/) {
+        $nusr = $upt[5];
+        $up_hrs = $1 * 60 * 60;
+      }
+    } else {
+      $nusr = $upt[5];
     }
+
     $uptime = $up_day + $up_hrs + $up_min;
   }
   close IN;
@@ -587,7 +612,9 @@ while ($iterations-- > 0) {
   }
   print OUT $out_info, "\n";
 
-  sleep $INTERVAL - (time() - $timestamp);
+  if ($iterations) {
+    sleep($INTERVAL - (time() - $timestamp));
+  }
 }
 close OUT;
 

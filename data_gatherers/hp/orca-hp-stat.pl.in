@@ -410,7 +410,9 @@ while ($iterations-- > 0) {
   }
   print OUT $out_info, "\n";
 
-  sleep $INTERVAL - (time() - $timestamp);
+  if ($iterations) {
+    sleep($INTERVAL - (time() - $timestamp));
+  }
 }
 close OUT;
 

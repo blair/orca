@@ -439,6 +439,36 @@ MKDIR="$config_dir/mkinstalldirs"
 AC_SUBST(INSTALL)
 AC_SUBST(MKDIR)
 
+# Determine the appropriate init.d directory on the system.
+AC_MSG_CHECKING([where the boot init.d directory is])
+for dir in /etc/rc.d/init.d /etc/init.d; do
+  if test -d "$dir"; then
+    INIT_D_DIR="$dir"
+    break
+  fi
+done
+if test "$INIT_D_DIR"; then
+  AC_MSG_RESULT([$INIT_D_DIR])
+else
+  AC_MSG_RESULT([none found])
+fi
+AC_SUBST(INIT_D_DIR)
+
+# Determine the directory that contains the rcX.d directories.
+AC_MSG_CHECKING([which directory contains the boot rcX.d directories])
+for dir in /etc/rc.d/rc3.d /etc/rc3.d; do
+  if test -d "$dir"; then
+    RCX_D_CONTAINING_DIR="`dirname $dir`"
+    break
+  fi
+done
+if test "$RCX_D_CONTAINING_DIR"; then
+  AC_MSG_RESULT([$RCX_D_CONTAINING_DIR])
+else
+  AC_MSG_RESULT([none found])
+fi
+AC_SUBST(RCX_D_CONTAINING_DIR)
+
 #--------------------------------------------------------------------
 #       Generate the Makefiles and shell scripts with the
 #       variable substitutions.

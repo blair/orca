@@ -1,0 +1,29 @@
+From: steve rader <rader@teak.wiscnet.net>
+Date: Mon, 10 Jan 2000 10:40:56 -0600
+Subject: ANNOUNCEMENT: "rrdlastds" (was Re: rrd script assistance)
+
+ % ./rrdlastds 
+ usage: rrdlastds [-v] [-a] [-c num] [-l label] [-s stamp] some.rrd
+   -v        print the start and end times (also --verbose)
+   -a        autoscale DS values (also --autoscale)
+   -c num    convert DS values by "num" (also --conversion)
+   -l label  label DS values with "label" (also --label)
+   -s stamp  report about DS values at the time "stamp" (also --start)
+
+The nominal usage is:
+
+ % ./rrdlastds some.rrd
+ Mon Jan 10 10:30:00 2000  146823.19 input  17225.20 output
+
+To get a verbose, autoscaled report about this time yesterday,
+converted to bits and nicely labeled, do:
+
+ % ./rrdlastds -v -a -c 8 -l b/s -s -1day some.rrd
+ Sun Jan  9 10:30:00 2000 through Sun Jan  9 10:35:00 2000
+ average  105.27 kb/s input  17.10 kb/s output
+
+later
+steve
+- - -
+systems guy
+wiscnet.net

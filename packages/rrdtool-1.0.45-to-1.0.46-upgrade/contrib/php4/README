@@ -1,0 +1,11 @@
+This is an adapted version of rrdtool for the php-4.0.6 version 
+of the RedHat sourcecode. Just go into the main php
+Directory, say php-4.0.6, go into the ext Directory and untar this
+tar-file.
+
+call: ./buildconf in the Main php-4.0.6 directory
+add "--with-rrdtool" to the general ./configure call.
+
+And you'r done.
+
+NOTE: You need rrdtool-1.0.38 to be installed forthis to compile properly.

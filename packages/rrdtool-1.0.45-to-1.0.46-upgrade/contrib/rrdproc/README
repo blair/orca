@@ -1,0 +1,30 @@
+* rrdproc.c Copyright 1999 Damien Miller <djm@mindrot.org>
+**
+**
+** This program is a very lightweight collecter for rrdtool. It reads
+** and parses /proc/net/dev and sends a rrdtool remote control update
+** command to stdout.
+**
+** rrdproc will sleep a user-defined amount of time between reads from
+** /proc/net/dev. This time should match the sample rate you created your
+** RRD files with.
+**
+** Example:
+**
+** rrdproc --interface=ppp0 \
+**         --wait 30 \
+**         --filename=/home/djm/traffic-ppp0.rrd | rrdtool -
+**
+** This will update the RRD file /home/djm/traffic-eth0.rrd with bytes
+** received and sent on eth0 every 30 seconds.
+**
+** rrdproc --interface=eth0 \
+**         --wait 300 \
+**         --frame \
+**         --filename=/home/djm/traffic-eth0.rrd | rrdtool -
+**
+** Will update /home/djm/traffic-eth0.rrd with counts of framing errors and
+** collisions every 5 minutes
+**
+** rrdproc is licensed under the GNU GPL version 2. Please refer to
+** http://www.fsf.org/copyleft/gpl.html for details.

@@ -1,0 +1,19 @@
+From: Bert Driehuis <driehuis@playbeing.org>
+Date: Fri, 14 Jan 2000 03:41:07 +0100 (CET)
+
+This script will read an XML file produced by
+
+       rrdtool dump foo.rrd >in.xml
+
+and look at the $maxspike highest samples per datasource. It then finds the
+records with the most hits and ditches the data. The resulting file can be
+read back into the RRD database with the command
+
+       rrdtool restore out.xml foo.rrd
+
+The whole idea is to find and eradicate "spikes" caused by erroneous
+readings affecting entire records.
+
+This tool is not for the faint of heart, will require tweaking per case
+(even though that should just be picking values for cutoff and to a lesser
+extent, maxspike). It will cause data loss, for obvious reasons.

@@ -1,0 +1,13 @@
+Is there a program currently to list the available data sources, in a given rrd
+file?
+
+From: Rainer Nagel <rainer@roka.net>
+
+yes ...
+
+here ...
+
+rrdfetchnames.pl my.rrd
+
+have fun
+

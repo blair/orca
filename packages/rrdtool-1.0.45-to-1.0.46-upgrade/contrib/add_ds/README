@@ -1,0 +1,32 @@
+# README
+# From: Selena Brewington <selena@chesnok.com>
+
+The two scripts included in here are for taking an existing RRD,
+dumping out its XML contents, mucking with the XML to add an
+arbitrary number of datasources, and then creating a new RRD with
+the new XML information. 'add_ds.pl' is what is doing all the
+work.  'batch.pl' does the legwork of running rrdtool and 
+moving around the output from the various commands.
+
+Easiest way to use these:
+* Put batch.pl and add_ds.pl in the same directory as the RRDs
+you want to modify and run:
+
+    $ ls -1 | ./batch.pl <# new datasources you want to add>
+
+You'll end up with an 'xml' directory where all the xml files
+and your new RRDs are available.  Copy the new RRDs back over
+the old RRDs once you've convinced yourself that the new RRDs
+have been formed correctly (try using the rrd-dump tool that is
+in the cricket/utils directory, for example).
+
+I put some options that you can configure at the top of the
+batch.pl script.  Also, add_ds.pl has a bunch of stuff you can
+modify at the command line or, again, change inside the script
+itself - warning: it's not fancy.  Try: ./add_ds.pl -h
+
+batch.pl has an 'overwrite' option that can be invoked, but I
+highly recommend that you check that this script does what you want,
+the way you want it, before you go and trample all over your 
+existing RRDs. 
+

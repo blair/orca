@@ -1,0 +1,31 @@
+
+* Installing the rrdtool module as an embedded extension
+
+Installing rrdtool module as an embedded extension provides all of
+your php4 scripts access to the rrd_* functions without having to
+load any shared libs with the dl() function of php.  
+
+In order to install the rrdtool module as an embedded extension
+you will need to have autoconf/automake and friends installed.
+
+    1. make sure you have the php4 sources untarred somewhere, lets
+       call it /src/php-4.2.3/
+
+    2. untar php-rrdtool.tar in the extension directory of the php
+       source tree.
+
+            % cd /src/php-4.2.3/ext
+            % tar zxvf php-rrdtool.tar.gz
+
+    3. recreate the configure scripts for php4.
+    
+            % cd /src/php-4.2.3
+            % ./buildconf
+            
+    4. you should now be ready to run configure for php4.
+       make sure you include "--with-rrdtool=path" in the options
+       where path is the path to where rrdtool is installed to configure.  
+
+            % ./configure --with-rrdtool=/usr/local
+
+    5. now run make, and then make install. you should be ready to go.

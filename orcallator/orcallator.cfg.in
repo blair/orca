@@ -49,6 +49,22 @@ generate_monthly_plot	1
 generate_quarterly_plot	1
 generate_yearly_plot	1
 
+# This sets the HTML markup that is placed at the very top of every
+# web page and is primarly used to display the site's logo.
+html_page_header	<h3>Put your site's logo here.</h3>
+
+# This sets the text that is placed in the pages' <title></title>
+# element and just after the html_page_header HTML markup text is
+# placed on the page.
+html_top_title		Orca Host Status
+
+# This sets the HTML markup that is placed at the bottom of every web
+# page.
+html_page_footer
+  <font face="verdana,geneva,arial,helvetica">
+    These plots brought to you by your local system administrator.
+  </font>
+
 # This defines where the find the source data files and the format of
 # those files.  Notes about the fields:
 # find_files
@@ -80,25 +96,6 @@ filename_compare	sub {
 			  $ad <=> $bd;
 			}
 }
-
-html_top_title		Yahoo!/GeoCities Host Status
-
-html_page_header
-  <div style="position:absolute;left:0px;top:0px; width:100%;display:none;z-index:1">
-    Funding for Orca provided by <a href="http://www.rothschildimage.com/">
-        The Rothschild Image</a>.
-  </div>
-  <a href="http://geocities.yahoo.com/home/">
-    <img border=0 alt="Yahoo!/GeoCities"
-     src="http://a372.g.akamaitech.net/7/372/27/5fd49246b3dc72/us.yimg.com/i/geo/ygeo.gif"
-     width=305 height=36></a>
-  <spacer type=vertical size=4>
-
-html_page_footer
-  <spacer type=vertical size=20>
-  <font face="Arial,Helvetica">
-    These plots brought to you by your local system administrator.
-  </font>
 
 plot {
 title			%g System Overview
@@ -317,7 +314,7 @@ href			http://www.orcaware.com/orca/docs/orcallator.html#interface_bits_per_seco
 plot {
 title			%g Interface Bits Per Second: $1
 source			orcallator
-data			1024 * 8 * ((?:(?:be)|(?:dfme)|(?:eri)|(?:hme))\d+)InKB/s
+data			1024 * 8 * ((?:(?:be)|(?:dfme)|(?:eri)|(?:hme)|(?:qfe))\d+)InKB/s
 data			1024 * 8 * $1OuKB/s
 line_type		area
 line_type		line1

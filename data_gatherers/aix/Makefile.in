@@ -10,7 +10,7 @@ RRD_DIR               = @RRD_DIR@
 VAR_DIR               = @VAR_DIR@
 RAW_ORCALLATOR_DIR    = $(VAR_DIR)/orcallator
 
-BIN_PERL_SCRIPTS      = orca-aix-stat orca-aixtsm-stat
+BIN_PERL_SCRIPTS      = orca-aix-stat
 LIBEXEC_PERL_SCRIPTS  =
 NOINST_PERL_SCRIPTS   =
 PERL_SCRIPTS          = $(BIN_PERL_SCRIPTS) \
@@ -44,7 +44,7 @@ clean:
 	$(RM) $(TARGETS)
 
 distclean: clean
-	$(RM) *.sh orca-aix-stat.pl orca-aixtsm-stat.pl Makefile
+	$(RM) *.sh orca-aix-stat.pl Makefile
 
 .SUFFIXES: .pl .sh
 
@@ -61,6 +61,3 @@ Makefile: Makefile.in
 
 orca-aix-stat.pl: orca-aix-stat.pl.in
 	cd ../.. && CONFIG_FILES=data_gatherers/aix/orca-aix-stat.pl ./config.status
-
-orca-aixtsm-stat.pl: orca-aixtsm-stat.pl.in
-	cd ../.. && CONFIG_FILES=data_gatherers/aix/orca-aixtsm-stat.pl ./config.status

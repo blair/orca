@@ -626,8 +626,7 @@ fi
 #--------------------------------------------------------------------
 if test "$BUILD_AIXALLATOR" = yes; then
   OUTPUT_AIXALLATOR="data_gatherers/aix/Makefile
-                     data_gatherers/aix/orca-aix-stat.pl
-                     data_gatherers/aix/orca-aixtsm-stat.pl"
+                     data_gatherers/aix/orca-aix-stat.pl"
 fi
 
 if test "$BUILD_HPALLATOR" = yes; then

@@ -154,25 +154,37 @@ Outline:
  4) Determine which Perl modules need compiling and installing.
     Optionally download newer versions of these modules.
 
-    Orca requires the following Perl modules at the specified
-    versions:
+    The Orca distribution includes the following Perl modules.  Some
+    of them are required for Orca to execute and some are included as
+    modules that may be needed to help process data loaded by Orca
+    (such as Date::Parse) or to profile Orca for performance
+    improvements (Devel::DProf).
 
-    Name                        Required Version        Included With Orca
-    ----------------------------------------------------------------------
-    Data::Dumper                2.101 or greater        2.101
-    Digest::MD5                 2.22 or greater         2.22
-    Math::IntervalSearch        1.05 or greater         1.05
-    RRDs                        1.0.33 or greater       1.0.33
-    Storable                    2.06 or greater         2.06
+    Here, the module version refers to the $VERSION variable in the
+    Perl module that is loaded by Perl and the package version refers
+    to the version number in the file name of the .tar.gz that
+    includes the Perl module.
 
-    All five of these modules are included with the Orca distribution
+    Module                  Required       Required     Package Version
+    Name                    Module         Package      Included With
+                            Version        Version      Orca
+    -------------------------------------------------------------------
+    Data::Dumper            >= 2.101       >= 2.101     2.101
+    Date::Parse             Not required by Orca        2.24
+    Devel::DProf            Not required by Orca        19990108
+    Digest::MD5             >= 2.22        >= 2.22      2.22
+    Math::IntervalSearch    >= 1.05        >= 1.05      1.05
+    RRDs                    >= 1.000401    >= 1.0.40    1.0.40
+    Storable                >= 2.06        >= 2.06      2.06
+
+    All seven of these modules are included with the Orca distribution
     in the packages directory.  When you configure Orca in step 3),
     configure will determine if you need any of these modules compiled
     and installed.  configure will then modify the packages/Makefile
     file to only build those modules that need to be installed.
 
-    All of the modules except for Math::IntervalSearch require a
-    compiler and generate shared libraries by default.
+    All of the modules except for Date::Parse and Math::IntervalSearch
+    require a C compiler and generate shared libraries by default.
 
     If you wish to download and install modules that have been updated
     since this Orca package has been assembled, please use the
@@ -184,6 +196,28 @@ Outline:
 
       % gunzip -c Data-Dumper-2.101.tar.gz | tar xvf -
       % cd Data-Dumper-2.101
+      % perl Makefile.PL
+      % make
+      % make test
+      % make install
+
+    Date::Parse
+
+      http://www.perl.com/CPAN/authors/id/G/GB/GBARR/TimeDate-1.14.tar.gz
+
+      % gunzip -c TimeDate-1.14.tar.gz | tar xvf -
+      % cd TimeDate-1.14
+      % perl Makefile.PL
+      % make
+      % make test
+      % make install
+
+    Devel::DProf
+
+      http://www.perl.com/CPAN/authors/id/I/IL/ILYAZ/modules/DProf-19990108.tar.gz
+
+      % gunzip -c DProf-19990108.tar.gz | tar xvf -
+      % cd DProf-19990108
       % perl Makefile.PL
       % make
       % make test

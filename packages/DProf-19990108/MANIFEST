@@ -1,0 +1,23 @@
+Changes
+DProf.pm
+DProf.xs
+MANIFEST
+Makefile.PL
+README
+Todo
+dprofpp.PL
+t/V.pm				verification lib for tests
+t/test1.t
+t/test1.v
+t/test2.t
+t/test2.v
+t/test3.t
+t/test3.v
+t/test4.t			fork test
+t/test4.v
+t/test5.t			&bar as &bar(@_) test
+t/test5.v			
+t/test6.t			Nonlocal exit test
+t/test6.v			
+test.pl				test suite driver
+t/test1.pl			alternate test

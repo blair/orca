@@ -177,7 +177,7 @@ Outline:
     Math::IntervalSearch    >= 1.05        >= 1.05      1.05
     RRDs                    >= 1.000461    >= 1.0.46    1.0.46
     Storable                >= 2.12        >= 2.12      2.12
-    Time::HiRes             Not required by Orca        1.55
+    Time::HiRes             Not required by Orca        1.57
 
     All seven of these modules are included with the Orca distribution
     in the packages directory.  When you configure Orca in step 3),
@@ -278,10 +278,10 @@ Outline:
 
     Time::HiRes
 
-      http://www.perl.com/CPAN/authors/id/J/JH/JHI/Time-HiRes-1.55.tar.gz
+      http://www.perl.com/CPAN/authors/id/J/JH/JHI/Time-HiRes-1.57.tar.gz
 
-      % gunzip -c Time-HiRes-1.55.tar.gz | tar xvf -
-      % cd Time-HiRes-1.55
+      % gunzip -c Time-HiRes-1.57.tar.gz | tar xvf -
+      % cd Time-HiRes-1.57
       % perl Makefile.PL
       % make
       % make test

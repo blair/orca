@@ -202,7 +202,7 @@ Outline:
       % perl Makefile.PL
       % make
       % make test
-      % make install
+      % make install UNINST=1
 
     Date::Parse
 
@@ -213,7 +213,7 @@ Outline:
       % perl Makefile.PL
       % make
       % make test
-      % make install
+      % make install UNINST=1
 
     Devel::DProf
 
@@ -224,7 +224,7 @@ Outline:
       % perl Makefile.PL
       % make
       % make test
-      % make install
+      % make install UNINST=1
 
     Digest::MD5
 
@@ -235,7 +235,7 @@ Outline:
       % perl Makefile.PL
       % make
       % make test
-      % make install
+      % make install UNINST=1
 
     Math::IntervalSearch
 
@@ -246,7 +246,7 @@ Outline:
       % perl Makefile.PL
       % make
       % make test
-      % make install
+      % make install UNINST=1
 
     RRDs
 
@@ -261,7 +261,7 @@ Outline:
       % make
       % cd perl-shared
       % make test
-      % make install
+      % make install UNINST=1
 
       For large installations, I recommend that RRDs be compiled with
       optimization turned on.
@@ -275,7 +275,7 @@ Outline:
       % perl Makefile.PL
       % make
       % make test
-      % make install
+      % make install UNINST=1
 
     Time::HiRes
 
@@ -286,7 +286,7 @@ Outline:
       % perl Makefile.PL
       % make
       % make test
-      % make install
+      % make install UNINST=1
 
     version
 
@@ -297,7 +297,7 @@ Outline:
       % perl Makefile.PL
       % make
       % make test
-      % make install
+      % make install UNINST=1
 
  5) Make Orca and any necessary Perl modules.
 

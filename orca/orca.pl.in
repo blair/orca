@@ -1636,12 +1636,12 @@ A generic example of a group and its parameters are:
   .
   }
 
-The key for a group, in this example GROUP_NAME1 and GROUP_NAME2, is a
-descriptive name that is unique for all files and is used later when
-the plots to create are defined.  Files that share the same global
-format of column data may be grouped together.  The parameters for a
-particular group must be enclosed in the curly brackets {}'s.  An
-unlimited number of groups may be listed.
+The key for a group, in this example groups GROUP_NAME1 and
+GROUP_NAME2, is a descriptive name that is unique for all groups and
+is used later when the plots are defined.  Files that share the same
+format, i.e. the same column names, may be grouped together.  The
+parameters for a particular group must be enclosed in the curly
+brackets {}'s.  An unlimited number of groups may be listed.
 
 =head2 Required Group Parameters
 
@@ -1649,37 +1649,50 @@ unlimited number of groups may be listed.
 
 =item B<find_files> I<path|regexp> [I<path|regexp> ...]
 
-The B<find_files> parameter tells Orca what data files to use as its
+The B<find_files> parameter tells Orca what data files to use for its
 input.  The arguments to B<find_files> may be a simple filename, a
-complete path to a filename, or a regular expression to find files.
-The regular expression match is not the normal shell globing that the
-Bourne shell, C shell or other shells use.  Rather, Orca uses the Perl
-regular expressions to find files.  For example:
+complete path to a filename, or a regular expression to match multiple
+files.  The regular expression match is not the normal shell globbing
+that the Bourne shell, C shell or other shells use.  Rather, Orca uses
+Perl regular expressions to find files.  For example:
 
-  find_files /data/source1 /data/source2
+  find_files /data/source10 /data/source20
 
-will have Orca use /data/source1 and /data/source2 as the inputs to
+will have Orca use /data/source10 and /data/source20 as the inputs to
 Orca.  This could have also been written as
 
-  find_files /data/source\d
+  find_files /data/source\d+
 
 and both data files will be used.
 
 In the two above examples, Orca will assume that both data files
-represent data from the same source.  If this is not the case, such as
-source1 is data from one place and source2 is data from another place,
-then Orca needs to be told to treat the data from each file as
-distinct data sources.  This be accomplished in two ways.  The first
-is by creating another group { ... } set.  However, this requires
-copying all of the text and makes maintenance of the configuration
-file complex.  The second and recommend approach is to place ()'s
-around parts of the regular expression to tell Orca how to distinguish
-the two data files:
+represent data from the same source are in the same 'subgroup'.  If
+this is not the case, such as source10 is data from one source and
+source20 is data from another source, then Orca needs to be told to
+treat the data from each file as a distinct data source.  This be
+accomplished in two ways.  The first is by creating another group {
+... } set.  However, this requires copying all of the text in the
+configuration file and their maintenance harder.  The second and
+recommend approach is to place ()'s around parts of the regular
+expression to tell Orca how to distinguish the two data files:
 
-  find_files /data/(source\d)
+  find_files /data/(source\d+)
 
-This creates two groups, one named source1 and the other named source2
-which will be plotted separately.  One more example:
+This creates two subgroups, one named source10 and the other named
+source20 which will be plotted separately.  If there are multiple
+()'s, then the subgroup name is the joining of each matched string
+with _'s.  So if
+
+  find_files /data/os_(.*)/(.*)/orcallator.data
+
+matches
+
+  /data/os_linux/host1/orcallator.data
+  /data/os_macosx/host2/orcallator.data
+
+then there are two subgroups, linux_host1 and macosx_host2.
+
+One more example:
 
   find_files /data/solaris.*/(.*)/percol-\d{4}-\d{2}-\d{2}(?:\.(?:Z|gz|bz2))?
 
@@ -1696,10 +1709,9 @@ source.
 
 You'll notice that all but the first () has the form (?:...).  This
 tells Perl to match the expression but not save the matched text in
-the $1, $2, variables.  Orca uses the matched text to generate a
-subgroup name, which is used to place files into different subgroups.
-Here, only the hostname should be used to generate a subgroup name,
-hence all the (?:...) for matching anything else.
+Perl's $1, $2, variables.  Here, only the hostname should be used to
+generate a subgroup name, hence all the (?:...) for grouping anything
+else.
 
 If any of the paths or regular expressions given to B<find_files> do
 not begin with a / and the B<base_dir> parameter was set, then the
@@ -1708,16 +1720,23 @@ expression.
 
 =item B<interval> I<seconds>
 
-The B<interval> parameters takes the number of seconds between updates
+The B<interval> parameters is the number of seconds between updates
 for the input data files listed in this group.
+
+This value is very important, because the generated RRD data files are
+created with this value.  If the interval is incorrect, then you may
+find empty plots, even though Orca did read the data.  If the interval
+needs to be changed, then the RRD data files will either need to be
+deleted so that Orca can recreate them or they will need to be modifed
+by an external tool.
 
 =item B<column_description> I<column_name> [I<column_name> ...]
 
 =item B<column_description> first_line
 
 For Orca to plot the data, it needs to be told what each column of
-data holds.  This is accomplished by creating a text description for
-each column.  There are two ways this may be loaded into Orca.  If the
+data means.  This is done by creating a text description for each
+column.  There are two ways this may be configured into Orca.  If the
 input data files for a group do not change, then the column names can
 be listed after B<column_description>:
 
@@ -1729,8 +1748,8 @@ use the argument "first_line" to B<column_description>:
   column_description first_line
 
 This informs Orca that it should read the first line of all the input
-data files for the column description.  Orca can handle different
-files in the same group that have different number of columns and
+data files in this group for the column description.  Orca can handle
+different files in the same group that have different columns and
 column descriptions.  The only limitation here is that column
 descriptions are white space separated and therefore, no spaces are
 allowed in the column descriptions.
@@ -1739,12 +1758,14 @@ allowed in the column descriptions.
 
 =item B<date_source> file_mtime
 
-The B<date_source> parameter tells Orca where time and date of the
-measurement is located.  The first form of the B<date_source>
-parameters lists the column name as given to B<column_description>
-that contains the Unix epoch time.  The second form with the
-file_mtime argument tells Orca that the date and time for any new data
-in the file is the last modification time of the file.
+The B<date_source> parameter tells Orca where to get the time in
+seconds since the Unix epoch when the measurement was taken.
+
+The first form of the B<date_source> parameters lists the column name
+as given to B<column_description> that contains the Unix epoch time.
+The second form with the file_mtime argument tells Orca that the date
+and time for any new data in the file is the last modification time of
+the file.
 
 =item B<date_parse> I<Perl subroutine>
 
@@ -1756,7 +1777,7 @@ name of the file where the data is loaded and the second the string
 from the 'date_source' column that contains some time information.
 The subroutine should return the Unix epoch time.  If this parameter
 is not specified, then Orca assumes that the string holds the Unix
-epoch time.
+epoch time in integer seconds form.
 
 This Perl subroutine is only used if the file's date source is not
 specified to be the file's last modified time as indicated to Orca by
@@ -1770,20 +1791,24 @@ use of the B<date_source> file_mtime configuration file parameter.
 
 =item B<filename_compare> I<Perl subroutine>
 
-The B<filename_compare> parameter is used to sort the found filenames
-in a particular group.  This function must be written as though it
-were being passed to the Perl sort() function, which takes the two
-items to compare in the package global $a and $b variables instead of
-the @_ array.
+The B<filename_compare> parameter is used to sort the filenames found
+from the B<find_files> parameter in a particular group.  This function
+must be written as though it were being passed to the Perl sort()
+function, which takes the two items to compare in the package global
+$a and $b variables instead of the @_ array.
 
 Use of this parameter has an additional effect on letting Orca know
-when it can flush data to the RRD files.  It determines this when it
-compares the previously loaded filename to the filename about to be
-loaded using the B<filename_compare> function.  If the result of the
-comparison is greater than 1, then the data is flushed.  If the
-comparison is equal to or less than 1, then the data is not flushed.
-Orca uses a value of 1 instead of 0 since there are cases when the
-filenames should still be ordered but not flushed.
+when it can flush data to the RRD files.  This is very important when
+a large amount of data is being loaded into Orca, so that data is
+flushed continuously to disk instead of increasing Orca's memory usage.
+
+Orca determines when to flush data to disk when it compares the
+previously loaded filename to the filename about to be loaded using
+the B<filename_compare> function.  If the result of the comparison is
+greater than 1, then the data is flushed.  If the comparison is equal
+to or less than 1, then the data is not flushed.  Orca uses a value of
+1 instead of 0 since there are cases when the filenames should still
+be ordered but not flushed.
 
 For example, the orcallator.cfg file uses the following subroutine for
 filenames of the form "orcallator-2000-02-14":
@@ -1809,7 +1834,8 @@ loaded, previously loaded data will be flushed.
 
 If the B<filename_compare> parameter is not used, then the filenames
 are sorted using the Perl <=> operator and data is not flushed until
-all of it is loaded.
+all input data files are loaded, which could consume a large amount of
+memory.
 
 =item B<late_interval> I<Perl expression>
 
@@ -1821,15 +1847,15 @@ specified, then the global one is used.
 
 Using the B<reopen> parameter for a group instructs Orca to close and
 reopen any input data files when there is new data to be read.  This
-is of most use when an input data file is erased and rewritten by some
-other process.
+is used when an input data file is erased and rewritten by some other
+process and Orca needs to reread the file from the beginning.
 
 =back
 
 =head2 Plot Parameters
 
-The final step is to tell Orca what plots to create and how to create
-them.  The general format for creating a plot is:
+The final step to configure Orca is to configure the plots.  The
+general format for creating a plot is:
 
   plot {
   title         Plot title

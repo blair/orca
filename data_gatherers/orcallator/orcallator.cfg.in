@@ -142,7 +142,6 @@ legend			Uptime in Days
 legend			Uptime in Weeks
 legend			Uptime in Months
 y_legend		Total Time
-
 data_min		0
 plot_min		0
 href			http://www.orcaware.com/orca/docs/orcallator.html#system_uptime

@@ -1056,11 +1056,6 @@ sub load_config {
     return $number_errors;
   }
 
-  # These values hold the information from the config file.
-  my %options;
-  my %groups;
-  my @plots;
-
   # Load in all lines in the file and then process them.  If a line
   # begins with whitespace, then append it to the previously read line
   # and do not process it.

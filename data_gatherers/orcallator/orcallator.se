@@ -38,12 +38,31 @@
 #define WATCH_NFS_CLIENT        1
 #define WATCH_NFS_SERVER        1
 #define WATCH_MOUNTS            1
-#define WATCH_DISK              1
-#define WATCH_TAPE              1
+#define WATCH_IO                1
 #define WATCH_DNLC              1
 #define WATCH_INODE             1
 #define WATCH_RAM               1
 #define WATCH_PAGES             1
+#endif
+
+#ifdef WATCH_IO
+#define WATCH_DISK              1
+#define WATCH_TAPE              1
+#endif
+
+#ifdef WATCH_IO_ALL
+#define WATCH_IO_EXTENDED        1
+#define WATCH_IO_EXTENDED_TOTALS 1
+#endif
+
+#ifdef WATCH_IO_EXTENDED
+#define WATCH_DISK_EXTENDED     1
+#define WATCH_TAPE_EXTENDED     1
+#endif
+
+#ifdef WATCH_IO_EXTENDED_TOTALS
+#define WATCH_DISK_EXTENDED_TOTALS 1
+#define WATCH_TAPE_EXTENDED_TOTALS 1
 #endif
 
 // Keep backwards compatibility with WATCH_HTTPD.
@@ -752,6 +771,7 @@ int main(int argc, string argv[])
       fprintf(stderr, "   -DWATCH_MOUNTS     watch usage of mount points\n");
       fprintf(stderr, "   -DWATCH_DISK       watch disk read/write usage\n");
       fprintf(stderr, "   -DWATCH_TAPE       watch tape read/write usage\n");
+      fprintf(stderr, "   -DWATCH_IO         watch disk and tape read/write usage\n");
       fprintf(stderr, "   -DWATCH_DNLC       watch the directory name lookup cache\n");
       fprintf(stderr, "   -DWATCH_INODE      watch the inode cache\n");
       fprintf(stderr, "   -DWATCH_RAM        watch memory usage\n");
@@ -1469,14 +1489,21 @@ measure_disk()
   // of any changes to the number of disks on the system.
   int    previous_disk_count = -1;
 
-  double mean_disk_busy;
-  double peak_disk_busy;
-  double total_disk_reads;
-  double total_disk_writes;
-  double total_disk_readk;
-  double total_disk_writek;
+  double mean_disk_busy;             // Avg % of time trans. in progress
+  double peak_disk_busy;             // Max % of time trans. in progress
+  double total_disk_reads;           // Total disk reads per second
+  double total_disk_writes;          // Total disk writes per second
+  double total_disk_readk;           // Total kilobytes read per second
+  double total_disk_writek;          // Total kilobytes written per second
+#ifdef WATCH_DISK_EXTENDED_TOTALS
+  double total_disk_avg_wait;        // Total avg trans. waiting for service
+  double total_disk_avg_run;         // Total avg trans. actively being serviced
+  double mean_disk_avg_wait_time;    // Avg service time in wait queue (ms)
+  double mean_disk_avg_serv_time;    // Avg service time active trans. (ms)
+  double mean_disk_service;          // Avg service time (ms)
+  double mean_disk_wait_percent;     // Avg % of time there are trans. waiting for service
+#endif // WATCH_DISK_EXTENDED_TOTALS
   int    disk_count;
-
   int    i;
 
   mean_disk_busy      = 0.0;
@@ -1485,86 +1512,140 @@ measure_disk()
   total_disk_writes   = 0.0;
   total_disk_readk    = 0.0;
   total_disk_writek   = 0.0;
+#ifdef WATCH_DISK_EXTENDED_TOTALS
+  total_disk_avg_wait     = 0.0;
+  total_disk_avg_run      = 0.0;
+  mean_disk_avg_wait_time = 0.0;
+  mean_disk_avg_serv_time = 0.0;
+  mean_disk_service       = 0.0;
+  mean_disk_wait_percent  = 0.0;
+#endif // WATCH_DISK_EXTENDED_TOTALS
   disk_count          = 0;
 
 #ifdef USE_KSTAT_IO
   for (i=0; i<ORCA_io_dev_count; ++i) {
     if (ORCA_io_dev_info[i].dev_class == "disk") {
       disk_count++;
+      // Percent of time transactions in progress
       put_output(sprintf("disk_runp_%s", ORCA_io_dev_info[i].long_name),
                  sprintf("%16.5f", ORCA_io_dev_info[i].run_percent));
-
+      // Average service time in milliseconds
       put_output(sprintf("disk_svct_%s", ORCA_io_dev_info[i].long_name),
                  sprintf("%16.5f", ORCA_io_dev_info[i].service));
+#ifdef WATCH_DISK_EXTENDED
+      // Reads per second
+      put_output(sprintf("disk_rd/s_%s", ORCA_io_dev_info[i].long_name),
+                 sprintf("%16.5f", ORCA_io_dev_info[i].reads));
+      // Writes per second
+      put_output(sprintf("disk_wr/s_%s", ORCA_io_dev_info[i].long_name),
+                 sprintf("%16.5f", ORCA_io_dev_info[i].writes));
+      // Kilobytes read per second
+      put_output(sprintf("disk_rK/s_%s", ORCA_io_dev_info[i].long_name),
+                 sprintf("%16.5f", ORCA_io_dev_info[i].kreads));
+      // Kilobytes written per second
+      put_output(sprintf("disk_wK/s_%s", ORCA_io_dev_info[i].long_name),
+                 sprintf("%16.5f", ORCA_io_dev_info[i].kwrites));
+      // Average number of transactions waiting for service
+      put_output(sprintf("disk_wait_%s", ORCA_io_dev_info[i].long_name),
+                 sprintf("%16.5f", ORCA_io_dev_info[i].avg_wait));
+      // Average number of transactions actively being serviced
+      put_output(sprintf("disk_actv_%s", ORCA_io_dev_info[i].long_name),
+                 sprintf("%16.5f", ORCA_io_dev_info[i].avg_run));
+      // Average service time in wait queue in milliseconds
+      put_output(sprintf("disk_wsvct_%s", ORCA_io_dev_info[i].long_name),
+                 sprintf("%16.5f", ORCA_io_dev_info[i].avg_wait_time));
+      // Average service time active transactions in milliseconds
+      put_output(sprintf("disk_asvct_%s", ORCA_io_dev_info[i].long_name),
+                 sprintf("%16.5f", ORCA_io_dev_info[i].avg_serv_time));
+      // Percent of time there are transactions waiting for service
+      put_output(sprintf("disk_waitp_%s", ORCA_io_dev_info[i].long_name),
+                 sprintf("%16.5f", ORCA_io_dev_info[i].wait_percent));
+#endif // WATCH_DISK_EXTENDED
 
-      // Comments from Damon Atkins <Damon.Atkins@nabaus.com.au>.  Check
-      // [wr]lentime to see if an EMC is using a fake disk for control.
-      // EMC disks have a fake disk which commands are run over to
-      // configure the disk array or to get stats from; they are not
-      // real data transfers.  They cause 1000 MB/sec writes to appear
-      // in the stats.  I still get them but not as often with this bit
-      // of code in.  If the I/O which occurred in the last five minutes
-      // is not greater than 1/100sec then it is not a valid measurement
-      // anyway.  What happens is that we can have a small I/O, say 1024
-      // bytes, in a 1/100sec = 1024*100/sec.  I am thinking of making
-      // it wlentime+rlentime>2 since I am still getting fake write
-      // spikes.
-#ifdef HAVE_EMC_DISK_CONTROL
-      if ((pioGLOB_old_wlentime[i] + pioGLOB_old_rlentime[i]) > 1) {
-#endif
-        total_disk_reads  += ORCA_io_dev_info[i].reads;
-        total_disk_writes += ORCA_io_dev_info[i].writes;
-        total_disk_readk  += ORCA_io_dev_info[i].kreads;
-        total_disk_writek += ORCA_io_dev_info[i].kwrites;
-        mean_disk_busy    += ORCA_io_dev_info[i].run_percent;
-        if (ORCA_io_dev_info[i].run_percent > peak_disk_busy) {
-           peak_disk_busy = ORCA_io_dev_info[i].run_percent;
-        }
-#ifdef HAVE_EMC_DISK_CONTROL
+      total_disk_reads  += ORCA_io_dev_info[i].reads;
+      total_disk_writes += ORCA_io_dev_info[i].writes;
+      total_disk_readk  += ORCA_io_dev_info[i].kreads;
+      total_disk_writek += ORCA_io_dev_info[i].kwrites;
+      mean_disk_busy    += ORCA_io_dev_info[i].run_percent;
+      if (ORCA_io_dev_info[i].run_percent > peak_disk_busy) {
+        peak_disk_busy = ORCA_io_dev_info[i].run_percent;
       }
-#endif
+#ifdef WATCH_DISK_EXTENDED_TOTALS
+      total_disk_avg_wait     += ORCA_io_dev_info[i].avg_wait;
+      total_disk_avg_run      += ORCA_io_dev_info[i].avg_run;
+      mean_disk_avg_wait_time += ORCA_io_dev_info[i].avg_wait_time;
+      mean_disk_avg_serv_time += ORCA_io_dev_info[i].avg_serv_time;
+      mean_disk_service       += ORCA_io_dev_info[i].service;
+      mean_disk_wait_percent  += ORCA_io_dev_info[i].wait_percent;
+#endif // WATCH_DISK_EXTENDED_TOTALS
     }
   }
 #else
   for (i=0; i<GLOBAL_disk_count; ++i) {
     disk_count++;
+    // Percent of time transactions in progress
     put_output(sprintf("disk_runp_%s", GLOBAL_disk[i].info.long_name),
                sprintf("%16.5f", GLOBAL_disk[i].run_percent));
-
+    // Average service time in milliseconds
     put_output(sprintf("disk_svct_%s", GLOBAL_disk[i].info.long_name),
                sprintf("%16.5f", GLOBAL_disk[i].service));
+#ifdef WATCH_DISK_EXTENDED
+    // Reads per second
+    put_output(sprintf("disk_rd/s_%s", GLOBAL_disk[i].info.long_name),
+               sprintf("%16.5f", GLOBAL_disk[i].reads));
+    // Writes per second
+    put_output(sprintf("disk_wr/s_%s", GLOBAL_disk[i].info.long_name),
+               sprintf("%16.5f", GLOBAL_disk[i].writes));
+    // Kilobytes read per second
+    put_output(sprintf("disk_rK/s_%s", GLOBAL_disk[i].info.long_name),
+               sprintf("%16.5f", GLOBAL_disk[i].kreads));
+    // Kilobytes written per second
+    put_output(sprintf("disk_wK/s_%s", GLOBAL_disk[i].info.long_name),
+               sprintf("%16.5f", GLOBAL_disk[i].kwrites));
+    // Average number of transactions waiting for service
+    put_output(sprintf("disk_wait_%s", GLOBAL_disk[i].info.long_name),
+               sprintf("%16.5f", GLOBAL_disk[i].avg_wait));
+    // Average number of transactions actively being serviced
+    put_output(sprintf("disk_actv_%s", GLOBAL_disk[i].info.long_name),
+               sprintf("%16.5f", GLOBAL_disk[i].avg_run));
+    // Average service time in wait queue in milliseconds
+    put_output(sprintf("disk_wsvct_%s", GLOBAL_disk[i].info.long_name),
+               sprintf("%16.5f", GLOBAL_disk[i].avg_wait_time));
+    // Average service time active transactions in milliseconds
+    put_output(sprintf("disk_asvct_%s", GLOBAL_disk[i].info.long_name),
+               sprintf("%16.5f", GLOBAL_disk[i].avg_serv_time));
+    // Percent of time there are transactions waiting for service
+    put_output(sprintf("disk_waitp_%s", GLOBAL_disk[i].info.long_name),
+               sprintf("%16.5f", GLOBAL_disk[i].wait_percent));
+#endif // WATCH_DISK_EXTENDED
 
-    // Comments from Damon Atkins <Damon.Atkins@nabaus.com.au>.  Check
-    // [wr]lentime to see if an EMC is using a fake disk for control.
-    // EMC disks have a fake disk which commands are run over to
-    // configure the disk array or to get stats from; they are not
-    // real data transfers.  They cause 1000 MB/sec writes to appear
-    // in the stats.  I still get them but not as often with this bit
-    // of code in.  If the I/O which occurred in the last five minutes
-    // is not greater than 1/100sec then it is not a valid measurement
-    // anyway.  What happens is that we can have a small I/O, say 1024
-    // bytes, in a 1/100sec = 1024*100/sec.  I am thinking of making
-    // it wlentime+rlentime>2 since I am still getting fake write
-    // spikes.
-#ifdef HAVE_EMC_DISK_CONTROL
-    if ((pioGLOB_old_wlentime[i] + pioGLOB_old_rlentime[i]) > 1) {
-#endif
-      total_disk_reads  += GLOBAL_disk[i].reads;
-      total_disk_writes += GLOBAL_disk[i].writes;
-      total_disk_readk  += GLOBAL_disk[i].kreads;
-      total_disk_writek += GLOBAL_disk[i].kwrites;
-      mean_disk_busy    += GLOBAL_disk[i].run_percent;
-      if (GLOBAL_disk[i].run_percent > peak_disk_busy) {
-        peak_disk_busy = GLOBAL_disk[i].run_percent;
-      }
-#ifdef HAVE_EMC_DISK_CONTROL
+    total_disk_reads  += GLOBAL_disk[i].reads;
+    total_disk_writes += GLOBAL_disk[i].writes;
+    total_disk_readk  += GLOBAL_disk[i].kreads;
+    total_disk_writek += GLOBAL_disk[i].kwrites;
+    mean_disk_busy    += GLOBAL_disk[i].run_percent;
+    if (GLOBAL_disk[i].run_percent > peak_disk_busy) {
+      peak_disk_busy = GLOBAL_disk[i].run_percent;
     }
-#endif
+#ifdef WATCH_DISK_EXTENDED_TOTALS
+    total_disk_avg_wait     += GLOBAL_disk[i].avg_wait;
+    total_disk_avg_run      += GLOBAL_disk[i].avg_run;
+    mean_disk_avg_wait_time += GLOBAL_disk[i].avg_wait_time;
+    mean_disk_avg_serv_time += GLOBAL_disk[i].avg_serv_time;
+    mean_disk_service       += GLOBAL_disk[i].service;
+    mean_disk_wait_percent  += GLOBAL_disk[i].wait_percent;
+#endif // WATCH_DISK_EXTENDED_TOTALS
   }
 #endif
 
   if (disk_count != 0) {
     mean_disk_busy = mean_disk_busy/disk_count;
+#ifdef WATCH_DISK_EXTENDED_TOTALS
+    mean_disk_avg_wait_time = mean_disk_avg_wait_time / disk_count;
+    mean_disk_avg_serv_time = mean_disk_avg_serv_time / disk_count;
+    mean_disk_service       = mean_disk_service       / disk_count;
+    mean_disk_wait_percent  = mean_disk_wait_percent  / disk_count;
+#endif // WATCH_DISK_EXTENDED_TOTALS
   }
 
   put_output("disk_peak", sprintf("%9.3f", peak_disk_busy));
@@ -1573,6 +1654,14 @@ measure_disk()
   put_output("disk_wr/s", sprintf("%9.1f", total_disk_writes));
   put_output("disk_rK/s", sprintf("%9.1f", total_disk_readk));
   put_output("disk_wK/s", sprintf("%9.1f", total_disk_writek));
+#ifdef WATCH_DISK_EXTENDED_TOTALS
+  put_output("disk_wait",  sprintf("%9.3f", total_disk_avg_wait));
+  put_output("disk_actv",  sprintf("%9.3f", total_disk_avg_run));
+  put_output("disk_wsvct", sprintf("%9.3f", mean_disk_avg_wait_time));
+  put_output("disk_asvct", sprintf("%9.3f", mean_disk_avg_serv_time));
+  put_output("disk_svct",  sprintf("%9.3f", mean_disk_service));
+  put_output("disk_waitp", sprintf("%9.3f", mean_disk_wait_percent));
+#endif // WATCH_DISK_EXTENDED_TOTALS
 
   // If the number of disks has changed, say due to a
   // add_drv, then print new headers.
@@ -1590,36 +1679,121 @@ measure_tape()
   // of any changes to the number of tapes on the system.
   int    previous_tape_count = -1;
 
-  double total_tape_reads;
-  double total_tape_writes;
-  double total_tape_readk;
-  double total_tape_writek;
+  double mean_tape_busy;             // Avg % of time trans. in progress
+  double peak_tape_busy;             // Max % of time trans. in progress
+  double total_tape_reads;           // Total tape reads per second
+  double total_tape_writes;          // Total tape writes per second
+  double total_tape_readk;           // Total kilobytes read per second
+  double total_tape_writek;          // Total kilobytes written per second
+#ifdef WATCH_TAPE_EXTENDED_TOTALS
+  double total_tape_avg_wait;        // Total avg trans. waiting for service
+  double total_tape_avg_run;         // Total avg trans. actively being serviced
+  double mean_tape_avg_wait_time;    // Avg service time in wait queue (ms)
+  double mean_tape_avg_serv_time;    // Avg service time active trans. (ms)
+  double mean_tape_service;          // Avg service time (ms)
+  double mean_tape_wait_percent;     // Avg % of time there are trans. waiting for service
+#endif // WATCH_TAPE_EXTENDED_TOTALS
   int    tape_count;
-
   int    i;
 
+  mean_tape_busy      = 0.0;
+  peak_tape_busy      = 0.0;
   total_tape_reads    = 0.0;
   total_tape_writes   = 0.0;
   total_tape_readk    = 0.0;
   total_tape_writek   = 0.0;
+#ifdef WATCH_TAPE_EXTENDED_TOTALS
+  total_tape_avg_wait     = 0.0;
+  total_tape_avg_run      = 0.0;
+  mean_tape_avg_wait_time = 0.0;
+  mean_tape_avg_serv_time = 0.0;
+  mean_tape_service       = 0.0;
+  mean_tape_wait_percent  = 0.0;
+#endif // WATCH_TAPE_EXTENDED_TOTALS
   tape_count          = 0;
 
   for (i=0; i<ORCA_io_dev_count; ++i) {
     if (ORCA_io_dev_info[i].dev_class == "tape") {
       tape_count++;
+      // Percent of time transactions in progress
+      put_output(sprintf("tape_runp_%s", ORCA_io_dev_info[i].long_name),
+                 sprintf("%16.5f", ORCA_io_dev_info[i].run_percent));
+      // Average service time in milliseconds
+      put_output(sprintf("tape_svct_%s", ORCA_io_dev_info[i].long_name),
+                 sprintf("%16.5f", ORCA_io_dev_info[i].service));
+#ifdef WATCH_TAPE_EXTENDED
+      // Reads per second
+      put_output(sprintf("tape_rd/s_%s", ORCA_io_dev_info[i].long_name),
+                 sprintf("%16.5f", ORCA_io_dev_info[i].reads));
+      // Writes per second
+      put_output(sprintf("tape_wr/s_%s", ORCA_io_dev_info[i].long_name),
+                 sprintf("%16.5f", ORCA_io_dev_info[i].writes));
+      // Kilobytes read per second
+      put_output(sprintf("tape_rK/s_%s", ORCA_io_dev_info[i].long_name),
+                 sprintf("%16.5f", ORCA_io_dev_info[i].kreads));
+      // Kilobytes written per second
+      put_output(sprintf("tape_wK/s_%s", ORCA_io_dev_info[i].long_name),
+                 sprintf("%16.5f", ORCA_io_dev_info[i].kwrites));
+      // Average number of transactions waiting for service
+      put_output(sprintf("tape_wait_%s", ORCA_io_dev_info[i].long_name),
+                 sprintf("%16.5f", ORCA_io_dev_info[i].avg_wait));
+      // Average number of transactions actively being serviced
+      put_output(sprintf("tape_actv_%s", ORCA_io_dev_info[i].long_name),
+                 sprintf("%16.5f", ORCA_io_dev_info[i].avg_run));
+      // Average service time in wait queue in milliseconds
+      put_output(sprintf("tape_wsvct_%s", ORCA_io_dev_info[i].long_name),
+                 sprintf("%16.5f", ORCA_io_dev_info[i].avg_wait_time));
+      // Average service time active transactions in milliseconds
+      put_output(sprintf("tape_asvct_%s", ORCA_io_dev_info[i].long_name),
+                 sprintf("%16.5f", ORCA_io_dev_info[i].avg_serv_time));
+      // Percent of time there are transactions waiting for service
+      put_output(sprintf("tape_waitp_%s", ORCA_io_dev_info[i].long_name),
+                 sprintf("%16.5f", ORCA_io_dev_info[i].wait_percent));
+#endif // WATCH_TAPE_EXTENDED
+
       total_tape_reads  += ORCA_io_dev_info[i].reads;
       total_tape_writes += ORCA_io_dev_info[i].writes;
       total_tape_readk  += ORCA_io_dev_info[i].kreads;
       total_tape_writek += ORCA_io_dev_info[i].kwrites;
-      put_output(sprintf("tape_runp_%s", ORCA_io_dev_info[i].long_name),
-                 sprintf("%16.5f", ORCA_io_dev_info[i].run_percent));
+      mean_tape_busy    += ORCA_io_dev_info[i].run_percent;
+      if (ORCA_io_dev_info[i].run_percent > peak_tape_busy) {
+        peak_tape_busy = ORCA_io_dev_info[i].run_percent;
+      }
+#ifdef WATCH_TAPE_EXTENDED_TOTALS
+      total_tape_avg_wait     += ORCA_io_dev_info[i].avg_wait;
+      total_tape_avg_run      += ORCA_io_dev_info[i].avg_run;
+      mean_tape_avg_wait_time += ORCA_io_dev_info[i].avg_wait_time;
+      mean_tape_avg_serv_time += ORCA_io_dev_info[i].avg_serv_time;
+      mean_tape_service       += ORCA_io_dev_info[i].service;
+      mean_tape_wait_percent  += ORCA_io_dev_info[i].wait_percent;
+#endif // WATCH_TAPE_EXTENDED_TOTALS
     }
   }
 
+  if (tape_count != 0) {
+    mean_tape_busy = mean_tape_busy/tape_count;
+#ifdef WATCH_TAPE_EXTENDED_TOTALS
+    mean_tape_avg_wait_time = mean_tape_avg_wait_time / tape_count;
+    mean_tape_avg_serv_time = mean_tape_avg_serv_time / tape_count;
+    mean_tape_service       = mean_tape_service       / tape_count;
+    mean_tape_wait_percent  = mean_tape_wait_percent  / tape_count;
+#endif // WATCH_TAPE_EXTENDED_TOTALS
+  }
+
+  put_output("tape_peak", sprintf("%9.3f", peak_tape_busy));
+  put_output("tape_mean", sprintf("%9.3f", mean_tape_busy));
   put_output("tape_rd/s", sprintf("%9.1f", total_tape_reads));
   put_output("tape_wr/s", sprintf("%9.1f", total_tape_writes));
   put_output("tape_rK/s", sprintf("%9.1f", total_tape_readk));
   put_output("tape_wK/s", sprintf("%9.1f", total_tape_writek));
+#ifdef WATCH_TAPE_EXTENDED_TOTALS
+  put_output("tape_wait",  sprintf("%9.3f", total_tape_avg_wait));
+  put_output("tape_actv",  sprintf("%9.3f", total_tape_avg_run));
+  put_output("tape_wsvct", sprintf("%9.3f", mean_tape_avg_wait_time));
+  put_output("tape_asvct", sprintf("%9.3f", mean_tape_avg_serv_time));
+  put_output("tape_svct",  sprintf("%9.3f", mean_tape_service));
+  put_output("tape_waitp", sprintf("%9.3f", mean_tape_wait_percent));
+#endif // WATCH_TAPE_EXTENDED_TOTALS
 
   // If the number of tapes has changed, say due to a
   // add_drv, then print new headers.

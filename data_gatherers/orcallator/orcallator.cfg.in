@@ -702,12 +702,12 @@ href			http://www.orcaware.com/orca/docs/orcallator.html#disk_run_percent
 }
 
 plot {
-title			%g Disk Average Service Time
+title			%g Disk Service Time
 source			orcallator
-data			disk_svct_((?:c\d+t\d+d\d+)|(?:c\d+d\d+)|(?:[ms]d\d+)|(?:c\d+t([A-Z0-9]{32})d\d+))
+data			disk_svct_((?:c\d+t\d+d\d+)|(?:c\d+d\d+)|(?:[ms]d\d+)|(?:c\d+t([A-Z0-9]{32})d\d+)) / 1000
 line_type		line2
 legend			$1
-y_legend		milliseconds
+y_legend		Seconds
 data_min		0
 plot_min		0
 }

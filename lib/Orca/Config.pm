@@ -13,10 +13,12 @@ package Orca::Config;
 use strict;
 use Carp;
 use Exporter;
+use version;
+
 use Orca::Constants     qw($opt_verbose
                            $is_sub_re
                            die_when_called
-                           $ORCA_VERSION
+                           $ORCA_VER_QUOTED
                            @CONST_IMAGE_PLOT_TYPES
                            %CONST_IMAGE_PLOT_INFO
                            @IMAGE_PLOT_TYPES
@@ -326,19 +328,40 @@ sub check_config {
     my @require = @{$config_global{require}};
     if (@require == 2) {
       my ($require_what, $require_version) = @require;
-      unless ($require_what eq 'Orca') {
+      if ($require_what eq 'Orca') {
+        # Normalize the required version string to the form
+        # \d+\.\d+\.\d+ .  To handle almost any input version string,
+        # split on the existing periods and for each substring, if it
+        # is not defined or has 0 length, then set it to 0.  Do not
+        # worry about there being more than two periods in the given
+        # string, the regular expression match below will catch
+        # invalid version strings.
+        my @vers = split(/\./, $require_version);
+
+        for (my $i=0; $i<3; ++$i) {
+          unless (defined $vers[$i] and length $vers[$i]) {
+            $vers[$i] = 0;
+          }
+        }
+        my $reformulated_required_version = join('.', @vers);
+
+        if ($reformulated_required_version =~ /^\d+\.\d+\.\d+$/) {
+          $require_version = version->new($reformulated_required_version);
+          my $orca_version = version->new($ORCA_VER_QUOTED);
+
+          if ($orca_version < $require_version) {
+            warn "$0: Orca version $ORCA_VER_QUOTED less than required ",
+                 "version $require_version specified in '$config_filename'.\n";
+            ++$number_errors;
+          }
+        } else {
+          warn "$0: error: 'require' second argument '$require_version' is ",
+               "not a valid version number in '$config_filename'.\n";
+          ++$number_errors;
+        }
+      } else {
         warn "$0: error: 'require' only accepts 'Orca' as first argument in ",
              "'$config_filename'.\n";
-        ++$number_errors;
-      }
-      if ($require_version !~ /^\d+(?:\.\d*)?$/ and
-          $require_version !~ /^\.\d+$/) {
-        warn "$0: error: 'require' second argument '$require_version' is not ",
-             "a number in '$config_filename'.\n";
-        ++$number_errors;
-      } elsif ($ORCA_VERSION < $require_version) {
-        warn "$0: Orca version $ORCA_VERSION less than required version ",
-             "$require_version specified in '$config_filename'.\n";
         ++$number_errors;
       }
     } else {

@@ -34,6 +34,7 @@ use Digest::MD5          @DIGEST_MD5_VER@;
 use Math::IntervalSearch @MATH_INTERVALSEARCH_VER@ qw(interval_search);
 use Storable             @STORABLE_VER@;
 use RRDs                 @RRDTOOL_VER@;
+use version              @VERSION_VER@;
 
 # Set behavior of the Data::Dumper module.
 $Data::Dumper::Indent   = 1;
@@ -1455,7 +1456,8 @@ B<base_dir> are not set.
 The B<require> parameter allows the configuration file to specify the
 minimum required version of a package to run.  Both I<package name>
 and I<version number> are required and I<version number> must be a
-number, not a general Perl expression.
+version number, not a general Perl expression.  Valid styles of
+version numbers include: '1', '1.', '.28', '0.28.3'.
 
 Currently, only the minimum required version of Orca can be specified
 and I<package name> must be set to Orca.

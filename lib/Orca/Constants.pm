@@ -16,7 +16,32 @@ use vars qw(@EXPORT_OK @ISA $VERSION);
 @ISA     = qw(Exporter);
 $VERSION = substr q$Revision: 0.01 $, 10;
 
-# ORCA_VERSION          This version of Orca.
+# ORCA_VER_MAJOR        Orca's major version number.  Increment when
+#                       incompatible changes are made to published
+#                       interfaces.
+# ORCA_VER_MINOR        Orca's minor version number.  Increment when
+#                       new functionality is added or new interfaces
+#                       are defined, but all changes are backward
+#                       compatible.
+# ORCA_VER_PATCH        Orca's patch version number.  Increment for
+#                       every released patch.
+# ORCA_VER_QUOTED       The variables $ORCA_VER_MAJOR,
+#                       $ORCA_VER_MINOR and $ORCA_VER_PATCH
+#                       joined with periods, i.e. "1.2.3".
+# ORCA_VER_REVISION     The Subversion repository revision number of
+#                       this release.  It remains 0 in the repository.
+#                       When rolling a tarball, it is automatically
+#                       replaced with a best guess to be the correct
+#                       revision number.
+# ORCA_VER_TAG          A string describing the version.  This tag
+#                       remains " (dev $ORCA_VER_REVISION)" in the
+#                       repository so that we can always see that the
+#                       software has been built from the repository
+#                       rather than a "blessed" version.  For snapshot
+#                       releases, the variable is left unchanged.  For
+#                       final releases, it is emptied.
+# ORCA_VERSION          The real version of Orca.  Formed by the string
+#                       "$ORCA_VER_QUOTED$ORCA_VER_TAG".
 # ORCA_RRD_VERSION      This is the version number used in creating the DS
 #                       names in RRDs.  This should be updated any time a
 #                       new version of Orca needs some new content in its
@@ -24,12 +49,34 @@ $VERSION = substr q$Revision: 0.01 $, 10;
 #                       string Orca with this string of digits.
 # DAY_SECONDS           The number of seconds in one day.
 # IS_WIN32              If Orca is running on a Windows platform.
-use vars         qw($ORCA_VERSION $ORCA_RRD_VERSION);
-push(@EXPORT_OK, qw($ORCA_VERSION $ORCA_RRD_VERSION DAY_SECONDS IS_WIN32));
-$ORCA_VERSION        =  '0.27';
-$ORCA_RRD_VERSION    =  19990222;
-sub DAY_SECONDS      () { 24*60*60 };
-sub IS_WIN32         () { $^O eq 'MSWin32' };
+use vars         qw($ORCA_VER_MAJOR
+                    $ORCA_VER_MINOR
+                    $ORCA_VER_PATCH
+                    $ORCA_VER_QUOTED
+                    $ORCA_VER_REVISION
+                    $ORCA_VER_TAG
+                    $ORCA_VERSION
+                    $ORCA_RRD_VERSION);
+push(@EXPORT_OK, qw($ORCA_VER_MAJOR
+                    $ORCA_VER_MINOR
+                    $ORCA_VER_PATCH
+                    $ORCA_VER_QUOTED
+                    $ORCA_VER_REVISION
+                    $ORCA_VER_TAG
+                    $ORCA_VERSION
+                    $ORCA_RRD_VERSION
+                    DAY_SECONDS
+                    IS_WIN32));
+$ORCA_VER_MAJOR    =  0;
+$ORCA_VER_MINOR    = 28;
+$ORCA_VER_PATCH    =  0;
+$ORCA_VER_REVISION =  0;
+$ORCA_VER_QUOTED   =  "$ORCA_VER_MAJOR.$ORCA_VER_MINOR.$ORCA_VER_PATCH";
+$ORCA_VER_TAG      =  " (dev $ORCA_VER_REVISION)";
+$ORCA_VERSION      =  "$ORCA_VER_QUOTED$ORCA_VER_TAG";
+$ORCA_RRD_VERSION  =   19990222;
+sub DAY_SECONDS    () { 24*60*60 };
+sub IS_WIN32       () { $^O eq 'MSWin32' };
 
 # These define the name of the different round robin archives (RRAs)
 # to create in each RRD file, how many primary data points go into a

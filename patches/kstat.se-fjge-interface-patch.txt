@@ -1,0 +1,51 @@
+--- kstat.se-3.3.1	2003-08-14 19:11:22.000000000 -0700
++++ kstat.se	2004-01-30 20:26:37.000000000 -0800
+@@ -1679,6 +1679,48 @@
+     uint32_t collisions;
+ };
+ 
++// Fujitsu Gigabit ethernet card
++// Richard Grevis 5/nov/03
++
++kstat struct "fjge:" ks_fjge_network {
++    int    number$;        // linear counter
++    string name$;          // name of interface
++    int    instance$;      // instance number
++
++    uint32_t ipackets;
++    uint32_t ierrors;
++    uint32_t opackets;
++    uint32_t oerrors;
++    uint32_t collisions;
++    uint32_t obytes;
++    uint32_t rbytes;
++    uint32_t multixmt;
++    uint32_t multircv;
++    uint32_t brdcstxmt;
++    uint32_t brdcstrcv;
++    uint64_t blocked;
++    uint32_t noxmtbuf;
++    uint32_t norcvbuf;
++    uint64_t nocanput;
++    uint64_t xmtretry;
++    uint64_t intr;
++    uint64_t nocarrier;
++    uint64_t defer;
++    uint64_t framing;
++    uint64_t crc;
++    uint64_t oflo;
++    uint64_t uflo;
++    uint64_t missed;
++    uint64_t rxtoolong;
++    uint64_t inrangeerr;
++    uint64_t late_collisions;
++    uint64_t SYM_short;
++    uint64_t excollisions;
++    uint32_t ifspeed;
++    uint64_t conmode;
++    uint32_t fjge_log1;
++};
++
+ kstat struct "ge:" ks_ge_network {
+     int    number$;        // linear counter
+     string name$;          // name of interface

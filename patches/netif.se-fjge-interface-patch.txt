@@ -1,0 +1,57 @@
+--- netif.se-3.3.1	2003-08-14 19:11:22.000000000 -0700
++++ netif.se	2004-01-30 20:26:37.000000000 -0800
+@@ -44,7 +44,8 @@
+ #define NETIF_ERI   24
+ #define NETIF_CE    25
+ #define NETIF_AFE   26
+-#define NETIF_TYPES 27
++#define NETIF_FJGE  27
++#define NETIF_TYPES 28
+ 
+ // possible values for ifspeed (may also be ifspeed from kstat)
+ #define TEN_MEGABIT       10000000
+@@ -114,6 +115,7 @@
+     ks_eri_network  if_eri;   // new blade interface
+     ks_ce_network   if_ce;    // SunSwift 10/100/1000
+     ks_afe_network  if_afe;   // Another Fast Ethernet (Linksys LNE100TX 4.1)
++    ks_fjge_network if_fjge;  // Fujitsu gigabit ethernet
+ 
+     if (initialized == 0) {
+       count = -1;
+@@ -252,6 +254,11 @@
+         count++;
+       }
+       if_max[NETIF_AFE] = count;
++      for(refresh$(if_fjge); if_fjge.number$ != -1;
++          if_fjge.number$++, refresh$(if_fjge)) {
++        count++;
++      }
++      if_max[NETIF_FJGE] = count;
+ 
+       if_count = count + 1;
+       initialized = 1;
+@@ -737,6 +744,24 @@
+       ifspeed        = if_afe.ifspeed;
+       iftype         = NT_CSMACD;
+       break;
++
++    case NETIF_FJGE:	/* Added by Richard Grevis */
++      if_fjge.number$ = number$ - (if_max[NETIF_AFE] + 1);
++      refresh$(if_fjge);
++      name$          = if_fjge.name$;
++      ipackets       = if_fjge.ipackets;
++      ierrors        = if_fjge.ierrors;
++      opackets       = if_fjge.opackets;
++      oerrors        = if_fjge.oerrors;
++      collisions     = if_fjge.collisions;
++      nocanput       = if_fjge.nocanput;
++      defer          = if_fjge.noxmtbuf;
++      nocarrier      = if_fjge.nocarrier;
++      ooctets        = if_fjge.obytes;
++      ioctets        = if_fjge.rbytes;
++      ifspeed        = if_fjge.ifspeed;
++      iftype         = NT_CSMACD;
++      break;
+     }
+     if (opackets != 0) {
+       collision_rate = (collisions * 100.0) / opackets;

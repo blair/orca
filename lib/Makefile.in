@@ -50,6 +50,17 @@ install: all
 	    $(INSTALL) -m 0644 $$f $(libdir)/$$d; \
 	  done \
 	done
+	@current_rev="`cd ..; svnversion . 2>/dev/null`"; \
+	if test "$$current_rev" != "" && \
+           test "$$current_rev" != "exported"; then \
+	  echo "Found good svnversion for `cd ..; pwd`: $$current_rev"; \
+	  echo /opt/i386-linux/perl/bin/perl -w -p -i \
+	    -e 's/^(\$$ORCA_VER_REVISION\s*=\s*).*/$${1}"'$$current_rev'";/' \
+	    $(libdir)/Orca/Constants.pm; \
+	  /opt/i386-linux/perl/bin/perl -w -p -i \
+	    -e 's/^(\$$ORCA_VER_REVISION\s*=\s*).*/$${1}"'$$current_rev'";/' \
+	    $(libdir)/Orca/Constants.pm; \
+	fi
 
 clean:
 

@@ -348,9 +348,12 @@ AC_SUBST(UNCOMPRESSOR_PIPE)
 # options for RRDtool if it is not already declared.
 # expr "$ORCA_CONFIGURE_COMMAND_LINE" : "--enable-shared" >/dev/null 2>&1 || ORCA_CONFIGURE_COMMAND_LINE="$ORCA_CONFIGURE_COMMAND_LINE --enable-shared"
 
-dnl BORP_PERL_MODULE(orca_cv_perl_compress_zlib, $PERL, Compress::Zlib, $COMPRESS_ZLIB_VER)
-dnl test "$ALWAYS_BUILD_PERL_MODULES" && orca_cv_perl_compress_zlib=no
-dnl if test "$orca_cv_perl_compress_zlib" = no; then
+dnl BORP_PERL_MODULE(orca_cv_perl_module_compress_zlib,
+dnl                  $PERL,
+dnl                  Compress::Zlib,
+dnl                  $COMPRESS_ZLIB_VER)
+dnl test "$ALWAYS_BUILD_PERL_MODULES" && orca_cv_perl_module_compress_zlib=no
+dnl if test "$orca_cv_perl_module_compress_zlib" = no; then
 dnl   MAKE_COMPRESS_ZLIB=make_compress_zlib
 dnl   TEST_COMPRESS_ZLIB=test_compress_zlib
 dnl   INSTALL_PERL_COMPRESS_ZLIB=install_perl_compress_zlib
@@ -363,9 +366,12 @@ AC_SUBST(INSTALL_PERL_COMPRESS_ZLIB)
 AC_SUBST(CLEAN_COMPRESS_ZLIB)
 AC_SUBST(DISTCLEAN_COMPRESS_ZLIB)
 
-BORP_PERL_MODULE(orca_cv_perl_data_dumper, $PERL, Data::Dumper, $DATA_DUMPER_VER)
-test "$ALWAYS_BUILD_PERL_MODULES" && orca_cv_perl_data_dumper=no
-if test "$orca_cv_perl_data_dumper" = no; then
+BORP_PERL_MODULE(orca_cv_perl_module_data_dumper,
+                 $PERL,
+                 Data::Dumper,
+                 $DATA_DUMPER_VER)
+test "$ALWAYS_BUILD_PERL_MODULES" && orca_cv_perl_module_data_dumper=no
+if test "$orca_cv_perl_module_data_dumper" = no; then
   MAKE_DATA_DUMPER=make_data_dumper
   TEST_DATA_DUMPER=test_data_dumper
   INSTALL_PERL_DATA_DUMPER=install_perl_data_dumper
@@ -378,9 +384,12 @@ AC_SUBST(INSTALL_PERL_DATA_DUMPER)
 AC_SUBST(CLEAN_DATA_DUMPER)
 AC_SUBST(DISTCLEAN_DATA_DUMPER)
 
-BORP_PERL_MODULE(orca_cv_perl_date_parse, $PERL, Date::Parse, $DATE_PARSE_VER)
-test "$ALWAYS_BUILD_PERL_MODULES" && orca_cv_perl_date_parse=no
-if test "$orca_cv_perl_date_parse" = no; then
+BORP_PERL_MODULE(orca_cv_perl_module_date_parse,
+                 $PERL,
+                 Date::Parse,
+                 $DATE_PARSE_VER)
+test "$ALWAYS_BUILD_PERL_MODULES" && orca_cv_perl_module_date_parse=no
+if test "$orca_cv_perl_module_date_parse" = no; then
   MAKE_DATE_PARSE=make_date_parse
   TEST_DATE_PARSE=test_date_parse
   INSTALL_PERL_DATE_PARSE=install_perl_date_parse
@@ -393,9 +402,12 @@ AC_SUBST(INSTALL_PERL_DATE_PARSE)
 AC_SUBST(CLEAN_DATE_PARSE)
 AC_SUBST(DISTCLEAN_DATE_PARSE)
 
-BORP_PERL_MODULE(orca_cv_perl_devel_dprof, $PERL, Devel::DProf, $DEVEL_DPROF_VER)
-test "$ALWAYS_BUILD_PERL_MODULES" && orca_cv_perl_devel_dprof=no
-if test "$orca_cv_perl_devel_dprof" = no; then
+BORP_PERL_MODULE(orca_cv_perl_module_devel_dprof,
+                 $PERL,
+                 Devel::DProf,
+                 $DEVEL_DPROF_VER)
+test "$ALWAYS_BUILD_PERL_MODULES" && orca_cv_perl_module_devel_dprof=no
+if test "$orca_cv_perl_module_devel_dprof" = no; then
   MAKE_DEVEL_DPROF=make_devel_dprof
   TEST_DEVEL_DPROF=test_devel_dprof
   INSTALL_PERL_DEVEL_DPROF=install_perl_devel_dprof
@@ -408,9 +420,12 @@ AC_SUBST(INSTALL_PERL_DEVEL_DPROF)
 AC_SUBST(CLEAN_DEVEL_DPROF)
 AC_SUBST(DISTCLEAN_DEVEL_DPROF)
 
-BORP_PERL_MODULE(orca_cv_perl_digest_md5, $PERL, Digest::MD5, $DIGEST_MD5_VER)
-test "$ALWAYS_BUILD_PERL_MODULES" && orca_cv_perl_digest_md5=no
-if test "$orca_cv_perl_digest_md5" = no; then
+BORP_PERL_MODULE(orca_cv_perl_module_digest_md5,
+                 $PERL,
+                 Digest::MD5,
+                 $DIGEST_MD5_VER)
+test "$ALWAYS_BUILD_PERL_MODULES" && orca_cv_perl_module_digest_md5=no
+if test "$orca_cv_perl_module_digest_md5" = no; then
   MAKE_DIGEST_MD5=make_digest_md5
   TEST_DIGEST_MD5=test_digest_md5
   INSTALL_PERL_DIGEST_MD5=install_perl_digest_md5
@@ -423,9 +438,12 @@ AC_SUBST(INSTALL_PERL_DIGEST_MD5)
 AC_SUBST(CLEAN_DIGEST_MD5)
 AC_SUBST(DISTCLEAN_DIGEST_MD5)
 
-BORP_PERL_MODULE(orca_cv_perl_math_intervalsearch, $PERL, Math::IntervalSearch, $MATH_INTERVALSEARCH_VER)
-test "$ALWAYS_BUILD_PERL_MODULES" && orca_cv_perl_math_intervalsearch=no
-if test "$orca_cv_perl_math_intervalsearch" = no; then
+BORP_PERL_MODULE(orca_cv_perl_module_math_intervalsearch,
+                 $PERL,
+                 Math::IntervalSearch,
+                 $MATH_INTERVALSEARCH_VER)
+test "$ALWAYS_BUILD_PERL_MODULES" && orca_cv_perl_module_math_intervalsearch=no
+if test "$orca_cv_perl_module_math_intervalsearch" = no; then
   MAKE_MATH_INTERVALSEARCH=make_math_intervalsearch
   TEST_MATH_INTERVALSEARCH=test_math_intervalsearch
   INSTALL_PERL_MATH_INTERVALSEARCH=install_perl_math_intervalsearch
@@ -438,9 +456,12 @@ AC_SUBST(INSTALL_PERL_MATH_INTERVALSEARCH)
 AC_SUBST(CLEAN_MATH_INTERVALSEARCH)
 AC_SUBST(DISTCLEAN_MATH_INTERVALSEARCH)
 
-BORP_PERL_MODULE(orca_cv_perl_rrds, $PERL, RRDs, $RRDTOOL_VER)
-test "$ALWAYS_BUILD_PERL_MODULES" && orca_cv_perl_rrds=no
-if test "$orca_cv_perl_rrds" = no; then
+BORP_PERL_MODULE(orca_cv_perl_module_rrds,
+                 $PERL,
+                 RRDs,
+                 $RRDTOOL_VER)
+test "$ALWAYS_BUILD_PERL_MODULES" && orca_cv_perl_module_rrds=no
+if test "$orca_cv_perl_module_rrds" = no; then
   BUILD_RRD=yes
 fi
 if test "$BUILD_RRD" = yes; then
@@ -456,9 +477,12 @@ AC_SUBST(INSTALL_PERL_RRDTOOL)
 AC_SUBST(CLEAN_RRDTOOL)
 AC_SUBST(DISTCLEAN_RRDTOOL)
 
-BORP_PERL_MODULE(orca_cv_perl_storable, $PERL, Storable, $STORABLE_VER)
-test "$ALWAYS_BUILD_PERL_MODULES" && orca_cv_perl_storable=no
-if test "$orca_cv_perl_storable" = no; then
+BORP_PERL_MODULE(orca_cv_perl_module_storable,
+                 $PERL,
+                 Storable,
+                 $STORABLE_VER)
+test "$ALWAYS_BUILD_PERL_MODULES" && orca_cv_perl_module_storable=no
+if test "$orca_cv_perl_module_storable" = no; then
   MAKE_STORABLE=make_storable
   TEST_STORABLE=test_storable
   INSTALL_PERL_STORABLE=install_perl_storable
@@ -471,9 +495,12 @@ AC_SUBST(INSTALL_PERL_STORABLE)
 AC_SUBST(CLEAN_STORABLE)
 AC_SUBST(DISTCLEAN_STORABLE)
 
-BORP_PERL_MODULE(orca_cv_perl_time_hires, $PERL, Time::HiRes, $TIME_HIRES_VER)
-test "$ALWAYS_BUILD_PERL_MODULES" && orca_cv_perl_time_hires=no
-if test "$orca_cv_perl_time_hires" = no; then
+BORP_PERL_MODULE(orca_cv_perl_module_time_hires,
+                 $PERL,
+                 Time::HiRes,
+                 $TIME_HIRES_VER)
+test "$ALWAYS_BUILD_PERL_MODULES" && orca_cv_perl_module_time_hires=no
+if test "$orca_cv_perl_module_time_hires" = no; then
   MAKE_TIME_HIRES=make_time_hires
   TEST_TIME_HIRES=test_time_hires
   INSTALL_PERL_TIME_HIRES=install_perl_time_hires

@@ -5,7 +5,7 @@ dnl the module is not installed.
 dnl BORP_PERL_MODULE(DEFINE, PATH_TO_PERL, MODULE_NAME, MODULE_VERSION,
 dnl    [ACTION_IF_FOUND, [ACTION_IF_NOT_FOUND]]
 AC_DEFUN([BORP_PERL_MODULE], [
-  AC_MSG_CHECKING([if Perl module $3 version $4 is installed])
+  AC_MSG_CHECKING([if Perl module $3 $4 is installed])
   if $2 ./config/check_for_perl_mod $3 $4; then
     $1=yes
     ifelse([$5], , , [$5])

@@ -1,0 +1,50 @@
+version 0.39
+====================
+
+Provides the same version objects as included in Perl v5.9.0 (and hopefully in
+the 5.10.0 release).  In fact, if you attempt to use this module with a version
+of Perl >= v5.9.0, this module will not do anything, since the code already
+exists in the Perl core.
+
+This release changes the behavior of alpha versions with only 1 decimal
+place, to make them behave more like their floating-point counterparts.
+This may lead to some confusion over the stringified representation of
+alpha versions.  See the POD for more details.
+
+IMPORTANT NOTE: version-0.37 introduced a segfault when trying to use the
+UNIVERSAL::VERSION routine on modules without a $VERSION scalar.  This was
+fixed in version-0.38.
+
+IMPORTANT NOTE2: This version changes the default stringification for some
+version objects.  Be sure and read the updated POD for details.  This also
+affect the return value of the replacement UNIVERSAL::VERSION method.
+
+IMPORTANT NOTE3: The replacement UNIVERSAL::VERSION method supplied by this
+module currently leaks memory, so don't call it in a loop in your code
+until this has been corrected (this is a very uncommon mode of operation,
+so it is not as serious a problem as it could be otherwise).
+
+NOT SO IMPORTANT NOTE: The version::AlphaBeta module has been removed from
+this distribution and released independently on CPAN.
+
+Please read the POD documentation for usage/details.
+
+INSTALLATION
+
+To install this module type the following:
+
+   perl Makefile.PL
+   make
+   make test
+   make install
+
+DEPENDENCIES
+
+the same C compiler used to build Perl
+
+COPYRIGHT AND LICENCE
+
+This module can be distributed under the same terms as Perl.
+
+Copyright (C) 2004 John Peacock
+

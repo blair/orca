@@ -32,6 +32,7 @@ install: all
 	$(MKDIR) $(libdir)/SE/3.2.1
 	$(MKDIR) $(libdir)/SE/3.3
 	$(MKDIR) $(libdir)/SE/3.3.1
+	$(MKDIR) $(libdir)/SE/3.4
 	@for f in Orca/*.pm; do \
 	  echo $(INSTALL) -m 0644 $$f $(libdir)/Orca; \
 	  $(INSTALL) -m 0644 $$f $(libdir)/Orca; \

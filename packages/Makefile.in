@@ -1,65 +1,95 @@
 @SET_MAKE@
 
-PERL				= @PERL@
-CFLAGS				= @CFLAGS@
+PERL                             = @PERL@
+CFLAGS                           = @CFLAGS@
 
-compress_zlib_dir		= @COMPRESS_ZLIB_DIR@
-data_dumper_dir			= @DATA_DUMPER_DIR@
-date_parse_dir			= @DATE_PARSE_DIR@
-digest_md5_dir			= @DIGEST_MD5_DIR@
-math_intervalsearch_dir		= @MATH_INTERVALSEARCH_DIR@
-rrdtool_dir			= @RRDTOOL_DIR@
-storable_dir			= @STORABLE_DIR@
+compress_zlib_dir                = @COMPRESS_ZLIB_DIR@
+data_dumper_dir                  = @DATA_DUMPER_DIR@
+date_parse_dir                   = @DATE_PARSE_DIR@
+digest_md5_dir                   = @DIGEST_MD5_DIR@
+math_intervalsearch_dir          = @MATH_INTERVALSEARCH_DIR@
+rrdtool_dir                      = @RRDTOOL_DIR@
+storable_dir                     = @STORABLE_DIR@
 
-MAKE_COMPRESS_ZLIB		= @MAKE_COMPRESS_ZLIB@
-MAKE_DATA_DUMPER		= @MAKE_DATA_DUMPER@
-MAKE_DATE_PARSE			= @MAKE_DATE_PARSE@
-MAKE_DIGEST_MD5			= @MAKE_DIGEST_MD5@
-MAKE_MATH_INTERVALSEARCH	= @MAKE_MATH_INTERVALSEARCH@
-MAKE_RRDTOOL			= @MAKE_RRDTOOL@
-MAKE_STORABLE			= @MAKE_STORABLE@
-MAKE_TARGETS			= $(MAKE_COMPRESS_ZLIB) $(MAKE_DATA_DUMPER) $(MAKE_DATE_PARSE) $(MAKE_DIGEST_MD5) $(MAKE_MATH_INTERVALSEARCH) $(MAKE_RRDTOOL) $(MAKE_STORABLE)
+MAKE_COMPRESS_ZLIB               = @MAKE_COMPRESS_ZLIB@
+MAKE_DATA_DUMPER                 = @MAKE_DATA_DUMPER@
+MAKE_DATE_PARSE                  = @MAKE_DATE_PARSE@
+MAKE_DIGEST_MD5                  = @MAKE_DIGEST_MD5@
+MAKE_MATH_INTERVALSEARCH         = @MAKE_MATH_INTERVALSEARCH@
+MAKE_RRDTOOL                     = @MAKE_RRDTOOL@
+MAKE_STORABLE                    = @MAKE_STORABLE@
+MAKE_TARGETS                     = $(MAKE_COMPRESS_ZLIB) \
+                                   $(MAKE_DATA_DUMPER) \
+                                   $(MAKE_DATE_PARSE) \
+                                   $(MAKE_DIGEST_MD5) \
+                                   $(MAKE_MATH_INTERVALSEARCH) \
+                                   $(MAKE_RRDTOOL) \
+                                   $(MAKE_STORABLE)
 
-TEST_COMPRESS_ZLIB		= @TEST_COMPRESS_ZLIB@
-TEST_DATA_DUMPER		= @TEST_DATA_DUMPER@
-TEST_DATE_PARSE			= @TEST_DATE_PARSE@
-TEST_DIGEST_MD5			= @TEST_DIGEST_MD5@
-TEST_MATH_INTERVALSEARCH	= @TEST_MATH_INTERVALSEARCH@
-TEST_RRDTOOL			= @TEST_RRDTOOL@
-TEST_STORABLE			= @TEST_STORABLE@
-TEST_TARGETS			= $(TEST_COMPRESS_ZLIB) $(TEST_DATA_DUMPER) $(TEST_DATE_PARSE) $(TEST_DIGEST_MD5) $(TEST_MATH_INTERVALSEARCH) $(TEST_RRDTOOL) $(TEST_STORABLE)
+TEST_COMPRESS_ZLIB               = @TEST_COMPRESS_ZLIB@
+TEST_DATA_DUMPER                 = @TEST_DATA_DUMPER@
+TEST_DATE_PARSE                  = @TEST_DATE_PARSE@
+TEST_DIGEST_MD5                  = @TEST_DIGEST_MD5@
+TEST_MATH_INTERVALSEARCH         = @TEST_MATH_INTERVALSEARCH@
+TEST_RRDTOOL                     = @TEST_RRDTOOL@
+TEST_STORABLE                    = @TEST_STORABLE@
+TEST_TARGETS                     = $(TEST_COMPRESS_ZLIB) \
+                                   $(TEST_DATA_DUMPER) \
+                                   $(TEST_DATE_PARSE) \
+                                   $(TEST_DIGEST_MD5) \
+                                   $(TEST_MATH_INTERVALSEARCH) \
+                                   $(TEST_RRDTOOL) \
+                                   $(TEST_STORABLE)
 
-INSTALL_PERL_COMPRESS_ZLIB	= @INSTALL_PERL_COMPRESS_ZLIB@
-INSTALL_PERL_DATA_DUMPER	= @INSTALL_PERL_DATA_DUMPER@
-INSTALL_PERL_DATE_PARSE		= @INSTALL_PERL_DATE_PARSE@
-INSTALL_PERL_DIGEST_MD5		= @INSTALL_PERL_DIGEST_MD5@
-INSTALL_PERL_MATH_INTERVALSEARCH= @INSTALL_PERL_MATH_INTERVALSEARCH@
-INSTALL_PERL_RRDTOOL		= @INSTALL_PERL_RRDTOOL@
-INSTALL_PERL_STORABLE		= @INSTALL_PERL_STORABLE@
-INSTALL_PERL_TARGETS		= $(INSTALL_PERL_COMPRESS_ZLIB) $(INSTALL_PERL_DATA_DUMPER) $(INSTALL_PERL_DATE_PARSE) $(INSTALL_PERL_DIGEST_MD5) $(INSTALL_PERL_MATH_INTERVALSEARCH) $(INSTALL_PERL_RRDTOOL) $(INSTALL_PERL_STORABLE)
+INSTALL_PERL_COMPRESS_ZLIB       = @INSTALL_PERL_COMPRESS_ZLIB@
+INSTALL_PERL_DATA_DUMPER         = @INSTALL_PERL_DATA_DUMPER@
+INSTALL_PERL_DATE_PARSE          = @INSTALL_PERL_DATE_PARSE@
+INSTALL_PERL_DIGEST_MD5          = @INSTALL_PERL_DIGEST_MD5@
+INSTALL_PERL_MATH_INTERVALSEARCH = @INSTALL_PERL_MATH_INTERVALSEARCH@
+INSTALL_PERL_RRDTOOL             = @INSTALL_PERL_RRDTOOL@
+INSTALL_PERL_STORABLE            = @INSTALL_PERL_STORABLE@
+INSTALL_PERL_TARGETS             = $(INSTALL_PERL_COMPRESS_ZLIB) \
+                                   $(INSTALL_PERL_DATA_DUMPER) \
+                                   $(INSTALL_PERL_DATE_PARSE) \
+                                   $(INSTALL_PERL_DIGEST_MD5) \
+                                   $(INSTALL_PERL_MATH_INTERVALSEARCH) \
+                                   $(INSTALL_PERL_RRDTOOL) \
+                                   $(INSTALL_PERL_STORABLE)
 
-INSTALL_LIB_RRDTOOL		= @INSTALL_LIB_RRDTOOL@
-INSTALL_LIB_TARGETS		= $(INSTALL_LIB_RRDTOOL)
+INSTALL_LIB_RRDTOOL              = @INSTALL_LIB_RRDTOOL@
+INSTALL_LIB_TARGETS              = $(INSTALL_LIB_RRDTOOL)
 
-CLEAN_COMPRESS_ZLIB		= @CLEAN_COMPRESS_ZLIB@
-CLEAN_DATA_DUMPER		= @CLEAN_DATA_DUMPER@
-CLEAN_DATE_PARSE		= @CLEAN_DATE_PARSE@
-CLEAN_DIGEST_MD5		= @CLEAN_DIGEST_MD5@
-CLEAN_MATH_INTERVALSEARCH	= @CLEAN_MATH_INTERVALSEARCH@
-CLEAN_RRDTOOL			= @CLEAN_RRDTOOL@
-CLEAN_STORABLE			= @CLEAN_STORABLE@
-CLEAN_TARGETS			= $(CLEAN_COMPRESS_ZLIB) $(CLEAN_DATA_DUMPER) $(CLEAN_DATE_PARSE) $(CLEAN_DIGEST_MD5) $(CLEAN_MATH_INTERVALSEARCH) $(CLEAN_RRDTOOL) $(CLEAN_STORABLE)
+CLEAN_COMPRESS_ZLIB              = @CLEAN_COMPRESS_ZLIB@
+CLEAN_DATA_DUMPER                = @CLEAN_DATA_DUMPER@
+CLEAN_DATE_PARSE                 = @CLEAN_DATE_PARSE@
+CLEAN_DIGEST_MD5                 = @CLEAN_DIGEST_MD5@
+CLEAN_MATH_INTERVALSEARCH        = @CLEAN_MATH_INTERVALSEARCH@
+CLEAN_RRDTOOL                    = @CLEAN_RRDTOOL@
+CLEAN_STORABLE                   = @CLEAN_STORABLE@
+CLEAN_TARGETS                    = $(CLEAN_COMPRESS_ZLIB) \
+                                   $(CLEAN_DATA_DUMPER) \
+                                   $(CLEAN_DATE_PARSE) \
+                                   $(CLEAN_DIGEST_MD5) \
+                                   $(CLEAN_MATH_INTERVALSEARCH) \
+                                   $(CLEAN_RRDTOOL) \
+                                   $(CLEAN_STORABLE)
 
-DISTCLEAN_COMPRESS_ZLIB		= @DISTCLEAN_COMPRESS_ZLIB@
-DISTCLEAN_DATA_DUMPER		= @DISTCLEAN_DATA_DUMPER@
-DISTCLEAN_DATE_PARSE		= @DISTCLEAN_DATE_PARSE@
-DISTCLEAN_DIGEST_MD5		= @DISTCLEAN_DIGEST_MD5@
-DISTCLEAN_MATH_INTERVALSEARCH	= @DISTCLEAN_MATH_INTERVALSEARCH@
-DISTCLEAN_RRDTOOL		= @DISTCLEAN_RRDTOOL@
-DISTCLEAN_STORABLE		= @DISTCLEAN_STORABLE@
-DISTCLEAN_TARGETS		= $(DISTCLEAN_COMPRESS_ZLIB) $(DISTCLEAN_DATA_DUMPER) $(DISTCLEAN_DATE_PARSE) $(DISTCLEAN_DIGEST_MD5) $(DISTCLEAN_MATH_INTERVALSEARCH) $(DISTCLEAN_RRDTOOL) $(DISTCLEAN_STORABLE)
+DISTCLEAN_COMPRESS_ZLIB          = @DISTCLEAN_COMPRESS_ZLIB@
+DISTCLEAN_DATA_DUMPER            = @DISTCLEAN_DATA_DUMPER@
+DISTCLEAN_DATE_PARSE             = @DISTCLEAN_DATE_PARSE@
+DISTCLEAN_DIGEST_MD5             = @DISTCLEAN_DIGEST_MD5@
+DISTCLEAN_MATH_INTERVALSEARCH    = @DISTCLEAN_MATH_INTERVALSEARCH@
+DISTCLEAN_RRDTOOL                = @DISTCLEAN_RRDTOOL@
+DISTCLEAN_STORABLE               = @DISTCLEAN_STORABLE@
+DISTCLEAN_TARGETS        	 = $(DISTCLEAN_COMPRESS_ZLIB) \
+                                   $(DISTCLEAN_DATA_DUMPER) \
+                                   $(DISTCLEAN_DATE_PARSE) \
+                                   $(DISTCLEAN_DIGEST_MD5) \
+                                   $(DISTCLEAN_MATH_INTERVALSEARCH) \
+                                   $(DISTCLEAN_RRDTOOL) \
+                                   $(DISTCLEAN_STORABLE)
 
-all:	Makefile $(MAKE_TARGETS)
+all: Makefile $(MAKE_TARGETS)
 
 make_compress_zlib: make_rrdtool_zlib $(compress_zlib_dir)/Makefile
 	cd $(compress_zlib_dir) && $(MAKE) OPTIMIZE="$(CFLAGS)"
@@ -165,61 +195,61 @@ install_perl_storable: $(storable_dir)/Makefile
 clean: $(CLEAN_TARGETS)
 
 clean_compress_zlib: clean_rrdtool
-	@if test -r $(compress_zlib_dir)/Makefile; then 		\
-		echo 'cd $(compress_zlib_dir) && $(MAKE) clean';	\
-		(cd $(compress_zlib_dir) && $(MAKE) clean);		\
+	@if test -r $(compress_zlib_dir)/Makefile; then \
+	  echo 'cd $(compress_zlib_dir) && $(MAKE) clean'; \
+	  (cd $(compress_zlib_dir) && $(MAKE) clean); \
 	fi
 
 clean_data_dumper:
-	@if test -r $(data_dumper_dir)/Makefile; then 			\
-		echo 'cd $(data_dumper_dir) && $(MAKE) clean';		\
-		(cd $(data_dumper_dir) && $(MAKE) clean);		\
+	@if test -r $(data_dumper_dir)/Makefile; then \
+	  echo 'cd $(data_dumper_dir) && $(MAKE) clean'; \
+	  (cd $(data_dumper_dir) && $(MAKE) clean); \
 	fi
 
 clean_date_parse:
-	@if test -r $(date_parse_dir)/Makefile; then 			\
-		echo 'cd $(date_parse_dir) && $(MAKE) clean';		\
-		(cd $(date_parse_dir) && $(MAKE) clean);		\
+	@if test -r $(date_parse_dir)/Makefile; then \
+	  echo 'cd $(date_parse_dir) && $(MAKE) clean'; \
+	  (cd $(date_parse_dir) && $(MAKE) clean); \
 	fi
 
 clean_digest_md5:
-	@if test -r $(digest_md5_dir)/Makefile; then 			\
-		echo 'cd $(digest_md5_dir) && $(MAKE) clean';		\
-		(cd $(digest_md5_dir) && $(MAKE) clean);		\
+	@if test -r $(digest_md5_dir)/Makefile; then \
+	  echo 'cd $(digest_md5_dir) && $(MAKE) clean'; \
+	  (cd $(digest_md5_dir) && $(MAKE) clean); \
 	fi
 
 clean_math_intervalsearch:
-	@if test -r $(math_intervalsearch_dir)/Makefile; then 		\
-		echo 'cd $(math_intervalsearch_dir) && $(MAKE) clean';	\
-		(cd $(math_intervalsearch_dir) && $(MAKE) clean);	\
+	@if test -r $(math_intervalsearch_dir)/Makefile; then \
+	  echo 'cd $(math_intervalsearch_dir) && $(MAKE) clean'; \
+	  (cd $(math_intervalsearch_dir) && $(MAKE) clean); \
 	fi
 
 clean_rrdtool:
 	(cd $(rrdtool_dir) && $(MAKE) clean)
 
 clean_storable:
-	@if test -r $(storable_dir)/Makefile; then 			\
-		echo 'cd $(storable_dir) && $(MAKE) clean';		\
-		(cd $(storable_dir) && $(MAKE) clean);			\
+	@if test -r $(storable_dir)/Makefile; then \
+	  echo 'cd $(storable_dir) && $(MAKE) clean'; \
+	  (cd $(storable_dir) && $(MAKE) clean); \
 	fi
 
 distclean: $(DISTCLEAN_TARGETS)
 	$(RM) Makefile
 
-distclean_compress_zlib:	clean_compress_zlib
+distclean_compress_zlib:       clean_compress_zlib
 
-distclean_data_dumper:		clean_data_dumper
+distclean_data_dumper:         clean_data_dumper
 
-distclean_date_parse:		clean_date_parse
+distclean_date_parse:          clean_date_parse
 
-distclean_digest_md5:		clean_digest_md5
+distclean_digest_md5:          clean_digest_md5
 
-distclean_math_intervalsearch:	clean_math_intervalsearch
+distclean_math_intervalsearch: clean_math_intervalsearch
 
-distclean_rrdtool:		clean_rrdtool
+distclean_rrdtool:             clean_rrdtool
 	cd $(rrdtool_dir) && $(MAKE) distclean
 
-distclean_storable:		clean_storable
+distclean_storable:            clean_storable
 
 Makefile: Makefile.in
 	cd .. && CONFIG_FILES=packages/Makefile ./config.status

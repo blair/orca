@@ -1,17 +1,19 @@
 @SET_MAKE@
 
-prefix		= @prefix@
-mandir		= @mandir@/man1
-INSTALL		= @INSTALL@
-MKDIR		= @MKDIR@
-ORCA		= ../src/orca.pl
-POD2HTML	= @POD2HTML@
-POD2MAN		= @POD2MAN@
-POD2TEXT	= @POD2TEXT@
+prefix            = @prefix@
+mandir            = @mandir@/man1
+INSTALL           = @INSTALL@
+MKDIR             = @MKDIR@
+ORCA              = ../src/orca.pl
+POD2HTML          = @POD2HTML@
+POD2MAN           = @POD2MAN@
+POD2TEXT          = @POD2TEXT@
 
-TARGETS		= orca.html orca.man orca.txt
+TARGETS           = orca.html \
+                    orca.man \
+                    orca.txt
 
-all:	Makefile $(TARGETS)
+all: Makefile $(TARGETS)
 
 orca.html: $(ORCA)
 	$(POD2HTML) $(ORCA) > $@

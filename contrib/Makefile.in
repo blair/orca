@@ -1,32 +1,33 @@
 @SET_MAKE@
 
-SUBDIRS = orca_services rotate_orca_graphs
+SUBDIRS           = orca_services \
+                    rotate_orca_graphs
 
 all:	Makefile $(TARGETS)
-	@for dir in $(SUBDIRS); do					\
-		echo "cd $$dir && $(MAKE) CFLAGS=$(CFLAGS)";		\
-		(cd $$dir && $(MAKE) CFLAGS="$(CFLAGS)");		\
+	@for dir in $(SUBDIRS); do \
+	  echo "cd $$dir && $(MAKE) CFLAGS=$(CFLAGS)"; \
+	  (cd $$dir && $(MAKE) CFLAGS="$(CFLAGS)"); \
 	done
 
 # Users will need to install the contributed programs by hand.
 install:
 
 install_contrib:
-	@for dir in $(SUBDIRS); do					\
-		echo "cd $$dir && $(MAKE) CFLAGS=$(CFLAGS) install";	\
-		(cd $$dir && $(MAKE) CFLAGS="$(CFLAGS)" install);	\
+	@for dir in $(SUBDIRS); do \
+	  echo "cd $$dir && $(MAKE) CFLAGS=$(CFLAGS) install"; \
+	  (cd $$dir && $(MAKE) CFLAGS="$(CFLAGS)" install); \
 	done
 
 clean:
-	@for dir in $(SUBDIRS); do					\
-		echo "cd $$dir && $(MAKE) CFLAGS=$(CFLAGS) clean";	\
-		(cd $$dir && $(MAKE) CFLAGS="$(CFLAGS)" clean);		\
+	@for dir in $(SUBDIRS); do \
+	  echo "cd $$dir && $(MAKE) CFLAGS=$(CFLAGS) clean"; \
+	  (cd $$dir && $(MAKE) CFLAGS="$(CFLAGS)" clean); \
 	done
 
 distclean: clean
-	@for dir in $(SUBDIRS); do					\
-		echo "cd $$dir && $(MAKE) CFLAGS=$(CFLAGS) distclean";	\
-		(cd $$dir && $(MAKE) CFLAGS="$(CFLAGS)" distclean);	\
+	@for dir in $(SUBDIRS); do \
+	  echo "cd $$dir && $(MAKE) CFLAGS=$(CFLAGS) distclean"; \
+	  (cd $$dir && $(MAKE) CFLAGS="$(CFLAGS)" distclean); \
 	done
 	$(RM) Makefile
 

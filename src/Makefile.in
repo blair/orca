@@ -1,48 +1,49 @@
 @SET_MAKE@
 
-prefix		= @prefix@
-exec_prefix	= @exec_prefix@
-bindir		= @bindir@
-INSTALL		= @INSTALL@
-MKDIR		= @MKDIR@
-PERL_HEAD	= @PERL_HEAD@
-RRD_DIR		= @RRD_DIR@
-VAR_DIR		= @VAR_DIR@
-ORCALLATOR_DIR	= $(VAR_DIR)/orcallator
-PERL_SCRIPTS	= orca upgrade_installation
-SHELL_SCRIPTS	=
-TARGETS		= $(PERL_SCRIPTS) $(SHELL_SCRIPTS)
+prefix            = @prefix@
+exec_prefix       = @exec_prefix@
+bindir            = @bindir@
+INSTALL           = @INSTALL@
+MKDIR             = @MKDIR@
+PERL_HEAD         = @PERL_HEAD@
+RRD_DIR           = @RRD_DIR@
+VAR_DIR           = @VAR_DIR@
+ORCALLATOR_DIR    = $(VAR_DIR)/orcallator
+PERL_SCRIPTS      = orca \
+                    upgrade_installation
+SHELL_SCRIPTS     =
+TARGETS           = $(PERL_SCRIPTS) $(SHELL_SCRIPTS)
 
-all:		Makefile $(TARGETS)
+all: Makefile $(TARGETS)
 
 install: all
-		$(MKDIR) $(bindir)
-		@for file in $(TARGETS); do			\
-			echo $(INSTALL) $$file $(bindir);	\
-			$(INSTALL) $$file $(bindir);		\
-		done
+	$(MKDIR) $(bindir)
+	@for file in $(TARGETS); do \
+	  echo $(INSTALL) $$file $(bindir); \
+	  $(INSTALL) $$file $(bindir); \
+	done
 
-upgrade:	upgrade_installation
-		./upgrade_installation $(prefix) $(exec_prefix) $(bindir) $(libdir) $(ORCALLATOR_DIR) $(RRD_DIR)
+upgrade: upgrade_installation
+	./upgrade_installation $(prefix) $(exec_prefix) $(bindir) $(libdir) $(ORCALLATOR_DIR) $(RRD_DIR)
 
 clean:
-		$(RM) $(TARGETS)
+	$(RM) $(TARGETS)
 
-distclean:	clean
-		$(RM) *.sh orca.pl Makefile
+distclean: clean
+	$(RM) *.sh orca.pl Makefile
 
-.SUFFIXES:	.pl .sh
+.SUFFIXES: .pl .sh
 
-.pl:		$(PERL_HEAD)
-		cat $(PERL_HEAD) $< > $@
-		chmod 0755 $@
+.pl: $(PERL_HEAD)
+	cat $(PERL_HEAD) $< > $@
+	chmod 0755 $@
 
 .sh:
-		cp $< $@
-		chmod 0755 $@
+	cp $< $@
+	chmod 0755 $@
 
-Makefile:	Makefile.in
-		cd .. && CONFIG_FILES=src/Makefile ./config.status
+Makefile: Makefile.in
+	cd .. && CONFIG_FILES=src/Makefile ./config.status
 
-orca.pl:	orca.pl.in
-		cd .. && CONFIG_FILES=src/orca.pl ./config.status
+orca.pl: orca.pl.in
+	cd .. && CONFIG_FILES=src/orca.pl ./config.status

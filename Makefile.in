@@ -1,29 +1,35 @@
 @SET_MAKE@
 
-SUBDIRS 	= packages lib src @ORCALLATOR_SUBDIR@ docs contrib
-prefix		= @prefix@
-MKDIR		= @MKDIR@
-MAKE_RRDTOOL	= @MAKE_RRDTOOL@
-RRD_DIR		= @RRD_DIR@
-VAR_DIR		= @VAR_DIR@
-ORCALLATOR_DIR	= $(VAR_DIR)/orcallator
-CFLAGS		= @CFLAGS@
+prefix            = @prefix@
+MKDIR             = @MKDIR@
+MAKE_RRDTOOL      = @MAKE_RRDTOOL@
+RRD_DIR           = @RRD_DIR@
+VAR_DIR           = @VAR_DIR@
+ORCALLATOR_DIR    = $(VAR_DIR)/orcallator
+CFLAGS            = @CFLAGS@
 
-all:	configure config/PerlHead1 config/PerlHead2 Makefile
-	@for dir in $(SUBDIRS); do					\
-		if test -d $$dir; then					\
-			echo "cd $$dir";				\
-			cd $$dir || exit 1;				\
-			echo "$(MAKE) CFLAGS=$(CFLAGS) || exit 1";	\
-			$(MAKE) CFLAGS="$(CFLAGS)" || exit 1;		\
-			echo "cd ..";					\
-			cd ..;						\
-		else							\
-			exit 1;						\
-		fi							\
+SUBDIRS           = packages \
+                    lib \
+                    src \
+                    @ORCALLATOR_SUBDIR@ \
+                    docs \
+                    contrib
+
+all: configure config/PerlHead1 config/PerlHead2 Makefile
+	@for dir in $(SUBDIRS); do \
+	  if test -d $$dir; then \
+	    echo "cd $$dir"; \
+	    cd $$dir || exit 1; \
+	    echo "$(MAKE) CFLAGS=$(CFLAGS) || exit 1"; \
+	    $(MAKE) CFLAGS="$(CFLAGS)" || exit 1; \
+	    echo "cd .."; \
+	    cd ..; \
+	  else \
+	    exit 1; \
+	  fi \
 	done
 
-test:	configure Makefile
+test: configure Makefile
 
 upgrade:
 	cd src && $(MAKE) upgrade_installation
@@ -32,17 +38,17 @@ install: $(INSTALL_RRDTOOL)
 	$(MKDIR) $(VAR_DIR)
 	$(MKDIR) $(ORCALLATOR_DIR)
 	$(MKDIR) $(RRD_DIR)/orcallator
-	@for dir in $(SUBDIRS); do			\
-		if test -d $$dir; then					\
-			echo "cd $$dir";				\
-			cd $$dir || exit 1;				\
-			echo "$(MAKE) CFLAGS=$(CFLAGS) install || exit 1"; \
-			$(MAKE) CFLAGS="$(CFLAGS)" install || exit 1;	\
-			echo "cd ..";					\
-			cd ..;						\
-		else							\
-			exit 1;						\
-		fi							\
+	@for dir in $(SUBDIRS); do \
+	  if test -d $$dir; then \
+	    echo "cd $$dir"; \
+	    cd $$dir || exit 1; \
+	    echo "$(MAKE) CFLAGS=$(CFLAGS) install || exit 1"; \
+	    $(MAKE) CFLAGS="$(CFLAGS)" install || exit 1; \
+	    echo "cd .."; \
+	    cd ..; \
+	  else \
+	    exit 1; \
+	  fi \
 	done
 
 install_contrib:
@@ -58,15 +64,15 @@ install_modules:
 	cd packages && $(MAKE) CFLAGS="$(CFLAGS)" install_modules
 
 clean:	$(CLEAN_RRDTOOL)
-	@for dir in $(SUBDIRS); do			\
-		echo "cd $$dir && $(MAKE) clean";	\
-		(cd $$dir && $(MAKE) clean);		\
+	@for dir in $(SUBDIRS); do \
+	  echo "cd $$dir && $(MAKE) clean"; \
+	  (cd $$dir && $(MAKE) clean); \
 	done
 
 distclean: $(DISTCLEAN_RRDTOOL)
-	@for dir in $(SUBDIRS); do			\
-		echo "cd $$dir && $(MAKE) distclean";	\
-		(cd $$dir && $(MAKE) distclean);	\
+	@for dir in $(SUBDIRS); do \
+	  echo "cd $$dir && $(MAKE) distclean"; \
+	  (cd $$dir && $(MAKE) distclean); \
 	done
 	$(RM) -r autom4te*.cache
 	$(RM) config/aclocal.m4 config/PerlHead1 config/PerlHead2

@@ -1,5 +1,10 @@
 Revision history for Perl extension Time::HiRes.
 
+1.46
+	- do not create files in blib directories under core
+	  (perl change #19160, from rgs)
+	- detypo s/VTLARM/VTARLM/ (perl change #19328, from mjd)
+
 1.45
 	- guarantee that $xdefine in HiRes.t is always defined
 	  (perl change #19109, from IlyaZ)

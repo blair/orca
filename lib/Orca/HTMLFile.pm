@@ -8,9 +8,14 @@ package Orca::HTMLFile;
 use strict;
 use Carp;
 use Orca::Constants qw($ORCA_VERSION);
-use vars            qw($VERSION);
-
+use vars            qw(@EXPORT_OK @ISA $VERSION);
+@ISA     = qw(Exporter);
 $VERSION = substr q$Revision: 0.02 $, 10;
+
+# $html_hr is the HTML <hr/> tag with the correct width attribute.
+use vars         qw($html_hr);
+push(@EXPORT_OK, qw($html_hr));
+$html_hr = '<hr align="left" width="692" />';
 
 # Use a blessed reference to an array as the storage for this class.
 # Define these constant subroutines as indexes into the array.  If
@@ -70,7 +75,7 @@ sub DESTROY {
     $self->[$i_bottom]
 
     <br />
-    <hr align="left" width="692">
+    $html_hr
     <table cellpadding="0" border="0">
       <tr valign="bottom">
         <td width="186">

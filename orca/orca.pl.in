@@ -61,7 +61,7 @@ use Orca::OldState      qw($orca_old_state
 use Orca::Utils         qw(name_to_fsname perl_glob unique);
 use Orca::SourceFile;
 use Orca::SourceFileIDs qw(@sfile_fids);
-use Orca::HTMLFile;
+use Orca::HTMLFile      qw($html_hr);
 
 # Note the starting time of the script.
 my $start_time = time;
@@ -711,7 +711,7 @@ sub create_html_files {
       my @images = sort {$a->plot_ref->{index} <=> $b->plot_ref->{index}}
                    grep {$subgroup_name eq $_->subgroup_name} @{$image_files_ref->{list}};
       if (@images > 1) {
-        my $href_html = "<hr>";
+        my $href_html = "$html_hr\n";
         for (my $i=0; $i<@images; ++$i) {
           $href_html .= "<a href=\"#$i\">[" .
                         replace_subgroup_name($images[$i]->plot_ref->{title},
@@ -733,7 +733,7 @@ sub create_html_files {
         my $image_size = $image->image_src_size;
 
         foreach my $html_file (@html_files) {
-          $html_file->{fd}->print("<hr>\n<h2><a ${href} name=\"$i\">$html_file->{Plot_Type} " .
+          $html_file->{fd}->print("$html_hr\n<h2><a ${href} name=\"$i\">$html_file->{Plot_Type} " .
                                   "$title</a></h2>\n");
         }
 
@@ -754,7 +754,7 @@ sub create_html_files {
       }
 
       foreach my $html_file (@html_files) {
-        $html_file->{fd}->print("<hr>\n");
+        $html_file->{fd}->print("$html_hr\n");
       }
     }
 
@@ -769,8 +769,7 @@ sub create_html_files {
     $index_html->print("</table>\n\n");
   }
 
-  $index_html->print("<br>\n<hr>\n" .
-                     "<h2>Available Data Sets</h2>\n\n");
+  $index_html->print("<br>\n$html_hr\n<h2>Available Data Sets</h2>\n\n");
 
   # Here the different available plots are listed and the HTML files
   # created that contain the HREFs to the proper images.  The HTML files
@@ -854,7 +853,7 @@ sub create_html_files {
           my $fd = Orca::HTMLFile->new($filename,
                                        "${Plot_Type}${html_title_name} $legend_no_subgroup",
                                        $config_global{html_page_header},
-                                       "<hr>\n$config_global{html_page_footer}");
+                                       "$html_hr\n$config_global{html_page_footer}");
           unless ($fd) {
             warn "$0: warning: cannot create Orca::HTMLFile object: $@.\n";
             next;
@@ -881,7 +880,7 @@ sub create_html_files {
         # page easier.  Do this if there are two or more subgroups in
         # this HTML page.
         if (@{$same_legends_image_list{$legend_no_subgroup}} > 1) {
-          $href_html .= "<hr>\n";
+          $href_html .= "$html_hr\n";
           foreach my $legend_image (@{$same_legends_image_list{$legend_no_subgroup}}) {
             my $subgroup = $legend_image->subgroup_name;
             $href_html  .= "<a href=\"#$subgroup\">[$subgroup]</a><spacer size=10>\n";
@@ -938,11 +937,12 @@ sub create_html_files {
       my $image_size          = $image->image_src_size;
       foreach my $plot_type (@IMAGE_PLOT_TYPES) {
         my $Plot_Type    = capatialize($plot_type);
-        $summarize_html->print("<hr>\n<h2>$Plot_Type $legend_with_subgroup</h2>\n",
+        $summarize_html->print("$html_hr\n<h2>$Plot_Type $legend_with_subgroup</h2>\n",
                                "<img src=\"$image_filename-$plot_type.$IMAGE_SUFFIX\"",
                                $image_size,
                                "alt=\"$Plot_Type $legend_with_subgroup\">\n");
       }
+      $summarize_html->print("$html_hr\n");
 
       # Now add the images into each HTML file.
       my $name          = $image->name;
@@ -951,7 +951,7 @@ sub create_html_files {
 
       my @legend_html_files = @{$legend_html_files{$legend_no_subgroup}};
       if ($make_html_all_page) {
-        $legend_html_files[-1]{fd}->print("<hr>\n<h2><a ${href} name=\"$subgroup_name\">$subgroup_name $legend_no_subgroup</a></h2>\n");
+        $legend_html_files[-1]{fd}->print("$html_hr\n<h2><a ${href} name=\"$subgroup_name\">$subgroup_name $legend_no_subgroup</a></h2>\n");
       }
       for (my $i=0; $i<@legend_html_files-$make_html_all_page; ++$i) {
         my $Plot_Type      = $legend_html_files[$i]{Plot_Type};
@@ -959,7 +959,7 @@ sub create_html_files {
         $image_filename   .= "$name-$legend_html_files[$i]{plot_type}.$IMAGE_SUFFIX";
         my $html = "<a $href><img src=\"$image_filename\" $image_size " .
                    "alt=\"$Plot_Type $subgroup_name $legend_no_subgroup\"></a><br /><br />\n";
-        $legend_html_files[$i]{fd}->print("<hr>\n<h2><a ${href} name=\"$subgroup_name\">$Plot_Type $subgroup_name $legend_no_subgroup</a></h2>\n");
+        $legend_html_files[$i]{fd}->print("$html_hr\n<h2><a ${href} name=\"$subgroup_name\">$Plot_Type $subgroup_name $legend_no_subgroup</a></h2>\n");
         $legend_html_files[$i]{fd}->print($html);
         if ($make_html_all_page) {
           $legend_html_files[-1]{fd}->print($html);
@@ -971,7 +971,7 @@ sub create_html_files {
   if (@table_columns) {
     $index_html->print("<tr>" . join('', @table_columns) . "</tr>\n");
   }
-  $index_html->print("\n</table>\n<hr>\n");
+  $index_html->print("\n</table>\n$html_hr\n");
 }
 
 # Replace any %g with the subgroup and any %G's with a capitalized

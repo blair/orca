@@ -7,6 +7,23 @@
 #
 # Copyright (C) 1998-1999 Blair Zajac and Yahoo!, Inc.
 # Copyright (C) 1999-2004 Blair Zajac.
+#
+# This file is part of Orca.
+#
+# Orca is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# Orca is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+# or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Orca in the COPYING-GPL file; if not, write to the Free
+# Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+# 02111-1307 USA
 
 package Orca::HTMLFile;
 
@@ -91,27 +108,6 @@ sub DESTROY {
         </td>
         <td width="20">&nbsp;&nbsp</td>
 
-        <!--
-        If you are using Orca for free, then as a return to the effort
-        Blair Zajac has put into building and writing Orca, you have
-        several choices:
-
-        1) Become an Orca developer and contribute code to the Orca
-           project.  Contact orca-dev\@orcaware.com to discuss what
-           Orca related projects are available.
-
-        2) Donate via PayPal to blair\@orcaware.com a nominal amount,
-           \$10.00.
-
-        3) Purchase an item for Blair and his wife Ashley Rothschild
-           from their Amazon.com wish list:
-           http://www.orcaware.com/wish_list.html
-
-        4) Ensure that the following HTML code in the <td>..</td>
-
-        remains in the generated HTML files and that it is visible to
-        people that browse the generated web pages.
-        -->
         <td width="334">
           <a href="http://www.rothschildimage.com/">
             <img width="334" height="21" border="0"
@@ -140,27 +136,6 @@ sub DESTROY {
         </td>
         <td width="20">&nbsp;&nbsp;</td>
 
-        <!--
-        If you are using Orca for free, then as a return to the effort
-        Blair Zajac has put into building and writing Orca, you have
-        several choices:
-
-        1) Become an Orca developer and contribute code to the Orca
-           project.  Contact orca-dev\@orcaware.com to discuss what
-           Orca related projects are available.
-
-        2) Donate via PayPal to blair\@orcaware.com a nominal amount,
-           \$10.00.
-
-        3) Purchase an item for Blair and his wife Ashley Rothschild
-           from their Amazon.com wish list:
-           http://www.orcaware.com/wish_list.html
-
-        4) Ensure that the following HTML code in the <td>..</td>
-
-        remains in the generated HTML files and that it is visible to
-        people that browse the generated web pages.
-        -->
         <td width="334">
           <font face="verdana,geneva,arial,helvetica" size="2">
              Funding for Orca provided by renowned fashion

@@ -1180,16 +1180,6 @@ a directory on Web server.  It has the following features:
   * Can be run under cron or it can sleep itself waiting for file
     updates based on when the file was last updated.
 
-Orca is similar to but substantially different from other tools that
-record and display hourly, daily, monthly, and yearly data, such as
-MRTG and Cricket.  To see these other tools, examine
-
-  http://people.ee.ethz.ch/~oetiker/webtools/mrtg/mrtg.html
-
-and
-
-  http://cricket.sourceforge.net/
-
 =head1 INDEX
 
 This is an index of this manual:

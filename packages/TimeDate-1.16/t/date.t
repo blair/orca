@@ -130,12 +130,15 @@ Tue, 15 Nov 1994 0:18:38 -0800
 
 @data = split(/\n/, $data);
 
-print "1..", scalar(@data),"\n";
-$loop = 1;
+print "1..", 1+@data,"\n";
+
+print  defined(str2time("")) ? "not ok 1\n" : "ok 1\n";
+
+$loop = 2;
 
 foreach (@data)
 {
- $time = str2time($_);
+ $time = int str2time($_);
 
  if(defined $time)
   {

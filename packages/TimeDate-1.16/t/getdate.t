@@ -13,12 +13,14 @@ $data = qq!1995-01-24                ;790905600
 92/01/02 12:01 AM		     ;694310460
 92/01/02 12:01 PM		     ;694353660
 2002-11-02 11pm GMT		     ;1036278000
+2002-11-02 11 pm GMT		     ;1036278000
 1995-01-24  GMT                      ;790905600
 1995-01-24  BST                      ;790902000
 1995-06-24  GMT                      ;803952000
 1995-06-24  BST                      ;803948400
 1992-1-2 12:01 GMT		     ;694353660
 Wed, 16 Jun 94 07:29:35 CST    	     ;771773375
+Wed,16 Jun 94 07:29:35 CST    	     ;771773375
 Wed, 16 Nov 94 07:29:35 CST 	     ;784992575
 Mon, 21 Nov 94 07:42:23 CST 	     ;785425343
 Mon, 21 Nov 94 04:28:18 CST 	     ;785413698
@@ -129,6 +131,7 @@ Tue, 15 Nov 1994 13:18:38 -0800      ;784934318
 Tue, 15 Nov 1994 0:18:38 -0800 	     ;784887518
 Jul 13 1999 1:23P GMT		     ;931872180
 Jul 13 1999 1:23P.M GMT		     ;931872180
+Jul 13 1999 1:23P.M. GMT	     ;931872180
 2001-02-26T13:44:12-0700	     ;983220252
 2001-02-26T13:44-0700		     ;983220240
 2001-02-26T13-0700		     ;983217600
@@ -136,6 +139,9 @@ Jul 13 1999 1:23P.M GMT		     ;931872180
 2001-02-26T13-44-0700		     ;983220240
 2001-02-26T13-0700		     ;983217600
 07/Nov/2000:16:45:56 +0100	     ;973611956
+2002-11-07T23:31:49-05:00	     ;1036729909
+2003-02-17T07:45:56Z		     ;1045467956
+2003-02-17T08:14:07.198189+0000	     ;1045469647.198189
 !;
 
 require Time::Local;
@@ -177,15 +183,15 @@ foreach (@data){
 
     $time_expect += $offset;
 
-    if($time==$time_expect) {
+    if(defined($time) and $time==$time_expect) {
 	print "ok $loop\n";
     }
     else {
         require Date::Format;
 	print "-"x50,"\nFAIL $loop\n";
         printf "%s\nDiff:    %d\n", $str, $time - $time_expect;
-        printf "Expect: %10d %s",$time_expect,Date::Format::ctime($time_expect);
-        printf "Got:    %10d %s",$time, Date::Format::ctime($time);
+        printf "Expect: %10f %s",$time_expect,Date::Format::ctime($time_expect);
+        printf "Got:    %10f %s",$time, Date::Format::ctime($time);
     }
     $loop++;
 }

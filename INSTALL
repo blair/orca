@@ -204,10 +204,10 @@ Outline:
 
     Date::Parse
 
-      http://www.perl.com/CPAN/authors/id/G/GB/GBARR/TimeDate-1.14.tar.gz
+      http://www.perl.com/CPAN/authors/id/G/GB/GBARR/TimeDate-1.16.tar.gz
 
-      % gunzip -c TimeDate-1.14.tar.gz | tar xvf -
-      % cd TimeDate-1.14
+      % gunzip -c TimeDate-1.16.tar.gz | tar xvf -
+      % cd TimeDate-1.16
       % perl Makefile.PL
       % make
       % make test

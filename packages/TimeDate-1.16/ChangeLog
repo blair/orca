@@ -1,3 +1,67 @@
+Change 814 on 2003/06/03 by <gbarr@pobox.com> (Graham Barr)
+
+	Date::Parse
+	- Time::Local in 5.8 does not support fractional seconds
+
+Change 813 on 2003/06/02 by <gbarr@pobox.com> (Graham Barr)
+
+	Release 1.15
+
+Change 812 on 2003/06/02 by <gbarr@pobox.com> (Graham Barr)
+
+	Fix comments about Language implementation in Date::Parse
+	(patch from Christian Hammers)
+
+Change 811 on 2003/06/02 by <gbarr@pobox.com> (Graham Barr)
+
+	Fix short name for 'maart' to be 'mrt' as suggested by Frank Maas
+
+Change 810 on 2003/06/02 by <gbarr@pobox.com> (Graham Barr)
+
+	Add %G format for GPS week (patch from Eric Richardson)
+
+Change 809 on 2003/06/02 by <gbarr@pobox.com> (Graham Barr)
+
+	Language updates from Daniel Yacob
+
+Change 808 on 2003/06/02 by <gbarr@pobox.com> (Graham Barr)
+
+	str2time("") should return undef
+
+Change 807 on 2003/06/02 by <gbarr@pobox.com> (Graham Barr)
+
+	Added Swedish and Finnish languages from Matthew Musgrove
+
+Change 778 on 2003/03/03 by <gbarr@pobox.com> (Graham Barr)
+
+	Added Chinese_GB language.
+	Supplied by forehead (I don't even pretend tounderstand it)
+
+Change 777 on 2003/03/03 by <gbarr@pobox.com> (Graham Barr)
+
+	Return fractional seconds when specified in an ISO date
+
+Change 776 on 2003/03/03 by <gbarr@pobox.com> (Graham Barr)
+
+	New languages from Daniel Yacob
+
+Change 775 on 2003/03/03 by <gbarr@pobox.com> (Graham Barr)
+
+	Fix UTC support on ISO dates
+
+Change 774 on 2003/03/03 by <gbarr@pobox.com> (Graham Barr)
+
+	Allow a : in a timezone so the dates specified in RSS can be parsed
+	(eg 2002-11-07T23:31:49-05:00) Patch from Kellan
+
+Change 773 on 2003/03/03 by <gbarr@pobox.com> (Graham Barr)
+
+	Support parsing more formats
+
+Change 754 on 2002/11/03 by <gbarr@pobox.com> (Graham Barr)
+
+	Release 1.14
+
 Change 753 on 2002/11/03 by <gbarr@pobox.com> (Graham Barr)
 
 	Fix bug parsing 2002-11-02 11pm

@@ -200,6 +200,68 @@ AC_ARG_WITH(warn-email,
 )
 AC_SUBST(WARN_EMAIL)
 
+BUILD_RRD=no
+AC_ARG_ENABLE(librrdtool,
+  AC_HELP_STRING([--enable-librrdtool],
+                 [Build RRD and install librrdtool{.a,.so} into $libdir]),
+  [
+    if test "$enableval" = yes; then
+      BUILD_RRD=yes
+      MAKE_RRDTOOL=make_rrdtool
+      TEST_RRDTOOL=test_rrdtool
+      CLEAN_RRDTOOL=clean_rrdtool
+      DISTCLEAN_RRDTOOL=distclean_rrdtool
+      INSTALL_LIB_RRDTOOL=install_lib_rrdtool
+    fi
+  ]
+)
+AC_SUBST(INSTALL_LIB_RRDTOOL)
+
+BUILD_ORCALLATOR=yes
+ORCALLATOR_SUBDIR=orcallator
+AC_ARG_ENABLE(orcallator,
+  AC_HELP_STRING([--disable-orcallator],
+                 [Do not enable building and installing orcallator]),
+  [
+    if test "$enableval" = no; then
+      BUILD_ORCALLATOR=no
+      ORCALLATOR_SUBDIR=
+    fi
+  ]
+)
+AC_SUBST(BUILD_ORCALLATOR)
+AC_SUBST(ORCALLATOR_SUBDIR)
+
+BUILD_ORCA_SERVICES=yes
+ORCA_SERVICES_SUBDIR=orca_services
+AC_ARG_ENABLE(orca-services,
+  AC_HELP_STRING([--disable-orca-services],
+                 [Do not enable building and installing Orca-Services]),
+  [
+    if test "$enableval" = no; then
+      BUILD_ORCA_SERVICES=no
+      ORCA_SERVICES_SUBDIR=
+    fi
+  ]
+)
+AC_SUBST(BUILD_ORCA_SERVICES)
+AC_SUBST(ORCA_SERVICES_SUBDIR)
+
+BUILD_PROCALLATOR=yes
+PROCALLATOR_SUBDIR=procallator
+AC_ARG_ENABLE(procallator,
+  AC_HELP_STRING([--disable-procallator],
+                 [Do not enable building and installing procallator]),
+  [
+    if test "$enableval" = no; then
+      BUILD_PROCALLATOR=no
+      PROCALLATOR_SUBDIR=
+    fi
+  ]
+)
+AC_SUBST(BUILD_PROCALLATOR)
+AC_SUBST(PROCALLATOR_SUBDIR)
+
 # To get a default CFLAGS for this build, check for a C compiler.  This
 # is also needed to be ready to compile any Perl modules.
 AC_PROG_CC
@@ -208,6 +270,7 @@ AC_PROG_MAKE_SET
 AC_ARG_PROGRAM
 AC_PATH_PROG(BZIP2, bzip2)
 AC_PATH_PROG(BUNZIP2, bunzip2)
+AC_PATH_PROG(CHKCONFIG, chkconfig)
 AC_PATH_PROG(COMPRESS, compress)
 AC_PATH_PROG(CUT, cut, cut)
 AC_PATH_PROG(EXPR, expr, expr)
@@ -275,27 +338,6 @@ elif test -n "$COMPRESS" -a -n "$UNCOMPRESS"; then
 fi
 AC_SUBST(COMPRESSOR)
 AC_SUBST(UNCOMPRESSOR_PIPE)
-
-# Always build the orcallator files regardless of the operating system.
-BUILD_ORCALLATOR=yes
-ORCALLATOR_SUBDIR=data_gatherers/orcallator
-INSTALL_LIB_RRDTOOL=
-AC_SUBST(ORCALLATOR_SUBDIR)
-AC_SUBST(INSTALL_LIB_RRDTOOL)
-
-# These commands can be used if the orcallator should not be built.
-# AC_MSG_CHECKING([for solaris host for orcallator install])
-# AC_MSG_RESULT($BUILD_ORCALLATOR)
-# BUILD_ORCALLATOR=no
-# ORCALLATOR_SUBDIR=
-
-# These commands can be used to force a build of the librrdtool library.
-# INSTALL_LIB_RRDTOOL=install_lib_rrdtool
-# MAKE_RRDTOOL=make_rrdtool
-# TEST_RRDTOOL=test_rrdtool
-# INSTALL_PERL_RRDTOOL=
-# CLEAN_RRDTOOL=clean_rrdtool
-# DISTCLEAN_RRDTOOL=distclean_rrdtool
 
 # This command can be used to add --enable-shared to the configure
 # options for RRDtool if it is not already declared.
@@ -394,6 +436,9 @@ AC_SUBST(DISTCLEAN_MATH_INTERVALSEARCH)
 BORP_PERL_MODULE(orca_cv_perl_rrds, $PERL, RRDs, $RRDTOOL_VER)
 test "$ALWAYS_BUILD_PERL_MODULES" && orca_cv_perl_rrds=no
 if test "$orca_cv_perl_rrds" = no; then
+  BUILD_RRD=yes
+fi
+if test "$BUILD_RRD" = yes; then
   MAKE_RRDTOOL=make_rrdtool
   TEST_RRDTOOL=test_rrdtool
   INSTALL_PERL_RRDTOOL=install_perl_rrdtool
@@ -447,6 +492,22 @@ MKDIR="$config_dir/mkinstalldirs"
 AC_SUBST(INSTALL)
 AC_SUBST(MKDIR)
 
+# Look for the /proc equivalent directory for use by procallator.
+AC_MSG_CHECKING([for /proc style directory])
+PROC_DIR=
+for d in /proc; do
+  if test -d $d; then
+    PROC_DIR="$d"
+    break
+  fi
+done
+if test "$PROC_DIR"; then
+  AC_MSG_RESULT($PROC_DIR)
+else
+  AC_MSG_RESULT(no /proc directory found)
+fi
+AC_SUBST(PROC_DIR)
+
 # Determine the appropriate init.d directory on the system.
 AC_MSG_CHECKING([where the boot init.d directory is])
 for dir in /etc/rc.d/init.d /etc/init.d; do
@@ -478,7 +539,7 @@ fi
 AC_SUBST(RCX_D_CONTAINING_DIR)
 
 # Build the RRDtool library if it is needed.
-if test "$orca_cv_perl_rrds" = no; then
+if test "$BUILD_RRD" = yes; then
   command="(cd packages/$RRDTOOL_DIR; ./configure $RRD_CONFIGURE_COMMAND_LINE)"
   echo ""
   echo "Running configure in packages/$RRDTOOL_DIR to create RRDtool and RRDs.pm."
@@ -494,13 +555,31 @@ fi
 #       variable substitutions.
 #--------------------------------------------------------------------
 if test "$BUILD_ORCALLATOR" = yes; then
-  ORCALLATOR_OUTPUT="data_gatherers/orcallator/Makefile
+  OUTPUT_ORCALLATOR="data_gatherers/orcallator/Makefile
                      data_gatherers/orcallator/orcallator.cfg
                      data_gatherers/orcallator/orcallator_running.pl
                      data_gatherers/orcallator/restart_orcallator.sh
                      data_gatherers/orcallator/start_orcallator.sh
                      data_gatherers/orcallator/stop_orcallator.sh
                      data_gatherers/orcallator/S99orcallator.sh"
+fi
+
+if test "$BUILD_ORCA_SERVICES" = yes; then
+  OUTPUT_ORCA_SERVICES="data_gatherers/orca_services/Makefile
+                        data_gatherers/orca_services/orca_services.cfg
+                        data_gatherers/orca_services/orca_services.pl
+                        data_gatherers/orca_services/orca_services_running.pl
+                        data_gatherers/orca_services/restart_orca_services.sh
+                        data_gatherers/orca_services/start_orca_services.sh
+                        data_gatherers/orca_services/stop_orca_services.sh
+                        data_gatherers/orca_services/S99orca_services.sh"
+fi
+
+if test "$BUILD_PROCALLATOR" = yes; then
+  OUTPUT_PROCALLATOR="data_gatherers/procallator/Makefile
+                      data_gatherers/procallator/procallator.cfg
+                      data_gatherers/procallator/procallator.pl
+                      data_gatherers/procallator/S99procallator.sh"
 fi
 
 AC_OUTPUT(Makefile
@@ -510,15 +589,9 @@ AC_OUTPUT(Makefile
           contrib/rotate_orca_graphs/Makefile
           contrib/rotate_orca_graphs/rotate_orca_graphs.sh
           data_gatherers/Makefile
-          $ORCALLATOR_OUTPUT
-          data_gatherers/orca_services/Makefile
-          data_gatherers/orca_services/orca_services.cfg
-          data_gatherers/orca_services/orca_services.pl
-          data_gatherers/orca_services/orca_services_running.pl
-          data_gatherers/orca_services/restart_orca_services.sh
-          data_gatherers/orca_services/start_orca_services.sh
-          data_gatherers/orca_services/stop_orca_services.sh
-          data_gatherers/orca_services/S99orca_services.sh
+          $OUTPUT_ORCALLATOR
+          $OUTPUT_ORCA_SERVICES
+          $OUTPUT_PROCALLATOR
           docs/Makefile
           lib/Makefile
           packages/Makefile
@@ -546,12 +619,6 @@ echo "Thank you and enjoy Orca,"
 echo "Blair Zajac <blair@orcaware.com>"
 echo "----------------------------------------------------------------"
 
-case "$target" in
-  *-solaris*)
-    if test -z "$WEB_LOG"; then
-      AC_MSG_WARN([*** Unless you use a --with-*-log option orcallator will not gather WWW log data.])
-    fi
-    ;;
-  *)
-    ;;
-esac
+if test -z "$WEB_LOG"; then
+  AC_MSG_WARN([*** Unless you use a --with-*-log option orcallator will not gather WWW log data.])
+fi

@@ -29,8 +29,9 @@ Outline:
     e) Run start_orcallator on all systems.
     f) Edit orcallator.cfg.
 
-11) Run Orca.
+11) [Systems with System Statistics in /proc, i.e. Linux] Install procallator.
 
+12) Run Orca.
 
 
 
@@ -473,7 +474,45 @@ Outline:
        of date, which may signify a orcallator program that has died
        and is no longer gathering data.
 
-11) Run Orca.
+11) [Systems with System Statistics in /proc, i.e. Linux] Install procallator.
+    a) Install procallator boot and halt time start/stop scripts in
+       /etc/init.d/ and /etc/rc?.d/.
+
+       If you want to have procallator run when the machine boots, you
+       can manually copy data_gatherers/procallator/S99procallator
+       into /etc/init.d/procallator and set up symbolic links from
+       that file to the appropriate K* and S* files in /etc/rc?.d/.
+
+       To make installing this easier, you can run
+
+       % make procallator_run_at_boot
+
+       from either the top of the Orca source tree or from the
+       data_gatherers/procallator directory.  This uses Linux's
+       chkconfig's script to install the start and stop scripts in the
+       approprirate locations.  By default, procallator is started in
+       run levels 2, 3, 4 and 5.
+
+    b) Run start_procallator on all systems.
+
+       Log in as root on all the systems you want to watch and run:
+
+       % /etc/rc.d/init.d/procallator start
+
+       Procallator will not generate an output data file until the
+       first update interval, which will be between 2.5 to 7.5 minutes
+       after procallator is started.
+
+    c) Edit procallator.cfg.
+
+       You need to edit the installed procallator.cfg file and remove
+       all unneeded references.  In particular, you'll want to change
+       warn_email, which is the email address that receives emails
+       when procallator generated files are out of date, which may
+       signify a procallator program that has died and is no longer
+       gathering data.
+
+12) Run Orca.
 
     Log into the system that will run Orca and run the command:
 

@@ -1,7 +1,12 @@
 @SET_MAKE@
 
-SUBDIRS               = orcallator \
-                        orca_services
+ORCALLATOR_SUBDIR     = @ORCALLATOR_SUBDIR@
+ORCA_SERVICES_SUBDIR  = @ORCA_SERVICES_SUBDIR@
+PROCALLATOR_SUBDIR    = @PROCALLATOR_SUBDIR@
+
+SUBDIRS               = $(ORCALLATOR_SUBDIR) \
+                        $(ORCA_SERVICES_SUBDIR) \
+                        $(PROCALLATOR_SUBDIR)
 
 all:	Makefile $(TARGETS)
 	@for dir in $(SUBDIRS); do \
@@ -14,6 +19,9 @@ orcallator_run_at_boot:
 
 orca_services_run_at_boot:
 	cd orca_services && $(MAKE) orca_services_run_at_boot
+
+procallator_run_at_boot:
+	cd procallator && $(MAKE) procallator_run_at_boot
 
 install:
 	@for dir in $(SUBDIRS); do \

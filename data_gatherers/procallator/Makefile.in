@@ -1,0 +1,92 @@
+@SET_MAKE@
+
+prefix                = @prefix@
+exec_prefix           = @exec_prefix@
+bindir                = @bindir@
+libdir                = @libdir@
+libexecdir            = @libexecdir@
+sysconfdir            = @sysconfdir@
+INSTALL               = @INSTALL@
+MKDIR                 = @MKDIR@
+PERL_HEAD             = @PERL_HEAD@
+VAR_DIR               = @VAR_DIR@
+RRD_DIR               = @RRD_DIR@
+INIT_D_DIR            = @INIT_D_DIR@
+RCX_D_CONTAINING_DIR  = @RCX_D_CONTAINING_DIR@
+RAW_PROCALLATOR_DIR   = $(VAR_DIR)/procallator
+RRD_PROCALLATOR_DIR   = $(RRD_DIR)/procallator
+CHKCONFIG             = @CHKCONFIG@
+
+BIN_PERL_SCRIPTS      = procallator
+LIBEXEC_PERL_SCRIPTS  =
+NOINST_PERL_SCRIPTS   =
+PERL_SCRIPTS          = $(BIN_PERL_SCRIPTS) \
+                        $(LIBEXEC_PERL_SCRIPTS) \
+                        $(NOINST_PERL_SCRIPTS)
+
+BIN_SHELL_SCRIPTS     =
+LIBEXEC_SHELL_SCRIPTS =
+NOINST_SHELL_SCRIPTS  = S99procallator
+SHELL_SCRIPTS         = $(BIN_SHELL_SCRIPTS) \
+                        $(LIBEXEC_SHELL_SCRIPTS) \
+                        $(NOINST_SHELL_SCRIPTS)
+
+TARGETS               = $(PERL_SCRIPTS) \
+                        $(SHELL_SCRIPTS)
+BIN_TARGETS           = $(BIN_PERL_SCRIPTS) \
+                        $(BIN_SHELL_SCRIPTS)
+LIBEXEC_TARGETS       = $(LIBEXEC_PERL_SCRIPTS) \
+                        $(LIBEXEC_SHELL_SCRIPTS)
+
+all: Makefile $(TARGETS) procallator.cfg
+
+install: all
+	$(MKDIR) $(bindir)
+	$(MKDIR) $(RAW_PROCALLATOR_DIR)
+	$(MKDIR) $(RRD_PROCALLATOR_DIR)
+	@for file in $(BIN_TARGETS); do \
+	  echo $(INSTALL) $$file $(bindir); \
+	  $(INSTALL) $$file $(bindir); \
+	done
+	@if test -r $(sysconfdir)/procallator.cfg; then \
+	  date="`date +%Y-%m-%d-%H:%M:%S`"; \
+	  echo $(INSTALL) -m 0644 procallator.cfg $(sysconfdir)/procallator.cfg.$$date; \
+	  $(INSTALL) -m 0644 procallator.cfg $(sysconfdir)/procallator.cfg.$$date; \
+	else \
+	  echo $(INSTALL) -m 0644 procallator.cfg $(sysconfdir); \
+	  $(INSTALL) -m 0644 procallator.cfg $(sysconfdir); \
+	fi
+
+procallator_run_at_boot: all
+	test "$(INIT_D_DIR)"
+	-$(RM) $(INIT_D_DIR)/procallator
+	$(INSTALL) -m 0744 S99procallator $(INIT_D_DIR)/procallator
+	$(CHKCONFIG) --add procallator
+
+clean:
+	$(RM) $(TARGETS)
+
+distclean: clean
+	$(RM) *.sh procallator.pl Makefile
+
+.SUFFIXES: .pl .sh
+
+.pl: $(PERL_HEAD)
+	cat $(PERL_HEAD) $< > $@
+	chmod 0755 $@
+
+.sh:
+	cp $< $@
+	chmod 0755 $@
+
+Makefile: Makefile.in
+	cd ../.. && CONFIG_FILES=data_gatherers/procallator/Makefile ./config.status
+
+procallator.cfg: procallator.cfg.in
+	cd ../.. && CONFIG_FILES=data_gatherers/procallator/procallator.cfg ./config.status
+
+procallator.pl: procallator.pl.in
+	cd ../.. && CONFIG_FILES=data_gatherers/procallator/procallator.pl ./config.status
+
+S99procallator.sh: S99procallator.sh.in
+	cd ../.. && CONFIG_FILES=data_gatherers/procallator/S99procallator.sh ./config.status

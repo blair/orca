@@ -1,27 +1,34 @@
 # Orca configuration file for procallator files.
 
+# Require at least this version of Orca.
+require			Orca 0.265
+
 # base_dir is prepended to the paths find_files, html_dir, rrd_dir,
 # and state_file only if the path does not match the regular
 # expression ^\\?\.{0,2}/, which matches /, ./, ../, and \./.
-base_dir		/usr/local/var/orca/rrd/procallator
+base_dir		@RRD_DIR@/procallator
 
-# rrd_dir specifies the location of the generated RRD data files.
+# rrd_dir specifies the location of the generated RRD data files.  If
+# rrd_dir is a relative path, then it is made relative to base_dir if
+# base_dir is set.
 rrd_dir			.
 
 # state_file specifies the location of the state file that remembers
-# the modification time of each source data file.
+# the modification time of each source data file.  If state_file is a
+# relative path, then it is made relative to base_dir is base_dir is
+# set.
 state_file		orca.state
 
 # html_dir specifies the top of the HTML tree created by Orca.
-html_dir		/usr/local/www/ramdrive/servers2
+html_dir		@HTML_DIR@/procallator
 
 # By default create .meta tag files for all PNGs or GIFs so that the
 # web browser will automatically reload them.
-expire_images		0
+expire_images		1
 
 # Find files at the following times:
-#    0:10 to pick up new orcallator files for the new day.
-#    1:00 to pick up late comer orcallator files for the new day.
+#    0:10 to pick up new procallator files for the new day.
+#    1:00 to pick up late comer procallator files for the new day.
 #    6:00 to pick up new files before the working day.
 #   12:00 to pick up new files during the working day.
 #   19:00 to pick up new files after the working day.
@@ -31,8 +38,33 @@ find_times		0:10 1:00 6:00 12:00 19:00
 # being updated constantly stops being updated.  For mathematical
 # expressions use the word `interval' to get the interval number for
 # the data source.
-warn_email		guilherme.chehab@tco.net.br
-late_interval		interval + 30 
+warn_email		@WARN_EMAIL@
+late_interval		interval + 30
+
+# These parameters specify which plots to generate.
+generate_hourly_plot	0
+generate_daily_plot	1
+generate_weekly_plot	1
+generate_monthly_plot	1
+generate_quarterly_plot	1
+generate_yearly_plot	1
+
+# This sets the HTML markup that is placed at the very top of every
+# web page and is primarily used to display the site's logo.
+html_page_header	<h3>Put your site's logo here.</h3>
+
+# This sets the text, that should not be HTML markup, that is used
+# only in the main index.html file.  It is used in the <title></title>
+# element and also placed in the HTML body after the html_page_header
+# in a <h1></h1> element index.html file.
+html_top_title		Orca Host Status
+
+# This sets the HTML markup that is placed at the bottom of every web
+# page.
+html_page_footer
+  <font face="verdana,geneva,arial,helvetica">
+    These plots brought to you by your local system administrator.
+  </font>
 
 # This defines where the find the source data files and the format of
 # those files.  Notes about the fields:
@@ -45,16 +77,15 @@ late_interval		interval + 30
 #   generate a subgroup name, hence all the (?:...) for matching
 #   anything else.
 # interval
-#   The interval here must match the interval used by orcallator to
+#   The interval here must match the interval used by procallator to
 #   record data.  Do not change this, as it has an effect on the
 #   generated RRD data files.
 
-group orcallator {
-find_files		/usr/local/var/orca/procallator/(.*)/(?:(?:procallator)|(?:proccol))-\d{4}-\d{2}-\d{2}(?:\.(?:Z|gz|bz2))?
+group procallator {
+find_files		@VAR_DIR@/procallator/(.*)/(?:(?:procallator)|(?:proccol))-\d{4}-\d{2}-\d{2}(?:-\d{3,})?(?:\.(?:Z|gz|bz2))?
 column_description	first_line
 date_source		column_name timestamp
 interval		300
-reopen			1
 filename_compare	sub {
 			  my ($ay, $am, $ad) = $a =~ /-(\d{4})-(\d\d)-(\d\d)/;
 			  my ($by, $bm, $bd) = $b =~ /-(\d{4})-(\d\d)-(\d\d)/;
@@ -67,30 +98,9 @@ filename_compare	sub {
 			}
 }
 
-# This sets the HTML markup that is placed at the very top of every
-# web page and is primarily used to display the site's logo.
-html_page_header
-  <spacer type=vertical size=4>
-  <body bgcolor="#808080">
-
-# This sets the text, that should not be HTML markup, that is used
-# only in the main index.html file.  It is used in the <title></title>
-# element and also placed in the HTML body after the html_page_header
-# in a <h1></h1> element index.html file.
-html_top_title		Estado dos servidores TCO/NBT 
-
-# This sets the HTML markup that is placed at the bottom of every web
-# page.
-html_page_footer
-  <spacer type=vertical size=20>
-  <font face="Arial,Helvetica">
-     Estes gr&aacute;ficos foram gerados Blair Zajac´s ORCA, and Guilherme Chehab´s Procallator
-  </font>
-  </html>
-
 plot {
 title			%g Uptime
-source			orcallator
+source			procallator
 data			uptime / 86400
 data			uptime / ( 86400 * 7 )
 data			uptime / ( 86400 * 30 )
@@ -105,16 +115,12 @@ href			http://www.orcaware.com/orca/docs/orcallator.html#system_uptime
 }
 
 plot {
-title			%g Average # Processes in Run Queue (Load Average) & number pf CPUs
-source			orcallator
+title			%g Average # Processes in Run Queue (Load Average)
+source			procallator
 data			1runq
-data			5runq 
+data			5runq
 data			15runq
-data			ncpus	
-color			00ff00
-color			0000ff
-color			ff00ff
-color			ff0000
+data			ncpus
 line_type		LINE1
 line_type		LINE1
 line_type		LINE1
@@ -122,16 +128,16 @@ line_type		LINE2
 legend			1 minute average
 legend			5 minute average
 legend			15 minute average
-legend			CPUs (load threshold)
-y_legend		Number of processes and CPUs
+legend			Number CPUs
+y_legend		Number Processes
 data_min		0
-data_max		100
+data_max		1000
 href			http://www.orcaware.com/orca/docs/orcallator.html#processes_in_run_queue
 }
 
 plot {
 title			%g CPU Usage
-source			orcallator
+source			procallator
 data			usr%
 data			sys%
 data			nice%
@@ -142,7 +148,7 @@ line_type		stack
 line_type		stack
 legend			User
 legend			System
-legend			nice
+legend			Nice
 legend			Idle
 y_legend		Percent
 data_min		0
@@ -151,15 +157,15 @@ plot_min		0
 plot_max		100
 rigid_min_max		1
 color			00ff00
-color			0000ff
 color			ff0000
+color			0000ff
 color			ffffd0
 href			http://www.orcaware.com/orca/docs/orcallator.html#cpu_usage
 }
 
 plot {
 title			%g New Process Spawn Rate
-source			orcallator
+source			procallator
 data			#proc/s
 line_type		area
 line_type		line1
@@ -171,8 +177,8 @@ href			http://www.orcaware.com/orca/docs/orcallator.html#new_process_spawn_rate
 }
 
 plot {
-title			%g Number of System & running Processes on cpu
-source			orcallator
+title			%g Number of System & Running Processes
+source			procallator
 data			#proc
 data			#proc_oncpu
 line_type		line1
@@ -189,7 +195,7 @@ href			http://www.orcaware.com/orca/docs/orcallator.html#number_system_processes
 
 plot {
 title			%g Web Server Hit Rate
-source			orcallator
+source			procallator
 data			httpop/s
 data			http/p5s
 line_type		area
@@ -205,7 +211,7 @@ href			http://www.orcaware.com/orca/docs/orcallator.html#web_server_hit_rate
 
 plot {
 title			%g Web Server File Size
-source			orcallator
+source			procallator
 data			%to1KB
 data			%to10KB
 data			%to100KB
@@ -232,7 +238,7 @@ href			http://www.orcaware.com/orca/docs/orcallator.html#web_server_file_size
 
 plot {
 title			%g Web Server Data Transfer Rate
-source			orcallator
+source			procallator
 data			httpb/s
 line_type		area
 legend			Bytes/s
@@ -243,7 +249,7 @@ href			http://www.orcaware.com/orca/docs/orcallator.html#web_server_data_transfe
 
 plot {
 title			%g Web Server HTTP Error Rate
-source			orcallator
+source			procallator
 data			htErr/s
 line_type		area
 legend			HTTP errors/s
@@ -253,65 +259,43 @@ href			http://www.orcaware.com/orca/docs/orcallator.html#web_server_error_rate
 }
 
 plot {
-title			%g Page ins & outs rate
-source			orcallator
-data			pages_in
-data			pages_out
-legend			pages in/s
-legend			pages out/s
-y_legend		Pages/s
-data_min		0
-}
-
-plot {
-title			%g Swap ins & outs rate
-source			orcallator
-data			swap_in
-data			swap_out
-legend			Swap in/s
-legend			Swap out/s
-y_legend		Pages/s
-data_min		0
-}
-
-plot {
-title			%g Context switches & Interrupts rate
-source			orcallator
+title			%g Context Switches & Interrupts Rate
+source			procallator
 data			ctxt/s
-data			intr/s 
+data			intr/s
 legend			Context switches
 legend			Interrupts
-y_legend		rate/s
+y_legend		Counts/s
 data_min		0
 }
 
 plot {
 title			%g Interface Input Bits Per Second
-source			orcallator
-data			8 * if_in_b_(.*) 
+source			procallator
+data			8 * if_in_b_(.*)
 line_type		line1
 legend			$1
 y_legend		Bits/s
 data_min		0
-data_max		100000000
+data_max		1000000000
 href			http://www.orcaware.com/orca/docs/orcallator.html#interface_bits_per_second
 }
 
 plot {
-title			%g Interface Ouput Bits Per Second
-source			orcallator
+title			%g Interface Output Bits Per Second
+source			procallator
 data			8 * if_out_b_(.*)
 line_type		line1
 legend			$1
 y_legend		Bits/s
 data_min		0
-data_max		100000000
+data_max		1000000000
 href			http://www.orcaware.com/orca/docs/orcallator.html#interface_bits_per_second
 }
 
 plot {
 title			%g Interface Input Packets Per Second
-source			orcallator
+source			procallator
 data			if_in_p_(.*)
 line_type		line1
 legend			$1
@@ -324,8 +308,8 @@ href			http://www.orcaware.com/orca/docs/orcallator.html#interface_packets_per_s
 
 plot {
 title			%g Interface Output Packets Per Second
-source			orcallator
-data			if_out_p_(.*) 
+source			procallator
+data			if_out_p_(.*)
 line_type		line1
 legend			$1
 y_legend		Packets/s
@@ -337,7 +321,7 @@ href			http://www.orcaware.com/orca/docs/orcallator.html#interface_packets_per_s
 
 plot {
 title			%g Interface Input Errors Per Second
-source			orcallator
+source			procallator
 data			if_in_e_(.*)
 line_type		line1
 legend			$1
@@ -349,7 +333,7 @@ href			http://www.orcaware.com/orca/docs/orcallator.html#interface_errors_per_se
 
 plot {
 title			%g Interface Output Errors Per Second
-source			orcallator
+source			procallator
 data			if_out_e_(.*)
 line_type		line1
 legend			$1
@@ -361,7 +345,7 @@ href			http://www.orcaware.com/orca/docs/orcallator.html#interface_errors_per_se
 
 plot {
 title			%g Interface Input Dropped Per Second
-source			orcallator
+source			procallator
 data			if_in_d_(.*)
 line_type		line1
 legend			$1
@@ -373,7 +357,7 @@ href			http://www.orcaware.com/orca/docs/orcallator.html#interface_deferred_pack
 
 plot {
 title			%g Interface Output Dropped Per Second
-source			orcallator
+source			procallator
 data			if_out_d_(.*)
 line_type		line1
 legend			$1
@@ -385,7 +369,7 @@ href			http://www.orcaware.com/orca/docs/orcallator.html#interface_deferred_pack
 
 plot {
 title			%g Interface Output Collisions
-source			orcallator
+source			procallator
 data			if_out_cl_(.*)
 line_type		area
 legend			$1
@@ -398,7 +382,7 @@ href			http://www.orcaware.com/orca/docs/orcallator.html#interface_collisions
 
 plot {
 title			%g Interface Output Carrier Losses
-source			orcallator
+source			procallator
 data			if_out_ca_(.*)
 line_type		area
 legend			$1
@@ -410,62 +394,63 @@ href			http://www.orcaware.com/orca/docs/orcallator.html#interface_collisions
 }
 
 plot {
-title			%g TCP Current connections
-source			orcallator
+title			%g TCP Current Connections
+source			procallator
 data			gTcp_(.*)
+line_type		area
 legend			Connections
-y_legend		Connections
+y_legend		Number Open TCP Connections
 data_min		0
 flush_regexps		1
 }
 
 plot {
-title			%g IP statistics
-source			orcallator
+title			%g IP Statistics
+source			procallator
 data			Ip_(.*)
 legend			$1 rate
-y_legend		rate
+y_legend		Counts/s
 data_min		0
 flush_regexps		1
 }
 
 plot {
-title			%g TCP statistics
-source			orcallator
+title			%g TCP Statistics
+source			procallator
 data			Tcp_(.*)
 legend			$1 rate
-y_legend		rate
+y_legend		Counts/s
 data_min		0
 flush_regexps		1
 }
 
 plot {
-title			%g ICMP statistics
-source			orcallator
+title			%g ICMP Statistics
+source			procallator
 data			Icmp_(.*)
 legend			$1 rate
-y_legend		rate
+y_legend		Counts/s
 data_min		0
 flush_regexps		1
 }
 
 plot {
-title			%g UDP statistics
-source			orcallator
+title			%g UDP Statistics
+source			procallator
 data			Udp_(.*)
 legend			$1 rate
-y_legend		rate
+y_legend		Counts/s
 data_min		0
 flush_regexps		1
 }
 
 plot {
 title			%g NFS Server Statistics
-source			orcallator
+source			procallator
 data			nfs_s_(.*)
 line_type		line1
 legend			$1/s
-y_legend		rate
+y_legend		Counts/s
 data_min		0
 flush_regexps		1
 href			http://www.orcaware.com/orca/docs/orcallator.html#NFS_server_call_rate
@@ -473,11 +458,11 @@ href			http://www.orcaware.com/orca/docs/orcallator.html#NFS_server_call_rate
 
 plot {
 title			%g NFS Client Statistics
-source			orcallator
+source			procallator
 data			nfs_c_(.*)
 line_type		line1
 legend			$1/s
-y_legend		rate
+y_legend		Counts/s
 data_min		0
 flush_regexps		1
 href			http://www.orcaware.com/orca/docs/orcallator.html#NFS_server_call_rate
@@ -485,7 +470,7 @@ href			http://www.orcaware.com/orca/docs/orcallator.html#NFS_server_call_rate
 
 plot {
 title			%g Disk System Wide Reads/Writes Per Second
-source			orcallator
+source			procallator
 data			disk_rd/s
 data			disk_wr/s
 line_type		area
@@ -500,7 +485,7 @@ href			http://www.orcaware.com/orca/docs/orcallator.html#disk_system_wide_reads_
 
 plot {
 title			%g Disk System Wide Transfer Rate
-source			orcallator
+source			procallator
 data			disk_rB/s
 data			disk_wB/s
 line_type		area
@@ -515,7 +500,7 @@ href			http://www.orcaware.com/orca/docs/orcallator.html#disk_system_wide_transf
 
 plot {
 title			%g Disk Reads/Writes Per Second
-source			orcallator
+source			procallator
 data			disk_rd_(.*)/s
 data			disk_wr_(.*)/s
 line_type		area
@@ -530,7 +515,7 @@ href			http://www.orcaware.com/orca/docs/orcallator.html#disk_system_wide_reads_
 
 plot {
 title			%g Disk Transfer Rate
-source			orcallator
+source			procallator
 data			disk_rB_(.*)/s
 data			disk_wB_(.*)/s
 line_type		area
@@ -545,7 +530,7 @@ href			http://www.orcaware.com/orca/docs/orcallator.html#disk_system_wide_transf
 
 plot {
 title			%g Disk Space Percent Usage
-source			orcallator
+source			procallator
 data			mnt_(.*)
 line_type		line1
 legend			$1
@@ -558,8 +543,8 @@ href			http://www.orcaware.com/orca/docs/orcallator.html#disk_space_percent_usag
 }
 
 plot {
-title			%g Physical Memory usage percent 
-source			orcallator
+title			%g Physical Memory Usage
+source			procallator
 data			mem_used%
 data			mem_free%
 data			mem_shrd%
@@ -572,24 +557,24 @@ line_type		stack
 line_type		stack
 legend			Used memory
 legend			Free memory
-legend			shared memory
-legend			buffer memory
-legend			cached memory
-y_legend		percent
+legend			Shared memory
+legend			Buffer memory
+legend			Cached memory
+y_legend		Percent
 data_min		0
 data_max		100
 href			http://www.orcaware.com/orca/docs/orcallator.html#memory_free
 }
 
 plot {
-title			%g Swap usage percent
-source			orcallator
+title			%g Swap Usage
+source			procallator
 data			swp_used%
 data			swp_free%
 line_type		area
 line_type		stack
-legend			Used swap
-legend			Free swap
+legend			Swap Used
+legend			Swap Free
 y_legend		percent
 data_min		0
 data_max		100
@@ -597,8 +582,30 @@ href			http://www.orcaware.com/orca/docs/orcallator.html#memory_free
 }
 
 plot {
+title			%g Page Ins & Outs Rate
+source			procallator
+data			pages_in
+data			pages_out
+legend			Pages in/s
+legend			Pages out/s
+y_legend		Pages/s
+data_min		0
+}
+
+plot {
+title			%g Swap Ins & Outs Rate
+source			procallator
+data			swap_in
+data			swap_out
+legend			Swap in/s
+legend			Swap out/s
+y_legend		Pages/s
+data_min		0
+}
+
+plot {
 title			%g Memory Page Scan Rate
-source			orcallator
+source			procallator
 data			scanrate
 line_type		area
 legend			Page scan rate
@@ -609,7 +616,7 @@ href			http://www.orcaware.com/orca/docs/orcallator.html#page_scan_rate
 
 plot {
 title			%g Memory Page Residence Time
-source			orcallator
+source			procallator
 data			page_rstim
 line_type		area
 legend			Page residence time
@@ -620,7 +627,7 @@ href			http://www.orcaware.com/orca/docs/orcallator.html#page_residence_time
 
 plot {
 title			%g Memory Available Swap Space
-source			orcallator
+source			procallator
 data			1024 * swap_avail
 line_type		area
 legend			Available swap space
@@ -632,7 +639,7 @@ href			http://www.orcaware.com/orca/docs/orcallator.html#available_swap_space
 
 plot {
 title			%g Memory Page Usage
-source			orcallator
+source			procallator
 data			pp_kernel
 data			free_pages
 data			pagestotl - pp_kernel - free_pages
@@ -656,7 +663,7 @@ href			http://www.orcaware.com/orca/docs/orcallator.html#page_usage
 
 plot {
 title			%g Memory Pages Locked & IO
-source			orcallator
+source			procallator
 data			pageslock
 data			pagesio
 line_type		area

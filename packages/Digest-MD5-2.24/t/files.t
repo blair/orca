@@ -20,27 +20,27 @@ use Digest::MD5 qw(md5 md5_hex md5_base64);
 my $EXPECT;
 if (ord "A" == 193) { # EBCDIC
     $EXPECT = <<EOT;
-aab6fda26844b46ca878f46394c52bb2  Changes
+4ee4091bda2bb74fb2416c2fdb0c4d4a  Changes
 0565ec21b15c0f23f4c51fb327c8926d  README
-5d2a638a7323f5bd5b5c120c9330b99d  MD5.pm
-d7fd24455b9160aa8706635d15e6177e  MD5.xs
+b00637894d2bd395ffda2fa84adefdfd  MD5.pm
+20cd22cecca8f24e807a76b9c0d575e3  MD5.xs
 276da0aa4e9a08b7fe09430c9c5690aa  rfc1321.txt
 EOT
 } elsif ("\n" eq "\015") { # MacOS
     $EXPECT = <<EOT;
-d286d6c6a61e44e88d1deba9954ce37a  Changes
+d7b1bf11283114d1b765f433a5d7b447  Changes
 6c950a0211a5a28f023bb482037698cd  README
-d31c9aefa1a9e40beda9fff1e1d9c02d  MD5.pm
-6bff95ff70ba43a6c81e255c6510a865  MD5.xs
+f854bd4984ad0e73c483a49a28893c74  MD5.pm
+e3a430cf5604b80dd642de5bcc1a8221  MD5.xs
 754b9db19f79dbc4992f7166eb0f37ce  rfc1321.txt
 EOT
 } else {
     # This is the output of: 'md5sum Changes README MD5.pm MD5.xs rfc1321.txt'
     $EXPECT = <<EOT;
-d286d6c6a61e44e88d1deba9954ce37a  Changes
+d7b1bf11283114d1b765f433a5d7b447  Changes
 6c950a0211a5a28f023bb482037698cd  README
-d31c9aefa1a9e40beda9fff1e1d9c02d  MD5.pm
-6bff95ff70ba43a6c81e255c6510a865  MD5.xs
+f854bd4984ad0e73c483a49a28893c74  MD5.pm
+e3a430cf5604b80dd642de5bcc1a8221  MD5.xs
 754b9db19f79dbc4992f7166eb0f37ce  rfc1321.txt
 EOT
 }
@@ -61,6 +61,7 @@ if ($@) {
 for (split /^/, $EXPECT) {
      my($md5hex, $file) = split ' ';
      my $base = $file;
+#     print "# $base\n";
      if ($ENV{PERL_CORE}) {
          if ($file eq 'rfc1321.txt') { # Don't have it in core.
 	     print "ok ", ++$testno, " # Skip: PERL_CORE\n";

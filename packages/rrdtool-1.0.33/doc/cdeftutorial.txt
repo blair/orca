@@ -12,7 +12,7 @@ DDDDEEEESSSSCCCCRRRRIIIIPPPPTTTTIIIIOOOONNNN
      YYYYoooouuuu pppprrrroooovvvviiiiddddeeee aaaa qqqquuuueeeessssttttiiiioooonnnn aaaannnndddd IIII wwwwiiiillllllll ttttrrrryyyy ttttoooo pppprrrroooovvvviiiiddddeeee aaaannnn aaaannnnsssswwwweeeerrrr
      iiiinnnn tttthhhheeee nnnneeeexxxxtttt rrrreeeelllleeeeaaaasssseeee. NNNNoooo ffffeeeeeeeeddddbbbbaaaacccckkkk eeeeqqqquuuuaaaallllssss nnnnoooo cccchhhhaaaannnnggggeeeessss!!!!
 
-     _A_d_d_i_t_i_o_n_s _t_o _t_h_i_s _d_o_c_u_m_e_n_t _a_r_e _a_l_s_o _w_e_l_c_o_m_e.
+     _A_d_d_i_t_i_o_n_s _t_o _t_h_i_s _d_o_c_u_m_e_n_t _a_r_e _a_l_s_o _w_e_l_c_o_m_e_.
 
      Alex van den Bogaerdt <alex@ergens.op.het.net>
 
@@ -34,7 +34,7 @@ DDDDEEEESSSSCCCCRRRRIIIIPPPPTTTTIIIIOOOONNNN
      MMMMoooorrrreeee rrrreeeeaaaaddddiiiinnnngggg
 
      If you have difficulties with the way I try to explain them
-     please read Steve Rader's the _r_p_n_t_u_t_o_r_i_a_l manpage. It may
+     please read Steve Rader's the rpntutorial manpage. It may
      help you understand how this all works.
 
 WWWWhhhhaaaatttt aaaarrrreeee CCCCDDDDEEEEFFFFssss ????
@@ -60,7 +60,7 @@ SSSSyyyynnnnttttaaaaxxxx
 
 
 
-24/Oct/1999            Last change: 1.0.13                      1
+2001-02-20             Last change: 1.0.33                      1
 
 
 
@@ -88,7 +88,7 @@ rrdtool                                           CDEFTUTORIAL(1)
      Note that variable in the CDEF (inbits) must not be the same
      as the variable (inbytes) in the DEF!
 
-RRRRPPPPNNNN-eeeexxxxpppprrrreeeessssssssiiiioooonnnnssss
+RRRRPPPPNNNN----eeeexxxxpppprrrreeeessssssssiiiioooonnnnssss
      RPN is short-hand for Reverse Polish Notation. It works as
      follows.  You put the variables or numbers on a stack. You
      also put operations (things-to-do) on the stack and this
@@ -126,7 +126,7 @@ RRRRPPPPNNNN-eeeexxxxpppprrrreeeessssssssiiiio
 
 
 
-24/Oct/1999            Last change: 1.0.13                      2
+2001-02-20             Last change: 1.0.33                      2
 
 
 
@@ -152,7 +152,7 @@ rrdtool                                           CDEFTUTORIAL(1)
         y = A - B  -->  y=minus(A,B)  -->  CDEF:y=A,B,-
 
      This is not very intuitive (at least most people don't think
-     so). For the function _f(A,B) you reverse the position of "f"
+     so). For the function f(A,B) you reverse the position of "f"
      but you do not reverse the order of the variables.
 
 CCCCoooonnnnvvvveeeerrrrttttiiiinnnngggg yyyyoooouuuurrrr wwwwiiiisssshhhheeeessss ttttoooo RRRRPPPPNNNN
@@ -169,7 +169,7 @@ CCCCoooonnnnvvvveeeerrrrttttiiiinnnngggg yyyyo
 
         router1.rrd with link1in link2in
         router2.rrd with link1in link2in
-        router3.rrd with link1.in
+        router3.rrd with link1in link2in
 
      Suppose you would like to add up all these counters, except
      for link2in inside router2.rrd. You need to do:
@@ -187,12 +187,12 @@ CCCCoooonnnnvvvveeeerrrrttttiiiinnnngggg yyyyo
 
      As a mathmatical function, this could be written:
 
-     add(router1.rrd:link1in , router1.rrd:link2in ,
+     `add(router1.rrd:link1in , router1.rrd:link2in ,
      router2.rrd:link1in , router3.rrd:link1in ,
 
 
 
-24/Oct/1999            Last change: 1.0.13                      3
+2001-02-20             Last change: 1.0.33                      3
 
 
 
@@ -203,7 +203,7 @@ rrdtool                                           CDEFTUTORIAL(1)
 
 
 
-     router3.rrd:link2.in)
+     router3.rrd:link2.in)'
 
      With RRDtool and RPN, first, define the inputs:
 
@@ -213,7 +213,7 @@ rrdtool                                           CDEFTUTORIAL(1)
         DEF:d=router3.rrd:link1in:AVERAGE
         DEF:e=router3.rrd:link2in:AVERAGE
 
-     Now, the mathematical function becomes: add(a,b,c,d,e)
+     Now, the mathematical function becomes: `add(a,b,c,d,e)'
 
      In RPN, there's no operator that sums more than two values
      so you need to do several additions. You add a and b, add c
@@ -229,13 +229,13 @@ rrdtool                                           CDEFTUTORIAL(1)
 
         ( ( ( (a+b) + c) + d) + e) >
 
-     This is in RPN:  CDEF:result=a,b,+,c,+,d,+,e,+
+     This is in RPN:  `CDEF:result=a,b,+,c,+,d,+,e,+'
 
      This is correct but it can be made more clear to humans. It
      does not matter if you add a to b and then add c to the
      result or first add b to c and then add a to the result.
      This makes it possible to rewrite the RPN into
-     CDEF:result=a,b,c,d,e,+,+,+,+ which is evaluatated
+     `CDEF:result=a,b,c,d,e,+,+,+,+' which is evaluatated
      differently:
 
         push value of variable a on the stack: a
@@ -252,13 +252,13 @@ rrdtool                                           CDEFTUTORIAL(1)
         push operator + on the stack:          a R +
         and process it:                        S         (where S == a+R)
 
-     As you can see the RPN expression a,b,c,d,e,+,+,+,+,+ will
-     evaluate in ((((d+e)+c)+b)+a) and it has the same outcome as
-     a,b,+,c,+,d,+,e,+ According to Steve Rader this is called
+     As you can see the RPN expression `a,b,c,d,e,+,+,+,+,+' will
+     evaluate in `((((d+e)+c)+b)+a)' and it has the same outcome
+     as `a,b,+,c,+,d,+,e,+' According to Steve Rader this is
 
 
 
-24/Oct/1999            Last change: 1.0.13                      4
+2001-02-20             Last change: 1.0.33                      4
 
 
 
@@ -269,12 +269,12 @@ rrdtool                                           CDEFTUTORIAL(1)
 
 
 
-     the commutative law of addition but you may forget this
-     right away, as long as you remember what it represents.
+     called the commutative law of addition but you may forget
+     this right away, as long as you remember what it represents.
 
      Now look at an expression that contains a multiplication:
 
-     First in normal math: let result = a+b*c. In this case you
+     First in normal math: `let result = a+b*c'. In this case you
      can't choose the order yourself, you have to start with the
      multiplication and then add a to it. You may alter the
      position of b and c, you may not alter the position of a and
@@ -283,14 +283,14 @@ rrdtool                                           CDEFTUTORIAL(1)
      You have to take this in consideration when converting this
      expression into RPN. Read it as: "Add the outcome of b*c to
      a" and then it is easy to write the RPN expression:
-     result=a,b,c,*,+ Another expression that would return the
-     same: result=b,c,*,a,+
+     `result=a,b,c,*,+' Another expression that would return the
+     same: `result=b,c,*,a,+'
 
      In normal math, you may encounter something like "a*(b+c)"
      and this can also be converted into RPN. The parenthesis
      just tell you to first add b and c, and then multiply a with
      the result. Again, now it is easy to write it in RPN:
-     result=a,b,c,+,*. Note that this is very similar to one of
+     `result=a,b,c,+,*'. Note that this is very similar to one of
      the expressions in the previous paragraph, only the
      multiplication and the addition changed places.
 
@@ -324,7 +324,7 @@ SSSSoooommmmeeee ssssppppeeeecccciiiiaaaallll n
 
 
 
-24/Oct/1999            Last change: 1.0.13                      5
+2001-02-20             Last change: 1.0.33                      5
 
 
 
@@ -348,7 +348,7 @@ rrdtool                                           CDEFTUTORIAL(1)
         counter value    resulting rate
         10000
         10060            1; (10060-10000)/60 == 1
-        10120            1; (10060-10000)/60 == 1
+        10120            1; (10120-10060)/60 == 1
         unknown          unknown; you don't know the last value
         10240            unknown; you don't know the previous value
         10300            1; (10300-10240)/60 == 1
@@ -369,7 +369,7 @@ rrdtool                                           CDEFTUTORIAL(1)
      As you have read in the previous chapter, entries in an RRA
      can be set to the unknown value. If you do calculations with
      this type of value, the result has to be unknown too. This
-     means that an expression such as result=a,b,+ will be
+     means that an expression such as `result=a,b,+' will be
      unknown if either a or b is unknown.  It would be wrong to
      just ignore the unknown value and return the value of the
      other parameter. By doing so, you would assume "unknown"
@@ -390,7 +390,7 @@ rrdtool                                           CDEFTUTORIAL(1)
 
 
 
-24/Oct/1999            Last change: 1.0.13                      6
+2001-02-20             Last change: 1.0.33                      6
 
 
 
@@ -456,7 +456,7 @@ SSSSoooommmmeeee eeeexxxxaaaammmmpppplllleeees
 
 
 
-24/Oct/1999            Last change: 1.0.13                      7
+2001-02-20             Last change: 1.0.33                      7
 
 
 
@@ -496,15 +496,17 @@ rrdtool                                           CDEFTUTORIAL(1)
         if true  return a
         if false return b
 
-     In RPN:  result=x,a,b,IF where "x" is either true or false.
+     In RPN:  `result=x,a,b,IF' where "x" is either true or
+     false.
 
      Now we have to fill in "x", this should be the "(value is
-     unknown)" part and this is in RPN:  result=value,UN
+     unknown)" part and this is in RPN:  `result=value,UN'
 
-     We now combine them: result=value,UN,a,b,IF and when we fill
-     in the appropriate things for "a" and "b" we're finished:
+     We now combine them: `result=value,UN,a,b,IF' and when we
+     fill in the appropriate things for "a" and "b" we're
+     finished:
 
-     CDEF:result=value,UN,0,value,IF
+     `CDEF:result=value,UN,0,value,IF'
 
      You may want to read Steve Raders RPN guide if you have
      difficulties with the way I explained this last example.
@@ -520,9 +522,7 @@ rrdtool                                           CDEFTUTORIAL(1)
 
 
 
-
-
-24/Oct/1999            Last change: 1.0.13                      8
+2001-02-20             Last change: 1.0.33                      8
 
 
 
@@ -588,7 +588,7 @@ rrdtool                                           CDEFTUTORIAL(1)
 
 
 
-24/Oct/1999            Last change: 1.0.13                      9
+2001-02-20             Last change: 1.0.33                      9
 
 
 
@@ -636,7 +636,7 @@ rrdtool                                           CDEFTUTORIAL(1)
         substitute b         --> TIME,937521357,GT,value,value,UN,0,value,IF,IF
 
      We end up with:
-     CDEF:result=TIME,937521357,GT,value,value,UN,0,value,IF,IF
+     `CDEF:result=TIME,937521357,GT,value,value,UN,0,value,IF,IF'
 
      This looks very complex however as you can see it was not
      too hard to come up with.
@@ -654,7 +654,7 @@ rrdtool                                           CDEFTUTORIAL(1)
 
 
 
-24/Oct/1999            Last change: 1.0.13                     10
+2001-02-20             Last change: 1.0.33                     10
 
 
 
@@ -695,6 +695,61 @@ rrdtool                                           CDEFTUTORIAL(1)
          CDEF:result=number,100000,GT,100000,number,IF
 
 
+     EEEExxxxaaaammmmpppplllleeee:::: wwwwoooorrrrkkkkiiiinnnngggg oooonnnn aaaa cccceeeerrrrttttaaaaiiiinnnn ttttiiiimmmmeeee ssssppppaaaannnn
+
+     If you want a graph that spans a few weeks, but would only
+     want to see some routers data for one week, you need to
+     "hide" the rest of the time frame. Don't ask me when this
+     would be useful, it's just here for the example :)
+
+     We need to compare the time stamp to a begin date and an end
+     date.  Comparing isn't difficult:
+
+             TIME,begintime,GE
+             TIME,endtime,LE
+
+     These two parts of the CDEF produce either 0 for false or 1
+     for true.  We can now check if they are both 0 (or 1) using
+     a few IF statements but, as Wataru Satoh pointed out, we can
+     use the "*" or "+" functions as locical AND and locical OR.
+
+     For "*", the result will be zero (false) if either one of
+     the two operators is zero.  For "+", the result will only be
+     false (0) when two false (0) operators will be added.
+     Warning: *any* number not equal to 0 will be considered
+
+
+
+2001-02-20             Last change: 1.0.33                     11
+
+
+
+
+
+
+rrdtool                                           CDEFTUTORIAL(1)
+
+
+
+     "true". This means that, for instance, "-1,1,+" (which
+     should be "true or true") will become FALSE ...  In other
+     words, use "+" only if you know for sure that you have
+     positive numbers (or zero) only.
+
+     Let's compile the complete CDEF:
+
+             DEF:ds0=router1.rrd:AVERAGE
+             CDEF:ds0modified=TIME,begintime,GE,TIME,endtime,LE,*,UNKN,ds0,IF
+
+     This will return the value of ds0 if both comparisons return
+     true. You could also do it the other way around:
+
+             DEF:ds0=router1.rrd:AVERAGE
+             CDEF:ds0modified=TIME,begintime,LT,TIME,endtime,GT,+,UNKN,ds0,IF
+
+     This will return an UNKNOWN if either comparison returns
+     true.
+
      EEEExxxxaaaammmmpppplllleeee:::: YYYYoooouuuu ssssuuuussssppppeeeecccctttt ttttoooo hhhhaaaavvvveeee pppprrrroooobbbblllleeeemmmmssss aaaannnndddd wwwwaaaannnntttt ttttoooo sssseeeeeeee
      uuuunnnnkkkknnnnoooowwwwnnnn ddddaaaattttaaaa....
 
@@ -718,19 +773,6 @@ rrdtool                                           CDEFTUTORIAL(1)
      users1..users4 will show up as a gap in your graph. You want
      to modify this to show a bright red line, not a gap.
 
-
-
-24/Oct/1999            Last change: 1.0.13                     11
-
-
-
-
-
-
-rrdtool                                           CDEFTUTORIAL(1)
-
-
-
      Define an extra CDEF that is unknown if all is okay and is
      infinite if there is an unknown value:
 
@@ -741,6 +783,19 @@ rrdtool                                           CDEFTUTORIAL(1)
      is unknown.  The (y) part of the "IF" function is set to
      "INF" (which means infinity) and the (z) part of the
      function returns "UNKN".
+
+
+
+2001-02-20             Last change: 1.0.33                     12
+
+
+
+
+
+
+rrdtool                                           CDEFTUTORIAL(1)
+
+
 
      The logic is: if (allusers == unknown) then return INF else
      return UNKN.
@@ -783,20 +838,6 @@ rrdtool                                           CDEFTUTORIAL(1)
      X-axis and has infinite height it will effectively overwrite
      the STACKed parts.
 
-
-
-
-24/Oct/1999            Last change: 1.0.13                     12
-
-
-
-
-
-
-rrdtool                                           CDEFTUTORIAL(1)
-
-
-
      You could combine the two CDEF lines into one (we don't use
      "allusers") if you like.  But there are good reasons for
      writting two CDEFS:
@@ -808,6 +849,20 @@ rrdtool                                           CDEFTUTORIAL(1)
 
      If you choose to combine them, you can substitute the
      "allusers" in the second CDEF with the part after the equal
+
+
+
+2001-02-20             Last change: 1.0.33                     13
+
+
+
+
+
+
+rrdtool                                           CDEFTUTORIAL(1)
+
+
+
      sign from the first line:
 
         CDEF:wrongdata=users1,users2,users3,users4,+,+,+,UN,INF,UNKN,IF
@@ -848,21 +903,6 @@ TTTThhhheeee eeeexxxxaaaammmmpppplllleeeessss f
      correct. It is close enough for this purpose and it saves a
      calculation.
 
-
-
-
-
-24/Oct/1999            Last change: 1.0.13                     13
-
-
-
-
-
-
-rrdtool                                           CDEFTUTORIAL(1)
-
-
-
      CCCChhhhaaaannnnggggiiiinnnngggg uuuunnnnkkkknnnnoooowwwwnnnn iiiinnnnttttoooo zzzzeeeerrrroooo
 
         rrdtool graph demo.gif --title="Demo Graph" \
@@ -874,6 +914,20 @@ rrdtool                                           CDEFTUTORIAL(1)
            CDEF:aggoutput=odat1,UN,0,odat1,IF,odat2,UN,0,odat2,IF,+,8,* \
            AREA:agginput#00cc00:Input Aggregate \
            LINE1:aggoutput#0000FF:Output Aggregate
+
+
+
+
+2001-02-20             Last change: 1.0.33                     14
+
+
+
+
+
+
+rrdtool                                           CDEFTUTORIAL(1)
+
+
 
      These two CDEFs are built from several functions. It helps
      to split them when viewing what they do.  Starting with the
@@ -915,20 +969,6 @@ rrdtool                                           CDEFTUTORIAL(1)
      This demo demonstrates two ways to use infinity. It is a bit
      tricky to see what happens in the "background" CDEF.
 
-
-
-
-24/Oct/1999            Last change: 1.0.13                     14
-
-
-
-
-
-
-rrdtool                                           CDEFTUTORIAL(1)
-
-
-
         "val4,POP,TIME,7200,%,3600,LE,INF,UNKN,IF"
 
      This RPN takes the value of "val4" as input and then
@@ -940,6 +980,20 @@ rrdtool                                           CDEFTUTORIAL(1)
      "TIME,7200,%" takes the modulo of time and 7200 (which is
      two hours).  The resulting value on the stack will be a
      number in the range from 0 to 7199.
+
+
+
+
+2001-02-20             Last change: 1.0.33                     15
+
+
+
+
+
+
+rrdtool                                           CDEFTUTORIAL(1)
+
+
 
      For people who don't know the modulo function: it is the
      remainder after an integer division. If you divide 16 by 3,
@@ -974,26 +1028,12 @@ rrdtool                                           CDEFTUTORIAL(1)
      variable and place a negative sign before it:
      "CDEF:wipeout2=wipeout,-1,*"
 
-     =head1 Out of ideas for now
-
+OOOOuuuutttt ooooffff iiiiddddeeeeaaaassss ffffoooorrrr nnnnoooowwww
      This document was created from questions asked by either
      myself or by other people on the list. Please let me know if
      you find errors in it or if you have trouble understanding
      it. If you think there should be an addition, mail me:
      <alex@ergens.op.het.net>
-
-
-
-24/Oct/1999            Last change: 1.0.13                     15
-
-
-
-
-
-
-rrdtool                                           CDEFTUTORIAL(1)
-
-
 
      Remember: NNNNoooo ffffeeeeeeeeddddbbbbaaaacccckkkk eeeeqqqquuuuaaaallllssss nnnnoooo cccchhhhaaaannnnggggeeeessss!!!!
 
@@ -1010,113 +1050,7 @@ AAAAUUUUTTTTHHHHOOOORRRR
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-24/Oct/1999            Last change: 1.0.13                     16
-
-
-
-
-
-
-rrdtool                                           CDEFTUTORIAL(1)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-24/Oct/1999            Last change: 1.0.13                     17
-
-
-
+2001-02-20             Last change: 1.0.33                     16
 
 
 

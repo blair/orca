@@ -1,6 +1,6 @@
 # orcallator_running: warn if orcallator files are not up to date.
 #
-# Copyright (C) 1998, 1999 Blair Zajac and GeoCities, Inc.
+# Copyright (C) 1998, 1999 Blair Zajac and Yahoo!, Inc.
 
 use strict;
 use POSIX qw(strftime);

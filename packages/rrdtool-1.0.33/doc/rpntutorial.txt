@@ -60,7 +60,7 @@ RRRReeeeaaaaddddiiiinnnngggg tttthhhheeee IIIIF
 
 
 
-24/Nov/1999            Last change: 1.0.13                      1
+2001-02-20             Last change: 1.0.33                      1
 
 
 
@@ -77,8 +77,8 @@ SSSSoooommmmeeee EEEExxxxaaaammmmpppplllleeees
      While compound expressions can look overly complex, they can
      be considered elegantly simple.  To quickly comprehend RPN
      expressions, you must know the the algorithm for evaluating
-     RPN expressions:  iterate searches from the left to the
-     right looking for an operator, when it's found, apply that
+     RPN expressions: iterate searches from the left to the right
+     looking for an operator, when it's found, apply that
      operator by popping the operator and some number of values
      (and by definition, not operators) off the stack.
 
@@ -126,7 +126,7 @@ SSSSoooommmmeeee EEEExxxxaaaammmmpppplllleeees
 
 
 
-24/Nov/1999            Last change: 1.0.13                      2
+2001-02-20             Last change: 1.0.33                      2
 
 
 
@@ -192,7 +192,7 @@ EEEExxxxeeeerrrrcccciiiisssseeeessss
 
 
 
-24/Nov/1999            Last change: 1.0.13                      3
+2001-02-20             Last change: 1.0.33                      3
 
 
 
@@ -258,7 +258,7 @@ AAAAUUUUTTTTHHHHOOOORRRR
 
 
 
-24/Nov/1999            Last change: 1.0.13                      4
+2001-02-20             Last change: 1.0.33                      4
 
 
 

@@ -1,13 +1,13 @@
 # Orca::OldState: Keep state information between invocations of Orca.
 #
-# Copyright (C) 1998-2000 Blair Zajac and Yahoo!, Inc.
+# Copyright (C) 1998-2001 Blair Zajac and Yahoo!, Inc.
 
 package Orca::OldState;
 
 use strict;
 use Carp;
 use Orca::Constants     qw($opt_verbose
-                           $incorrect_number_of_args);
+                           $INCORRECT_NUMBER_OF_ARGS);
 use Orca::SourceFileIDs qw(@sfile_fids);
 use vars                qw(@EXPORT_OK @ISA $VERSION);
 
@@ -28,7 +28,7 @@ my $refer_to_filename_marker = 'USETHISFILE';
 # This loads the old source file state information.
 sub load_old_state {
   unless (@_ == 1) {
-    confess "$0: Orca::OldState::load_old_state $incorrect_number_of_args";
+    confess "$0: Orca::OldState::load_old_state $INCORRECT_NUMBER_OF_ARGS";
   }
 
   my $state_file = shift;
@@ -85,7 +85,7 @@ sub load_old_state {
 # Write the state information for the source data files.
 sub save_old_state {
   unless (@_ == 2) {
-    confess "$0: Orca::OldState::save_old_state $incorrect_number_of_args";
+    confess "$0: Orca::OldState::save_old_state $INCORRECT_NUMBER_OF_ARGS";
   }
 
   my ($state_file, $state_ref) = @_;

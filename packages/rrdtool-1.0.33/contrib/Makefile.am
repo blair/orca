@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 
-SUBDIRS = log2rrd rrd-file-icon trytime rrdproc rrdlastds add_ds killspike rrdfetchnames
-
+SUBDIRS = trytime
 contribdir = $(prefix)/contrib
 contrib_DATA = README
+EXTRA_DIST =  rrdview log2rrd rrd-file-icon rrdproc rrdlastds add_ds killspike rrdfetchnames snmpstats rrdexplorer php3 php4

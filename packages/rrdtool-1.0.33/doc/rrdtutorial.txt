@@ -60,7 +60,7 @@ TTTTUUUUTTTTOOOORRRRIIIIAAAALLLL
 
 
 
-24/Oct/1999            Last change: 1.0.13                      1
+2001-02-22             Last change: 1.0.33                      1
 
 
 
@@ -126,7 +126,7 @@ rrdtool                                            RRDTUTORIAL(1)
 
 
 
-24/Oct/1999            Last change: 1.0.13                      2
+2001-02-22             Last change: 1.0.33                      2
 
 
 
@@ -153,8 +153,8 @@ rrdtool                                            RRDTUTORIAL(1)
      important, some background information of how it works.
 
      You will need to know something about hexadecimal numbers.
-     If you don't then start with reading "bin_dec_hex" before
-     you continue here.
+     If you don't then start with reading the bin_dec_hex manpage
+     before you continue here.
 
      YYYYoooouuuurrrr ffffiiiirrrrsssstttt RRRRoooouuuunnnndddd RRRRoooobbbbiiiinnnn DDDDaaaattttaaaabbbbaaaasssseeee
 
@@ -192,7 +192,7 @@ rrdtool                                            RRDTUTORIAL(1)
 
 
 
-24/Oct/1999            Last change: 1.0.13                      3
+2001-02-22             Last change: 1.0.33                      3
 
 
 
@@ -212,7 +212,7 @@ rrdtool                                            RRDTUTORIAL(1)
        bps = (counter_now - counter_before) / (time_now - time_before) * 8
 
      For some people it may help to translate this to a
-     automobile example:  Do not try this example, and if you do,
+     automobile example: Do not try this example, and if you do,
      don't blame me for the results.
 
      People who are not used to think in kilometers per hour can
@@ -258,7 +258,7 @@ rrdtool                                            RRDTUTORIAL(1)
 
 
 
-24/Oct/1999            Last change: 1.0.13                      4
+2001-02-22             Last change: 1.0.33                      4
 
 
 
@@ -282,7 +282,8 @@ rrdtool                                            RRDTUTORIAL(1)
                  RRA:AVERAGE:0.5:1:24       \
                  RRA:AVERAGE:0.5:6:10
 
-     (So enter: rrdtool create test.rrd --start 920804400 DS ...)
+     (So enter: `rrdtool create test.rrd --start 920804400 DS
+     ...')
 
      WWWWhhhhaaaatttt hhhhaaaassss bbbbeeeeeeeennnn ccccrrrreeeeaaaatttteeeedddd ????
 
@@ -323,8 +324,7 @@ rrdtool                                            RRDTUTORIAL(1)
 
 
 
-
-24/Oct/1999            Last change: 1.0.13                      5
+2001-02-22             Last change: 1.0.33                      5
 
 
 
@@ -390,7 +390,7 @@ rrdtool                                            RRDTUTORIAL(1)
 
 
 
-24/Oct/1999            Last change: 1.0.13                      6
+2001-02-22             Last change: 1.0.33                      6
 
 
 
@@ -456,7 +456,7 @@ rrdtool                                            RRDTUTORIAL(1)
 
 
 
-24/Oct/1999            Last change: 1.0.13                      7
+2001-02-22             Last change: 1.0.33                      7
 
 
 
@@ -522,7 +522,7 @@ rrdtool                                            RRDTUTORIAL(1)
 
 
 
-24/Oct/1999            Last change: 1.0.13                      8
+2001-02-22             Last change: 1.0.33                      8
 
 
 
@@ -588,7 +588,7 @@ rrdtool                                            RRDTUTORIAL(1)
 
 
 
-24/Oct/1999            Last change: 1.0.13                      9
+2001-02-22             Last change: 1.0.33                      9
 
 
 
@@ -654,7 +654,7 @@ rrdtool                                            RRDTUTORIAL(1)
 
 
 
-24/Oct/1999            Last change: 1.0.13                     10
+2001-02-22             Last change: 1.0.33                     10
 
 
 
@@ -720,7 +720,7 @@ rrdtool                                            RRDTUTORIAL(1)
 
 
 
-24/Oct/1999            Last change: 1.0.13                     11
+2001-02-22             Last change: 1.0.33                     11
 
 
 
@@ -786,7 +786,7 @@ rrdtool                                            RRDTUTORIAL(1)
 
 
 
-24/Oct/1999            Last change: 1.0.13                     12
+2001-02-22             Last change: 1.0.33                     12
 
 
 
@@ -852,7 +852,7 @@ rrdtool                                            RRDTUTORIAL(1)
 
 
 
-24/Oct/1999            Last change: 1.0.13                     13
+2001-02-22             Last change: 1.0.33                     13
 
 
 
@@ -878,13 +878,13 @@ rrdtool                                            RRDTUTORIAL(1)
       24 samples averaged become one average on 2 hours
       288 samples averaged become one average on 1 day
 
-     Lets try to be compatible with MRTG:  MRTG stores about the
+     Lets try to be compatible with MRTG: MRTG stores about the
      following amount of data:
 
       600 5-minute samples:    2   days and 2 hours
       600 30-minute samples:  12.5 days
       600 2-hour samples:     50   days
-      600 1-day samples:     732   days
+      732 1-day samples:     732   days
 
      These ranges are appended so the total amount of data kept
      is approximately 797 days.  RRDtool stores the data
@@ -918,7 +918,7 @@ rrdtool                                            RRDTUTORIAL(1)
 
 
 
-24/Oct/1999            Last change: 1.0.13                     14
+2001-02-22             Last change: 1.0.33                     14
 
 
 
@@ -984,7 +984,7 @@ rrdtool                                            RRDTUTORIAL(1)
 
 
 
-24/Oct/1999            Last change: 1.0.13                     15
+2001-02-22             Last change: 1.0.33                     15
 
 
 
@@ -1050,7 +1050,7 @@ rrdtool                                            RRDTUTORIAL(1)
 
 
 
-24/Oct/1999            Last change: 1.0.13                     16
+2001-02-22             Last change: 1.0.33                     16
 
 
 
@@ -1116,7 +1116,7 @@ rrdtool                                            RRDTUTORIAL(1)
 
 
 
-24/Oct/1999            Last change: 1.0.13                     17
+2001-02-22             Last change: 1.0.33                     17
 
 
 
@@ -1145,7 +1145,7 @@ rrdtool                                            RRDTUTORIAL(1)
      counter is reset when it's read. That is: its delta is known
      without calculation by RRDtool whereas RRDtool needs to
      calculate it for the counter type.  Example: our first
-     example (12345, 12357, 12363, 12363) would read:  unknown,
+     example (12345, 12357, 12363, 12363) would read: unknown,
      12, 6, 0. The rest of the calculations stay the same.  The
      other one, derive, is like counter. Unlike counter, it can
      also decrease so it can have a negative delta. Again, the
@@ -1182,7 +1182,7 @@ rrdtool                                            RRDTUTORIAL(1)
 
 
 
-24/Oct/1999            Last change: 1.0.13                     18
+2001-02-22             Last change: 1.0.33                     18
 
 
 
@@ -1225,8 +1225,8 @@ rrdtool                                            RRDTUTORIAL(1)
      If your GIF shows all this, you know you have typed the data
      correct, the RRDtool executable is working properly, your
      viewer doesn't fool you and you successfully entered the
-     year 2000 :)  You could try the same example four times,
-     each time with only one of the lines.
+     year 2000 :) You could try the same example four times, each
+     time with only one of the lines.
 
      Let's go over the data again:
 
@@ -1248,7 +1248,7 @@ rrdtool                                            RRDTUTORIAL(1)
 
 
 
-24/Oct/1999            Last change: 1.0.13                     19
+2001-02-22             Last change: 1.0.33                     19
 
 
 
@@ -1276,7 +1276,7 @@ rrdtool                                            RRDTUTORIAL(1)
 
      There are a few more basics to show. Some important options
      are still to be covered and we haven't look at counter wraps
-     yet. First the counter wrap:  In our car we notice that our
+     yet. First the counter wrap: In our car we notice that our
      counter shows 999987. We travel 20 KM and the counter should
      go to 1000007. Unfortunately, there are only six digits on
      our counter so it really shows 000007. If we would plot that
@@ -1314,7 +1314,7 @@ rrdtool                                            RRDTUTORIAL(1)
 
 
 
-24/Oct/1999            Last change: 1.0.13                     20
+2001-02-22             Last change: 1.0.33                     20
 
 
 
@@ -1380,7 +1380,7 @@ rrdtool                                            RRDTUTORIAL(1)
 
 
 
-24/Oct/1999            Last change: 1.0.13                     21
+2001-02-22             Last change: 1.0.33                     21
 
 
 
@@ -1446,7 +1446,7 @@ rrdtool                                            RRDTUTORIAL(1)
 
 
 
-24/Oct/1999            Last change: 1.0.13                     22
+2001-02-22             Last change: 1.0.33                     22
 
 
 
@@ -1512,7 +1512,7 @@ MMMMAAAAIIIILLLLIIIINNNNGGGGLLLLIIIISSSSTTTT
 
 
 
-24/Oct/1999            Last change: 1.0.13                     23
+2001-02-22             Last change: 1.0.33                     23
 
 
 
@@ -1578,73 +1578,7 @@ AAAAUUUUTTTTHHHHOOOORRRR
 
 
 
-24/Oct/1999            Last change: 1.0.13                     24
-
-
-
-
-
-
-rrdtool                                            RRDTUTORIAL(1)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-24/Oct/1999            Last change: 1.0.13                     25
-
-
-
+2001-02-22             Last change: 1.0.33                     24
 
 
 

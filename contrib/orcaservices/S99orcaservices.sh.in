@@ -1,0 +1,29 @@
+#!/bin/sh
+
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+bindir=@bindir@
+
+case "$1" in
+'start')
+	if [ -x $bindir/start_orcaservices ]; then
+		umask 022
+		$bindir/start_orcaservices
+	else
+		echo "$0: $bindir/start_orcaservices does not exist or is not executable."
+	fi
+	;;
+
+'stop')
+	if [ -x $bindir/stop_orcaservices ]; then
+		$bindir/stop_orcaservices
+	fi
+	;;
+
+*)
+	echo "Usage: $0 { start | stop }"
+	exit 1
+	;;
+
+esac
+exit 0

@@ -1,5 +1,5 @@
 /****************************************************************************
- * RRDtool 1.0.13  Copyright Tobias Oetiker, 1997,1998, 1999
+ * RRDtool 1.0.33  Copyright Tobias Oetiker, 1997 - 2000
  ****************************************************************************
  * rrd__graph.c  make creates ne rrds
  ****************************************************************************/
@@ -9,6 +9,10 @@
 #include <gdlucidan10.h>
 #include <gdlucidab12.h>
 #include <sys/stat.h>
+#ifdef WIN32
+#include <io.h>
+#include <fcntl.h>
+#endif
 
 #define SmallFont gdLucidaNormal10
 #define LargeFont gdLucidaBold12
@@ -21,20 +25,24 @@
 # define DPRINT(x)
 #endif
 
+#define DEF_NAM_FMT "%29[_A-Za-z0-9]"
+
 enum tmt_en {TMT_SECOND=0,TMT_MINUTE,TMT_HOUR,TMT_DAY,
 	     TMT_WEEK,TMT_MONTH,TMT_YEAR};
 
 enum grc_en {GRC_CANVAS=0,GRC_BACK,GRC_SHADEA,GRC_SHADEB,
 	     GRC_GRID,GRC_MGRID,GRC_FONT,GRC_FRAME,GRC_ARROW,__GRC_END__};
 
+
 enum gf_en {GF_PRINT=0,GF_GPRINT,GF_COMMENT,GF_HRULE,GF_VRULE,GF_LINE1,
 	    GF_LINE2,GF_LINE3,GF_AREA,GF_STACK, GF_DEF, GF_CDEF };
 
 enum op_en {OP_NUMBER=0,OP_VARIABLE,OP_INF,OP_PREV,OP_NEGINF,
-	    OP_UNKN,OP_NOW,OP_TIME,OP_ADD,OP_MOD,
+	    OP_UNKN,OP_NOW,OP_TIME,OP_LTIME,OP_ADD,OP_MOD,
             OP_SUB,OP_MUL,
 	    OP_DIV,OP_SIN, OP_DUP, OP_EXC, OP_POP,
 	    OP_COS,OP_LOG,OP_EXP,OP_LT,OP_LE,OP_GT,OP_GE,OP_EQ,OP_IF,
+	    OP_MIN,OP_MAX,OP_LIMIT, OP_FLOOR, OP_CEIL,
 	    OP_UN,OP_END};
 
 enum if_en {IF_GIF=0,IF_PNG=1};
@@ -173,8 +181,10 @@ typedef  struct graph_desc_t {
 
 } graph_desc_t;
 
-#define ALTYGRID      0x01  /* use alternative y grid algorithm */
-#define ALTAUTOSCALE  0x02  /* use alternative algorithm to find lower and upper bounds */
+#define ALTYGRID          0x01  /* use alternative y grid algorithm */
+#define ALTAUTOSCALE      0x02  /* use alternative algorithm to find lower and upper bounds */
+#define ALTAUTOSCALE_MAX  0x04  /* use alternative algorithm to find upper bounds */
+#define NOLEGEND          0x08  /* use no legend */
 
 typedef struct image_desc_t {
 
@@ -185,6 +195,8 @@ typedef struct image_desc_t {
     col_trip_t     graph_col[__GRC_END__]; /* real colors for the graph */   
     char           ylegend[200];   /* legend along the yaxis */
     char           title[200];     /* title for graph */
+    int            draw_x_grid;      /* no x-grid at all */
+    int            draw_y_grid;      /* no x-grid at all */
     xlab_t         xlab_user;      /* user defined labeling for xaxis */
     char           xlab_form[200]; /* format for the label on the xaxis */
 
@@ -192,6 +204,7 @@ typedef struct image_desc_t {
     int            ylabfact;       /* every how many y grid shall a label be written ? */
 
     time_t         start,end;      /* what time does the graph cover */
+    unsigned long           step;           /* any preference for the default step ? */
     rrd_value_t    minval,maxval;  /* extreme values in the data */
     int            rigid;          /* do not expand range even with 
 				      values outside */
@@ -210,6 +223,7 @@ typedef struct image_desc_t {
     double         magfact;        /* numerical magnitude*/
     long         base;            /* 1000 or 1024 depending on what we graph */
     char           symbol;         /* magnitude symbol for y-axis */
+    int            unitsexponent;    /* 10*exponent for units on y-asis */
     int            extra_flags;    /* flags for boolean options */
     /* data elements */
 
@@ -219,8 +233,42 @@ typedef struct image_desc_t {
 
 } image_desc_t;
 
+/* Prototypes */
+int xtr(image_desc_t *,time_t);
+int ytr(image_desc_t *, double);
+enum gf_en gf_conv(char *);
+enum if_en if_conv(char *);
+enum tmt_en tmt_conv(char *);
+enum grc_en grc_conv(char *);
+int im_free(image_desc_t *);
+void auto_scale( image_desc_t *,  double *, char **, double *);
+void si_unit( image_desc_t *);
+void expand_range(image_desc_t *);
+void reduce_data( enum cf_en,  unsigned long,  time_t *, time_t *,  unsigned long *,  unsigned long *,  rrd_value_t **);
+int data_fetch( image_desc_t *);
+long find_var(image_desc_t *, char *);
+long lcd(long *);
+int data_calc( image_desc_t *);
+int data_proc( image_desc_t *);
+time_t find_first_time( time_t,  enum tmt_en,  long);
+time_t find_next_time( time_t,  enum tmt_en,  long);
+void gator( gdImagePtr, int, int);
+int tzoffset(time_t);
+int print_calc(image_desc_t *, char ***);
+int leg_place(image_desc_t *);
+int horizontal_grid(gdImagePtr, image_desc_t *);
+int horizontal_log_grid(gdImagePtr, image_desc_t *);
+void vertical_grid( gdImagePtr, image_desc_t *);
+void axis_paint( image_desc_t *, gdImagePtr);
+void grid_paint( image_desc_t *, gdImagePtr);
+gdImagePtr MkLineBrush(image_desc_t *,long, enum gf_en);
+int lazy_check(image_desc_t *);
+int graph_paint(image_desc_t *, char ***);
+int gdes_alloc(image_desc_t *);
+int scan_for_col(char *, int, char *);
+int rrd_graph(int, char **, char ***, int *, int *);
 int bad_format(char *);
-
+rpnp_t * str2rpn(image_desc_t *,char *);
 
 /* translate time values into x coordinates */   
 /*#define xtr(x) (int)((double)im->xorigin \
@@ -228,14 +276,14 @@ int bad_format(char *);
 		* ((double)(x) - im->start)+0.5) */
 /* initialize with xtr(im,0); */
 int
-xtr(image_desc_t *im,time_t time){
+xtr(image_desc_t *im,time_t mytime){
     static double pixie;
-    if (time==0){
+    if (mytime==0){
 	pixie = (double) im->xsize / (double)(im->end - im->start);
 	return im->xorigin;
     }
     return (int)((double)im->xorigin 
-		 + pixie * ( time - im->start ) );
+		 + pixie * ( mytime - im->start ) );
 }
 
 /* translate data values into y coordinates */
@@ -281,6 +329,7 @@ ytr(image_desc_t *im, double value){
 
 
 /* conversion function for symbolic entry names */
+
 
 #define conv_if(VV,VVV) \
    if (strcmp(#VV, string) == 0) return VVV ;
@@ -389,18 +438,18 @@ auto_scale(
 		      "E"};/* 10e18  Exa */
 
     int symbcenter = 6;
-    int index;  
+    int sindex;  
 
     if (*value == 0.0 || isnan(*value) ) {
-	index = 0;
+	sindex = 0;
 	*magfact = 1.0;
     } else {
-	index = floor(log(fabs(*value))/log(im->base)); 
-	*magfact = pow(im->base, index);
+	sindex = floor(log(fabs(*value))/log((double)im->base)); 
+	*magfact = pow((double)im->base, (double)sindex);
 	(*value) /= (*magfact);
     }
-    if ( index <= symbcenter && index >= -symbcenter) {
-	(*symb_ptr) = symbol[index+symbcenter];
+    if ( sindex <= symbcenter && sindex >= -symbcenter) {
+	(*symb_ptr) = symbol[sindex+symbcenter];
     }
     else {
 	(*symb_ptr) = "?";
@@ -432,11 +481,18 @@ si_unit(
     int   symbcenter = 6;
     double digits;  
     
-    digits = floor( log( max( fabs(im->minval),fabs(im->maxval)))/log(im->base)); 
-    im->magfact = pow(im->base , digits);
+    if (im->unitsexponent != 9999) {
+	/* unitsexponent = 9, 6, 3, 0, -3, -6, -9, etc */
+        digits = floor(im->unitsexponent / 3);
+    } else {
+        digits = floor( log( max( fabs(im->minval),fabs(im->maxval)))/log((double)im->base)); 
+    }
+    im->magfact = pow((double)im->base , digits);
+
 #ifdef DEBUG
     printf("digits %6.3f  im->magfact %6.3f\n",digits,im->magfact);
 #endif
+
     if ( ((digits+symbcenter) < sizeof(symbol)) &&
 		    ((digits+symbcenter) >= 0) )
         im->symbol = symbol[(int)digits+symbcenter];
@@ -464,18 +520,36 @@ expand_range(image_desc_t *im)
     
 
     
-    #ifdef DEBUG
+#ifdef DEBUG
     printf("Min: %6.2f Max: %6.2f MagFactor: %6.2f\n",
 	   im->minval,im->maxval,im->magfact);
-    #endif
+#endif
 
     if (isnan(im->ygridstep)){
 	if(im->extra_flags & ALTAUTOSCALE) {
 	    /* measure the amplitude of the function. Make sure that
 	       graph boundaries are slightly higher then max/min vals
 	       so we can see amplitude on the graph */
-	      adj = (im->maxval - im->minval) * 0.1;
+	      double delt, fact;
+
+	      delt = im->maxval - im->minval;
+	      adj = delt * 0.1;
+	      fact = 2.0 * pow(10.0,
+		    floor(log10(max(fabs(im->minval), fabs(im->maxval)))) - 2);
+	      if (delt < fact) {
+		adj = (fact - delt) * 0.55;
+#ifdef DEBUG
+	      printf("Min: %6.2f Max: %6.2f delt: %6.2f fact: %6.2f adj: %6.2f\n", im->minval, im->maxval, delt, fact, adj);
+#endif
+	      }
 	      im->minval -= adj;
+	      im->maxval += adj;
+	}
+	else if(im->extra_flags & ALTAUTOSCALE_MAX) {
+	    /* measure the amplitude of the function. Make sure that
+	       graph boundaries are slightly higher than max vals
+	       so we can see amplitude on the graph */
+	      adj = (im->maxval - im->minval) * 0.1;
 	      im->maxval += adj;
 	}
 	else {
@@ -515,96 +589,140 @@ expand_range(image_desc_t *im)
 }
 
     
+/* reduce data reimplementation by Alex */
 
 void
 reduce_data(
     enum cf_en     cf,         /* which consolidation function ?*/
     unsigned long  cur_step,   /* step the data currently is in */
-    time_t         *start,
-    time_t         *end,       /* which time frame do you want ?
-				* will be changed to represent reality */
-    unsigned long  *step,      /* desired step size. Will be adjusted to new increassed step size */
+    time_t         *start,     /* start, end and step as requested ... */
+    time_t         *end,       /* ... by the application will be   ... */
+    unsigned long  *step,      /* ... adjusted to represent reality    */
     unsigned long  *ds_cnt,    /* number of data sources in file */
     rrd_value_t    **data)     /* two dimensional array containing the data */
 {
     int i,reduce_factor = ceil((double)(*step) / (double)cur_step);
-    unsigned long src_row,trg_row,col,row_cnt,start_offset,skiprows=0;
+    unsigned long col,dst_row,row_cnt,start_offset,end_offset,skiprows=0;
+    rrd_value_t    *srcptr,*dstptr;
 
     (*step) = cur_step*reduce_factor; /* set new step size for reduced data */
-    /* adjust the start time so that it is a multiple of the new steptime */
+    dstptr = *data;
+    srcptr = *data;
 
-    row_cnt = ((*end)-(*start))/cur_step+1; /* +1 because start and end are pointers to first and last entry */
-    
+    /* We were given one extra row at the beginning of the interval.
+    ** We also need to return one extra row.  The extra interval is
+    ** the one defined by the start time in both cases.  It is not
+    ** used when graphing but maybe we can use it while reducing the
+    ** data.
+    */
+    row_cnt = ((*end)-(*start))/cur_step +1;
+
+    /* alter start and end so that they are multiples of the new steptime.
+    ** End will be shifted towards the future and start will be shifted
+    ** towards the past in order to include the requested interval
+    */ 
+    end_offset = (*end) % (*step);
+    if (end_offset) end_offset = (*step)-end_offset;
     start_offset = (*start) % (*step);
-    /* move the start pointer into the past so that the reduced data set
-       fully covers the timespan of the new dataset */
-    (*start) -= start_offset;
+    (*end) = (*end)+end_offset;
+    (*start) = (*start)-start_offset;
 
-    trg_row=0;
-    /* skip the first <skiprows> of original data because we already covered
-       by the row of *unknown* data added to the reduced dataset */
-    
-    skiprows = ((*step) - start_offset) / cur_step;
+    /* The first destination row is unknown yet it still needs
+    ** to be present in the returned data.  Skip it.
+    ** Don't make it NaN or we might overwrite the source.
+    */
+    dstptr += (*ds_cnt);
 
-    if (start_offset > 0) {
-      /* we don't have full data for the first row, so we'll ditch 
-         what is there and fill it with *UNKNOWN* */
-      for (col=0;col<(*ds_cnt);col++) {
-	(*data)[col] = DNAN;
-      }
-      trg_row++; /* one row of target filled already */
+    /* Depending on the amount of extra data needed at the
+    ** start of the destination, three things can happen:
+    ** -1- start_offset == 0:  skip the extra source row
+    ** -2- start_offset == cur_step: do nothing
+    ** -3- start_offset > cur_step: skip some source rows and 
+    **                      fill one destination row with NaN
+    */
+    if (start_offset==0) {
+	srcptr+=(*ds_cnt);
+	row_cnt--;
+    } else if (start_offset!=cur_step) {
+	skiprows=((*step)-start_offset)/cur_step+1;
+	srcptr += ((*ds_cnt)*skiprows);
+	row_cnt-=skiprows;
+	for (col=0;col<(*ds_cnt);col++) *dstptr++=DNAN;
+    }
 
-    };
- 
-        
-    for (src_row = skiprows; src_row < row_cnt; src_row+=reduce_factor) {
-	for (col=0;col<(*ds_cnt);col++){
-	    double newval=DNAN;
+    /* If we had to alter the endtime, there won't be
+    ** enough data to fill the last row.  This means
+    ** we have to skip some rows at the end
+    */
+    if (end_offset) {
+	skiprows = ((*step)-end_offset)/cur_step;
+	row_cnt-=skiprows;
+    }
+
+
+/* Sanity check: row_cnt should be multiple of reduce_factor */
+/* if this gets triggered, something is REALY WRONG ... we die immediately */
+
+    if (row_cnt%reduce_factor) {
+	printf("SANITY CHECK: %lu rows cannot be reduced by %i \n",
+				row_cnt,reduce_factor);
+	printf("BUG in reduce_data()\n");
+	exit(1);
+    }
+
+    /* Now combine reduce_factor intervals at a time
+    ** into one interval for the destination.
+    */
+
+    for (dst_row=0;row_cnt>=reduce_factor;dst_row++) {
+	for (col=0;col<(*ds_cnt);col++) {
+	    rrd_value_t newval=DNAN;
 	    unsigned long validval=0;
-	    for (i=0;i<reduce_factor && src_row+i<row_cnt;i++) {		
-		unsigned long ptr = (src_row+i)* (*ds_cnt)+col;
-		if (isnan((*data)[ptr])) continue; /* we can't help with NAN */
+
+	    for (i=0;i<reduce_factor;i++) {
+		if (isnan(srcptr[i*(*ds_cnt)+col])) {
+		    continue;
+		}
 		validval++;
-		if (isnan(newval)) {
-		    newval = (*data)[ptr];
-		} else {
-		   
-  		  switch (cf) {
-		  case CF_AVERAGE:
-		      newval += (*data)[ptr];
-		      break;
-		  case CF_MINIMUM:
-		      newval = min (newval,(*data)[ptr]);
-		      break;
-		  case CF_MAXIMUM:
-		      newval = max (newval,(*data)[ptr]);
-		      break;
-		  case CF_LAST:
-		      newval = (*data)[ptr];
-		      break;
-		  }
+		if (isnan(newval)) newval = srcptr[i*(*ds_cnt)+col];
+		else {
+		    switch (cf) {
+			case CF_AVERAGE:
+			    newval += srcptr[i*(*ds_cnt)+col];
+			    break;
+			case CF_MINIMUM:
+			    newval = min (newval,srcptr[i*(*ds_cnt)+col]);
+			    break;
+			case CF_MAXIMUM:
+			    newval = max (newval,srcptr[i*(*ds_cnt)+col]);
+			    break;
+			case CF_LAST:
+			    newval = srcptr[i*(*ds_cnt)+col];
+			    break;
+		    }
 		}
 	    }
 	    if (validval == 0){newval = DNAN;} else{
 		switch (cf) {
-		case CF_AVERAGE:		
-		    newval /= validval;
-		    break;
-		case CF_MINIMUM:
-		case CF_MAXIMUM:
-		case CF_LAST:
-		    break;
+		    case CF_AVERAGE:		
+			newval /= validval;
+			break;
+		    case CF_MINIMUM:
+		    case CF_MAXIMUM:
+		    case CF_LAST:
+			break;
 		}
 	    }
-	    (*data)[(trg_row)* (*ds_cnt)+col] = newval;
+	    *dstptr++=newval;
 	}
-	trg_row++;
+	srcptr+=(*ds_cnt)*reduce_factor;
+	row_cnt-=reduce_factor;
     }
-    *end = (*start) + (*step) * (trg_row);
-    /* make sure there is some NAN at the end of the graph */
-    for (col=0;col<(*ds_cnt);col++){
-      (*data)[(trg_row)* *ds_cnt+col] = DNAN;
-    }
+
+    /* If we had to alter the endtime, we didn't have enough
+    ** source rows to fill the last row. Fill it with NaN.
+    */
+    if (end_offset!=0) for (col=0;col<(*ds_cnt);col++) *dstptr++ = DNAN;
 }
 
 
@@ -740,13 +858,15 @@ str2rpn(image_desc_t *im,char *expr){
 	    return NULL;
 	}
 
-	else if((sscanf(expr,"%lf%n",&rpnp[steps].val,&pos) == 1) && (expr[pos] == ',')){
+	else if((sscanf(expr,"%lf%n",&rpnp[steps].val,&pos) == 1) 
+	        && (expr[pos] == ',')){
  	    rpnp[steps].op = OP_NUMBER;
 	    expr+=pos;
 	} 
 	
 #define match_op(VV,VVV) \
-        else if (strncmp(expr, #VVV, strlen(#VVV))==0){ \
+        else if (strncmp(expr, #VVV, strlen(#VVV))==0 && \
+                (expr[strlen(#VVV)] == ',' || expr[strlen(#VVV)] == '\0') ){ \
 	    rpnp[steps].op = VV; \
 	    expr+=strlen(#VVV); \
 	}
@@ -759,6 +879,8 @@ str2rpn(image_desc_t *im,char *expr){
 	match_op(OP_SIN,SIN)
 	match_op(OP_COS,COS)
 	match_op(OP_LOG,LOG)
+	match_op(OP_FLOOR,FLOOR)
+	match_op(OP_CEIL,CEIL)
 	match_op(OP_EXP,EXP)
 	match_op(OP_DUP,DUP)
 	match_op(OP_EXC,EXC)
@@ -769,6 +891,9 @@ str2rpn(image_desc_t *im,char *expr){
 	match_op(OP_GE,GE)
 	match_op(OP_EQ,EQ)
 	match_op(OP_IF,IF)
+	match_op(OP_MIN,MIN)
+	match_op(OP_MAX,MAX)
+	match_op(OP_LIMIT,LIMIT)
 	  /* order is important here ! .. match longest first */
 	match_op(OP_UNKN,UNKN)
 	match_op(OP_UN,UN)
@@ -776,12 +901,14 @@ str2rpn(image_desc_t *im,char *expr){
 	match_op(OP_PREV,PREV)
 	match_op(OP_INF,INF)
 	match_op(OP_NOW,NOW)
+	match_op(OP_LTIME,LTIME)
 	match_op(OP_TIME,TIME)
+
 
 #undef match_op
 
 
-	else if ((sscanf(expr,"%29[_A-Za-z0-9]%n",
+	else if ((sscanf(expr,DEF_NAM_FMT "%n",
 			 vname,&pos) == 1) 
 		 && ((rpnp[steps].ptr = find_var(im,vname)) != -1)){
 	    rpnp[steps].op = OP_VARIABLE;
@@ -805,6 +932,38 @@ str2rpn(image_desc_t *im,char *expr){
     return rpnp;
 }
 
+/* figure out what the local timezone offset for any point in
+   time was. Return it in seconds */
+
+int
+tzoffset( time_t now ){
+  int gm_sec, gm_min, gm_hour, gm_yday, gm_year,
+    l_sec, l_min, l_hour, l_yday, l_year;
+  struct tm *t;
+  int off;
+  t = gmtime(&now);
+  gm_sec = t->tm_sec;
+  gm_min = t->tm_min;
+  gm_hour = t->tm_hour;
+  gm_yday = t->tm_yday;
+  gm_year = t->tm_year;
+  t = localtime(&now);
+  l_sec = t->tm_sec;
+  l_min = t->tm_min;
+  l_hour = t->tm_hour;
+  l_yday = t->tm_yday;
+  l_year = t->tm_year;
+  off = (l_sec-gm_sec)+(l_min-gm_min)*60+(l_hour-gm_hour)*3600; 
+  if ( l_yday > gm_yday || l_year > gm_year){
+        off += 24*3600;
+  } else if ( l_yday < gm_yday || l_year < gm_year){
+        off -= 24*3600;
+  }
+
+  return off;
+}
+
+    
 
 #define dc_stackblock 100
 
@@ -841,7 +1000,7 @@ data_calc( image_desc_t *im){
 	for(rpi=0;im->gdes[gdi].rpnp[rpi].op != OP_END;rpi++){
 	    if(im->gdes[gdi].rpnp[rpi].op == OP_VARIABLE){
 		long ptr = im->gdes[gdi].rpnp[rpi].ptr;
-		if ((steparray = rrd_realloc(steparray, (++stepcnt+1)*sizeof(double)))==NULL){
+		if ((steparray = rrd_realloc(steparray, (++stepcnt+1)*sizeof(*steparray)))==NULL){
 		  rrd_set_error("realloc steparray");
 		  free(stack);
 		  return -1;
@@ -903,7 +1062,7 @@ data_calc( image_desc_t *im){
 	    for (rpi=0;im->gdes[gdi].rpnp[rpi].op != OP_END;rpi++){
 		if (stptr +5 > dc_stacksize){
 		    dc_stacksize += dc_stackblock;		
-		    stack = rrd_realloc(stack,dc_stacksize*sizeof(long));
+		    stack = rrd_realloc(stack,dc_stacksize*sizeof(*stack));
 		    if (stack==NULL){
 			rrd_set_error("RPN stack overflow");
 			return -1;
@@ -924,7 +1083,7 @@ data_calc( image_desc_t *im){
 		    stack[++stptr] =  *im->gdes[gdi].rpnp[rpi].data;
 		    break;
 		case OP_PREV:
-		    if (dataidx == 0) {
+		    if (dataidx <= 0) {
                        stack[++stptr] = DNAN;
                     } else {
                        stack[++stptr] = im->gdes[gdi].data[dataidx];
@@ -944,6 +1103,9 @@ data_calc( image_desc_t *im){
 		    break;
 		case OP_TIME:
 		    stack[++stptr] = (double)now;
+		    break;
+		case OP_LTIME:
+		    stack[++stptr] = (double)tzoffset(now)+(double)now;
 		    break;
 		case OP_ADD:
 		    if(stptr<1){
@@ -1006,6 +1168,22 @@ data_calc( image_desc_t *im){
 		    }
 		    stack[stptr] = cos(stack[stptr]);
 		    break;
+		case OP_CEIL:
+		    if(stptr<0){
+			rrd_set_error("RPN stack underflow");
+			free(stack);
+			return -1;
+		    }
+		    stack[stptr] = ceil(stack[stptr]);
+		    break;
+		case OP_FLOOR:
+		    if(stptr<0){
+			rrd_set_error("RPN stack underflow");
+			free(stack);
+			return -1;
+		    }
+		    stack[stptr] = floor(stack[stptr]);
+		    break;
 		case OP_LOG:
 		    if(stptr<0){
 			rrd_set_error("RPN stack underflow");
@@ -1057,7 +1235,10 @@ data_calc( image_desc_t *im){
 			free(stack);
 			return -1;
 		    }
-		    stack[stptr-1] = stack[stptr-1] < stack[stptr] ? 1.0 : 0.0;
+		    if (isnan(stack[stptr-1]) || isnan(stack[stptr]))
+		        stack[stptr-1] = 0.0;
+		    else
+			stack[stptr-1] = stack[stptr-1] < stack[stptr] ? 1.0 : 0.0;
 		    stptr--;
 		    break;
 		case OP_LE:
@@ -1066,7 +1247,10 @@ data_calc( image_desc_t *im){
 			free(stack);
 			return -1;
 		    }
-		    stack[stptr-1] = stack[stptr-1] <= stack[stptr] ? 1.0 : 0.0;
+		    if (isnan(stack[stptr-1]) || isnan(stack[stptr]))
+		        stack[stptr-1] = 0.0;
+		    else
+		        stack[stptr-1] = stack[stptr-1] <= stack[stptr] ? 1.0 : 0.0;
 		    stptr--;
 		    break;
 		case OP_GT:
@@ -1075,7 +1259,10 @@ data_calc( image_desc_t *im){
 			free(stack);
 			return -1;
 		    }
-		    stack[stptr-1] = stack[stptr-1] > stack[stptr] ? 1.0 : 0.0;
+		    if (isnan(stack[stptr-1]) || isnan(stack[stptr]))
+		        stack[stptr-1] = 0.0;
+		    else
+		        stack[stptr-1] = stack[stptr-1] > stack[stptr] ? 1.0 : 0.0;
 		    stptr--;
 		    break;
 		case OP_GE:
@@ -1084,7 +1271,10 @@ data_calc( image_desc_t *im){
 			free(stack);
 			return -1;
 		    }
-		    stack[stptr-1] = stack[stptr-1] >= stack[stptr] ? 1.0 : 0.0;
+		    if (isnan(stack[stptr-1]) || isnan(stack[stptr]))
+		        stack[stptr-1] = 0.0;
+		    else
+		        stack[stptr-1] = stack[stptr-1] >= stack[stptr] ? 1.0 : 0.0;
 		    stptr--;
 		    break;
 		case OP_EQ:
@@ -1093,7 +1283,10 @@ data_calc( image_desc_t *im){
 			free(stack);
 			return -1;
 		    }
-		    stack[stptr-1] = stack[stptr-1] == stack[stptr] ? 1.0 : 0.0;
+		    if (isnan(stack[stptr-1]) || isnan(stack[stptr]))
+		        stack[stptr-1] = 0.0;
+		    else
+		        stack[stptr-1] = stack[stptr-1] == stack[stptr] ? 1.0 : 0.0;
 		    stptr--;
 		    break;
 		case OP_IF:
@@ -1105,6 +1298,52 @@ data_calc( image_desc_t *im){
 		    stack[stptr-2] = stack[stptr-2] != 0.0 ? stack[stptr-1] : stack[stptr];
 		    stptr--;
 		    stptr--;
+		    break;
+		case OP_MIN:
+		    if(stptr<1){
+			rrd_set_error("RPN stack underflow");
+			free(stack);
+			return -1;
+		    }
+		    if (isnan(stack[stptr-1])) 
+			;
+		    else if (isnan(stack[stptr]))
+		        stack[stptr-1] = stack[stptr];
+		    else if (stack[stptr-1] > stack[stptr])
+		        stack[stptr-1] = stack[stptr];
+		    stptr--;
+		    break;
+		case OP_MAX:
+		    if(stptr<1){
+			rrd_set_error("RPN stack underflow");
+			free(stack);
+			return -1;
+		    }
+		    if (isnan(stack[stptr-1])) 
+			;
+		    else if (isnan(stack[stptr]))
+		        stack[stptr-1] = stack[stptr];
+		    else if (stack[stptr-1] < stack[stptr])
+		        stack[stptr-1] = stack[stptr];
+		    stptr--;
+		    break;
+		case OP_LIMIT:
+		    if(stptr<2){
+			rrd_set_error("RPN stack underflow");
+			free(stack);
+			return -1;
+		    }
+		    if (isnan(stack[stptr-2])) 
+			;
+		    else if (isnan(stack[stptr-1]))
+		        stack[stptr-2] = stack[stptr-1];
+		    else if (isnan(stack[stptr]))
+		        stack[stptr-2] = stack[stptr];
+		    else if (stack[stptr-2] < stack[stptr-1])
+		        stack[stptr-2] = DNAN;
+		    else if (stack[stptr-2] > stack[stptr])
+		        stack[stptr-2] = DNAN;
+		    stptr-=2;
 		    break;
 		case OP_UN:
 		    if(stptr<0){
@@ -1283,8 +1522,9 @@ find_first_time(
 	tm.tm_sec=0;
 	tm.tm_min = 0;
 	tm.tm_hour = 0;
-	tm.tm_mday -= tm.tm_wday -1 ; break;	/* -1 because we want the monday */
+	tm.tm_mday -= tm.tm_wday -1;	/* -1 because we want the monday */
 	if (tm.tm_wday==0) tm.tm_mday -= 7; /* we want the *previous* monday */
+	break;
     case TMT_MONTH:
 	tm.tm_sec=0;
 	tm.tm_min = 0;
@@ -1338,13 +1578,24 @@ find_next_time(
 	  
 }
 
-/* create a grid on the graph. it determines what to do
-   from the values of xsize, start and end */
-/* the xaxis labels are determined from the number of seconds per pixel
-   in the requested graph */
-
-
 void gator( gdImagePtr gif, int x, int y){ 
+
+/* this function puts the name of the author and the tool into the
+   graph. Remove if you must, but please note, that it is here,
+   because I would like people who look at rrdtool generated graphs to
+   see what was used to do it. No obviously you can also add a credit
+   line to your webpage or printed document, this is fine with me. But
+   as I have no control over this, I added the little tag in here. 
+*/
+
+/* the fact that the text of what gets put into the graph is not
+   visible in the function, has lead some to think this is for
+   obfuscation reasons. While this is a nice side effect (I addmit),
+   it is not the prime reason. The prime reason is, that the font
+   used, is so small, that I had to hand edit the characters to ensure
+   readability. I could thus not use the normal gd functions to write,
+   but had to embed a slightly compressed bitmap version into the code. 
+*/
 
     int li[]={0,0,1, 0,4,5, 0,8,9, 0,12,14, 0,17,17, 0,21,21, 
 	      0,24,24, 0,34,34, 0,40,42, 0,45,45, 0,48,49, 0,52,54, 
@@ -1373,6 +1624,7 @@ void gator( gdImagePtr gif, int x, int y){
 	for(ii=y+li[i+1]; ii<=y+li[i+2];ii++)
 	  gdImageSetPixel(gif,x-li[i],ii,graph_col[GRC_GRID].i); 
 }
+
 
 /* calculate values required for PRINT and GPRINT functions */
 
@@ -1405,8 +1657,8 @@ print_calc(image_desc_t *im, char ***prdata)
 		     *im->gdes[vidx].ds_cnt);
 	    printval = DNAN;
 	    validsteps = 0;
-	    for(ii=im->gdes[vidx].ds;
-		ii < max_ii;
+	    for(ii=im->gdes[vidx].ds+im->gdes[vidx].ds_cnt;
+		ii < max_ii+im->gdes[vidx].ds_cnt;
 		ii+=im->gdes[vidx].ds_cnt){
 		 if (! finite(im->gdes[vidx].data[ii]))
 		     continue;
@@ -1504,7 +1756,6 @@ print_calc(image_desc_t *im, char ***prdata)
 int
 leg_place(image_desc_t *im)
 {
-    
     /* graph labels */
     int   interleg = SmallFont->w*2;
     int   box = SmallFont->h*1.2;
@@ -1518,6 +1769,7 @@ leg_place(image_desc_t *im)
     char  prt_fctn; /*special printfunctions */
     int  *legspace;
 
+  if( !(im->extra_flags & NOLEGEND) ) {
     if ((legspace = malloc(im->gdes_c*sizeof(int)))==NULL){
        rrd_set_error("malloc for legspace");
        return -1;
@@ -1615,8 +1867,15 @@ leg_place(image_desc_t *im)
     }
     im->ygif = leg_y+6;
     free(legspace);
-    return 0;
+  }
+  return 0;
 }
+
+/* create a grid on the graph. it determines what to do
+   from the values of xsize, start and end */
+
+/* the xaxis labels are determined from the number of seconds per pixel
+   in the requested graph */
 
 
 
@@ -1667,7 +1926,7 @@ horizontal_grid(gdImagePtr gif, image_desc_t   *im)
 		sprintf(labfmt, "%%%d.%df", decimals - fractionals + 1, -fractionals + 1);
 	    else
 		sprintf(labfmt, "%%%d.1f", decimals + 1);
-	    gridstep = pow(10, fractionals);
+	    gridstep = pow((double)10, (double)fractionals);
 	    if(gridstep == 0) /* range is one -> 0.1 is reasonable scale */
 		gridstep = 0.1;
 	    /* should have at least 5 lines but no more then 15 */
@@ -1810,7 +2069,7 @@ horizontal_log_grid(gdImagePtr gif, image_desc_t   *im)
     polyPoints[0].x=im->xorigin;
     polyPoints[1].x=im->xorigin+im->xsize;
     /* paint minor grid */
-    for (value = pow(10, log10(im->minval) 
+    for (value = pow((double)10, log10(im->minval) 
 			  - fmod(log10(im->minval),log10(yloglab[minoridx][0])));
 	 value  <= im->maxval;
 	 value *= yloglab[minoridx][0]){
@@ -1831,7 +2090,7 @@ horizontal_log_grid(gdImagePtr gif, image_desc_t   *im)
     }
 
     /* paint major grid and labels*/
-    for (value = pow(10, log10(im->minval) 
+    for (value = pow((double)10, log10(im->minval) 
 			  - fmod(log10(im->minval),log10(yloglab[majoridx][0])));
 	 value <= im->maxval;
 	 value *= yloglab[majoridx][0]){
@@ -2017,7 +2276,7 @@ grid_paint(
 {   
     long i;
     int boxH=8, boxV=8;
-	int res;
+    int res=0;
     gdPoint polyPoints[4];	 /* points for filled graph and more*/
 
     /* draw 3d border */
@@ -2031,23 +2290,26 @@ grid_paint(
     gdImageLine(gif,1,im->ygif-2,im->xgif-2,im->ygif-2,graph_col[GRC_SHADEB].i);
 
 
-    vertical_grid(gif, im);
+    if (im->draw_x_grid == 1 )
+      vertical_grid(gif, im);
     
-    /* dont draw horizontal grid if there is no min and max val */
+    if (im->draw_y_grid == 1){
 	if(im->logarithmic){
 		res = horizontal_log_grid(gif,im);
 	} else {
 		res = horizontal_grid(gif,im);
 	}
-    if (! res) {
-       char *nodata = "No Data found";
-       gdImageString(gif, LargeFont,
-		     im->xgif/2 
-		     - (strlen(nodata)*LargeFont->w)/2,
-		     (2*im->yorigin-im->ysize) / 2,
-		     (unsigned char *)nodata, graph_col[GRC_FONT].i);
-    }
 
+	/* dont draw horizontal grid if there is no min and max val */
+	if (! res ) {
+	  char *nodata = "No Data found";
+	  gdImageString(gif, LargeFont,
+			im->xgif/2 
+			- (strlen(nodata)*LargeFont->w)/2,
+			(2*im->yorigin-im->ysize) / 2,
+			(unsigned char *)nodata, graph_col[GRC_FONT].i);
+	}
+    }
 
     /* yaxis description */
     gdImageStringUp(gif, SmallFont,
@@ -2065,8 +2327,8 @@ grid_paint(
 		    (unsigned char *)im->title, graph_col[GRC_FONT].i);
     
     /* graph labels */
-
-    for(i=0;i<im->gdes_c;i++){
+    if( !(im->extra_flags & NOLEGEND) ) {
+      for(i=0;i<im->gdes_c;i++){
 	if(im->gdes[i].legend[0] =='\0')
 	    continue;
 	
@@ -2098,6 +2360,7 @@ grid_paint(
 			  (unsigned char *)im->gdes[i].legend,
 			  graph_col[GRC_FONT].i);
 	}
+      }
     }
     
     
@@ -2160,6 +2423,7 @@ MkLineBrush(image_desc_t *im,long cosel, enum gf_en typsel){
 
 int lazy_check(image_desc_t *im){
     FILE *fd = NULL;
+    int size = 1;
     struct stat  gifstat;
     
     if (im->lazy == 0) return 0; /* no lazy option */
@@ -2174,12 +2438,14 @@ int lazy_check(image_desc_t *im){
       return 0; /* the file does not exist */
     switch (im->imgformat) {
     case IF_GIF:
-	return GifSize(fd,&(im->xgif),&(im->ygif));
+	size = GifSize(fd,&(im->xgif),&(im->ygif));
+	break;
     case IF_PNG:
-	return PngSize(fd,&(im->xgif),&(im->ygif));
+	size = PngSize(fd,&(im->xgif),&(im->ygif));
+	break;
     }
     fclose(fd);
-    return 1;
+    return size;
 }
 
 /* draw that picture thing ... */
@@ -2215,8 +2481,9 @@ graph_paint(image_desc_t *im, char ***calcpr)
      * if there are no graph elements we stop here ... 
      * if we are lazy, try to quit ... 
      */
-    if(print_calc(im,calcpr)==0 || lazy)
-	return 0;
+    i=print_calc(im,calcpr);
+    if(i<0) return -1;
+    if(i==0 || lazy) return 0;
 
     /* get actual drawing data and find min and max values*/
     if(data_proc(im)==-1)
@@ -2424,10 +2691,14 @@ graph_paint(image_desc_t *im, char ***calcpr)
     }
 
     if (strcmp(im->graphfile,"-")==0) {
-	fo = stdout;
+#ifdef WIN32
+        /* Change translation mode for stdout to BINARY */
+        _setmode( _fileno( stdout ), O_BINARY );
+#endif
+        fo = stdout;
     } else {
 	if ((fo = fopen(im->graphfile,"wb")) == NULL) {
-	    rrd_set_error("cannot open %s for write",im->graphfile);
+	    rrd_set_error("Opening '%s' for write: %s",im->graphfile, strerror(errno));
 	    return (-1);
 	}
     }
@@ -2455,6 +2726,9 @@ int
 gdes_alloc(image_desc_t *im){
 
     long def_step = (im->end-im->start)/im->xsize;
+    
+    if (im->step > def_step) /* step can be increassed ... no decreassed */
+      def_step = im->step;
 
     im->gdes_c++;
     
@@ -2523,6 +2797,7 @@ rrd_graph(int argc, char **argv, char ***prdata, int *xsize, int *ysize)
     int linepass = 0; /* stack can only follow directly after LINE* AREA or STACK */    
     struct time_value start_tv, end_tv;
     char *parsetime_error = NULL;
+    int stroff;    
 
     (*prdata)=NULL;
 
@@ -2534,17 +2809,21 @@ rrd_graph(int argc, char **argv, char ***prdata, int *xsize, int *ysize)
     im.ygif=0;
     im.xsize = 400;
     im.ysize = 100;
+    im.step = 0;
     im.ylegend[0] = '\0';
     im.title[0] = '\0';
     im.minval = DNAN;
     im.maxval = DNAN;    
     im.interlaced = 0;
+    im.unitsexponent= 9999;
     im.extra_flags= 0;
     im.rigid = 0;
     im.imginfo = NULL;
     im.lazy = 0;
     im.logarithmic = 0;
     im.ygridstep = DNAN;
+    im.draw_x_grid = 1;
+    im.draw_y_grid = 1;
     im.base = 1000;
     im.prt_c = 0;
     im.gdes_c = 0;
@@ -2576,15 +2855,19 @@ rrd_graph(int argc, char **argv, char ***prdata, int *xsize, int *ysize)
 	    {"imginfo",    required_argument, 0,  'f'},
 	    {"imgformat",  required_argument, 0,  'a'},
 	    {"lazy",       no_argument,       0,  'z'},
+	    {"no-legend",  no_argument,       0,  'g'},
 	    {"alt-y-grid", no_argument,       0,   257 },
 	    {"alt-autoscale", no_argument,    0,   258 },
+	    {"alt-autoscale-max", no_argument,    0,   259 },
+	    {"units-exponent",required_argument, 0,  260},
+	    {"step",       required_argument, 0,   261},
 	    {0,0,0,0}};
 	int option_index = 0;
 	int opt;
 
 	
 	opt = getopt_long(argc, argv, 
-			  "s:e:x:y:v:w:h:iu:l:rb:oc:t:f:a:z",
+			  "s:e:x:y:v:w:h:iu:l:rb:oc:t:f:a:z:g",
 			  long_options, &option_index);
 
 	if (opt == EOF)
@@ -2596,6 +2879,18 @@ rrd_graph(int argc, char **argv, char ***prdata, int *xsize, int *ysize)
 	    break;
 	case 258:
 	    im.extra_flags |= ALTAUTOSCALE;
+	    break;
+	case 259:
+	    im.extra_flags |= ALTAUTOSCALE_MAX;
+	    break;
+	case 'g':
+	    im.extra_flags |= NOLEGEND;
+	    break;
+	case 260:
+	    im.unitsexponent = atoi(optarg);
+	    break;
+	case 261:
+	    im.step =  atoi(optarg);
 	    break;
 	case 's':
 	    if ((parsetime_error = parsetime(optarg, &start_tv))) {
@@ -2610,8 +2905,13 @@ rrd_graph(int argc, char **argv, char ***prdata, int *xsize, int *ysize)
 	    }
 	    break;
 	case 'x':
+	    if(strcmp(optarg,"none") == 0){
+	      im.draw_x_grid=0;
+	      break;
+	    };
+	        
 	    if(sscanf(optarg,
-		      "%10[A-Z]:%lu:%10[A-Z]:%lu:%10[A-Z]:%lu:%lu:%100s",
+		      "%10[A-Z]:%ld:%10[A-Z]:%ld:%10[A-Z]:%ld:%ld:%n",
 		      scan_gtm,
 		      &im.xlab_user.gridst,
 		      scan_mtm,
@@ -2619,7 +2919,8 @@ rrd_graph(int argc, char **argv, char ***prdata, int *xsize, int *ysize)
 		      scan_ltm,
 		      &im.xlab_user.labst,
 		      &im.xlab_user.precis,
-		      im.xlab_form) == 8){
+		      &stroff) == 7 && stroff != 0){
+                strncpy(im.xlab_form, optarg+stroff, sizeof(im.xlab_form) - 1);
 		if((im.xlab_user.gridtm = tmt_conv(scan_gtm)) == -1){
 		    rrd_set_error("unknown keyword %s",scan_gtm);
 		    return -1;
@@ -2633,11 +2934,17 @@ rrd_graph(int argc, char **argv, char ***prdata, int *xsize, int *ysize)
 		im.xlab_user.minsec = 1;
 		im.xlab_user.stst = im.xlab_form;
 	    } else {
-		rrd_set_error("invalid xgrid format");
+		rrd_set_error("invalid x-grid format");
 		return -1;
 	    }
 	    break;
 	case 'y':
+
+	    if(strcmp(optarg,"none") == 0){
+	      im.draw_y_grid=0;
+	      break;
+	    };
+
 	    if(sscanf(optarg,
 		      "%lf:%d",
 		      &im.ygridstep,
@@ -2650,7 +2957,7 @@ rrd_graph(int argc, char **argv, char ***prdata, int *xsize, int *ysize)
 		    return -1;
 		} 
 	    } else {
-		rrd_set_error("invalid ygrid format");
+		rrd_set_error("invalid y-grid format");
 		return -1;
 	    }
 	    break;
@@ -2922,7 +3229,7 @@ rrd_graph(int argc, char **argv, char ***prdata, int *xsize, int *ysize)
 	    }
 	    if(sscanf(
 		    &argv[i][argstart],
-		    "%29[_A-Za-z0-9]=%[^: ]",
+		    DEF_NAM_FMT "=%[^: ]",
 		    im.gdes[im.gdes_c-1].vname,
 		    rpnex) != 2){
 		im_free(&im);
@@ -2947,9 +3254,9 @@ rrd_graph(int argc, char **argv, char ***prdata, int *xsize, int *ysize)
 	case GF_DEF:
 	    if (sscanf(
 		&argv[i][argstart],
-		"%29[_A-Za-z0-9]=%n",
+		DEF_NAM_FMT "=%n",
 		im.gdes[im.gdes_c-1].vname,
-		&strstart)== 1){
+		&strstart)== 1 && strstart){ /* is the = did not match %n returns 0 */ 
 		if(sscanf(&argv[i][argstart
 				  +strstart
 				  +scan_for_col(&argv[i][argstart+strstart],

@@ -1,5 +1,5 @@
 /*****************************************************************************
- * RRDtool 1.0.13  Copyright Tobias Oetiker, 1997, 1998, 1999
+ * RRDtool 1.0.33  Copyright Tobias Oetiker, 1997 - 2000
  *****************************************************************************
  * rrd_dump  Display a RRD
  *****************************************************************************
@@ -80,9 +80,10 @@ rrd_dump(int argc, char **argv)
                       * sizeof(rrd_value_t));
 	printf("\t<rra>\n");
 	printf("\t\t<cf> %s </cf>\n",rrd.rra_def[i].cf_nam);
-	printf("\t\t<pdp_per_row> %lu </pdp_per_row> <!-- %lu seconds -->\n\n",
+	printf("\t\t<pdp_per_row> %lu </pdp_per_row> <!-- %lu seconds -->\n",
 	       rrd.rra_def[i].pdp_cnt, rrd.rra_def[i].pdp_cnt
 	       *rrd.stat_head->pdp_step);
+	printf("\t\t<xff> %0.10e </xff>\n\n",rrd.rra_def[i].par[RRA_cdp_xff_val].u_val);
 	printf("\t\t<cdp_prep>\n");
 	for(ii=0;ii<rrd.stat_head->ds_cnt;ii++){
 	    double value = rrd.cdp_prep[i*rrd.stat_head->ds_cnt+ii].scratch[CDP_val].u_val;
@@ -122,7 +123,7 @@ rrd_dump(int argc, char **argv)
 #else
 # error "Need strftime"
 #endif
-	    printf("\t\t\t<!-- %s --> <row>",somestring);
+	    printf("\t\t\t<!-- %s / %d --> <row>",somestring,(int)now);
 	    for(iii=0;iii<rrd.stat_head->ds_cnt;iii++){			 
 		fread(&my_cdp,sizeof(rrd_value_t),1,in_file);		
 		if (isnan(my_cdp)){

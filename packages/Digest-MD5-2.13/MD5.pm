@@ -3,7 +3,7 @@ package Digest::MD5;
 use strict;
 use vars qw($VERSION @ISA @EXPORT_OK);
 
-$VERSION = '2.09';  # $Date: 1999/08/05 23:24:05 $
+$VERSION = '2.13';  # $Date: 2001/03/14 05:50:15 $
 
 require Exporter;
 *import = \&Exporter::import;
@@ -11,9 +11,20 @@ require Exporter;
 
 require DynaLoader;
 @ISA=qw(DynaLoader);
-Digest::MD5->bootstrap($VERSION);
 
-*reset = \&new;
+eval {
+    Digest::MD5->bootstrap($VERSION);
+};
+if ($@) {
+    # Try to load the pure perl version
+    require Digest::Perl::MD5;
+
+    Digest::Perl::MD5->import(qw(md5 md5_hex md5_base64));
+    push(@ISA, "Digest::Perl::MD5");  # make OO interface work
+}
+else {
+    *reset = \&new;
+}
 
 1;
 __END__
@@ -30,7 +41,6 @@ Digest::MD5 - Perl interface to the MD5 Algorithm
  $digest = md5($data);
  $digest = md5_hex($data);
  $digest = md5_base64($data);
-    
 
  # OO style
  use Digest::MD5;
@@ -110,6 +120,9 @@ calculate the digest for.  The return value is the $md5 object itself.
 The $io_handle is read until EOF and the content is appended to the
 message we calculate the digest for.  The return value is the $md5
 object itself.
+
+In most cases you want to make sure that the $io_handle is set up to
+be in binmode().
 
 =item $md5->digest
 
@@ -202,7 +215,7 @@ RFC 1321
 This library is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.
 
- Copyright 1998-1999 Gisle Aas.
+ Copyright 1998-2000 Gisle Aas.
  Copyright 1995-1996 Neil Winton.
  Copyright 1991-1992 RSA Data Security, Inc.
 
@@ -246,6 +259,6 @@ licenses.
 The original MD5 interface was written by Neil Winton
 (C<N.Winton@axion.bt.co.uk>).
 
-This release was made by Gisle Aas <gisle@aas.no>
+This release was made by Gisle Aas <gisle@ActiveState.com>
 
 =cut

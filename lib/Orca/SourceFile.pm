@@ -1,6 +1,6 @@
 # Orca::SourceFile: Manage the watching and loading of source data files.
 #
-# Copyright (C) 1998, 1999 Blair Zajac and Yahoo!, Inc.
+# Copyright (C) 1998-2001 Blair Zajac and Yahoo!, Inc.
 
 package Orca::SourceFile;
 
@@ -9,10 +9,11 @@ use Carp;
 use Digest::MD5         qw(md5);
 use Storable            qw(dclone);
 use Orca::Constants     qw($opt_verbose
-                           $incorrect_number_of_args
-                           die_when_called);
-use Orca::Config        qw(%config_options
-                           %config_groups
+                           die_when_called
+                           $INCORRECT_NUMBER_OF_ARGS);
+use Orca::Config        qw(%config_global
+                           @config_groups
+                           @config_groups_names
                            @config_plots
                            get_color);
 use Orca::OldState      qw($orca_old_state);
@@ -21,6 +22,7 @@ use Orca::OpenFileHash  qw($open_file_cache);
 use Orca::SourceFileIDs qw(@sfile_fids);
 use Orca::ImageFile;
 use Orca::RRDFile;
+use Orca::Utils         qw(email_message);
 use vars                qw(@ISA $VERSION);
 
 @ISA     = qw(Orca::DataFile);
@@ -28,7 +30,7 @@ $VERSION = substr q$Revision: 0.01 $, 10;
 
 # This is a static variable that lists all of the column names for a
 # particular group.
-my %group_column_names;
+my @group_column_names;
 
 # This caches the reference to the array holding the column
 # descriptions for files that have their column descriptions in the
@@ -47,13 +49,13 @@ my %choose_data_sub_cache;
 # using the ORCA_DATAFILE_LAST_INDEX index.  Define these constant
 # subroutines as indexes into the array.  If the order of these
 # indexes change, make sure to rearrange the constructor in new.
-sub I_INTERVAL           () { ORCA_DATAFILE_LAST_INDEX +  1 }
-sub I_LATE_INTERVAL      () { ORCA_DATAFILE_LAST_INDEX +  2 }
-sub I_READ_INTERVAL      () { ORCA_DATAFILE_LAST_INDEX +  3 }
-sub I_REOPEN             () { ORCA_DATAFILE_LAST_INDEX +  4 }
-sub I_DATE_SOURCE        () { ORCA_DATAFILE_LAST_INDEX +  5 }
-sub I_DATE_FORMAT        () { ORCA_DATAFILE_LAST_INDEX +  6 }
-sub I_WARN_EMAIL         () { ORCA_DATAFILE_LAST_INDEX +  7 }
+sub I_GROUP_INDEX        () { ORCA_DATAFILE_LAST_INDEX +  1 }
+sub I_INTERVAL           () { ORCA_DATAFILE_LAST_INDEX +  2 }
+sub I_LATE_INTERVAL      () { ORCA_DATAFILE_LAST_INDEX +  3 }
+sub I_READ_INTERVAL      () { ORCA_DATAFILE_LAST_INDEX +  4 }
+sub I_REOPEN             () { ORCA_DATAFILE_LAST_INDEX +  5 }
+sub I_DATE_SOURCE        () { ORCA_DATAFILE_LAST_INDEX +  6 }
+sub I_DATE_PARSE         () { ORCA_DATAFILE_LAST_INDEX +  7 }
 sub I_MY_RRD_LIST        () { ORCA_DATAFILE_LAST_INDEX +  8 }
 sub I_ALL_RRD_REF        () { ORCA_DATAFILE_LAST_INDEX +  9 }
 sub I_GROUP_KEYS         () { ORCA_DATAFILE_LAST_INDEX + 10 }
@@ -67,59 +69,35 @@ sub I_IS_CURRENT         () { ORCA_DATAFILE_LAST_INDEX + 17 }
 sub I_IS_CURRENT_DAY     () { ORCA_DATAFILE_LAST_INDEX + 18 }
 
 sub new {
-  unless (@_ == 9) {
-    confess "$0: Orca::SourceFile::new passed $incorrect_number_of_args";
+  unless (@_ == 3) {
+    confess "$0: Orca::SourceFile::new passed $INCORRECT_NUMBER_OF_ARGS";
   }
 
-  my ($class,
-      $fid,
-      $interval,
-      $late_interval,
-      $reopen,
-      $column_description,
-      $date_source,
-      $date_format,
-      $warn_email) = @_;
+  my ($class, $group_index, $fid) = @_;
 
   my $self = $class->SUPER::new($fid);
 
+  my $config_group = $config_groups[$group_index];
+
   # Set the last value to preexpand the array.
   $self->[I_IS_CURRENT_DAY]     = undef;
-  $self->[I_INTERVAL]           = $interval;
-  $self->[I_LATE_INTERVAL]      = int(&$late_interval($interval) + 0.5);
-  $self->[I_REOPEN]             = $reopen;
-  $self->[I_DATE_SOURCE]        = $date_source;
-  $self->[I_DATE_FORMAT]        = $date_format;
-  $self->[I_WARN_EMAIL]         = $warn_email;
+  $self->[I_GROUP_INDEX]        = $group_index;
+  $self->[I_INTERVAL]           = $config_group->{interval};
+  $self->[I_LATE_INTERVAL]      = $config_group->{late_interval};
+  $self->[I_READ_INTERVAL]      = $config_group->{read_interval};
+  $self->[I_REOPEN]             = $config_group->{reopen};
+  $self->[I_DATE_SOURCE]        = $config_group->{date_source};
+  $self->[I_DATE_PARSE]         = $config_group->{date_parse};
   $self->[I_MY_RRD_LIST]        = [];
   $self->[I_ALL_RRD_REF]        = undef;
   $self->[I_GROUP_KEYS]         = {};
   $self->[I_CHOOSE_DATA_SUB]    = undef;
 
-  $self->[I_COLUMN_DESCRIPTION] = $column_description;
+  $self->[I_COLUMN_DESCRIPTION] = $config_group->{column_description};
   $self->[I_LAST_DATA_TIME]     = -1;
   $self->[I_LAST_READ_TIME]     = -1;
   $self->[I_FIRST_LINE]         =  0;
   $self->[I_DATE_COLUMN_INDEX]  = undef;
-
-  # There are three intervals associated with each file.  The first is
-  # the data update interval.  This is the same interval used to
-  # generate the RRDs.  The second interval is the interval before the
-  # file is considered late and is larger than the data update
-  # interval.  This interval is calculated by using the mathematical
-  # expression given in the `late_interval' configuration option.  If
-  # `late_interval' is not defined, then it gets defaulted to the data
-  # update interval.  The last interval is the interval to use to tell
-  # the program when to attempt to read the file next.  Because it can
-  # take some time for the source files to be updated, we don't want
-  # to read the file immediately after the data update interval is
-  # done.  For this reason, choose a read interval that is somewhere
-  # in between the data source interval and the late interval.  Use
-  # the multiplicative average of the data update interval and the
-  # late interval since the resulting value is closer to the data
-  # update interval.  Ie: (20 + 5)/2 = 12.5.  Sqrt(20*5) = 10.
-  my $read_interval = sqrt($self->[I_INTERVAL]*$self->[I_LATE_INTERVAL]);
-  $self->[I_READ_INTERVAL] = int($read_interval + 0.5);
 
   # Load in any state information for this file.
   my $filename = $sfile_fids[$fid];
@@ -147,7 +125,7 @@ sub new {
 #  } else {
 #  }
 #  # If the source data file does not exist in the state database, then
-#  # create a new default entry.  If the file does not exist, then reset to 
+#  # create a new default entry.  If the file does not exist, then reset to
 #  # If the source file's mtime is the same as stored in the saved
 #  # state file, then load all the information from it, otherwise do
 #  # not keep any of it and load the file freshly.
@@ -200,10 +178,10 @@ sub new {
 sub add_groups {
   my $self = shift;
 
-  foreach my $group_name (@_) {
-    $self->[I_GROUP_KEYS]{$group_name} = 1;
+  foreach my $group_index (@_) {
+    $self->[I_GROUP_KEYS]{$group_index} = 1;
     foreach my $description (@{$self->[I_COLUMN_DESCRIPTION]}) {
-      $group_column_names{$group_name}{$description} = 1;
+      $group_column_names[$group_index]{$description} = 1;
     }
   }
 }
@@ -273,19 +251,22 @@ warn "@{$self->[I_COLUMN_DESCRIPTION]}\n";
 sub add_plots {
   # Make sure that the user has called the add_groups method and
   # inserted at least one key.
-  unless (keys %group_column_names) {
-    confess "$0: Orca::SourceFile::add_groups must be called before add_plots.\n";
+  unless (@group_column_names) {
+    confess "$0: Orca::SourceFile::add_groups must be called before ",
+            "add_plots.\n";
   }
 
   unless (@_ == 5) {
-    confess "$0: Orca::SourceFile::add_plots passed wrong number of arguments.\n";
+    confess "$0: Orca::SourceFile::add_plots $INCORRECT_NUMBER_OF_ARGS";
   }
 
   my ($self,
-      $group_name,
+      $group_index,
       $subgroup_name,
       $rrd_data_files_ref,
       $image_files_ref) = @_;
+
+  my $group_name = $config_groups_names[$group_index];
 
   # See if we have already done all the work for a plot with this group_name,
   # subgroup_name, and column description.  Use an MD5 hash instead of a very
@@ -335,9 +316,9 @@ sub add_plots {
 
     my $plot = $config_plots[$i];
 
-    # Skip this plot if the group_name do not match.  Increment the
-    # index of the next plot to handle.
-    if ($plot->{source} ne $group_name) {
+    # Skip this plot if the source group indexes does not match.
+    # Increment the index of the next plot to handle.
+    if ($plot->{source_index} != $group_index) {
       if ($oldest_regexp_index == $i) {
         $handle_regexps = 0;
         ++$oldest_regexp_index;
@@ -411,7 +392,22 @@ sub add_plots {
 
         # Copy any items over that haven't been created for this new
         # data source.  Make sure that any new elements added to
-        # pcl_plot_append_elements show up here.
+        # pcl_plot_append_elements show up here.  The first data_min,
+        # data_max, data_type, and summary_format are always set and
+        # if any later ones are not set, then use the previously set
+        # one.
+        unless (defined $plot->{data_min}[$new_data_index]) {
+          $plot->{data_min}[$new_data_index] =
+            $plot->{data_min}[$new_data_index-1];
+        }
+        unless (defined $plot->{data_max}[$new_data_index]) {
+          $plot->{data_max}[$new_data_index] =
+            $plot->{data_max}[$new_data_index-1];
+        }
+        unless (defined $plot->{data_type}[$new_data_index]) {
+          $plot->{data_type}[$new_data_index] =
+            $plot->{data_type}[$new_data_index-1];
+        }
         unless (defined $plot->{color}[$new_data_index]) {
           $plot->{color}[$new_data_index] = get_color($new_data_index);
         }
@@ -420,6 +416,10 @@ sub add_plots {
         }
         unless (defined $plot->{line_type}[$new_data_index]) {
           $plot->{line_type}[$new_data_index] = $plot->{line_type}[0];
+        }
+        unless (defined $plot->{summary_format}[$new_data_index]) {
+          $plot->{summary_format}[$new_data_index] =
+            $plot->{summary_format}[$new_data_index-1];
         }
 
         # Replace the regular expression in any legend elements.
@@ -542,7 +542,7 @@ sub add_plots {
         if (defined ($pos = $column_description{$element})) {
           $datas[$j][$k]  = "\$_[$pos]";
           $match_one_data = 1;
-        } elsif (defined $group_column_names{$group_name}{$element}) {
+        } elsif (defined $group_column_names[$group_index]{$element}) {
           my $m = $old_i + 1;
           if ($required) {
             warn "$0: $element in `data @{$plot->{data}[$j]}' in plot #$m ",
@@ -637,43 +637,55 @@ sub add_plots {
     my @my_short_rrds;
     my @name_with_subgroup;
     my @name_without_subgroup;
-    my $previous_group    = '';
-    my $previous_subgroup = '';
+    my $previous_data_type     = '';
+    my $previous_group_index   = -1;
+    my $previous_subgroup_name = '';
     for (my $j=0; $j<@substituted_data_expressions; ++$j) {
 
+      # Include in the original data expression the data_type that RRD
+      # will apply to the input data.
+      my $data_type                   = lc($plot->{data_type}[$j]);
       my $original_data_expression    = join('_', @{$plot->{data}[$j]});
       my $substituted_data_expression = $substituted_data_expressions[$j];
 
-      my $name_with_subgroup = "${group_name}_${subgroup_name}_${original_data_expression}";
-      push(@name_with_subgroup, $name_with_subgroup);
-      push(@name_without_subgroup, "${group_name}_${original_data_expression}");
+      my $name_with_subgroup = "${group_name}_${subgroup_name}_${data_type}_${original_data_expression}";
+      push(@name_with_subgroup,    $name_with_subgroup);
+      push(@name_without_subgroup, "${group_name}_${data_type}_${original_data_expression}");
 
-      # Create a short name that may exclude the group and subgroup if the
-      # previous data had the same group and subgroup.
+      # If the current data expression is very similar to the previous
+      # one, then do not include the group, subgroup and data_type.
       my $short_name_with_subgroup;
-      if ($group_name eq $previous_group) {
-        if ($subgroup_name eq $previous_subgroup) {
-          $short_name_with_subgroup = "__$original_data_expression";
-        } else {
-          $short_name_with_subgroup = "_${subgroup_name}_${original_data_expression}";
-          $previous_subgroup        = $subgroup_name;
-        }
+      if ($group_index == $previous_group_index) {
+        $short_name_with_subgroup  = '_';
       } else {
-        $previous_group           = $group_name;
-        $previous_subgroup        = $subgroup_name;
-        $short_name_with_subgroup = $name_with_subgroup;
+        $short_name_with_subgroup  = "${group_name}_";
+        $previous_group_index      = $group_index;
       }
+      if ($subgroup_name eq $previous_subgroup_name) {
+        $short_name_with_subgroup .= '_';
+      } else {
+        $short_name_with_subgroup .= "${subgroup_name}_";
+        $previous_subgroup_name    = $subgroup_name;
+      }
+      if ($data_type eq $previous_data_type) {
+        $short_name_with_subgroup .= '_';
+      } else {
+        $short_name_with_subgroup .= "${data_type}_";
+        $previous_data_type        = $data_type;
+      }
+      $short_name_with_subgroup   .= $original_data_expression;
 
-      # Create a new RRD only if it doesn't already exist and if a valid
-      # get data subroutine is created.  Keep the choose_data_sub for this
-      # file.
+      # Create a new RRD only if it doesn't already exist and if a
+      # valid get data subroutine is created.  Keep the
+      # choose_data_sub for this file.
       if (defined $substituted_data_expression) {
         $choose_data_expr .= "    '$name_with_subgroup', $substituted_data_expression,\n";
         unless (defined $rrd_data_files_ref->{$name_with_subgroup}) {
-          my $rrd_file = Orca::RRDFile->new($group_name,
+          my $rrd_file = Orca::RRDFile->new($group_index,
                                             $subgroup_name,
-                                            $name_with_subgroup,
-                                            $plot);
+                                            "${data_type}_${original_data_expression}",
+                                            $plot,
+                                            $j);
           $rrd_data_files_ref->{$name_with_subgroup} = $rrd_file;
         }
         $self->[I_ALL_RRD_REF]            = $rrd_data_files_ref;
@@ -686,10 +698,10 @@ sub add_plots {
     # Generate a new plot for these data.
     my $image;
     my $all_names_with_subgroup = join(',', @name_with_subgroup);
-    if (defined ($image = $image_files_ref->{hash}{$all_names_with_subgroup})) {
+    if (defined ($image = $image_files_ref->{hash}{$all_names_with_subgroup})){
       $image->add_rrds(@my_rrds);
     } else {
-      $image = Orca::ImageFile->new($group_name,
+      $image = Orca::ImageFile->new($group_index,
                                     $subgroup_name,
                                     join(',', @my_short_rrds),
                                     join(',', @name_without_subgroup),
@@ -741,7 +753,7 @@ sub load_new_data {
   my $load_data   = $file_status != 0;
   if ($file_status == -1) {
     my $message = "file `$sfile_fids[$fid]' did exist and is now gone.";
-    ::email_message($self->[I_WARN_EMAIL], $message);
+    email_message($config_global{warn_email}, $message);
     warn "$0: warning: $message\n";
     unless ($fd) {
       $self->[I_LAST_READ_TIME] = -1;
@@ -761,7 +773,7 @@ sub load_new_data {
       ($old_is_current_day == $current_day)) {
     my $message = "file `$sfile_fids[$fid]' was current and now is not.";
     warn "$0: warning: $message\n";
-    ::email_message($self->[I_WARN_EMAIL], $message);
+    email_message($config_global{warn_email}, $message);
   }
 
   # If we don't have to load the data from this file yet, then test to
@@ -799,12 +811,22 @@ sub load_new_data {
     <$fd> if $self->[I_FIRST_LINE];
   }
 
-  # Load in all of the data possible and send it to each plot.
   my $date_column_index = $self->[I_DATE_COLUMN_INDEX];
   my $use_file_mtime    = $self->[I_DATE_SOURCE][0] eq 'file_mtime';
   my $number_added      = 0;
   my $close_once_done   = 0;
   my $number_columns    = @{$self->[I_COLUMN_DESCRIPTION]};
+
+  # Get the filename if the measurement time is loaded from the file
+  # instead of from the last modified time and the time should be
+  # parsed using the date_parse subroutine.
+  my $date_parse = $self->[I_DATE_PARSE];
+  my $filename;
+  if (!$use_file_mtime and $date_parse) {
+    $filename = $sfile_fids[$self->fid];
+  }
+
+  # Load in all of the data possible and send it to each plot.
   while (defined(my $line = <$fd>)) {
     # Skip the line if the word timestamp appears in it.  This is a
     # temporary fix for orcallator.se to place a new information line
@@ -817,11 +839,19 @@ sub load_new_data {
     # define the column names, 2) the number of columns loaded is not
     # equal to the number of columns in the column description.
     if ($self->[I_FIRST_LINE] and @line != $number_columns) {
-      warn "$0: number of columns in line $. of `$sfile_fids[$fid]' does not match column description.\n";
+      warn "$0: number of columns in line $. of `$sfile_fids[$fid]' does not ",
+           "match column description.\n";
       next;
     }
 
-    my $time = $use_file_mtime ? $self->file_mtime : $line[$date_column_index];
+    my $time;
+    if ($use_file_mtime) {
+      $time = $self->file_mtime;
+    } elsif ($filename) {
+      $time = &$date_parse($filename, $line[$date_column_index]);
+    } else {
+      $time = $line[$date_column_index];
+    }
     $last_data_time = $time if $time > $last_data_time;
 
     # If the file status from the source data file is greater than
@@ -842,7 +872,9 @@ sub load_new_data {
         }
       } else {
         $close_once_done = 1;
-        warn "$0: internal error: expecting RRD name `$rrd_key' but no data loaded from `" . $self->filename . "' at time ", scalar localtime($time), " ($time).\n";
+        warn "$0: internal error: expecting RRD name `$rrd_key' but no data ",
+             "loaded from `", $self->filename, "' at time ",
+             scalar localtime($time), " ($time).\n";
       }
     }
     ++$number_added if $add;

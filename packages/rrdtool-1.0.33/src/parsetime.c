@@ -630,8 +630,8 @@ tod(struct time_value *ptv)
 static char *
 assign_date(struct time_value *ptv, long mday, long mon, long year)
 {
-    if (year > 99) {
-	if (year > 1899)
+    if (year > 138) {
+	if (year > 1970)
 	    year -= 1900;
 	else {
 	    panic(e("invalid year %d (should be either 00-99 or >1900)",
@@ -641,9 +641,6 @@ assign_date(struct time_value *ptv, long mday, long mon, long year)
 	year += 100;	     /* Allow year 2000-2037 to be specified as   */
     }			     /* 00-37 until the problem of 2038 year will */
 			     /* arise for unices with 32-bit time_t :)    */
-    if (year < 0) {
-      panic(e("don't know what's the use of the year %d (negative!)?", year));
-    }
     if (year < 70) {
       panic(e("won't handle dates before epoch (01/01/1970), sorry"));
     }
@@ -838,11 +835,11 @@ parsetime(char *tspec, struct time_value *ptv)
     /* Only absolute time specifications below */
     case NUMBER:
 	    try(tod(ptv))
-	    if (sc_tokid != NUMBER) break;
+	    if (sc_tokid != NUMBER) break; 
     /* fix month parsing */
     case JAN: case FEB: case MAR: case APR: case MAY: case JUN:
     case JUL: case AUG: case SEP: case OCT: case NOV: case DEC:
-    	    try(day(ptv));
+            try(day(ptv));
 	    if (sc_tokid != NUMBER) break;
 	    try(tod(ptv))
 	    break;
@@ -861,14 +858,15 @@ parsetime(char *tspec, struct time_value *ptv)
 	    hr += 12;
 	    /* FALLTHRU */
     case MIDNIGHT:
-	    if (ptv->tm.tm_hour >= hr) {
+            /* if (ptv->tm.tm_hour >= hr) {
 		ptv->tm.tm_mday++;
 		ptv->tm.tm_wday++;
-	    }
+	    } */ /* shifting does not makes sense here ... noon is noon */ 
 	    ptv->tm.tm_hour = hr;
 	    ptv->tm.tm_min = 0;
 	    ptv->tm.tm_sec = 0;
 	    token();
+	    try(day(ptv));
 	    break;
     default:
     	    panic(e("unparsable time: %s%s",sc_token,sct));

@@ -1,5 +1,5 @@
 /*****************************************************************************
- * RRDtool 1.0.13  Copyright Tobias Oetiker, 1997, 1998, 1999
+ * RRDtool 1.0.33  Copyright Tobias Oetiker, 1997 - 2000
  *****************************************************************************
  * rrd_update.c  RRD Update Function
  *****************************************************************************
@@ -23,7 +23,27 @@ int LockRRD(FILE *rrd_file);
 
 /*#define DEBUG */
 
+
+#ifdef STANDALONE
 int 
+main(int argc, char **argv){
+        rrd_update(argc,argv);
+        if (rrd_test_error()) {
+                printf("RRDtool 1.0.33  Copyright 1997-2000 by Tobias Oetiker <tobi@oetiker.ch>\n\n"
+                        "Usage: rrdupdate filename\n"
+                        "\t\t\t[--template|-t ds-name:ds-name:...]\n"
+                        "\t\t\ttime|N:value[:value...]\n\n"
+                        "\t\t\t[ time:value[:value...] ..]\n\n");
+                                   
+                printf("ERROR: %s\n",rrd_get_error());
+                rrd_clear_error();                                                            
+                return 1;
+        }
+        return 0;
+}
+#endif
+
+int
 rrd_update(int argc, char **argv)
 {
 
@@ -73,6 +93,7 @@ rrd_update(int argc, char **argv)
     int              wrote_to_file = 0;
     char             *template = NULL;          
 
+
     while (1) {
 	static struct option long_options[] =
 	{
@@ -101,7 +122,7 @@ rrd_update(int argc, char **argv)
 
     /* need at least 2 arguments: filename, data. */
     if (argc-optind < 2) {
-	rrd_set_error("not enough arguments");
+	rrd_set_error("Not enough arguments");
 	return -1;
     }
 
@@ -190,6 +211,11 @@ rrd_update(int argc, char **argv)
 		  tmpl_idx[tmpl_cnt-1]++; 
 		  /* go to the next entry on the template */
 		  dsname = &template[i+1];
+                  /* fix the damage we did before */
+                  if (i<tmpl_len) {
+                     template[i]=':';
+                  } 
+
 		}
 	    }	    
 	}
@@ -207,12 +233,22 @@ rrd_update(int argc, char **argv)
 
     /* loop through the arguments. */
     for(arg_i=optind+1; arg_i<argc;arg_i++) {
-	char *stepper;
+	char *stepper = malloc((strlen(argv[arg_i])+1)*sizeof(char));
+        char *step_start = stepper;
+        if (stepper == NULL){
+                rrd_set_error("faild duplication argv entry");
+                free(updvals);
+                free(pdp_temp);  
+                free(tmpl_idx);
+                rrd_free(&rrd);
+                fclose(rrd_file);
+                return(-1);
+         }
 	/* initialize all ds input to unknown except the first one
            which has always got to be set */
 	for(ii=1;ii<=rrd.stat_head->ds_cnt;ii++) updvals[ii] = "U";
 	ii=0;
-	stepper = argv[arg_i];
+	strcpy(stepper,argv[arg_i]);
 	updvals[0]=stepper;
 	while (*stepper) {
 	    if (*stepper == ':') {
@@ -228,6 +264,7 @@ rrd_update(int argc, char **argv)
 	if (ii != tmpl_cnt-1) {
 	    rrd_set_error("expected %lu data source readings (got %lu) from %s:...",
 			  tmpl_cnt-1, ii, argv[arg_i]);
+	    free(step_start);
 	    break;
 	}
 	
@@ -242,6 +279,7 @@ rrd_update(int argc, char **argv)
 	    rrd_set_error("illegal attempt to update using time %ld when "
 			  "last update time is %ld (minimum one second step)",
 			  current_time, rrd.live_head->last_up);
+	    free(step_start);
 	    break;
 	}
 	
@@ -250,6 +288,7 @@ rrd_update(int argc, char **argv)
 	if (rra_current != rra_begin) {
 	    if(fseek(rrd_file, rra_begin, SEEK_SET) != 0) {
 		rrd_set_error("seek error in rrd");
+		free(step_start);
 		break;
 	    }
 	    rra_current = rra_begin;
@@ -332,7 +371,7 @@ rrd_update(int argc, char **argv)
 		    rate = pdp_new[i] / interval;		   
 		    break;
 		default:
-		    rrd_set_error("rrd contains and DS type : '%s'",
+		    rrd_set_error("rrd contains unknown DS type : '%s'",
 				  rrd.ds_def[i].dst);
 		    break;
 		}
@@ -373,9 +412,10 @@ rrd_update(int argc, char **argv)
 	    }
 	}
 	/* break out of the argument parsing loop if the error_string is set */
-	if (rrd_test_error())
+	if (rrd_test_error()){
+	    free(step_start);
 	    break;
-
+	}
 	/* has a pdp_st moment occurred since the last run ? */
 
 	if (proc_pdp_st == occu_pdp_st){
@@ -615,11 +655,15 @@ rrd_update(int argc, char **argv)
 
 	    }
 	    /* break out of the argument parsing loop if error_string is set */
-	    if (rrd_test_error())
+	    if (rrd_test_error()){
+		free(step_start);
 		break;
+	    }
 	}
 	rrd.live_head->last_up = current_time;
+	free(step_start);
     }
+
 
     /* if we got here and if there is an error and if the file has not been
      * written to, then close things up and return. */

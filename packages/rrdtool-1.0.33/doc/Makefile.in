@@ -64,26 +64,37 @@ host_triplet = @host@
 target_alias = @target_alias@
 target_triplet = @target@
 CC = @CC@
-CFLAGS = @CFLAGS@
 CGI_LIB_DIR = @CGI_LIB_DIR@
 COMP_PERL = @COMP_PERL@
 CPP = @CPP@
 GD_LIB_DIR = @GD_LIB_DIR@
 LIBTOOL = @LIBTOOL@
+NROFF = @NROFF@
 PERL = @PERL@
+PERLFLAGS = @PERLFLAGS@
+PERL_MAKE_OPTIONS = @PERL_MAKE_OPTIONS@
 PNG_LIB_DIR = @PNG_LIB_DIR@
 RANLIB = @RANLIB@
+SO_EXT = @SO_EXT@
+TCL_LD_SEARCH_FLAGS = @TCL_LD_SEARCH_FLAGS@
+TCL_PACKAGE_PATH = @TCL_PACKAGE_PATH@
+TCL_PREFIX = @TCL_PREFIX@
+TCL_SHLIB_CFLAGS = @TCL_SHLIB_CFLAGS@
+TCL_SHLIB_LD = @TCL_SHLIB_LD@
+TCL_SHLIB_SUFFIX = @TCL_SHLIB_SUFFIX@
+TROFF = @TROFF@
+VERSION = @VERSION@
 ZLIB_LIB_DIR = @ZLIB_LIB_DIR@
 
-SUFFIXES = .pod .1 .man .html .txt .pm
+SUFFIXES = .pod .1 .man .html .txt .pm .pdf
 
 #AUTOMAKE_OPTIONS        =  foreign
 
 #ACLOCAL_M4 = $(top_srcdir)/config/aclocal.m4
 
-CLEANFILES = *.1 *.html *.txt *-dircache *.pm
+CLEANFILES = *.1 *.html *.txt *-dircache *.pm *.pdf *~ core *itemcache *.rej *.orig
 
-POD = rrdtool.pod rrdlast.pod rrdcreate.pod rrdupdate.pod 	cdeftutorial.pod rpntutorial.pod rrdgraph.pod  bin_dec_hex.pod 	rrdfetch.pod rrdrestore.pod rrddump.pod rrdtune.pod rrdresize.pod 	rrdcgi.pod rrdtutorial.pod
+POD = rrdtool.pod rrdlast.pod rrdcreate.pod rrdupdate.pod  rrdtutorial.es.pod 	cdeftutorial.pod rpntutorial.pod rrdgraph.pod  bin_dec_hex.pod 	rrdfetch.pod rrdrestore.pod rrddump.pod rrdtune.pod rrdresize.pod 	rrdcgi.pod rrdtutorial.pod rrdinfo.pod
 
 
 PMP = RRDs.pm RRDp.pm
@@ -91,6 +102,7 @@ PMP = RRDs.pm RRDp.pm
 MAN = $(POD:.pod=.1) $(PMP:.pm=.1) 
 TXT = $(MAN:.1=.txt)
 HTML = $(POD:.pod=.html) $(PMP:.pm=.html) 
+PDF = $(MAN:.1=.pdf)
 
 # what should go into the distribution
 EXTRA_DIST = $(POD) $(HTML) $(TXT)
@@ -111,7 +123,6 @@ DIST_COMMON =  Makefile.am Makefile.in
 
 
 PACKAGE = @PACKAGE@
-VERSION = @VERSION@
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
@@ -119,7 +130,7 @@ TAR = gtar
 GZIP_ENV = --best
 all: all-redirect
 .SUFFIXES:
-.SUFFIXES: .1 .html .man .pm .pod .txt
+.SUFFIXES: .1 .html .man .pdf .pm .pod .txt
 $(srcdir)/Makefile.in: Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
 	cd $(top_srcdir) && $(AUTOMAKE) --gnu --include-deps doc/Makefile
 
@@ -196,7 +207,7 @@ distdir: $(DISTFILES)
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  if test -d $$d/$$file; then \
-	    cp -pr $$/$$file $(distdir)/$$file; \
+	    cp -pr $$d/$$file $(distdir)/$$file; \
 	  else \
 	    test -f $(distdir)/$$file \
 	    || ln $$d/$$file $(distdir)/$$file 2> /dev/null \
@@ -275,7 +286,10 @@ all-local: link txt man html
 	pod2man --release=$(VERSION) --center=rrdtool $<  > $@
 
 .1.txt:
-	nroff -man -Tlp $< > $@
+	@NROFF@ -man -Tlp $< > $@
+
+.1.pdf:
+	@TROFF@ -man $< | ps2pdf - $@
 
 .pm.html .pod.html .pl.html:
 	pod2html --infile=$< --outfile=$@ --noindex --htmlroot=. --podpath=. --title=$*
@@ -293,6 +307,8 @@ man: $(MAN)
 html: $(HTML)
 
 txt: $(TXT)
+
+pdf: $(PDF)
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

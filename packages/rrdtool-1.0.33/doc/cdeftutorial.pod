@@ -2,6 +2,8 @@
 
 cdeftutorial - Alex van den Bogaerdt's CDEF tutorial
 
+=for html <div align="right"><a href="cdeftutorial.pdf">PDF</a> version.</div> 
+
 =head1 DESCRIPTION
 
 B<You provide a question and I will try to provide an answer in the next
@@ -164,7 +166,7 @@ You have:
 
    router1.rrd with link1in link2in
    router2.rrd with link1in link2in
-   router3.rrd with link1.in
+   router3.rrd with link1in link2in
 
 Suppose you would like to add up all these counters, except for link2in
 inside router2.rrd. You need to do:
@@ -299,7 +301,7 @@ every minute:
    counter value    resulting rate
    10000
    10060            1; (10060-10000)/60 == 1
-   10120            1; (10060-10000)/60 == 1
+   10120            1; (10120-10060)/60 == 1
    unknown          unknown; you don't know the last value
    10240            unknown; you don't know the previous value
    10300            1; (10300-10240)/60 == 1
@@ -584,6 +586,45 @@ The two CDEF expressions would be:
 
     CDEF:result=number,100000,GT,UNKN,number,IF
     CDEF:result=number,100000,GT,100000,number,IF
+
+=head2 Example: working on a certain time span
+
+If you want a graph that spans a few weeks, but would only want to
+see some routers data for one week, you need to "hide" the rest of
+the time frame. Don't ask me when this would be useful, it's just
+here for the example :)
+
+We need to compare the time stamp to a begin date and an end date.
+Comparing isn't difficult:
+
+	TIME,begintime,GE
+	TIME,endtime,LE
+
+These two parts of the CDEF produce either 0 for false or 1 for true.
+We can now check if they are both 0 (or 1) using a few IF statements
+but, as Wataru Satoh pointed out, we can use the "*" or "+" functions
+as locical AND and locical OR.
+
+For "*", the result will be zero (false) if either one of the two
+operators is zero.  For "+", the result will only be false (0) when
+two false (0) operators will be added.  Warning: *any* number not
+equal to 0 will be considered "true". This means that, for instance,
+"-1,1,+" (which should be "true or true") will become FALSE ...
+In other words, use "+" only if you know for sure that you have positive
+numbers (or zero) only.
+
+Let's compile the complete CDEF:
+
+	DEF:ds0=router1.rrd:AVERAGE
+	CDEF:ds0modified=TIME,begintime,GE,TIME,endtime,LE,*,UNKN,ds0,IF
+
+This will return the value of ds0 if both comparisons return true. You
+could also do it the other way around:
+
+	DEF:ds0=router1.rrd:AVERAGE
+	CDEF:ds0modified=TIME,begintime,LT,TIME,endtime,GT,+,UNKN,ds0,IF
+
+This will return an UNKNOWN if either comparison returns true.
 
 =head2 Example: You suspect to have problems and want to see unknown data.
 

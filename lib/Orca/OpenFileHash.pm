@@ -1,6 +1,6 @@
 # Orca::OpenFileHash: Cache open file descriptors for the whole program.
 #
-# Copyright (C) 1998, 1999 Blair Zajac and Yahoo!, Inc.
+# Copyright (C) 1998-2001 Blair Zajac and Yahoo!, Inc.
 
 package Orca::OpenFileHash;
 

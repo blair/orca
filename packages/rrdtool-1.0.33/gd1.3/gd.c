@@ -1284,12 +1284,12 @@ static unsigned int isqrt(unsigned int x)
 static unsigned int compute_triangle_count(unsigned int count, unsigned int nrepcodes)
 {
  unsigned int perrep;
- unsigned int cost;
+ unsigned int ncost;
 
- cost = 0;
+ ncost = 0;
  perrep = (nrepcodes * (nrepcodes+1)) / 2;
  while (count >= perrep)
-  { cost += nrepcodes;
+  { ncost += nrepcodes;
     count -= perrep;
   }
  if (count > 0)
@@ -1297,9 +1297,9 @@ static unsigned int compute_triangle_count(unsigned int count, unsigned int nrep
     n = isqrt(count);
     while ((n*(n+1)) >= 2*count) n --;
     while ((n*(n+1)) < 2*count) n ++;
-    cost += n;
+    ncost += n;
   }
- return(cost);
+ return(ncost);
 }
 
 static void max_out_clear(void)

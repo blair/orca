@@ -1,0 +1,43 @@
+
+PHP bindings for RRD Tool.
+
+	Contained herein are bindings to allow you to interface
+php scripts with RRD tool directly via RRD tool's 'librrd' library,
+thus avoiding the need to use system() calls to the rrdtool binary.
+
+	RRD Tool is an AMAZING package of tools to faciliate
+the easy storage, retrieval, and graphing of statistics (usually
+but not limited to bit/byte counts from routers, switches, and 
+hubs).  It was written by the author of MRTG, Tobias Oetiker
+(oetiker@ee.ethz.ch).  The primary web site for RRD Tool is:
+http://www.caida.org/Tools/RRDtool
+
+
+Reason I wrote this:  Wanted to use PHP to create fairly real-time / 
+dynamic web pages w/ RRD tool, but the only way was to use system()
+and popen() with PHP, since there was no direct interface to RRD
+Tool from PHP.  The fork()ing would have been slow and tedious
+so that was pretty much out of the question.  I could have used the 
+Perl library (RRDs) to interface ePerl, or mod_perl, or even 
+'rrdcgi', but I didn't really want to.  I wanted to use PHP and
+there was nothing to change my mind.
+
+
+You are free to redistribute the source provided my name is
+kept at the top of the source files as credit for the original
+author.  I make no warranties to the usability of this software,
+nor I am responsible if your machine explodes (although it 
+shouldn't).
+
+
+BUGS:
+     There might be some.  Let me know: joeym@inficad.com.  
+Patches to fix bugs you find are more welcome than simple
+reports of bugs (I don't have a lot of time to maintain
+this code).
+
+
+http://netmon.inficad.com/php3_rrdtool/
+
+Joey Miller, <joeym@inficad.com>, SkyLynx / Inficad Communications,
+2/12/2000

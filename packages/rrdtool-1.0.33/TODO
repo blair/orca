@@ -1,7 +1,23 @@
 1.1.x Goals
 -----------
 
-let the user define the base resolution of the graph independently of
+ability to completely remove x and y grid
+
+reverse order of stacked graph entries prior to plotting ... this is to make
+plotting order more naturally fit with the ordering of the legend ...
+
+use XDR to write architecture independant date
+
+have drawing methode modifier for the LINE, AREA, STACK functions which allows
+to select wether the data points should be presented as stepes (todays state)
+or connected with lines.
+
+LINEx:ds[#color][/method]:description
+
+be more clever in the fetch function when no complete data coverage for the
+desired area is possible.
+
+Let the user define the base resolution of the graph independently of
 the pixel resolution. If it is smaller than one pixel it will simply
 be ignored
 
@@ -43,3 +59,12 @@ antialiasing ...
 
 make it possible to define order of legend items independant of their order
 on the commandline ...
+
+have configurable role-over limits for counters
+
+align data points not to GMT but some free offset
+
+allow starting through symlinks called rrdcreate rrdtune and the like
+
+allow time shifiting of data before it is being graphed ... allow overlay of last years data over todays data
+

@@ -2,6 +2,8 @@
 
 rrdcgi - create web pages containing RRD graphs based on templates
 
+=for html <div align="right"><a href="rrdcgi.pdf">PDF</a> version.</div>
+
 =head1 SYNOPSIS
 
 #!/path/to/B<rrdcgi> 
@@ -55,6 +57,15 @@ Inserts the CGI variable of the given name, quotes it and makes sure
 the it starts neither with a '/' nor contains '..'. This is to make
 sure that no problematic pathnames can be introduced through the 
 CGI interface.
+
+=item RRD::GETENV I<variable>
+
+Get the value of an environment variable.
+
+ <RRD::GETENV REMOTE_USER>
+
+might give you the name of the remote user given you are using
+some sort of access control on the directory
 
 =back
 

@@ -10,11 +10,6 @@
 # even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 # PARTICULAR PURPOSE.
 
-#AUTOMAKE_OPTIONS        =  foreign
-
-#ACLOCAL_M4 = $(top_srcdir)/config/aclocal.m4
-#AUTOHEADER = @AUTOHEADER@ --localdir=config
-
 
 SHELL = @SHELL@
 
@@ -69,15 +64,26 @@ host_triplet = @host@
 target_alias = @target_alias@
 target_triplet = @target@
 CC = @CC@
-CFLAGS = @CFLAGS@
 CGI_LIB_DIR = @CGI_LIB_DIR@
 COMP_PERL = @COMP_PERL@
 CPP = @CPP@
 GD_LIB_DIR = @GD_LIB_DIR@
 LIBTOOL = @LIBTOOL@
+NROFF = @NROFF@
 PERL = @PERL@
+PERLFLAGS = @PERLFLAGS@
+PERL_MAKE_OPTIONS = @PERL_MAKE_OPTIONS@
 PNG_LIB_DIR = @PNG_LIB_DIR@
 RANLIB = @RANLIB@
+SO_EXT = @SO_EXT@
+TCL_LD_SEARCH_FLAGS = @TCL_LD_SEARCH_FLAGS@
+TCL_PACKAGE_PATH = @TCL_PACKAGE_PATH@
+TCL_PREFIX = @TCL_PREFIX@
+TCL_SHLIB_CFLAGS = @TCL_SHLIB_CFLAGS@
+TCL_SHLIB_LD = @TCL_SHLIB_LD@
+TCL_SHLIB_SUFFIX = @TCL_SHLIB_SUFFIX@
+TROFF = @TROFF@
+VERSION = @VERSION@
 ZLIB_LIB_DIR = @ZLIB_LIB_DIR@
 
 noinst_LTLIBRARIES = librrd_gd.la
@@ -102,6 +108,7 @@ librrd_gd_la_LIBADD =
 librrd_gd_la_OBJECTS =  gd.lo gdfontg.lo gdfontl.lo gdfontmb.lo \
 gdfonts.lo gdfontt.lo gdlucidab10.lo gdlucidab12.lo gdlucidab14.lo \
 gdlucidan10.lo gdlucidan12.lo gdlucidan14.lo
+CFLAGS = @CFLAGS@
 COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
@@ -110,7 +117,6 @@ DIST_COMMON =  Makefile.am Makefile.in
 
 
 PACKAGE = @PACKAGE@
-VERSION = @VERSION@
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
@@ -217,7 +223,7 @@ distdir: $(DISTFILES)
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  if test -d $$d/$$file; then \
-	    cp -pr $$/$$file $(distdir)/$$file; \
+	    cp -pr $$d/$$file $(distdir)/$$file; \
 	  else \
 	    test -f $(distdir)/$$file \
 	    || ln $$d/$$file $(distdir)/$$file 2> /dev/null \

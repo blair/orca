@@ -1,0 +1,61 @@
+#!/bin/sh
+
+# This script runs orcaservices.pl with the proper options for your site.
+
+# Define program locations that will be needed.
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+AWK=@AWK@
+CUT=@CUT@
+UNAME=@UNAME@
+ORCASERVICES_DIR=@ORCALLATOR_DIR@/../orcaservices
+
+# Get the hostname without the fully qualified part; that is, trim off
+# anything past the first `.'.
+uname=`$UNAME -n | $CUT -d. -f1`
+
+# The directory these files go into is $ORCASERVICES_DIR/HOSTNAME
+OUTDIR=$ORCASERVICES_DIR/$uname
+
+# Export the environmental variables.
+export OUTDIR
+
+# Check if orcaservices is already running.
+pids=`/usr/ucb/ps auxww | $AWK '/orcaservices.pl/ && !/awk/ {print $2}'`
+if test "$pids" != ""; then
+  echo "Orcaservices already running.  Exiting."
+  exit 1
+fi
+
+echo "Writing data into $OUTDIR/"
+
+# Cd to / so that any automounted filesystems can be unmounted.
+cd /
+
+# Create the output directory if it doesn't exist yet.
+if test ! -d $OUTDIR; then
+  echo "Creating $OUTDIR/"
+  mkdir -p $OUTDIR
+fi
+
+if test ! -d $OUTDIR; then
+  echo "Unable to create $OUTDIR/" 1>&2
+  exit 2
+fi
+
+# Now start the logging.
+echo "Starting logging"
+HOSTNAME=`hostname`
+if test -f "$libdir/orcaservices.$HOSTNAME"; then
+    $libdir/orcaservices.pl `cat $libdir/orcaservices.$HOSTNAME`
+else
+    $libdir/orcaservices.pl
+fi
+
+### # Write the PID of orcaservices to a file to make killing easier.
+### pid=$!
+### echo $pid > $OUTDIR/orcaservices.pid
+
+# Sleep for a couple of seconds to allow any orcaservices warnings to appear.
+sleep 5

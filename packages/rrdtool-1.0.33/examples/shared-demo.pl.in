@@ -54,7 +54,7 @@ print "* Creating RRD $RRD1 starting at $time.\n\n";
 RRDs::create $RRD1, @options;
 
 my $ERROR = RRDs::error;
-ok("create", !$ERROR);								#  2
+ok("create A", !$ERROR);								#  2
 if ($ERROR) {
   die "$0: unable to create `$RRD1': $ERROR\n";
 }
@@ -63,7 +63,7 @@ print "* Creating RRD $RRD2 starting at $time.\n\n";
 RRDs::create $RRD2, @options;
 
 $ERROR= RRDs::error;
-ok("creat",!$ERROR);								#  3
+ok("create B",!$ERROR);								#  3
 if ($ERROR) {
   die "$0: unable to create `$RRD2': $ERROR\n";
 }
@@ -72,13 +72,13 @@ my $last = RRDs::last $RRD1;
 if ($ERROR = RRDs::error) {
   die "$0: unable to get last `$RRD1': $ERROR\n";
 }
-ok("last", $last == $START);							#  4
+ok("last A", $last == $START);							#  4
 
 $last = RRDs::last $RRD2;
 if ($ERROR = RRDs::error) {
   die "$0: unable to get last `$RRD2': $ERROR\n";
 }
-ok("last 2", $last == $START);							#  5
+ok("last B", $last == $START);							#  5
 
 print "* Filling $RRD1 and $RRD2 with $RUNS*5 values. One moment please ...\n";
 print "* If you are running over NFS this will take *MUCH* longer\n\n";

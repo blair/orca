@@ -1,7 +1,402 @@
-Orcallator:
- 1) Why are my Ethernet bits/second measurements all 0?
+This is a FAQ (Frequently Asked Questions) for Orca and the tools that
+gather data for it.
 
-    On 2.5.1 or older Solaris operating system releases, the kernel does
-    not measure the bits/second going through a particular device.  I
-    believe some later kernel and device driver patches may fix this,
-    but Solaris 2.6 and greater definitely does measure this.
+Please email submissions to the FAQ to orca-users@yahoogroups.com.
+
+Version: 1.06 May 10, 2001
+
+General
+-------
+
+  1.1) What is the m, k, u, or some other character following the
+       numbers in the Y axis scale?
+  1.2) Why is my Y axis scale have such large numbers?
+  1.3) Why are there random characters at the end of my HTML and GIF
+       or PNG images names, i.e.
+       o_host3_disk_runp_c0t6d0...disk_runp_c-4QyP2ziXlrwXj8eG_n_A.html?
+
+Warning Messages
+----------------
+
+  2.1) Number of columns in line '1,2,3.....' of
+      ../orcallator/.../percol-2000-09-26 does not match column
+      description.
+  2.2) Warning: file `../orcallator/.../temp-percol-2001-02-22' was
+       current and now is not.
+
+Solaris/Orcallator.se
+---------------------
+
+  3.1) What do I do about the error "/opt/RICHPse/bin/se: Unsupported
+       platform: sparcv9 SunOS 5.8"?
+  3.2) Why does orcallator.se die, in particular when I log out of the
+       system that I started it on?
+  3.3) Why is the page scan rate is always zero even though sar says
+       it is not?
+  3.4) Why are all the NFS server statistics zero?
+  3.5) Why are my Ethernet bits/second measurements all zero?
+  3.6) Why do I get the error "Fatal: member: txunderruns vanished!:
+       Near line 201"?
+  3.7) Why do I get the error "Fatal: member: txunderruns0 vanished!:
+       Near line 255"?
+  3.8) Why do I get the error "Fatal: member: framming vanished!: Near
+       line 160"?
+  3.9) Why do I get the error "Fatal: member: drop vanished!: Near
+       line 285"?
+ 3.10) Why do I get the error "Fatal: member: XXXXX vanished!: Near
+       line YYY"?
+ 3.11) Why don't I get plots for my Veritas filesystems?
+ 3.12) Why don't I get plots for my RSM filesystems?
+ 3.13) Why don't I get any Interface Bits Per Second data for my qe
+       board?
+ 3.14) Orcallator.se core dumps.
+
+General
+-------
+
+  1.1) What is the m, k, u, or some other character following the
+       numbers in the Y axis scale?
+
+       This is SI magnitude symbol to scale the number by.  Here is a
+       table of symbols and scaling factors.
+
+         a  10e-18 Ato
+         f  10e-15 Femto
+         p  10e-12 Pico
+         n  10e-9  Nano
+         u  10e-6  Micro
+         m  10e-3  Milli
+         k  10e3   Kilo
+         M  10e6   Mega
+         G  10e9   Giga
+         T  10e12  Terra
+         P  10e15  Peta
+         E  10e18  Exa
+
+       So if you see "250 m" in the Y axis, this means 0.25.
+
+       The page
+
+         http://www.physlink.com/reference_dprefixes.cfm
+
+       is also a good reference for this information.
+
+  1.2) Why is my Y axis scale have such large numbers?
+
+       See question 1) above.  Most likely there is a scaling letter
+       after your number that means the true value is several orders
+       of magnitude smaller than you think it is.
+
+  1.3) Why are there random characters at the end of my HTML and GIF
+       or PNG images names, i.e.
+       o_host3_disk_runp_c0t6d0...disk_runp_c-4QyP2ziXlrwXj8eG_n_A.html?
+
+       The way Orca generates HTML and image filenames uses all of the
+       input data sources.  With plots that contain a large amount of
+       different data, the filename can exceed the maximum filename
+       length for the operating system and Orca will not be able to
+       create the file.
+
+       The solution is to limit the filename length to less than 255
+       characters.  This could be performed by simply trimming the
+       filename down to less than 255 characters, but then the
+       filename may not be unique and two distinct HTML files and/or
+       images may end up being written to the same file.  The solution
+       used by Orca is to calculate the MD5 hash of the full length
+       filename, trim the filename down and insert the MD5 into the
+       short filename, which will guarantee uniqueness.
+
+Warning Messages
+----------------
+
+  2.1) Number of columns in line '1,2,3.....' of
+      ../orcallator/...../percol-2000-09-26 does not match column
+      description.
+
+      When Orca sees a line in an input data file that does not have
+      the same number of columns as defined at the top of the file,
+      then Orca will complain and ignore the line.
+
+  2.2) Warning: file `../orcallator/.../temp-percol-2001-02-22' was
+       current and now is not.
+
+       First, Orca considers a file to be current if the file's last
+       modified time is within `late_interval' seconds of the current
+       time.  In other words, Orca checks if a process is modifying
+       the file to keep it current.  The `late_interval' value is
+       determined by the configuration file or set to the `interval'
+       value if the configuration file does not set `late_interval'.
+
+       Orca stat()s the file when it first looks for files using the
+       `find_files' and determines that the file is current.  Any time
+       after that Orca reads the file, it stat()s the file again and
+       determines if it is current.  If there was a previous stat()
+       and the file was current followed by another stat() and the
+       file is not current, then the message is printed.
+
+       The appearance of this message means that the process that has
+       been updating the file has stopped updating it and this may be
+       worth looking into.
+
+       This message is also seen when the data gathering program,
+       e.g. orcallator.se, opens a new log file at the end of a day
+       and the old log file is no longer updated.  Orca tries to
+       manage this situation when a file is no longer updated at the
+       end of a day.
+
+       If the actual measurement interval is not consistent with
+       Orca's configuration file "interval" 300 seconds, then Orca's
+       "interval" should be modified to match the actual measurement
+       interval.  If you need to do this, then delete the RRD files
+       because they will keep the old "interval" and the input data
+       will need to be reloaded into new RRD files.
+
+       Increasing the "late_interval" may also remove this error.
+
+Solaris/Orcallator.se
+---------------------
+
+  3.1) What do I do about the error "/opt/RICHPse/bin/se: Unsupported
+       platform: sparcv9 SunOS 5.8"?
+
+       There are two solutions.  SE 3.2 is now available and you can
+       upgrade to this version.  It is available at:
+
+         http://www.setoolkit.com/
+
+       If you are using an SE version less than 3.2, then do this:
+
+         cd /opt/RICHPse/bin
+         ln se.sparc.5.7   se.sparc.5.8
+         ln se.sparcv9.5.7 se.sparcv9.5.8
+
+  3.2) Why does my background orcallator.se process die, in particular
+       when I log out of the system that I started it on?
+
+       This sounds like orcallator.se is started under the Bourne
+       shell, which kills background processes unless the process is
+       started with nohup:
+
+         nohup se orcallator.se &
+
+  3.3) Why is the page scan rate is always zero even though sar says
+       it is not?
+
+       It has been observed that on Solaris 2.5.1 the page scan rate
+       is always zero.  This occurs with orcallator.se version 1.23 or
+       older.  The problem is that on older versions of SE the
+       p_vmstat.scan variable is an integer and orcallator.se was
+       assuming a double.  The fix is to upgrade to orcallator.se 1.24
+       or newer.
+
+  3.4) Why are all the NFS server statistics zero?
+
+       On Solaris 2.6 there is a bug in the SE toolkit that prevents
+       orcallator.se from getting the NFS server statistics.  To fix
+       this, edit your RICHPse/include/kstat.se file and change #ifdef
+       to #if near the top of the file where it says
+
+         #ifdef MINOR_VERSION >= 70
+         # define rfs_counter_t uint64_t
+         #else
+
+       to
+
+         #if MINOR_VERSION >= 70
+         # define rfs_counter_t uint64_t
+         #else
+
+  3.5) Why are my Ethernet bits/second measurements all zero?
+
+       On 2.5.1 or older Solaris operating system releases, the kernel
+       does not measure the bits/second going through a particular
+       device.  I believe some later kernel and device driver patches
+       may fix this, but Solaris 2.6 and greater definitely does
+       measure this.
+
+  3.6) Why do I get the error "Fatal: member: txunderruns vanished!:
+       Near line 201"?
+
+       This problem occurs with SE 2.5.0.2 and FDDI 5.0
+       interfaces.  There are three possible fixes:
+         1) Upgrade to SE 3.0.
+         2) Visit the SE 2.5.0.2 download page and get the FDDI patch.
+         3) Add the latest patch to FDDI which should reinstate the
+            metric that went missing.
+
+  3.7) Why do I get the error "Fatal: member: txunderruns0 vanished!:
+       Near line 255"?
+
+       This problem occurs with Solaris 2.5 and hme interfaces.  There
+       are three possible fixes:
+
+         1) Upgrade to a later Solaris release.
+         2) Get the hme patch for Solaris 2.5.
+         3) As a temporary work-around, change the member "defer" to
+            "missing1" in the ks_hme_network structure in
+            /opt/RICHPse/include/kstat.se like this:
+
+            #ifdef MINOR_VERSION >= 51
+            ulong defer;
+            #else
+            ulong missing1;
+            #endif
+
+            The next build of SE 3.0 will figure this out
+            automatically.
+
+  3.8) Why do I get the error "Fatal: member: framming vanished!: Near
+       line 160"?
+
+       This problem occurs with Solaris 2.5.1 and le interfaces.  The
+       le patch for Solaris 2.5.1 corrects the spelling from framming
+       to framing.  SE 3.0 tries to detect this patch, but if you
+       don't have the patch directory in /var/sadm/patch it can't tell
+       that the patch is installed.  There are three fixes.
+
+         1) Upgrade to Solaris 2.6.
+         2) Reinstall the le patch for Solaris 2.5.1.
+         3) Create the directory /var/sadm/patch/103903-03 by hand.
+         4) As a temporary work-around, run scripts using se
+            -DLE_PATCH script.se to force the update or edit
+            start_orcallator.se and enable the appropriate SE_PATCHES
+            variable.
+
+  3.9) Why do I get the error "Fatal: member: drop vanished!: Near
+       line 285"?
+
+       This has been observed on Solaris 2.6 using SE version 3.0.
+       Upgrade to the latest version of SE.
+
+ 3.10) Why do I get the error "Fatal: member: XXXXX vanished!: Near
+       line YYY"?
+
+       This happens when Sun changes some of the kernel names for
+       particular variables that the SE package is expecting to find.
+       For example, one error was that
+
+       SE has some conditional compile flags that tell it to look for
+       the new name.  Try adding these to the command line options for
+       SE or editing start_orcallator.sh to enable some of the
+       defines.
+
+         1) -DLE_PATCH=1
+         2) -DHME_PATCH=1
+         3) -DHME_PATCH_IFSPEED=1
+         4) -DMULTICAST_PATCH=1
+         5) -DROBUST_LISTENQ=1
+
+       If a particular define does not fix the problem, then don't run
+       SE with it.
+
+ 3.11) Why don't I get plots for my Veritas filesystems?
+
+       Version 1.13 or later of orcallator.se should be able to
+       generate filesystem statistics for Veritas filesystems.  The
+       first thing to try is to upgrade to the latest SE and
+       orcallator.se release.
+
+ 3.12) Why don't I get plots for my RSM filesystems?
+
+       I don't think orcallator.se records data from RSM disks.
+
+       However, to make sure, can you look through the first line of
+       the output orcallator files and see if the RSM filesystems
+       are listed there?  Look for the disk_runp_ string.  If you see
+       the filesystems there, then the Orca configuration file needs
+       to be updated to plot this data.  In this case, email me the
+       names of the filesystems as listed in the output file and the
+       Orca configuration file can be updated to plot the data.
+
+       Otherwise, orcallator.se or the underlying SE header files will
+       need to be modified to find RSM filesystems.  Since I don't
+       have access to a system with RSM on it, this is something
+       that somebody else will need to take on.  Hint, hint...
+
+ 3.13) Why don't I get any Interface Bits Per Second data for my qe
+       board?
+
+       Most likely you are either running Solaris 7 or older or
+       Solaris 8 with SE version 3.1 or older.  You must run Solaris 8
+       to get qe bits per second data.  Apply the following patches to
+       include/kstat.se and include/netif.se:
+
+         *** kstat.se.orig       Fri Feb  9 01:44:14 2001
+         -- kstat.se    Fri Feb  9 14:31:46 2001
+         ***************
+         *** 646,651 ****
+         --- 646,661 ----
+               ulong_t no_tbufs;
+               ulong_t no_rbufs;
+               ulong_t rx_late_collisions;
+         + #if MINOR_VERSION >= 70
+         +     ulong_t  rbytes;
+         +     ulong_t  obytes;
+         +     ulong_t  multircv;
+         +     ulong_t  multixmt;
+         +     ulong_t  brdcstrcv;
+         +     ulong_t  brdcstxmt;
+         +     ulong_t  norcvbuf;
+         +     ulong_t  noxmtbuf;
+         + #endif
+
+           };
+
+         *** netif.se.orig       Fri Feb  9 01:45:06 2001
+         --- netif.se    Fri Feb  9 14:31:10 2001
+         ***************
+         *** 229,236 ****
+         --- 229,241 ----
+                 nocanput       = if_qe.nocanput;
+                 defer          = if_qe.excess_defer;
+                 nocarrier      = if_qe.nocarrier;
+         + #if MINOR_VERSION >= 70
+         +       ooctets        = if_qe.obytes + if_qe.multixmt + if_qe.brdcstxmt;
+         +       ioctets        = if_qe.rbytes + if_qe.multircv + if_qe.brdcstrcv;
+         + #else
+                 ooctets        = 0;
+                 ioctets        = 0;
+         + #endif
+                 break;
+               case NETIF_BF:
+                 kstat$bf.number$ = number$ - (if_max[NETIF_QE] + 1);
+
+ 3.14) Orcallator.se core dumps.
+
+       Some of the SE include files can cause core dumps if there are
+       oddities on the system.  Apply the following patches:
+
+         --- diskinfo.se.orig       Fri Jan 12 11:20:09 2001
+         +++ diskinfo.se Tue Feb 27 19:37:28 2001
+         @@ -197,7 +197,12 @@
+              points_at[n] = '\0';
+
+              // chop off the :a at the end
+         -    strcpy(strrchr(points_at, ':'), "");
+         +    while (--n >= 0) {
+         +      if (points_at[n] == ':') {
+         +        points_at[n] = '\0';
+         +        break;
+         +      }
+         +    }
+
+              // hack off ../../devices from the start
+              sscanf(points_at, "../../devices%s", &points_at);
+
+
+         --- mnt_class.se.orig   Fri Jan 12 11:20:09 2001
+         +++ mnt_class.se        Tue Feb 27 19:53:34 2001
+         @@ -96,7 +96,12 @@
+                number$ = -1;
+                return;
+              }
+         -    strcpy(strchr(buf, '\n'), "");
+         +    for (i=0; i<sizeof(buf); ++i) {
+         +      if (buf[i] == '\n') {
+         +        buf[i] = '\0';
+         +        break;
+         +      }
+         +    }
+              i = 0;
+              for(p=strtok(buf, "\t"); p != nil; p=strtok(nil, "\t")) {
+                switch(i) {

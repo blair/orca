@@ -40,7 +40,7 @@ I recommend reading the documentation that comes with RRDtool.  It will
 explain how the data files Orca uses are created, maintained, and used
 to create the images that Orca creates.  Read about RRDtool at
 
-    http://ee-staff.ethz.ch/~oetiker/webtools/rrdtool/
+    http://people.ee.ethz.ch/~oetiker/webtools/rrdtool/
 
 DATA COLLECTION TOOLS
 =====================
@@ -87,16 +87,18 @@ a digest form of the mailing list if you wish it when you subscribe to
 the mailing list or anytime thereafter.  To send email to any of these
 lists you must subscribe to the list.
 
-orca-announce@onelist.com
-    Subscribe    http://www.onelist.com/subscribe/orca-announce
-    Archive      http://www.onelist.com/archive/orca-announce
+orca-announce@yahoogroups.com
+    Home         http://groups.yahoo.com/group/orca-announce/
+    Subscribe    http://groups.yahoo.com/group/orca-announce/join
+    Archive      http://groups.yahoo.com/group/orca-announce/archive
 
     This is a LOW volume moderated mailing list for announcing stable
     releases of Orca.
 
-orca-users@onelist.com
-    Subscribe    http://www.onelist.com/subscribe/orca-users
-    Archive      http://www.onelist.com/archive/orca-users
+orca-users@yahoogroups.com
+    Home         http://groups.yahoo.com/group/orca-users/
+    Subscribe    http://groups.yahoo.com/group/orca-users/join
+    Archive      http://groups.yahoo.com/group/orca-users/archive
 
     This mailing list is a first stop mailing list for getting help
     in setting up and getting Orca running.  Problems relating to
@@ -107,9 +109,10 @@ orca-users@onelist.com
     Once you get Orca running to your satisfaction, you may want to
     remove yourself from this list.
 
-orca-discuss@onelist.com
-    Subscribe    http://www.onelist.com/subscribe/orca-discuss
-    Archive      http://www.onelist.com/archive/orca-discuss
+orca-discuss@yahoogroups.com
+    Home         http://groups.yahoo.com/group/orca-discuss/
+    Subscribe    http://groups.yahoo.com/group/orca-discuss/join
+    Archive      http://groups.yahoo.com/group/orca-discuss/archive
 
     This mailing list is for active users of Orca who are doing new
     interesting things with Orca and want to discuss Orca but are not
@@ -117,9 +120,10 @@ orca-discuss@onelist.com
     are also not interested in helping people get Orca running on their
     systems.
 
-orca-developers@onelist.com
-    Subscribe    http://www.onelist.com/subscribe/orca-developers
-    Archive      http://www.onelist.com/archive/orca-developers
+orca-developers@yahoogroups.com
+    Home         http://groups.yahoo.com/group/orca-developers/
+    Subscribe    http://groups.yahoo.com/group/orca-developers/join
+    Archive      http://groups.yahoo.com/group/orca-developers/archive
 
     This mailing list is for people who are interested in actively
     developing, fixing and improving Orca's source code and related data
@@ -133,17 +137,19 @@ Read and follow the installation steps in INSTALL.
 AUTHOR
 ======
 
-These two tools were written by Blair Zajac.  I welcome any patches for
-bugs or improvements, comments and suggestions.  Please send any Orca
-correspondence to orca-users@onelist.com or orca-developers@onelist.com,
-which I read and participate on.
+These two tools were written by Blair Zajac.  I welcome any patches
+for bugs or improvements, comments and suggestions.  Please send any
+Orca correspondence to orca-users@yahoogroups.com or
+orca-developers@yahoogroups.com, which I read and participate on.
 
-If you wish to contact me directly, my email address is bzajac@akamai.com.
+If you wish to contact me directly, my email address is
+blair@gps.caltech.edu.
 
 NAMING OF ORCA
 ==============
 
-I originally named Orca FMRTG, but after asking my wife
-http://www.rothschildimage.com for some suggestions, she came up with
-Orca.  It turns out that there are only one or two small programs on
-the Internet named Orca, so we both were happy to hear this.
+I originally named Orca FMRTG, but after asking my wife Ashley
+Rothschild (http://www.rothschildimage.com) for some suggestions, she
+came up with Orca.  It turns out that there are only one or two small
+programs on the Internet named Orca, so we both were happy to hear
+this.

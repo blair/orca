@@ -1,0 +1,34 @@
+@SET_MAKE@
+
+SUBDIRS = orcaservices rotate_orca_graphs
+
+all:	Makefile $(TARGETS)
+	@for dir in $(SUBDIRS); do					\
+		echo "cd $$dir && $(MAKE) CFLAGS=$(CFLAGS)";		\
+		(cd $$dir && $(MAKE) CFLAGS="$(CFLAGS)");		\
+	done
+
+# Users will need to install the contributed programs by hand.
+install:
+
+install_contrib:
+	@for dir in $(SUBDIRS); do					\
+		echo "cd $$dir && $(MAKE) CFLAGS=$(CFLAGS) install";	\
+		(cd $$dir && $(MAKE) CFLAGS="$(CFLAGS)" install);	\
+	done
+
+clean:
+	@for dir in $(SUBDIRS); do					\
+		echo "cd $$dir && $(MAKE) CFLAGS=$(CFLAGS) clean";	\
+		(cd $$dir && $(MAKE) CFLAGS="$(CFLAGS)" clean);		\
+	done
+
+distclean: clean
+	@for dir in $(SUBDIRS); do					\
+		echo "cd $$dir && $(MAKE) CFLAGS=$(CFLAGS) distclean";	\
+		(cd $$dir && $(MAKE) CFLAGS="$(CFLAGS)" distclean);	\
+	done
+	$(RM) Makefile
+
+Makefile: Makefile.in
+	cd ../.. && CONFIG_FILES=contrib/Makefile ./config.status

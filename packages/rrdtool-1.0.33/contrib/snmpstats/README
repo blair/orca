@@ -1,0 +1,43 @@
+SNMPstats.pl is a moderately simple and quick perl SNMP poller for simple
+interface traffic and other counters. It's written with flexible and easy
+hacking in mind, and is commented appropriately.
+
+It requires Net::SNMP version 2, available from CPAN.
+
+For the sake of simplicity, device names, IPs, and SNMP read strings are
+hard coded, but this can be easily substituted with something more
+dynamic. Structure for the devices hash is:
+
+$devices{<Canonical device name>}{'ip_address'} = <target ip address>
+				 {'snmp_read'}  = <SNMP read community>
+
+SNMP objects are stored in %oids. SNMP objects polled during device sweeps
+are stored in @poll_int, using named references to the object names used
+as key variables in %oids.
+
+Interface stats are only collected for interfaces that have an
+ifAdminStatus of 1. This cuts down on SNMP load quite a bit, given devices
+are properly managed. Your mileage will vary based on device policies.
+
+RRDs are only created for interfaces with ifAdminStatus of 1. This gives
+you some amount of scale control. Interfaces are checked for an existing
+RRD on each collection pass, and RRDs created as needed. They are NOT
+removed if you admin down an interface, so stale RRD cleanup is your
+problem.
+
+One caveat to note is that RRDs are created with upper limits based on
+ifSpeed. For autosensing 10/100 switches, this is a problem. In an effort
+to keep this utility simple, I formally declare it to be 'your
+problem'.
+
+This utility runs as a recurring loop, so it's meant to be run in the
+background like a daemon. You can strip the while/sleep sets and stuff it
+in cron, if you're so inclined. YMMV. 
+
+The script itself is heavily commented, explaining what I do as I go. Be a
+good user, read the code before you run it. It's simple and
+straightforward, and it's a good idea to understand how it works,
+especially if you're a novice user.
+
+Bill Nash
+billn@billn.net / billn@gblx.net

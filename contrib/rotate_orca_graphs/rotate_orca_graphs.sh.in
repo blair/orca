@@ -1,0 +1,39 @@
+#!/bin/sh
+#
+# This script can be used to generate daily copies of the Orca HTML
+# directory so that daily plots of your systems can be stored and
+# viewed later.
+#
+# To use this script:
+# 1) Set the ARCHIVE_DIR to the location of the archive directory.
+# 2) Set up a cron job that runs this script:
+#    59 23 * * * create_orca_daily_graphs.sh
+
+# Set this directory to archive the daily plots in.
+ARCHIVE_DIR=
+
+DATE=`date +%Y-%m-%d`
+HTML_DIR=@HTML_DIR@
+TAR=@TAR@
+
+if test -z "$ARCHIVE_DIR"; then
+  echo "$0: please edit $0 to set ARCHIVE_DIR" 1>&2
+  exit 1
+fi
+
+# Make sure that the Orca and archive HTML directories are not the
+# same.
+cd $ARCHIVE_DIR
+dir2=`pwd`
+cd $HTML_DIR
+dir1=`pwd`
+if test "$dir1" = "$dir2"; then
+  echo "$0: HTML_DIR $dir1 and ARCHIVE_DIR $dir2 are the same directory" 1>&2
+  exit 1
+fi
+
+if test ! -e $ARCHIVE_DIR/$DATE; then
+  mkdir $ARCHIVE_DIR/$DATE || exit 1
+fi
+
+$TAR cfl - . | (cd $ARCHIVE_DIR/$DATE; $TAR xf -)

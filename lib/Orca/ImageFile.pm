@@ -1,6 +1,6 @@
 # Orca::ImageFile: Manage the creation of PNG or GIF plot files.
 #
-# Copyright (C) 1998, 1999 Blair Zajac and Yahoo!, Inc.
+# Copyright (C) 1998-2001 Blair Zajac and Yahoo!, Inc.
 
 package Orca::ImageFile;
 
@@ -9,15 +9,16 @@ use Carp;
 use RRDs;
 use Orca::Constants qw($opt_generate_gifs
                        $opt_verbose
-                       DAY_SECONDS
                        $IMAGE_SUFFIX
                        @IMAGE_PLOT_TYPES
                        @IMAGE_PDP_COUNTS
-                       @IMAGE_DAYS_BACK);
-use Orca::Config    qw(%config_options
-                       %config_groups
+                       @IMAGE_TIME_SPAN
+                       $MAX_PLOT_TYPE_LENGTH
+                       $INCORRECT_NUMBER_OF_ARGS);
+use Orca::Config    qw(%config_global
+                       @config_groups
                        @config_plots);
-use Orca::Utils     qw(recursive_mkdir);
+use Orca::Utils     qw(name_to_fsname recursive_mkdir);
 
 use vars            qw($VERSION);
 
@@ -27,7 +28,7 @@ $VERSION = substr q$Revision: 0.01 $, 10;
 # Define these constant subroutines as indexes into the array.  If
 # the order of these indexes change, make sure to rearrange the
 # constructor in new.
-sub I_GROUP_NAME       () {  0 }
+sub I_GROUP_INDEX      () {  0 }
 sub I_SUBGROUP_NAME    () {  1 }
 sub I_NO_SUBGROUP_NAME () {  2 }
 sub I_NAME             () {  3 }
@@ -44,11 +45,11 @@ sub I_PLOT_LEGEND_BASE () { I_PLOT_AGE_BASE + @IMAGE_PLOT_TYPES }
 
 sub new {
   unless (@_ == 8) {
-    confess "$0: Orca::ImageFile::new passed incorrect number of arguments.\n";
+    confess "$0: Orca::ImageFile::new $INCORRECT_NUMBER_OF_ARGS";
   }
 
   my ($class,
-      $group_name,
+      $group_index,
       $subgroup_name,
       $name,
       $no_subgroup_name,
@@ -64,24 +65,27 @@ sub new {
   }
 
   # Remove any special characters from the unique name and do some
-  # replacements.
-  $name = &::escape_name($name);
+  # replacements.  Leave space at the end of the name to append a
+  # string of the form '-daily.png' and optionally '.meta' if the
+  # configuration file specifies that images should be expired.
+  my $max_length = $MAX_PLOT_TYPE_LENGTH + 2 + length($IMAGE_SUFFIX);
+  if ($config_global{expire_images}) {
+  $max_length += 5;
+  }
+  $name = name_to_fsname($name, $max_length);
 
   # Create the paths to the html directory and subdirectories.
-  my $html_dir     = $config_options{html_dir};
-  if ($config_groups{$group_name}{sub_dir}) {
-    $html_dir .= "/$subgroup_name";
-    # Create the html_dir directories if necessary.
-    unless (-d $html_dir) {
-      warn "$0: making directory `$html_dir'.\n";
-      recursive_mkdir($html_dir);
-    }
+  my $html_dir     = "$config_global{html_dir}/$subgroup_name";
+  # Create the html_dir directories if necessary.
+  unless (-d $html_dir) {
+    warn "$0: making directory `$html_dir'.\n";
+    recursive_mkdir($html_dir);
   }
   my $image_basename = "$html_dir/$name";
 
   # Create the new object.
   my $self = bless [
-    $group_name,
+    $group_index,
     $subgroup_name,
     $no_subgroup_name,
     $name,
@@ -95,7 +99,7 @@ sub new {
   ], $class;
 
   my $plot_end_time = $self->plot_end_time;
-  my $interval      = int($config_groups{$group_name}{interval}+0.5);
+  my $interval      = int($config_groups[$group_index]{interval}+0.5);
   for (my $i=0; $i<@IMAGE_PLOT_TYPES; ++$i) {
     # Load the data that helps this class determine if a particular
     # image file, such as the daily image, is current or needs to be
@@ -120,7 +124,7 @@ sub new {
     # Generate the unique plot title cotaining the period title for this
     # plot.
     $self->[I_PLOT_LEGEND_BASE+$i] =
-      &::Capatialize($plot_type) .
+      &::capatialize($plot_type) .
       ' ' .
       ::replace_subgroup_name($plot_ref->{title}, $subgroup_name);
   }
@@ -171,10 +175,11 @@ sub _update_graph_options {
   my @legends;
   my $max_legend_length = 0;
   for (my $i=0; $i<$data_sources; ++$i) {
-    my $legend         = ::replace_subgroup_name($plot_ref->{legend}[$i], $subgroup_name);
+    my $legend         = ::replace_subgroup_name($plot_ref->{legend}[$i],
+                                                 $subgroup_name);
     my $line_type      = $plot_ref->{line_type}[$i];
     my $color          = $plot_ref->{color}[$i];
-    push(@options, "$line_type:average$i#$color:$legend");
+    push(@options,       "$line_type:average$i#$color:$legend");
     $legend            =~ s:%:\200:g;
     $legend            =~ s:\200:%%:g;
     my $legend_length  = length($legend);
@@ -188,12 +193,13 @@ sub _update_graph_options {
   # Generate the legends containing the current, average, minimum, and
   # maximum values on the plot.
   for (my $i=0; $i<$data_sources; ++$i) {
-    my $legend = $legends[$i];
-    $legend   .= ' ' x ($max_legend_length - length($legend));
-    push(@options, "GPRINT:average$i:LAST:$legend  Current\\: %9.3lf %S",
-                   "GPRINT:average$i:AVERAGE:Average\\: %9.3lf %S",
-                   "GPRINT:average$i:MIN:Min\\: %9.3lf %S",
-                   "GPRINT:average$i:MAX:Max\\: %9.3lf %S\\l"
+    my $legend          = $legends[$i];
+    $legend            .= ' ' x ($max_legend_length - length($legend));
+    my $summary_format  = $plot_ref->{summary_format}[$i];
+    push(@options, "GPRINT:average$i:LAST:$legend  Current\\: $summary_format",
+                   "GPRINT:average$i:AVERAGE:Average\\: $summary_format",
+                   "GPRINT:average$i:MIN:Min\\: $summary_format",
+                   "GPRINT:average$i:MAX:Max\\: $summary_format\\l"
         );
   }
 
@@ -233,8 +239,8 @@ sub name {
   $_[0]->[I_NAME];
 }
 
-sub group_name {
-  $_[0]->[I_GROUP_NAME];
+sub group_index {
+  $_[0]->[I_GROUP_INDEX];
 }
 
 sub subgroup_name {
@@ -283,7 +289,7 @@ sub _plot {
   my ($self, $i) = @_;
 
   my $plot_type       = $IMAGE_PLOT_TYPES[$i];
-  my $image_days_back = $IMAGE_DAYS_BACK[$i];
+  my $image_time_span = $IMAGE_TIME_SPAN[$i];
 
   # Get the time stamp of the last data point entered into the RRDs
   # that are used to generate this image.
@@ -311,7 +317,7 @@ sub _plot {
       $image_filename,
       @{$self->[I_GRAPH_OPTIONS]},
       '-t', $self->[I_PLOT_LEGEND_BASE+$i],
-      '-s', ($plot_end_time-$image_days_back*DAY_SECONDS),
+      '-s', ($plot_end_time-$image_time_span),
       '-e', $plot_end_time,
       '-w', $plot_ref->{plot_width},
       '-h', $plot_ref->{plot_height},
@@ -329,9 +335,8 @@ sub _plot {
 
     # Expire the image at the correct time using a META file if
     # requested.
-    if ($config_options{expire_images}) {
+    if ($config_global{expire_images}) {
       if (open(META, "> $image_filename.meta")) {
-        my $time = 
         print META "Expires: ",
                    _expire_string($plot_end_time + $plot_age + 30),
                    "\n";
@@ -349,7 +354,7 @@ sub _plot {
 sub _expire_string {
   my @gmtime  = gmtime($_[0]);
   my ($wday)  = ('Sun','Mon','Tue','Wed','Thu','Fri','Sat')[$gmtime[6]];
-  my ($month) = ('Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep', 
+  my ($month) = ('Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep',
                  'Oct','Nov','Dec')[$gmtime[4]];
   my ($mday, $year, $hour, $min, $sec) = @gmtime[3,5,2,1,0];
   if ($mday<10) {$mday = "0$mday";}

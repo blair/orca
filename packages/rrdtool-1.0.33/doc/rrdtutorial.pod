@@ -2,6 +2,10 @@
 
 rrdtutorial - Alex van den Bogaerdt's RRDtool tutorial
 
+=for html <div align="right">Go <a href="rrdtutorial.es.html">Spanish</a></div> 
+
+=for html <div align="right"><a href="rrdtutorial.pdf">PDF</a> version.</div> 
+
 =head1 DESCRIPTION
 
 RRDtool is written by Tobias Oetiker <oetiker@ee.ethz.ch> with
@@ -106,7 +110,7 @@ By following the examples you get some hands-on experience and, even
 more important, some background information of how it works.
 
 You will need to know something about hexadecimal numbers. If you don't
-then start with reading "bin_dec_hex" before you continue here.
+then start with reading L<bin_dec_hex> before you continue here.
 
 =head2 Your first Round Robin Database
 
@@ -619,7 +623,7 @@ MRTG stores about the following amount of data:
  600 5-minute samples:    2   days and 2 hours
  600 30-minute samples:  12.5 days
  600 2-hour samples:     50   days
- 600 1-day samples:     732   days
+ 732 1-day samples:     732   days
 
 These ranges are appended so the total amount of data kept is approximately
 797 days.  RRDtool stores the data differently, it doesn't start the "weekly"

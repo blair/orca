@@ -1,5 +1,5 @@
 /*****************************************************************************
- * RRDtool 1.0.13  Copyright Tobias Oetiker, 1997,1998, 1999
+ * RRDtool 1.0.33  Copyright Tobias Oetiker, 1997 - 2000
  *****************************************************************************
  * rrd_tool.h   Common Header File
  *****************************************************************************
@@ -66,8 +66,7 @@ extern int getrusage(int, struct rusage *);
 #endif /* __svr4__ && __sun__ */
 #endif
 
-#include "parsetime.h"
-int proc_start_end (struct time_value *,  struct time_value *, time_t *, time_t *);
+#include "rrd.h"
 
 #ifndef WIN32
 
@@ -100,30 +99,35 @@ int isnan(double value);
 
 #define DIM(x) (sizeof(x)/sizeof(x[0]))
 
-/* main function blocks */
-int    rrd_create(int argc, char **argv);
-int    rrd_update(int argc, char **argv);
-int    rrd_graph(int argc, char **argv, char ***prdata, int *xsize, int *ysize);
-int    rrd_fetch(int argc, char **argv, 
-		 time_t *start, time_t *end, unsigned long *step, 
-		 unsigned long *ds_cnt, char ***ds_namv, rrd_value_t **data);
-int    rrd_restore(int argc, char **argv);
-int    rrd_dump(int argc, char **argv);
-int    rrd_tune(int argc, char **argv);
-time_t rrd_last(int argc, char **argv);
-int    rrd_resize(int argc, char **argv);
+/* rrd info interface */
+enum info_type   { RD_I_VAL=0,
+	       RD_I_CNT,
+	       RD_I_STR  };
+
+typedef union infoval { 
+    unsigned long u_cnt; 
+    rrd_value_t   u_val;
+    char         *u_str;
+} infoval;
+
+typedef struct info_t {
+    char            *key;
+    enum info_type  type;
+    union infoval   value;
+    struct info_t   *next;
+} info_t;
+
+
+info_t *rrd_info(int, char **);
 
 /* HELPER FUNCTIONS */
-void rrd_set_error(char *fmt,...);
-void rrd_clear_error(void);
-int  rrd_test_error(void);
-char *rrd_get_error(void);
-int  LockRRD(FILE *);
 int GifSize(FILE *, long *, long *);
 int PngSize(FILE *, long *, long *);
 int PngSize(FILE *, long *, long *);
+
 #include <gd.h>
 void gdImagePng(gdImagePtr im, FILE *out);
+
 int rrd_create_fn(char *file_name, rrd_t *rrd);
 int rrd_fetch_fn(char *filename, enum cf_en cf_idx,
 		 time_t *start,time_t *end,
@@ -131,12 +135,12 @@ int rrd_fetch_fn(char *filename, enum cf_en cf_idx,
 		 unsigned long *ds_cnt,
 		 char        ***ds_namv,
 		 rrd_value_t **data);
+
 void rrd_free(rrd_t *rrd);
 void rrd_init(rrd_t *rrd);
 
-int  rrd_open(char *file_name, FILE **in_file, rrd_t *rrd, int rdwr);
+int rrd_open(char *file_name, FILE **in_file, rrd_t *rrd, int rdwr);
 int readfile(char *file, char **buffer, int skipfirst);
-
 
 #define RRD_READONLY    0
 #define RRD_READWRITE   1
@@ -147,7 +151,6 @@ long ds_match(rrd_t *rrd,char *ds_nam);
 double rrd_diff(char *a, char *b);
 
 #endif
-
 
 
 #ifdef  __cplusplus

@@ -64,21 +64,32 @@ host_triplet = @host@
 target_alias = @target_alias@
 target_triplet = @target@
 CC = @CC@
-CFLAGS = @CFLAGS@
 CGI_LIB_DIR = @CGI_LIB_DIR@
 COMP_PERL = @COMP_PERL@
 CPP = @CPP@
 GD_LIB_DIR = @GD_LIB_DIR@
 LIBTOOL = @LIBTOOL@
+NROFF = @NROFF@
 PERL = @PERL@
+PERLFLAGS = @PERLFLAGS@
+PERL_MAKE_OPTIONS = @PERL_MAKE_OPTIONS@
 PNG_LIB_DIR = @PNG_LIB_DIR@
 RANLIB = @RANLIB@
+SO_EXT = @SO_EXT@
+TCL_LD_SEARCH_FLAGS = @TCL_LD_SEARCH_FLAGS@
+TCL_PACKAGE_PATH = @TCL_PACKAGE_PATH@
+TCL_PREFIX = @TCL_PREFIX@
+TCL_SHLIB_CFLAGS = @TCL_SHLIB_CFLAGS@
+TCL_SHLIB_LD = @TCL_SHLIB_LD@
+TCL_SHLIB_SUFFIX = @TCL_SHLIB_SUFFIX@
+TROFF = @TROFF@
+VERSION = @VERSION@
 ZLIB_LIB_DIR = @ZLIB_LIB_DIR@
 
-SUBDIRS = log2rrd rrd-file-icon trytime rrdproc rrdlastds add_ds killspike rrdfetchnames
-
+SUBDIRS = trytime
 contribdir = $(prefix)/contrib
 contrib_DATA = README
+EXTRA_DIST = rrdview log2rrd rrd-file-icon rrdproc rrdlastds add_ds killspike rrdfetchnames snmpstats rrdexplorer php3 php4
 mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 CONFIG_HEADER = ../config/config.h
 CONFIG_CLEAN_FILES = 
@@ -88,7 +99,6 @@ DIST_COMMON =  README Makefile.am Makefile.in
 
 
 PACKAGE = @PACKAGE@
-VERSION = @VERSION@
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
@@ -220,7 +230,7 @@ distdir: $(DISTFILES)
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  if test -d $$d/$$file; then \
-	    cp -pr $$/$$file $(distdir)/$$file; \
+	    cp -pr $$d/$$file $(distdir)/$$file; \
 	  else \
 	    test -f $(distdir)/$$file \
 	    || ln $$d/$$file $(distdir)/$$file 2> /dev/null \

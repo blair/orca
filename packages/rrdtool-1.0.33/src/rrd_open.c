@@ -1,5 +1,5 @@
 /*****************************************************************************
- * RRDtool 1.0.13  Copyright Tobias Oetiker, 1997, 1998, 1999
+ * RRDtool 1.0.33  Copyright Tobias Oetiker, 1997 - 2000
  *****************************************************************************
  * rrd_open.c  Open an RRD File
  *****************************************************************************
@@ -35,7 +35,7 @@ rrd_open(char *file_name, FILE **in_file, rrd_t *rrd, int rdwr)
     }
     
     if (((*in_file) = fopen(file_name,mode)) == NULL ){
-	rrd_set_error("rrdopen can't open '%s'",file_name);
+	rrd_set_error("opening '%s': %s",file_name, strerror(errno));
 	return (-1);
     }
     
@@ -50,7 +50,7 @@ rrd_open(char *file_name, FILE **in_file, rrd_t *rrd, int rdwr)
     
 	/* lets do some test if we are on track ... */
 	if (strncmp(rrd->stat_head->cookie,RRD_COOKIE,4) != 0){
-	    rrd_set_error("not an RRD file");
+	    rrd_set_error("'%s' is not an RRD file",file_name);
 	    free(rrd->stat_head);
 	    return(-1);}
 
@@ -61,7 +61,7 @@ rrd_open(char *file_name, FILE **in_file, rrd_t *rrd, int rdwr)
 	    return(-1);}
 
 	if (rrd->stat_head->float_cookie != FLOAT_COOKIE){
-	    rrd_set_error("This RRD created on other architecture");
+	    rrd_set_error("This RRD was created on other architecture");
 	    free(rrd->stat_head);
 	    return(-1);}
 
@@ -108,7 +108,7 @@ int readfile(char *file_name, char **buffer, int skipfirst){
     if ((strcmp("-",file_name) == 0)) { input = stdin; }
     else {
       if ((input = fopen(file_name,"rb")) == NULL ){
-	rrd_set_error("readfile can't open '%s'",file_name);
+	rrd_set_error("opening '%s': %s",file_name,strerror(errno));
 	return (-1);
       }
     }

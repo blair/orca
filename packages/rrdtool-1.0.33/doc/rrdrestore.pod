@@ -2,6 +2,8 @@
 
 rrdtool restore - restore the contents of an B<RRD> from its XML dump format
 
+=for html <div align="right"><a href="rrdrestore.pdf">PDF</a> version.</div>
+
 =head1 SYNOPSIS
 
 B<rrdtool> B<restore> I<filename.xml> I<filename.rrd>

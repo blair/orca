@@ -1,6 +1,6 @@
 #! /usr/bin/perl 
 
-BEGIN { $| = 1; print "1..5\n"; }
+BEGIN { $| = 1; print "1..7\n"; }
 END {
   print "not ok 1\n" unless $loaded;
   unlink "demo.rrd";
@@ -48,7 +48,7 @@ print "* Creating RRD $RRD1 starting at $time.\n\n";
 RRDs::create $RRD1, @options;
 
 my $ERROR = RRDs::error;
-ok("create", !$ERROR);							#  2
+ok("create 1", !$ERROR);							#  2
 if ($ERROR) {
   die "$0: unable to create `$RRD1': $ERROR\n";
 }
@@ -57,7 +57,7 @@ print "* Creating RRD $RRD2 starting at $time.\n\n";
 RRDs::create $RRD2, @options;
 
 $ERROR= RRDs::error;
-ok("creat",!$ERROR);							#  3
+ok("create 2",!$ERROR);							#  3
 if ($ERROR) {
   die "$0: unable to create `$RRD2': $ERROR\n";
 }
@@ -66,7 +66,7 @@ my $last = RRDs::last $RRD1;
 if ($ERROR = RRDs::error) {
   die "$0: unable to get last `$RRD1': $ERROR\n";
 }
-ok("last", $last == $START);						#  4
+ok("last 1", $last == $START);						#  4
 
 $last = RRDs::last $RRD2;
 if ($ERROR = RRDs::error) {
@@ -93,11 +93,15 @@ for (my $t=$START+1;
   push(@options, "$t:$data");
   RRDs::update $RRD1, "$t:$data";
   if ($ERROR = RRDs::error) {
-    die "$0: unable to update `$RRD1': $ERROR\n";
+    warn "$0: unable to update `$RRD1': $ERROR\n";
   }
 }
 
+ok("update 1",!$ERROR);							#  3
+
 RRDs::update $RRD2, @options;
+
+ok("update 2",!$ERROR);							#  3
 
 if ($ERROR = RRDs::error) {
   die "$0: unable to update `$RRD2': $ERROR\n";

@@ -1,5 +1,5 @@
 /*****************************************************************************
- * RRDtool 1.0.13  Copyright Tobias Oetiker, 1997, 1998, 1999
+ * RRDtool 1.0.33  Copyright Tobias Oetiker, 1997 - 2000
  *****************************************************************************
  * rrd_cgi.c  RRD Web Page Generator
  *****************************************************************************/
@@ -47,6 +47,9 @@ char* printtimenow(long,char **);
 /* set an evironment variable */
 char* rrdsetenv(long, char **);
 
+/* get an evironment variable */
+char* rrdgetenv(long, char **);
+
 /* include the named file at this point */
 char* includefile(long, char **);
 
@@ -56,6 +59,8 @@ char* rrdgoodfor(long, char **);
 /** http protocol needs special format, and GMT time **/
 char *http_time(time_t *);
 
+/* return a pointer to newly alocated copy of this string */
+char *stralloc(char *);
 
 static long goodfor=0;
 static char **calcpr=NULL;
@@ -63,9 +68,13 @@ static void calfree (void){
   if (calcpr) {
     long i;
     for(i=0;calcpr[i];i++){
-      free(calcpr[i]);
+      if (calcpr[i]){
+	      free(calcpr[i]);
+      }
     } 
-    free(calcpr);
+    if (calcpr) {
+	    free(calcpr);
+    }
   }
 }
 
@@ -135,25 +144,26 @@ int main(int argc, char *argv[]) {
   if(filter==0) {
   /* pass 1 makes only sense in cgi mode */
       for (i=0;buffer[i] != '\0'; i++){    
-	  i +=parse(&buffer,i,"<RRD::CV ",cgiget);
-	  i +=parse(&buffer,i,"<RRD::CV::QUOTE ",cgigetq);
-	  i +=parse(&buffer,i,"<RRD::CV::PATH ",cgigetqp);
+	  i +=parse(&buffer,i,"<RRD::CV",cgiget);
+	  i +=parse(&buffer,i,"<RRD::CV::QUOTE",cgigetq);
+	  i +=parse(&buffer,i,"<RRD::CV::PATH",cgigetqp);
+	  i +=parse(&buffer,i,"<RRD::GETENV",rrdgetenv);	 
       }
   }
 
   /* pass 2 */
   for (i=0;buffer[i] != '\0'; i++){    
-      i +=parse(&buffer,i,"<RRD::GOODFOR ",rrdgoodfor);
-      i += parse(&buffer,i,"<RRD::SETENV ",rrdsetenv);
-      i += parse(&buffer,i,"<RRD::INCLUDE ",includefile);
-      i += parse(&buffer,i,"<RRD::TIME::LAST ",printtimelast);
-      i += parse(&buffer,i,"<RRD::TIME::NOW ",printtimenow);
+      i += parse(&buffer,i,"<RRD::GOODFOR",rrdgoodfor);
+      i += parse(&buffer,i,"<RRD::SETENV",rrdsetenv);
+      i += parse(&buffer,i,"<RRD::INCLUDE",includefile);
+      i += parse(&buffer,i,"<RRD::TIME::LAST",printtimelast);
+      i += parse(&buffer,i,"<RRD::TIME::NOW",printtimenow);
   }
 
   /* pass 3 */
   for (i=0;buffer[i] != '\0'; i++){    
-    i += parse(&buffer,i,"<RRD::GRAPH ",drawgraph);
-    i += parse(&buffer,i,"<RRD::PRINT ",drawprint);
+    i += parse(&buffer,i,"<RRD::GRAPH",drawgraph);
+    i += parse(&buffer,i,"<RRD::PRINT",drawprint);
   }
 
   if (filter==0){
@@ -173,7 +183,9 @@ int main(int argc, char *argv[]) {
   }
   printf ("%s", buffer);
   calfree();
-  free(buffer);
+  if (buffer){
+     free(buffer);
+  }
   exit(0);
 }
 
@@ -196,6 +208,13 @@ char* rrdsetenv(long argc, char **args){
   return stralloc("");
 }
 
+char* rrdgetenv(long argc, char **args){
+  if (argc != 1) {
+    return stralloc("[ERROR: getenv faild because it did not get 1 argument only]");
+  };
+  return stralloc(getenv(args[0]));
+}
+
 char* rrdgoodfor(long argc, char **args){
   if (argc == 1) {
       goodfor = atol(args[0]);
@@ -215,7 +234,7 @@ char* includefile(long argc, char **args){
   if (argc >= 1) {
       readfile(args[0], &buffer, 0);
       if (rrd_test_error()) {
-	  char *err = malloc((strlen(rrd_get_error())+20)*sizeof(char));
+	  char *err = malloc((strlen(rrd_get_error())+DS_NAM_SIZE)*sizeof(char));
 	  sprintf(err, "[ERROR: %s]",rrd_get_error());
 	  rrd_clear_error();
 	  return err;
@@ -232,13 +251,15 @@ char* includefile(long argc, char **args){
 char* rrdstrip(char *buf){
   char *start;
   if (buf == NULL) return NULL;
+  buf = stralloc(buf); /* make a copy of the buffer */
+  if (buf == NULL) return NULL;
   while ((start = strstr(buf,"<"))){
     *start = '_';
   }
   while ((start = strstr(buf,">"))){
     *start = '_';
   }
-  return stralloc(buf);
+  return buf;
 }
 
 char* cgigetq(long argc, char **args){
@@ -251,7 +272,7 @@ char* cgigetq(long argc, char **args){
 
     for(c=buf;*c != '\0';c++)
       if (*c == '"') qc++;
-    if((buf2=malloc((strlen(buf) + qc*4 +2) * sizeof(char)))==NULL){
+    if((buf2=malloc((strlen(buf) + qc*4 +4) * sizeof(char)))==NULL){
 	perror("Malloc Buffer");
 	exit(1);
     };
@@ -289,7 +310,7 @@ char* cgigetqp(long argc, char **args){
 
     for(c=buf;*c != '\0';c++)
       if (*c == '"') qc++;
-    if((buf2=malloc((strlen(buf) + qc*4 +2) * sizeof(char)))==NULL){
+    if((buf2=malloc((strlen(buf) + qc*4 +4) * sizeof(char)))==NULL){
 	perror("Malloc Buffer");
 	exit(1);
     };
@@ -350,7 +371,7 @@ char* drawgraph(long argc, char **args){
     return stralloc(calcpr[0]);
   } else {
     if (rrd_test_error()) {
-      char *err = malloc((strlen(rrd_get_error())+20)*sizeof(char));
+      char *err = malloc((strlen(rrd_get_error())+DS_NAM_SIZE)*sizeof(char));
       sprintf(err, "[ERROR: %s]",rrd_get_error());
       rrd_clear_error();
       calfree();
@@ -381,7 +402,7 @@ char* printtimelast(long argc, char **args) {
     };
     last = rrd_last(argc+1, args-1); 
     if (rrd_test_error()) {
-      char *err = malloc((strlen(rrd_get_error())+20)*sizeof(char));
+      char *err = malloc((strlen(rrd_get_error())+DS_NAM_SIZE)*sizeof(char));
       sprintf(err, "[ERROR: %s]",rrd_get_error());
       rrd_clear_error();
       return err;
@@ -506,6 +527,7 @@ int parse(char **buf, long i, char *tag,
   long argc;
   /* do we like it ? */
   if (strncmp((*buf)+i, tag, strlen(tag))!=0) return 0;      
+  if (! isspace(*( (*buf) + i + strlen(tag) )) ) return 0;
   /* scanargs puts \0 into *buf ... so after scanargs it is probably
      not a good time to use strlen on buf */
   end = scanargs((*buf)+i+strlen(tag),&argc,&args);
@@ -543,7 +565,7 @@ int parse(char **buf, long i, char *tag,
   /* splice the variable */
   memmove ((*buf)+i+valln,end,strlen(end)+1);
   if (val != NULL ) memmove ((*buf)+i,val, valln);
-  free(val);
+  if (val){ free(val);}
   return valln > 0 ? valln-1: valln;
 }
 

@@ -1,7 +1,8 @@
 @SET_MAKE@
 
-SUBDIRS 	= packages lib src @ORCALLATOR_SUBDIR@ docs
-PREFIX		= @prefix@
+SUBDIRS 	= packages lib src @ORCALLATOR_SUBDIR@ docs contrib
+prefix		= @prefix@
+MKDIR		= @MKDIR@
 MAKE_RRDTOOL	= @MAKE_RRDTOOL@
 ORCALLATOR_DIR	= @ORCALLATOR_DIR@
 RRD_DIR		= @RRD_DIR@
@@ -19,12 +20,15 @@ upgrade:
 	cd src && $(MAKE) upgrade_installation
 
 install: $(INSTALL_RRDTOOL)
-	./config/mkinstalldirs $(ORCALLATOR_DIR)
-	./config/mkinstalldirs $(RRD_DIR)/orcallator
+	$(MKDIR) $(ORCALLATOR_DIR)
+	$(MKDIR) $(RRD_DIR)/orcallator
 	@for dir in $(SUBDIRS); do			\
 		echo "cd $$dir && $(MAKE) install";	\
 		(cd $$dir && $(MAKE) install);		\
 	done
+
+install_contrib:
+	cd contrib && $(MAKE) install_contrib
 
 orcallator_run_at_boot:
 	cd orcallator && $(MAKE) orcallator_run_at_boot

@@ -1,0 +1,155 @@
+##
+##
+## OrcaServices.pl, a log generating services usage monitor
+##
+##
+
+##
+## This program logs many different services usage to a log file
+## for later processing.
+##
+
+##
+## Author: Carlos Canau <Carlos.Canau@KPNQwest.pt>.
+## Documentation:	Jose Carlos <jcp@KPNQwest.pt>.
+##
+
+##
+## Portions adapted from Orcallator.se written by Blair Zajac
+## Portions ported to perl from Orcallator.se written by Blair Zajac
+## other portions adapted from several other open source scripts
+##
+##
+
+PERL_SCRIPTS
+	orcaservices_running
+		warn if orcaservices files are not up to date.
+		Not changed by canau.
+	orcaservices.pl
+		main data collector
+
+SHELL_SCRIPTS
+	restart_orcaservices
+		guess!
+	stop_orcaservices
+		I'll give you a hint... stopping
+	start_orcaservices
+		need a hint, look above
+	S99orcaservices
+		used for automatic start of orcaservices
+
+Other Files:
+ 	orcaservices.cfg
+
+		Configuration of services to monitor
+		graph details etc
+
+        $libdir/orcaservices.$HOSTNAME
+                services can be disabled editing this file.
+                $libdir defaults to /usr/local/lib
+
+                Services can be disabled using the param for file with
+                the switch for input file and setting it to off: ex:
+                --smtp_logfile=off
+
+        $libdir/orcaservices.DB.$HOSTNAME
+                $libdir defaults to /usr/local/lib
+                auth info for accessing database
+                SYNTAX:  proto:drv:database:user:pass
+                CAREFUL: mind the file permissions! chmod 0600
+
+Other Notes:
+	Changed scripts have the original copy in [FILE_NAME].ORIG
+
+###########################################################################
+INSTALLATION STEPS
+###########################################################################
+
+1) Install Time-HiRes -or- disable  line "use Time::HiRes" in the code
+
+2) Install DBI -or- disable line "use  DBI" in the code -AND- don't do
+radius stats via the "--radius_db=off" parameter
+
+3) cd [base_dir]/orca-0.26/
+   ./configure  [OPTIONS]
+   make
+   make install
+
+   * if orcaservices should run at boottime
+
+   make orcaservices_run_at_boot
+
+   Most of the skeleton code of orcaservices comes from orcallator. So
+   everything is very similar.
+
+4) You might need to edit orcaservices.pl to suit your needs. Look for
+   code need the ATTENTION string.  You'll probably need to edit
+   orcaservices.cfg.in.
+
+
+###########################################################################
+CURRENT VALUES
+###########################################################################
+
+NAMED
+-----
+DEFAULT: $def_dns_logfile = "/var/log/named";
+DISABLE: --dns_logfile=off
+
+	Reads hourly stats from named log file.
+
+SENDMAIL
+--------
+DEFAULT: $def_smtp_logfile = "/var/log/syslog";
+DISABLE: --smtp_logfile=off
+
+	Reads syslog from sendmail.
+
+MERIT RADIUS
+------------
+DEFAULT: $def_merit_radius_logfile = "/usr/local/etc/raddb/logfile";
+DISABLE: --merit_radius_logfile=off
+
+	Reads syslog from Merit Radius.
+
+POP3
+----
+DEFAULT: $def_pop_logfile = "/var/log/ipop3d.log";
+DISABLE: --pop_logfile=off
+
+	Reads syslog from ipop3d.
+
+RADIUS FROM DATABASE
+--------------------
+DEFAULT: $def_radius_auth = "/usr/local/lib/orcaservices.DB.$nodename";
+DISABLE: --radius_db=off
+
+
+	Reads Radius stop records from Database and do stats.  You
+	might need to change the SQL query in the code.  You'll have
+	to create the orcaservices.DB.$hostname file with the database
+	options.
+
+MAILQ
+-----
+DEFAULT: $def_mailq = "on";
+DISABLE: --mailq=off
+
+
+###########################################################################
+TODO
+###########################################################################
+
+. better installation
+. better documentation
+. more types of monitorization
+. rip WWW code from orcallator.se or re-write newer
+. ...
+
+###########################################################################
+FINAL RAVINGS
+###########################################################################
+
+Feel free to extend this package.  Any bug fixes and enhancements sent
+to o-s@kqnet.pt will be appreciated, dissected, scorned and probably
+included in future releases (not necessarily in that order :-)))).

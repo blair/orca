@@ -118,12 +118,12 @@ RRDp::cmd "graph $PNG ", "--title 'Test GRAPH' ",
         "AREA:alpha#0022e9:Alpha",
         "STACK:beta#00b871:Beta",
         "STACK:calc#ff0091:Calc\\j",
-	"PRINT:alpha:AVERAGE:'Average Alpha\\: %1.2f %S'",
-	"PRINT:alpha:MIN:'Min Alpha\\: %1.2f %S'",
-	"PRINT:alpha:MAX:'Max Alpha\\: %1.2f %S'",
-	"GPRINT:calc:AVERAGE:'Average calc\\: %1.2f %S\\r'",
-	"GPRINT:calc:MIN:'Min calc\\: %1.2f %S'",
-	"GPRINT:calc:MAX:'Max calc\\: %1.2f %S'",
+	"PRINT:alpha:AVERAGE:'Average Alpha\\: %1.2lf %S'",
+	"PRINT:alpha:MIN:'Min Alpha\\: %1.2lf %S'",
+	"PRINT:alpha:MAX:'Max Alpha\\: %1.2lf %S'",
+	"GPRINT:calc:AVERAGE:'Average calc\\: %1.2lf %S\\r'",
+	"GPRINT:calc:MIN:'Min calc\\: %1.2lf %S'",
+	"GPRINT:calc:MAX:'Max calc\\: %1.2lf %S'",
         "VRULE:".($now-3600)."#008877:'60 Minutes ago'",
         "COMMENT:'\\s'",
         "COMMENT:'Graph created on: ".localtime(time())."\\c'";
@@ -143,16 +143,3 @@ printf "\n-- average Time for one PNG Graph\n".
   $GRUNS/($real2-$real1);
 
 RRDp::end;
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -1,10 +1,19 @@
 /*****************************************************************************
- * RRDtool 1.0.13  Copyright Tobias Oetiker, 1997, 1998, 1999, 2000
+ * RRDtool 1.0.33  Copyright Tobias Oetiker, 1997 - 2000
  *****************************************************************************
  * rrd_restore.c  creates new rrd from data dumped by rrd_dump.c
  *****************************************************************************/
 
 #include "rrd_tool.h"
+
+/* Prototypes */
+
+void xml_lc(char*);
+int skip(char **);
+int eat_tag(char **, char *);
+int read_tag(char **, char *, char *, void *);
+int xml2rrd(char*, rrd_t*, char);
+int rrd_write(char *, rrd_t *);
 
 /* convert all ocurances of <BlaBlaBla> to <blablabla> */
 
@@ -156,7 +165,6 @@ int xml2rrd(char* buf, rrd_t* rrd, char rc){
   
   ptr2 = ptr;
   while (eat_tag(&ptr2,"rra") == 1){
-      long i;
       rrd->stat_head->rra_cnt++;
 
       /* alocate and reset rra definition areas */
@@ -179,6 +187,10 @@ int xml2rrd(char* buf, rrd_t* rrd, char rc){
       if(cf_conv(rrd->rra_def[rrd->stat_head->rra_cnt-1].cf_nam) == -1) return -1;
 
       read_tag(&ptr2,"pdp_per_row","%lu",&(rrd->rra_def[rrd->stat_head->rra_cnt-1].pdp_cnt));
+      read_tag(&ptr2,"xff","%lf",&(rrd->rra_def[rrd->stat_head->rra_cnt-1].par[RRA_cdp_xff_val].u_val));
+      if(rrd->rra_def[rrd->stat_head->rra_cnt-1].par[RRA_cdp_xff_val].u_val > 1 ||
+         rrd->rra_def[rrd->stat_head->rra_cnt-1].par[RRA_cdp_xff_val].u_val < 0)
+          return -1;
       
       eat_tag(&ptr2,"cdp_prep");
       for(i=0;i<rrd->stat_head->ds_cnt;i++){
@@ -268,7 +280,7 @@ rrd_write(char *file_name, rrd_t *rrd)
       *rrd_file= *stdout;
     } else {
       if ((rrd_file = fopen(file_name,"wb")) == NULL ) {
-	rrd_set_error("can't create '%s'",file_name);
+	rrd_set_error("creating '%s': %s",file_name,strerror(errno));
 	rrd_free(rrd);
 	return(-1);
       }

@@ -2,6 +2,8 @@
 
 rrdtool dump - dump the contents of an B<RRD> to XML format
 
+=for html <div align="right"><a href="rrddump.pdf">PDF</a> version.</div>
+
 =head1 SYNOPSIS
 
 B<rrdtool> B<dump> I<filename.rrd> E<gt> I<filename.xml> 

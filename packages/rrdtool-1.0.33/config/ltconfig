@@ -663,7 +663,7 @@ if test "$with_gcc" = yes; then
   link_static_flag='-static'
 
   case "$host_os" in
-  beos* | irix5* | irix6* | osf3* | osf4*)
+  beos* | irix5* | irix6* | osf3* | osf4* | bsdi3* )
     # PIC is the default for these OSes.
     ;;
   aix*)

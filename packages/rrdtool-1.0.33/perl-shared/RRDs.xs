@@ -11,14 +11,18 @@ extern "C" {
 #endif
 
 #include "../src/rrd_tool.h"
-#ifndef PL_na
-#define PL_na na
+
+/* perl 5.004 compatibility */
+#if PERLPATCHLEVEL < 5
+#define PL_sv_undef sv_undef
 #endif
+
 #define rrdcode(name) \
 		argv = (char **) malloc((items+1)*sizeof(char *));\
 		argv[0] = "dummy";\
 		for (i = 0; i < items; i++) { \
-		    char *handle=argv[i+1] = (char *) SvPV(ST(i),PL_na);\
+		    STRLEN len; \
+		    char *handle= SvPV(ST(i),len);\
 		    /* actually copy the data to make sure possible modifications \
 		       on the argv data does not backfire into perl */ \
 		    argv[i+1] = (char *) malloc((strlen(handle)+1)*sizeof(char)); \
@@ -32,7 +36,7 @@ extern "C" {
 		} \
 		free(argv);\
 		\
-		if (rrd_get_error() != NULL) XSRETURN_UNDEF;
+		if (rrd_test_error()) XSRETURN_UNDEF;
 
 
 #ifdef WIN32
@@ -125,7 +129,8 @@ rrd_graph(...)
 		argv = (char **) malloc((items+1)*sizeof(char *));
 		argv[0] = "dummy";
 		for (i = 0; i < items; i++) { 
-		    char *handle=argv[i+1] = (char *) SvPV(ST(i),PL_na);
+		    STRLEN len;
+		    char *handle = SvPV(ST(i),len);
 		    /* actually copy the data to make sure possible modifications
 		       on the argv data does not backfire into perl */ 
 		    argv[i+1] = (char *) malloc((strlen(handle)+1)*sizeof(char));
@@ -172,7 +177,8 @@ rrd_fetch(...)
 		argv = (char **) malloc((items+1)*sizeof(char *));
 		argv[0] = "dummy";
 		for (i = 0; i < items; i++) { 
-		    char *handle=argv[i+1] = (char *) SvPV(ST(i),PL_na);
+		    STRLEN len;
+		    char *handle= SvPV(ST(i),len);
 		    /* actually copy the data to make sure possible modifications
 		       on the argv data does not backfire into perl */ 
 		    argv[i+1] = (char *) malloc((strlen(handle)+1)*sizeof(char));
@@ -181,12 +187,12 @@ rrd_fetch(...)
 		optind=0; opterr=0; 
 		rrd_clear_error();
 		rrd_fetch(items+1,argv,&start,&end,&step,&ds_cnt,&ds_namv,&data); 
-		if (rrd_test_error()) XSRETURN_UNDEF;
 		for (i=0; i < items; i++) {
 		    free(argv[i+1]);
 		}
 		free(argv);
-		/* convert the ds_namv into perl format */
+		if (rrd_test_error()) XSRETURN_UNDEF;
+                /* convert the ds_namv into perl format */
 		names=newAV();
 		for (ii = 0; ii < ds_cnt; ii++){
 		    av_push(names,newSVpv(ds_namv[ii],0));
@@ -198,8 +204,10 @@ rrd_fetch(...)
 		retar=newAV();
 		for (i = start; i <= end; i += step){
 			line = newAV();
-			for (ii = 0; ii < ds_cnt; ii++)
-				av_push(line,newSVnv(*(datai++)));
+			for (ii = 0; ii < ds_cnt; ii++){
+ 			  av_push(line,(isnan(*datai) ? &PL_sv_undef : newSVnv(*datai)));
+			  datai++;
+			}
 			av_push(retar,newRV_noinc((SV*)line));
 		}
 		free(data);
@@ -210,5 +218,63 @@ rrd_fetch(...)
 		PUSHs(sv_2mortal(newRV_noinc((SV*)retar)));
 
 
+SV*
+rrd_info(...)
+	PROTOTYPE: @	
+	PREINIT:
+		info_t *data,*save;
+                int i;
+                char **argv;
+		HV *hash;
+	CODE:
+		/* prepare argument list */
+		argv = (char **) malloc((items+1)*sizeof(char *));
+		argv[0] = "dummy";
+		for (i = 0; i < items; i++) { 
+		    STRLEN len;
+		    char *handle= SvPV(ST(i),len);
+		    /* actually copy the data to make sure possible modifications
+		       on the argv data does not backfire into perl */ 
+		    argv[i+1] = (char *) malloc((strlen(handle)+1)*sizeof(char));
+		    strcpy(argv[i+1],handle);
+ 	        }
+		optind=0; opterr=0; 
+                rrd_clear_error();
+                data=rrd_info(items+1, argv);
+                for (i=0; i < items; i++) {
+		    free(argv[i+1]);
+		}
+		free(argv);
+                if (rrd_test_error()) XSRETURN_UNDEF;
+                hash = newHV();
+                while (data) {
+		    save=data;
+		/* the newSV will get copied by hv so we create it as a mortal to make sure
+                   it does not keep hanging round after the fact */
+#define hvs(VAL) hv_store_ent(hash, sv_2mortal(newSVpv(data->key,0)),VAL,0)		    
+		    switch (data->type) {
+		    case RD_I_VAL:
+			if (isnan(data->value.u_val))
+			    hvs(&PL_sv_undef);
+			else
+			    hvs(newSVnv(data->value.u_val));
+			break;
+		    case RD_I_CNT:
+			hvs(newSViv(data->value.u_cnt));
+			break;
+		    case RD_I_STR:
+			hvs(newSVpv(data->value.u_str,0));
+			free(data->value.u_str);
+			break;
+		    }
+#undefine hvs
+		    free(data->key);
+		    data = data->next;		    
+		    free(save);
+		}
+                free(data);
+                RETVAL = newRV_noinc((SV*)hash);
+       OUTPUT:
+		RETVAL
 
 

@@ -4,23 +4,57 @@
 // This program logs many different system quantities to a log file
 // for later processing.
 //
-// Author: Blair Zajac <bzajac@akamai.com>.
+// Author: Blair Zajac <blair@gps.caltech.edu>.
 //
 // Portions copied from percollator.se written by Adrian Cockroft.
 //
-// Version 1.23: Feb 25, 2000	When orcallator was running on a system with
-//				DiskSuite, the same physical disk was listed
-//				multiple times when it appeared in the same
-//				metadevice.  The solution to the problem is
-//				not to build the c0t0d0 name but use the long
-//				disk name provided by the long_name string.
-//				Patch contributed by Paul Haldane
-//				<Paul.Haldane@newcastle.ac.uk>.
+// Version 1.28b4: Mar 27, 2001	Recoded measure_disk() to access the RAWDISK
+//				interface to sys_kstat device information to
+//				allow the activity on Sun's A1000 and Clariion
+//				Raid controller drives to be seen.  Apparently
+//				the pseudo drivers do not update the kstat
+//				interface.  It is also inverts the fix
+//				provided by version 1.23 to avoid over-counting
+//				md devices.  By suppressing stats from slices
+//				and metadevices and instead reporting on full
+//				devices such as c0t0d0 or sd0.  Note: This may
+//				have introduced an interaction with the
+//				live_rules.se class monitoring of drive
+//				performance.  Prevent floppy disks and tape
+//				drives from RAWDISK.  Added wio% to measure
+//				wait time since the idle calculation is wrong
+//				without this.  Prevent filesystems mounted
+//				under /snapshots from being seen.  Patch
+//				contributed by Alan LeGrand
+//				<alegrand@wallace.com>.
+// Version 1.27: Mar 27, 2001	Print the portion of time running in idle mode
+//				with some process waiting for block I/O as
+//				wio% and otherwise completely idle time as
+//				idle%.
+// Version 1.26: Feb  5, 2001	Make sure to check the return from stat() on
+//				the web server access log in case the file is
+//				missing.  Use fstat() instead of stat() when a
+//				file descriptor is available.
+// Version 1.25: Mar 30, 2000	Fix a typo where nil was misspelled as nik.
+// Version 1.24: Mar 25, 2000	When orcallator.se was running on a system
+//				with an older version of SE the p_vmstat.scan
+//				variable is an integer and the sprintf to
+//				%8.3f fails, resulting in a perceived scan rate
+//				of 0 pages per second.  Now always add 0.0 to
+//				p_vmstat.scan to get a double.
+// Version 1.23: Feb 25, 2000	When orcallator.se was running on a system
+//				with DiskSuite, the same physical disk was
+//				listed multiple times when it appeared in
+//				several metadevices.  The solution to the
+//				problem is not to build the c0t0d0 name but
+//				use the long disk name provided by the
+//				long_name string.  Patch contributed by Paul
+//				Haldane <Paul.Haldane@newcastle.ac.uk>.
 // Version 1.22: Jan 14, 2000	Include code to record NFS v2 and v3 server
-//				statistics.  The new statistics are: nfss_calls,
-//				the number of NFS calls to the NFS server,
-//				nfss_bad, the number of bad NFS calls per
-//				second, and v{2,3}{reads,writes}, which are
+//				statistics.  The new statistics are:
+//				nfss_calls, the number of NFS calls to the NFS
+//				server, nfss_bad, the number of bad NFS calls
+//				per second, and v{2,3}{reads,writes}, which are
 //				nfss_calls broken down into NFS version 2 and
 //				NFS version 3 calls.  The sum of v{2,3}{reads,
 //				writes} will be less than nfss_calls as the
@@ -29,7 +63,7 @@
 //				Haldane <Paul.Haldane@newcastle.ac.uk>.  This
 //				code is enabled by the standard -DWATCH_OS or
 //				individually by -DWATCH_NFS_SERVER.  The
-//				define -DWATCH_NFS has been supperseded by
+//				define -DWATCH_NFS has been superseded by
 //				-DWATCH_NFS_CLIENT, but to keep backwards
 //				compatibility, -DWATCH_NFS_CLIENT will be
 //				defined if -DWATCH_NFS is defined.
@@ -69,7 +103,7 @@
 //				mount point's disk space and inode capacity,
 //				usage, available for non-root users and
 //				percent used.  This comes from Duncan Lawie
-//				tyger@hoopoes.com. Add some smarts so that if
+//				tyger@hoopoes.com.  Add some smarts so that if
 //				the number of interfaces, physical disks, or
 //				mounted partitions changes, then a new header
 //				is printed.  This will prevent column name and
@@ -120,6 +154,7 @@
 #define WATCH_NFS_CLIENT	1
 #define WATCH_NFS_SERVER	1
 #define WATCH_MOUNTS		1
+#define USE_RAWDISK		1
 #define WATCH_DISK		1
 #define WATCH_DNLC		1
 #define WATCH_INODE		1
@@ -283,7 +318,7 @@ string		program_name;			// Name of this program.
 int		hz;				// Clock tick rate.
 int		page_size;			// Page size in bytes.
 long		boot_time;			// Boot time of the system.
-long		interval = SAMPLE_INTERVAL;	// Sampling interval. 
+long		interval = SAMPLE_INTERVAL;	// Sampling interval.
 
 #ifdef WATCH_CPU
 int		can_read_kernel = 0;		// If the kernel can be read.
@@ -376,6 +411,251 @@ long		squid_client_http;
 #endif
 
 #endif
+
+// RAWDISK BEGIN
+#ifdef USE_RAWDISK
+#include <sys_kstat.se>
+// This extention accesses the sys_kstat.se interface to the kstat IO
+// queues to extract info on drives not available in the kstat.se
+// kstat$disk interface.  Global data shared between function calls.
+struct RawDisk {
+  // Exposed interface (matches kstat)
+  char long_name[16];
+  char short_name[8];
+  double reads;
+  double kreads;
+  double writes;
+  double kwrites;
+  double avg_wait;
+  double avg_serv;
+  double service;
+  double wait_percent;
+  double run_percent;
+
+  // Hidden internal registers to track sys_kstats counters.
+  int       _number;		// kstat disk #
+  ulonglong _nread;		// Number of bytes read
+  ulonglong _nwritten;		// Number of bytes written
+  uint      _reads;		// Number of read operations
+  uint      _writes;		// Number of write operations
+  longlong  _wtime;		// Cumulative wait (pre-service) time
+  longlong  _wlentime;		// Cumulative wait length*time product
+  longlong  _wlastupdate;	// Last time wait queue changed
+  longlong  _rtime;		// Cumulative run (service) time
+  longlong  _rlentime;		// Cumulative run length*time product
+  longlong  _rlastupdate;	// Last time run queue changed
+  uint      _wcnt;		// Count of elements in wait state
+  uint      _rcnt;		// Count of elements in run state
+};
+
+// Define global for tracking raw disk data.
+#define MAX_RAWDISKS	512
+RawDisk		RAW_disk[MAX_RAWDISKS];
+int		RAW_disk_map=0;
+int		RAW_disk_count=0;
+double		RAW_disk_lastupdate;
+
+// Function to scan kstat and map short device names to long device names.
+raw_disk_map() {
+  int i;
+  int j=0;
+  char long_name[16];
+  char short_name[16];
+
+  // SE for 2.6 & 2.7 appears to have a bug where MAX_DISK is too
+  // large when an A1000 raid controller is present.  It's not really
+  // SE as iostat had to be patched for the same bug.  The bug appears
+  // to be tied to a failure to update the kstat interface diskinfo
+  // uses to map short names to long names.  Since raw_disk_update has
+  // already identified how many physical devices are present and they
+  // are listed first we limit our self to mapping the first
+  // RAW_disk_count device name.
+  for (i=0; i<RAW_disk_count; i++) {
+    strcpy(long_name,GLOBAL_disk_info[i].long_name);
+    if (long_name[0] == 'c' && strchr(long_name, 's') == nil) {
+      strcpy(short_name,GLOBAL_disk_info[i].short_name);
+      for (j=0; j<RAW_disk_count;j++) {
+        if (strcmp(RAW_disk[j].short_name, short_name) == 0) {
+          strcpy(RAW_disk[j].long_name, long_name);
+          break;
+        }
+      }
+    }
+  }
+  RAW_disk_map = 0;
+}
+
+raw_disk_update() {
+  int         rdisk;
+  ulong       ul;
+  kstat_ctl_t kc[1];
+  kstat_t     kp[1];
+  kstat_t     nkp[1];
+  kstat_io_t  kio;
+  ulonglong   _nread;
+  ulonglong   _nwritten;
+  uint        _reads;
+  uint        _writes;
+  longlong    _wtime;
+  longlong    _wlentime;
+  longlong    _wlastupdate;
+  longlong    _rtime;
+  longlong    _rlentime;
+  longlong    _rlastupdate;
+  longlong    _wcnt;
+  longlong    _rcnt;
+
+  double      read_writes;
+  double      big_etime;
+  double      elapsed_etime;
+  double      hz_etime;
+  double      nanosecond = NANOSEC;
+  double      update;
+  double      delta;
+  timeval_t   time_update[1];
+  ulong       time_void;
+  char        short_name[8];
+
+  gettimeofday(time_update,time_void);
+  update = time_update[0].tv_sec + (time_update[0].tv_usec / 1000000.0);
+  delta  = update - RAW_disk_lastupdate;
+  RAW_disk_lastupdate = update;
+
+  kc[0] = kstat_open();
+  // Read them.
+  if (kstat_read(kc,kp,0) == -1) {
+    perror("raw_disk_update:kstat_read");
+    exit(1);
+  }
+
+  // Traverse the chain looking for IO events.
+  for (ul=kc[0].kc_chain; ul !=0; ul=nkp[0].ks_next) {
+    struct_fill(nkp[0],ul);
+    if (nkp[0].ks_type == KSTAT_TYPE_IO) {
+      strcpy(short_name, nkp[0].ks_name);
+      if (short_name[0] != 'm' &&
+          short_name[0] != 'n' &&
+          strchr(short_name,',') == nil) {
+        // Try to locate device.
+        for (rdisk=0; rdisk<RAW_disk_count;rdisk++) {
+          if (strcmp(RAW_disk[rdisk].short_name, short_name) == 0) {
+            break;
+          }
+        }
+
+        // It must be new.  Add it!
+        if (rdisk == RAW_disk_count) {
+          // Must be a tape drive or something else.  Schedule device
+          // name map cycle.
+          RAW_disk_map = 1;
+          strcpy(RAW_disk[rdisk].long_name, short_name);
+          strcpy(RAW_disk[rdisk].short_name, short_name);
+          RAW_disk[rdisk]._reads       = 0;
+          RAW_disk[rdisk]._nread       = 0;
+          RAW_disk[rdisk]._rlentime    = 0;
+          RAW_disk[rdisk]._rlastupdate = boot_time;
+          RAW_disk[rdisk]._rcnt        = 0;
+          RAW_disk[rdisk]._writes      = 0;
+          RAW_disk[rdisk]._nwritten    = 0;
+          RAW_disk[rdisk]._wlentime    = 0;
+          RAW_disk[rdisk]._wlastupdate = boot_time;
+          RAW_disk[rdisk]._wcnt        = 0;
+          RAW_disk_count++;
+        }
+
+        // Update the device registers.
+        if (kstat_read(kc,nkp,0) == -1) {
+          perror("raw_disk_update:kstat_read error");
+          exit(1);
+        } else {
+          // Read sys_kstat device IO queue to find out about recent
+          // activity.  We validate data that is returned.  Solaris
+          // 2.6 has occasional glitches when updating certain disks
+          // (c0t0d0) so we cover up the glitches by using data from
+          // the previous cycle.  Eventually, we will get a good
+          // update.  Fixing the data is not necessarily the best
+          // choice.  Currently only kio.nread glitches.  Correcting
+          // the error forces the IOs to get attributed to the next IO
+          // cycle.
+          struct_fill(kio,nkp[0].ks_data);
+          _nread  =  kio.nread;
+          if (RAW_disk[rdisk]._nread > _nread) {
+            _nread = RAW_disk[rdisk]._nread;
+          }
+          _reads = kio.reads;
+	  if (RAW_disk[rdisk]._reads > _reads) {
+            _reads = RAW_disk[rdisk]._reads;
+          }
+          _rlentime    = kio.rlentime;
+          _rtime       = kio.rtime;
+          _rlastupdate = kio.wlastupdate;
+          _rcnt        = kio.rcnt;
+          _nwritten    = kio.nwritten;
+          if (RAW_disk[rdisk]._nwritten > _nwritten) {
+            _nwritten = RAW_disk[rdisk]._nwritten;
+          }
+          _writes = kio.writes;
+          if (RAW_disk[rdisk]._writes > _writes) {
+            _writes = RAW_disk[rdisk]._nwritten;
+          }
+          _wlentime    = kio.wlentime;
+          _wtime       = kio.wtime;
+          _wlastupdate = kio.wlastupdate;
+          _wcnt        = kio.wcnt;
+
+          elapsed_etime = (_wlastupdate - RAW_disk[rdisk]._wlastupdate);
+          if (elapsed_etime > 0)  {
+            hz_etime = elapsed_etime / nanosecond;
+            big_etime = 1024.0 * hz_etime;
+          } else {
+            elapsed_etime = nanosecond;
+            hz_etime = 1.0;
+            big_etime = 1024.0;
+          }
+          RAW_disk[rdisk].reads  =(_reads-RAW_disk[rdisk]._reads)  /hz_etime;
+          RAW_disk[rdisk].kreads =(_nread-RAW_disk[rdisk]._nread)  /big_etime;
+          RAW_disk[rdisk].writes =(_writes-RAW_disk[rdisk]._writes)/hz_etime;
+          RAW_disk[rdisk].kwrites=(_nwritten-RAW_disk[rdisk]._nwritten) / big_etime;
+
+          read_writes = elapsed_etime * (RAW_disk[rdisk].reads + RAW_disk[rdisk].writes) / 1024.0;
+          if (read_writes > 0) {
+            RAW_disk[rdisk].avg_wait = (_wlentime - RAW_disk[rdisk]._wlentime) / read_writes;
+            RAW_disk[rdisk].avg_serv = (_rlentime - RAW_disk[rdisk]._rlentime) / read_writes;
+            RAW_disk[rdisk].service  = RAW_disk[rdisk].avg_wait + RAW_disk[rdisk].avg_serv;
+          } else {
+            RAW_disk[rdisk].avg_wait = 0.0;
+            RAW_disk[rdisk].avg_serv = 0.0;
+            RAW_disk[rdisk].service  = 0.0;
+          }
+
+          // Update the counters.
+          RAW_disk[rdisk].run_percent  = 100.0 * (_rtime  - RAW_disk[rdisk]._rtime) / elapsed_etime;
+          RAW_disk[rdisk].wait_percent = 100.0 * (_wtime - RAW_disk[rdisk]._wtime) / elapsed_etime;
+          RAW_disk[rdisk]._writes      = _writes;
+          RAW_disk[rdisk]._nwritten    = _nwritten;
+          RAW_disk[rdisk]._wlastupdate = _wlastupdate;
+          RAW_disk[rdisk]._wlentime    = _wlentime;
+          RAW_disk[rdisk]._wtime       = _wtime;
+          RAW_disk[rdisk]._wcnt        = _wcnt;
+          RAW_disk[rdisk]._reads       = _reads;
+          RAW_disk[rdisk]._nread       = _nread;
+          RAW_disk[rdisk]._rlastupdate = _rlastupdate;
+          RAW_disk[rdisk]._rlentime    = _rlentime;
+          RAW_disk[rdisk]._rtime       = _rtime;
+          RAW_disk[rdisk]._rcnt        = _rcnt;
+        }
+      }
+    }
+  }
+  kstat_close(kc);
+
+  // Map long device names for any drives that we just discovered.
+  if (RAW_disk_map == 1) {
+    raw_disk_map();
+  }
+}
+#endif
+// RAWDISK_END
 
 // Variables for handling output.
 string		compress = getenv("COMPRESSOR"); // How to compress logs.
@@ -486,15 +766,16 @@ int main(int argc, string argv[])
       interval = atoi(argv[1]);
       break;
     default:
-      fprintf(stderr, "usage: se [Defines] %s [interval]\n", program_name);
-      fprintf(stderr, "%s can use the following environmental variables:\n", program_name);
-      fprintf(stderr, "   setenv OUTDIR      /var/orcallator/logs - log file directory, default stdout\n");
-      fprintf(stderr, "   setenv WEB_SERVER  apache - string to search for number of web servers\n");
-      fprintf(stderr, "   setenv WEB_LOG     /ns-home/httpd-80/logs/access - location of web server log\n");
-      fprintf(stderr, "   setenv GATEWAY     some.where.com - special address to monitor\n");
-      fprintf(stderr, "   setenv SEARCHURL   srch.cgi - match for search scripts, default is search.cgi\n");
-      fprintf(stderr, "   setenv COMPRESSOR  \"gzip -9\" - compress previous day logs using this command\n");
-      fprintf(stderr, "Defines:\n");
+      fprintf(stderr, "usage: se [-Defines] %s [interval]\n", program_name);
+      fprintf(stderr, "The default interval is %d seconds.\n", SAMPLE_INTERVAL);
+      fprintf(stderr, "%s uses the following environmental variables:\n", program_name);
+      fprintf(stderr, "   OUTDIR       directory to write log files, output to stdout if not set\n");
+      fprintf(stderr, "   WEB_SERVER   string to search for number of web servers, i.e. httpd\n");
+      fprintf(stderr, "   WEB_LOG      location of web server access log, i.e. /httpd/logs/access\n");
+      fprintf(stderr, "   GATEWAY      special address to monitor, i.e. some.where.com\n");
+      fprintf(stderr, "   SEARCHURL    match for search scripts, default is search.cgi\n");
+      fprintf(stderr, "   COMPRESSOR   compress previous days logs with this command, i.e. \"gzip -9\"\n");
+      fprintf(stderr, "Add these defines to enable monitoring of specific subsystems:\n");
       fprintf(stderr, "   -DWATCH_WEB        watch web server access logs\n");
       fprintf(stderr, "   -DWATCH_PROXY      use WEB_LOG as a NCSA style proxy log\n");
       fprintf(stderr, "   -DWATCH_SQUID      use WEB_LOG as a Squid log\n");
@@ -611,11 +892,14 @@ initialize()
   // Initialize the web server watching variables.  Move the file pointer
   // to the end of the web access log and note the current time.
   if (www_log_filename != nil) {
-    www_fd = fopen(www_log_filename, "r");
+    www_fd   = fopen(www_log_filename, "r");
+    www_ino  = 0;
+    www_size = 0;
     if (www_fd != 0) {
-      stat(www_log_filename, www_stat);
-      www_ino  = www_stat[0].st_ino;
-      www_size = www_stat[0].st_size;
+      if (fstat(www_fd, www_stat) == 0) {
+        www_ino  = www_stat[0].st_ino;
+        www_size = www_stat[0].st_size;
+      }
       // Move to the end of the file.
       fseek(www_fd, 0, 2);
     }
@@ -666,6 +950,10 @@ _measure_os()
   tmp_nfs           = kstat$nfs;
   tmp_rfsproccnt_v2 = kstat$rfsproccnt_v2;
   tmp_rfsproccnt_v3 = kstat$rfsproccnt_v3;
+#endif
+
+#ifdef USE_RAWDISK
+   raw_disk_update();
 #endif
 }
 
@@ -763,16 +1051,16 @@ measure_misc(long now, tm_t tm_now)
   states = "wwwwwwwwwww";
   strftime(tm_buf, sizeof(tm_buf), "%T", tm_now);
 
-  states[0] = state_char(lr_disk$dr.state); 
-  states[1] = state_char(lr_net$nr.state);     
-  states[2] = state_char(lr_rpcclient$r.state); 
-  states[3] = state_char(lr_swapspace$s.state);     
-  states[4] = state_char(lr_ram$ram.state);    
-  states[5] = state_char(lr_kmem$kmem.state);   
-  states[6] = state_char(lr_cpu$cpu.state);    
-  states[7] = state_char(lr_mutex$m.state);     
-  states[8] = state_char(lr_dnlc$dnlc.state);   
-  states[9] = state_char(lr_inode$inode.state);   
+  states[0] = state_char(lr_disk$dr.state);
+  states[1] = state_char(lr_net$nr.state);
+  states[2] = state_char(lr_rpcclient$r.state);
+  states[3] = state_char(lr_swapspace$s.state);
+  states[4] = state_char(lr_ram$ram.state);
+  states[5] = state_char(lr_kmem$kmem.state);
+  states[6] = state_char(lr_cpu$cpu.state);
+  states[7] = state_char(lr_mutex$m.state);
+  states[8] = state_char(lr_dnlc$dnlc.state);
+  states[9] = state_char(lr_inode$inode.state);
   states[10]= state_char(lr_tcp$tcp.state);
 
   put_output(" timestamp",  sprintf("%10d", now));
@@ -825,7 +1113,7 @@ sleep_till_and_count_new_proceses(long sleep_till)
       // the previous and current mpid over a 5 second interval to
       // calculate the long interval difference.
       mpid_current += mpid5_diff;
-      mpid_now      = mpid5_now;   
+      mpid_now      = mpid5_now;
     }
     else {
       sleep(sleep_till - now);
@@ -850,11 +1138,13 @@ measure_cpu()
   // double, so cast everything to double using + 0.0.
   put_output(" usr%",    sprintf("%5.1f", pvm.user_time + 0.0));
   put_output(" sys%",    sprintf("%5.1f", pvm.system_time + 0.0));
+  put_output(" wio%",    sprintf("%5.1f", pvm.wait_time + 0.0));
+  put_output("idle%",    sprintf("%5.1f", pvm.idle_time + 0.0));
   put_output(" 1runq",   sprintf("%6.2f", tmp_kstat_misc.avenrun_1min/256.0));
   put_output(" 5runq",   sprintf("%6.2f", tmp_kstat_misc.avenrun_5min/256.0));
   put_output("15runq",   sprintf("%6.2f", tmp_kstat_misc.avenrun_15min/256.0));
   put_output("#proc",    sprintf("%5lu",  tmp_kstat_misc.nproc));
-  put_output("scanrate", sprintf("%8.3f", pvm.scan));
+  put_output("scanrate", sprintf("%8.3f", pvm.scan + 0.0));
 
   // Calculate the rate of new process spawning.
   if (can_read_kernel != 0) {
@@ -890,9 +1180,9 @@ measure_net()
   current_count = 0;
   for (i=0; i<tmp_nr.net_count; i++) {
     // Skip unused interfaces.
-//    if (GLOBAL_net[i].up == 0) {
-//      continue;
-//    }
+//  if (GLOBAL_net[i].up == 0) {
+//    continue;
+//  }
     ++current_count;
     put_output(sprintf("%5sIpkt/s", tmp_nr.names[i]),
 	       sprintf("%11.3f", GLOBAL_net[i].ipackets));
@@ -1002,6 +1292,13 @@ measure_mounts()
       if (tmp_mnt.mnt_mountp =~ "^/cdrom/") {
         continue;
       }
+
+      // Skip snapshot file systems to avoid output format changes as
+      // they are mounted and umounted.
+      if (tmp_mnt.mnt_mountp =~ "^/snapshots/") {
+        continue;
+      }
+
       if (statvfs(tmp_mnt.mnt_mountp, vfs_array) == -1) {
         continue;
       }
@@ -1069,6 +1366,7 @@ measure_disk()
   double total_writek;
   int    previous_count = -1;
   int    i;
+  int    disk_count;
 
   mean_disk_busy = 0.0;
   peak_disk_busy = 0.0;
@@ -1076,20 +1374,48 @@ measure_disk()
   total_writes   = 0.0;
   total_readk    = 0.0;
   total_writek   = 0.0;
+  disk_count     = 0;
+
+#ifdef USE_RAWDISK
+  for (i=0; i<RAW_disk_count; i++) {
+    // Block the listing of tape drives for now.
+    if (RAW_disk[i].short_name[1] == 't' && RAW_disk[i].short_name[0] == 's') {
+      continue;
+    }
+    // Block the listing of floppy drives for now.
+    if (RAW_disk[i].short_name[0] == 'f' && RAW_disk[i].short_name[1] == 'd') {
+      continue;
+    }
+    disk_count++;
+    put_output(sprintf("disk_runp_%s", RAW_disk[i].long_name),
+               sprintf("%16.5f", RAW_disk[i].run_percent));
+    total_reads    += RAW_disk[i].reads;
+    total_writes   += RAW_disk[i].writes;
+    total_readk    += RAW_disk[i].kreads;
+    total_writek   += RAW_disk[i].kwrites;
+    mean_disk_busy += RAW_disk[i].run_percent;
+    if (RAW_disk[i].run_percent > peak_disk_busy) {
+       peak_disk_busy = RAW_disk[i].run_percent;
+    }
+  }
+#else
   for (i=0; i<GLOBAL_disk_count; i++) {
+    disk_count++;
     put_output(sprintf("disk_runp_%s", GLOBAL_disk[i].info.long_name),
                sprintf("%16.5f", GLOBAL_disk[i].run_percent));
-    total_reads     += GLOBAL_disk[i].reads;
-    total_writes    += GLOBAL_disk[i].writes;
-    total_readk     += GLOBAL_disk[i].kreads;
-    total_writek    += GLOBAL_disk[i].kwrites;
+    total_reads    += GLOBAL_disk[i].reads;
+    total_writes   += GLOBAL_disk[i].writes;
+    total_readk    += GLOBAL_disk[i].kreads;
+    total_writek   += GLOBAL_disk[i].kwrites;
     mean_disk_busy += GLOBAL_disk[i].run_percent;
     if (GLOBAL_disk[i].run_percent > peak_disk_busy) {
       peak_disk_busy = GLOBAL_disk[i].run_percent;
     }
   }
-  if (GLOBAL_disk_count != 0) {
-    mean_disk_busy = mean_disk_busy/GLOBAL_disk_count;
+#endif
+
+  if (disk_count != 0) {
+    mean_disk_busy = mean_disk_busy/disk_count;
   }
 
   put_output("disk_peak", sprintf("%9.3f", peak_disk_busy));
@@ -1101,9 +1427,9 @@ measure_disk()
 
   // If the number of disks has changed, say due to a add_drv, then print
   // new headers.
-  if (previous_count != GLOBAL_disk_count) {
+  if (previous_count != disk_count) {
     print_header   = 1;
-    previous_count = GLOBAL_disk_count;
+    previous_count = disk_count;
   }
 }
 #endif
@@ -1274,7 +1600,7 @@ accesslog(string buf) {
 #elif WATCH_YAHOO
   /*
    * Yahoo log format.  Fields in square brackets will only appear in the
-   * log file if the data actually exists (ie. you will never see a null
+   * log file if the data actually exists (i.e. you will never see a null
    * Referrer field).  Further, fields labelled here with "(CONFIG)" will
    * only appear if they are enabled via the YahooLogOptions configuration
    * directive.
@@ -1343,7 +1669,7 @@ accesslog(string buf) {
   if (ishead == 0) {
     dwnld_totalz += z;
   }
-  
+
 #else	/* common or netscape proxy formats */
   strtok(nil, " ");		/* -.           */
   strtok(nil, " ");		/* -.           */
@@ -1439,7 +1765,7 @@ accesslog(string buf) {
       break;
   }
   word = strtok(nil, " [");		/* [transfer total time x.xxx. */
-  if (word == nik) {
+  if (word == nil) {
     return;
   }
   xf = atof(word);
@@ -1528,42 +1854,48 @@ measure_web(long sleep_till)
       /*
        * See if the file has been switched or truncated.
        */
-      stat(www_log_filename, www_stat);
-      if (www_ino != www_stat[0].st_ino || www_size > www_stat[0].st_size) {
-        if (www_fd != 0) {
-          /* Close the old log file. */
-          fclose(www_fd);
-        }
+      if (stat(www_log_filename, www_stat) == 0) {
+        if (www_ino != www_stat[0].st_ino || www_size > www_stat[0].st_size) {
+          /*
+           * Close the old log file.
+           */
+          if (www_fd != 0) {
+            fclose(www_fd);
+          }
 
-        /*
-         * The log file has changed, open the new one.
-         */
-        www_fd = fopen(www_log_filename, "r");
-        if (www_fd != 0) {
-          www_ino = www_stat[0].st_ino;
-          buf[BUFSIZ-1] = 127;
-          while(fgets(buf, BUFSIZ, www_fd) != nil) {
-            httpops += 1.0;
-            if (www_gatelen > 0) {
-              if (strncmp(buf, www_gateway, www_gatelen) == 0) {
-                gateops += 1.0;
+          /*
+           * The log file has changed, open the new one.
+           */
+          www_fd = fopen(www_log_filename, "r");
+          if (www_fd != 0) {
+            fstat(www_fd, www_stat);
+            www_ino = www_stat[0].st_ino;
+            buf[BUFSIZ-1] = 127;
+            while(fgets(buf, BUFSIZ, www_fd) != nil) {
+              httpops += 1.0;
+              if (www_gatelen > 0) {
+                if (strncmp(buf, www_gateway, www_gatelen) == 0) {
+                  gateops += 1.0;
+                }
               }
-            }
-            accesslog(buf);
+              accesslog(buf);
 
-            /*
-             * If the line is longer than the buffer, then ignore the rest
-             * of the line.
-             */
-            while (buf[BUFSIZ-1] == 0    &&
-                   buf[BUFSIZ-2] != '\n') {
-              buf[BUFSIZ-1] = 127;
-              if (fgets(buf, BUFSIZ, www_fd) == nil) {
-                break;
+              /*
+               * If the line is longer than the buffer, then ignore
+               * the rest of the line.
+               */
+              while (buf[BUFSIZ-1] == 0    &&
+                     buf[BUFSIZ-2] != '\n') {
+                buf[BUFSIZ-1] = 127;
+                if (fgets(buf, BUFSIZ, www_fd) == nil) {
+                  break;
+                }
               }
             }
           }
         }
+        /* Remember size for next time. */
+        www_size = www_stat[0].st_size;
       }
 
       www5_now      = gethrtime();
@@ -1574,9 +1906,6 @@ measure_web(long sleep_till)
         httpops5 = dtmp;
       }
       lastops = httpops;
-
-      /* Remember size for next time. */
-      www_size = www_stat[0].st_size;
     }
   }
   else {

@@ -1,11 +1,13 @@
 /*****************************************************************************
- * RRDtool 1.0.13  Copyright Tobias Oetiker, 1997, 1998, 1999
+ * RRDtool 1.0.33  Copyright Tobias Oetiker, 1997, 1998, 1999
  *****************************************************************************
  * rrd_format.h  RRD Database Format header
  *****************************************************************************/
 
 #ifndef _RRD_FORMAT_H
 #define _RRD_FORMAT_H
+
+#include "rrd.h"
 
 /*****************************************************************************
  * put this in your /usr/lib/magic file (/etc/magic on HPUX)
@@ -33,10 +35,6 @@
 					       * lower border of the graph ...
 					       * */
 #endif
-
-
-typedef double       rrd_value_t;         /* the data storage type is
-					   * double */
 
 typedef union unival { 
     unsigned long u_cnt; 
@@ -150,7 +148,9 @@ enum ds_param_en {   DS_mrhb_cnt=0,       /* minimum required heartbeat. A
 					   * both can be set to UNKNOWN if you
 					   * do not care. Data outside the limits
  					   * set to UNKNOWN */
-#define DS_NAM_FMT    "%19[a-zA-Z0-9_]"
+
+/* The magic number here is one less than DS_NAM_SIZE */
+#define DS_NAM_FMT    "%19[a-zA-Z0-9_-]"
 #define DS_NAM_SIZE   20
 
 #define DST_FMT    "%19[A-Z]"
@@ -171,8 +171,8 @@ enum cf_en           { CF_AVERAGE=0,     /* data consolidation functions */
                        CF_LAST};
 
 enum rra_par_en {   RRA_cdp_xff_val=0};   /* what part of the consolidated 
-					    datapoint must be known, to produce a
-					    valid entry in the rra */
+					    datapoint may be unknown, while 
+					    still a valid entry in goes into the rra */
 		   	
 #define CF_NAM_FMT    "%19[A-Z]"
 #define CF_NAM_SIZE   20

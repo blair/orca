@@ -13,31 +13,53 @@ EXPR=@EXPR@
 UNAME=@UNAME@
 ORCALLATOR_DIR=@ORCALLATOR_DIR@
 SE=@SE@
-WATCH_WEB="@WATCH_WEB@"
+
+# WEB_LOG contains the location of the web server log file that
+# orcallator.se should read.
 WEB_LOG=@WEB_LOG@
+
+# WATCH_WEB contains the command line options to SE to tell
+# orcallator.se the format of the web server logs.
+WATCH_WEB="-DWATCH_WEB"               # For NCSA style access log
+WATCH_WEB="-DWATCH_WEB -DWATCH_PROXY" # For proxy NCSA style access log
+WATCH_WEB="-DWATCH_WEB -DWATCH_SQUID" # For Squid style access log
+WATCH_WEB="@WATCH_WEB@"
+
+# These are the various patch defines to make sure SE works around
+# various problems.
+SE_PATCHES=
+#SE_PATCHES="$SE_PATCHES -DLE_PATCH"
+#SE_PATCHES="$SE_PATCHES -DHME_PATCH"
+#SE_PATCHES="$SE_PATCHES -DHME_PATCH_IFSPEED"
 
 # Check if the SE executable was found upon configure.
 if test -z "$SE"; then
-  echo "When you configured Orca the se executable was not found.  If you"
-  echo "do not have the SE toolkit installed on your system, then follow"
-  echo "the steps in section 8 of INSTALL."
-  echo ""
-  echo "Once you have the SE toolkit installed on your system, then either"
-  echo "rerun configure so that it finds se, or edit start_orcallator.sh"
-  echo "and define SE to the location of se."
+  cat <<END 1>&2
+When you configured Orca the se executable was not found.  If you
+do not have the SE toolkit installed on your system, then follow
+the steps in section 10 of INSTALL file that came with Orca.
+
+Once you have the SE toolkit installed on your system, then either
+rerun configure so that it finds se, or edit start_orcallator.sh
+and define SE to the location of se.
+END
   exit 1
 fi
 
 if test ! -x "$SE"; then
-  echo "The SE executable at"
-  echo "  $SE"
-  echo "does not exist or is not executable.  Please correct this problem."
+  echo "$0: the SE executable at $SE does not exist or is not executable." 1>&2
   exit 1
 fi
 
 # Get the hostname without the fully qualified part; that is, trim off
 # anything past the first `.'.
 uname=`$UNAME -n | $CUT -d. -f1`
+
+# Make sure the hostname can be found.
+if test -z "$uname"; then
+  echo "$0: cannot determine the hostname of this system." 1>&2
+  exit 1
+fi
 
 # The directory these files go into is $ORCALLATOR_DIR/HOSTNAME
 OUTDIR=$ORCALLATOR_DIR/$uname
@@ -48,7 +70,7 @@ export COMPRESSOR OUTDIR WEB_LOG
 # Check if orcallator is already running.
 pids=`/usr/ucb/ps auxww | $AWK '/orcallator.se/ && !/awk/ {print $2}'`
 if test "$pids" != ""; then
-  echo "Orcallator already running.  Exiting."
+  echo "$0: orcallator already running." 1>&2
   exit 1
 fi
 
@@ -67,13 +89,13 @@ if test ! -d $OUTDIR; then
 fi
 
 if test ! -d $OUTDIR; then
-  echo "Unable to create $OUTDIR/" 1>&2
+  echo "$0: unable to create $OUTDIR/" 1>&2
   exit 2
 fi
 
 # Now start the logging.
 echo "Starting logging"
-$SE $LE_PATCH -DWATCH_OS $WATCH_WEB $libdir/orcallator.se &
+nohup $SE $SE_PATCHES -DWATCH_OS $WATCH_WEB $libdir/orcallator.se &
 
 # Write the PID of orcallator to a file to make killing easier.
 pid=$!

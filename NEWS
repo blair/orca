@@ -1,3 +1,184 @@
+NEW IN ORCA 0.27b1
+==================
+
+ 1) By default, now create an hourly plot that shows the last 1.5
+    hours of data.  Add a global "generate_hourly_plot" configuration
+    file parameter that when set to 0 turns this plot off.  Hourly
+    plot creation is disabled in orcallator.cfg.in since orcallator.se
+    by default measures the system every 5 minutes and the plots look
+    blocky.
+
+ 2) Fix the warning message in src/orca.pl.in
+
+      Use on uninitialized value in array element at (eval X) line 1,
+      <DATA> line Y
+
+    when Orca was run with Perl 5.6.0.  This bug was in the filename
+    sorting subroutine.
+
+    This problem is probably responsible for problems where there are
+    missing data from generated plots.  Since the filename sorting
+    subroutine tells Orca the order in which to load data into the RRD
+    files and the sorted filename list will have newer data files
+    listed before older data files, once newer data is entered into an
+    RRD file you cannot add older data, resulting in missing data in
+    the output plots.
+
+    If this is a problem, then the solution is to remove the RRD files
+    and rerun Orca with all of the input data files.
+
+ 3) Add a new command line option named -no-images which suppresses
+    image generation.  Remove the command line option -r which told
+    Orca to only update the RRD files and not generate HTML and image
+    files.  To replace -r functionality, use both -no-images and
+    -no-html command line options.
+
+ 4) Add a new command line option -no-html to instruct Orca to skip
+    generating HTML files.  Patch from Alex Howansky
+    <alex@wankwood.com>.
+
+ 5) Add a new command line option -logfile that specifies a filename
+    that STDOUT and STDERR are redirected to so that all messages,
+    warnings and errors are printed to the file.  Now when a SIGPIPE
+    is caught, messages will continue to be printed unless -logfile
+    was not given to Orca.  Patch supplied by Bruce Johnson
+    <Bruce.Johnson@PictureVision.com>.
+
+ 6) Add a new command line option -daemon that puts Orca in the
+    background or daemonizes it.  It is recommended that when this
+    command line option is used that -logfile is used.  Patch supplied
+    by Bruce Johnson <Bruce.Johnson@PictureVision.com>.
+
+ 7) A new contrib directory has been created which is where
+    contributed scripts and programs will be kept.  The first
+    submissions are:
+
+    a) Include the orcaservices package in the contrib directory which
+       was written by Carlos Canau <Carlos.Canau@KPNQwest.pt> and
+       documented by Jose Carlos <jcp@KPNQwest.pt>.  This package
+       allows monitoring of many different types of Unix services,
+       such as DNS, SMTP, POP, etc.
+
+    b) A script to rotate Orca's HTML directory so that the daily
+       plots can be archived.  It is named rotate_orca_graphs.
+
+ 8) Replace the small color scheme used for automatically cycling
+    through plot colors with a longer list designed by Guy Dallaire
+    <gdallair-nospam@criq.qc.ca>.
+
+ 9) To support configurations where it does not make sense to make all
+    of the hourly, daily, weekly, monthly, quarterly, and yearly
+    plots, i.e.  when only one measurement per day is made and having
+    a daily plot would not show anything, Orca now understands the
+    global configuration file options "generate_hourly_plot",
+    "generate_daily_plot", "generate_weekly_plot",
+    "generate_monthly_plot", "generate_quarterly_plot", and
+    "generate_yearly_plot".  When an argument value of 0 is given to
+    the parameter, the plot is not created.  If the particular
+    parameter is not used or the value is not 0, then the plot is
+    created.
+
+10) Add a new configuration file option for plots named
+    "summary_format" which specifies the format for the summary values
+    as passed to the RRDtool GPRINT function.  The same format is used
+    for each number within a single summary line, but you can specify
+    multiple "summary_format"'s options if there are multiple plots on
+    the graph.  The default value, which has not changed from previous
+    Orca versions, is '%9.3lf %S'.  Patch from Alex Howansky
+    <alex@wankwood.com>.
+
+11) Remove the "date_format" configuration option as it was never
+    supported.  This is replaced by a new "date_parse" configuration
+    file parameter which supports converting arbitrary strings in the
+    input source data files that somehow represent time into an Unix
+    epoch time usable by Orca.  The "date_parse" parameter appears in
+    a group field and is an arbitrary Perl subroutine that is given
+    two arguments, the first being the name of the file where the data
+    is loaded and the second the string from the "date_source" column
+    that contains some time information.  The subroutine should return
+    the Unix epoch time.  If this option is not specified, then Orca
+    assumes that the string holds the Unix epoch time.
+
+    This Perl subroutine is only used if the file's date source is not
+    specified to be the file's last modified time as indicated to Orca
+    by use of the "date_source" file_mtime configuration file option.
+
+12) Remove the "sub_dir" configuration file parameter and now always
+    create sub directories for RRD, image and HTML files.  This
+    removes the problem when a simple Orca configuration file was used
+    and Orca did not create subdirectories and then additional groups
+    where added to the configuration file Orca would begin to use
+    subdirectories and the existing RRD, image and HTML files would be
+    in the wrong location.  In this case, Orca would reload all of the
+    input data.
+
+13) Allow the "late_interval" configuration parameter to appear in a
+    configuration file group.  If it does not appear in a group
+    listing, then use the global "late_interval" value.
+
+14) Add a new configuration file option named "require" that allows
+    the configuration file to specify the minimum required version of
+    Orca.
+
+15) Orca now catches SIGPIPEs so the lock directory is properly
+    removed when Orca's STDOUT and/or STDERR is piped to a process,
+    such as less, and the piped to process exits before Orca does.
+
+16) Fix a bug where Orca's documentation stated that the configuration
+    file can specify different data_min, data_max, and data_type's for
+    each data in a plot but the code did not.  Make the modifications
+    in Orca to support this feature.
+
+17) When loading a configuration file, now do a complete check of it
+    for errors before quitting, instead of quitting after a single
+    error.
+
+18) Include and require the following package updates: Digest::MD5
+    2.13, RRDtool 1.0.33 and Storable 1.0.11.
+
+19) The email address blair@akamai.com that I used no longer works, as
+    I have left Akamai.  I can be reached at blair@gps.caltech.edu.
+
+    These following changes are what's new in orcallator.se 1.28 and
+    the orcallator.cfg file since version 1.23 which was included with
+    Orca 0.26.  All of the changes below are taken advantage of in the
+    included orcallator.cfg and start_orcallator files.
+
+20) When orcallator.se was running on a system with an older version
+    of SE the p_vmstat.scan variable is an integer and the sprintf to
+    %8.3f fails, resulting in a perceived scan rate of 0 pages per
+    second.  Now always add 0.0 to p_vmstat.scan to get a double.
+
+21) Fix a typo where nil was misspelled as nik.
+
+22) Make sure to check the return from stat() on the web server access
+    log in case the file is missing.  Use fstat() instead of stat()
+    when a file descriptor is available.
+
+23) Print the portion of time running in idle mode with some process
+    waiting for block I/O as wio% and otherwise completely idle time
+    as idle%.  Update orcallator.cfg.in to fix a bug in plotting the
+    CPU usage plots where the idle% time was calculated by subtracting
+    the user percent time usr% and the system percent time sys% from
+    100%.  This did not take into account the wait on IO time wio%
+    that the system measures and hence the idle% was overestimated.
+    Now plot the correct idle% and the wio%.
+
+24) Recoded measure_disk() to access the RAWDISK interface to
+    sys_kstat device information to allow the activity on Sun's A1000
+    and Clariion Raid controller drives to be seen.  Apparently the
+    pseudo drivers do not update the kstat interface.  It is also
+    inverts the fix provided by version 1.23 to avoid over-counting md
+    devices.  By suppressing stats from slices and metadevices and
+    instead reporting on full devices such as c0t0d0 or sd0.  Note:
+    This may have introduced an interaction with the live_rules.se
+    class monitoring of drive performance.  Prevent floppy disks and
+    tape drives from RAWDISK.  Added wio% to measure wait time since
+    the idle calculation is wrong without this.  Prevent filesystems
+    mounted under /snapshots from being seen.  Patch contributed by
+    Alan LeGrand <alegrand@wallace.com>.
+
+
 NEW IN ORCA 0.26
 ================
 
@@ -10,7 +191,7 @@ NEW IN ORCA 0.26
     exist and the first line of the file is used to tell Orca what
     columns of data there are.  Now Orca caches this information in
     the state file so that the source data files do no have to be
-    opened everytime Orca starts up.  This has a significant speed
+    opened every time Orca starts up.  This has a significant speed
     improvement when the file is compressed, since a separate process
     is normally spawned to read the file.
 
@@ -67,7 +248,7 @@ NEW IN ORCA 0.26
     types of NFS calls, such as getattr and lookup, are not included.
     Contributed by Paul Haldane <Paul.Haldane@newcastle.ac.uk>.  This
     code is enabled by the standard -DWATCH_OS or individually by
-    -DWATCH_NFS_SERVER.  The define -DWATCH_NFS has been supperseded
+    -DWATCH_NFS_SERVER.  The define -DWATCH_NFS has been superseded
     by -DWATCH_NFS_CLIENT, but to keep backwards compatibility,
     -DWATCH_NFS_CLIENT will be defined if -DWATCH_NFS is defined.
 
@@ -75,10 +256,11 @@ NEW IN ORCA 0.26
     physical disk was listed multiple times when it appeared in the
     same metadevice.  The solution to the problem is not to build the
     c0t0d0 name but use the long disk name provided by the long_name
-    string. Patch contributed by Paul Haldane
+    string.  Patch contributed by Paul Haldane
     <Paul.Haldane@newcastle.ac.uk>.
 
 14) Prevent core dumps on extremely long access log lines.
+
 
 NEW IN ORCA 0.25
 ================
@@ -105,9 +287,9 @@ NEW IN ORCA 0.25
  5) The previous default orcallator.cfg would not find compressed
     orcallator files.
 
- 6) Remove the plot configuration option `optional' which made plots
+ 6) Remove the plot configuration option "optional" which made plots
     optional.  Now make plots optional by default and use the keyword
-    `required' to make them required.  If a plot is required, then it
+    "required" to make them required.  If a plot is required, then it
     will always display, even if there is no data loaded for it.
 
  7) Change the behavior of warnings when data requested to be plotted
@@ -118,6 +300,7 @@ NEW IN ORCA 0.25
 
  8) Include Storable 0.6.7 but continue to only require Storable
     0.6.3.
+
 
 NEW IN ORCA 0.24
 ================
@@ -164,7 +347,7 @@ NEW IN ORCA 0.24
     view existing pages until the new page is completely finished.
 
 11) All generated HTML and image filenames are now created using a
-   different set of mappings.  Now
+    different set of mappings.  Now
       orcallator -> o
       orca       -> o
       _times_    -> _X_
@@ -258,12 +441,14 @@ NEW IN ORCA 0.24
 24) Restructure the code to handle different web server access log
     formats easier.
 
+
 NEW IN ORCA 0.23
 ================
 
  1) Fix two important bugs in orcallator_running and start_orcallator
     which where using old PERCOLLATOR_DIR variables instead of the new
     ORCALLATOR_DIR.
+
 
 NEW IN ORCA 0.22
 ================
@@ -292,14 +477,15 @@ NEW IN ORCA 0.22
  6) Added some more documentation to orcallator.cfg.
 
  7) Make Orca slightly faster.
- 
+
+
 NEW IN ORCA 0.21
 ================
 
  1) Every file containing the words percollator, percol and perc has
     been renamed to contain the word orcallator.  A new make target
     named migrate will change all filenames in an installed Orca
-    directory to the new names.  This `make migrate' should only be
+    directory to the new names.  This "make migrate" should only be
     run after killing any running percollator.se's and Orca processes
     and before installing this version of Orca.
 
@@ -346,9 +532,9 @@ NEW IN ORCA 0.21
     regular expressions.
 
 14) Change all references from
-    http://www.geocities.com/ResearchTriangle/Thinktank/4996/
+      http://www.geocities.com/ResearchTriangle/Thinktank/4996/
     to
-    http://www.geocities.com/~bzking/
+      http://www.geocities.com/~bzking/
 
 15) Speed up Orca by using Storable to do deep clones of objects
     instead of using Data::Dumper and eval.

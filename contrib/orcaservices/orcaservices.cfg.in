@@ -1,0 +1,395 @@
+base_dir		@RRD_DIR@/orcaservices
+rrd_dir			.
+state_file		orca.state
+html_dir		@HTML_DIR@-services
+expire_images		1
+find_times		0:10 1:00 6:00 12:00 19:00
+
+warn_email		root@localhost
+late_interval		interval + 30
+
+
+#
+# ATTENTION: hardcoded /var/orca/orcaservices/ in find_files
+# you might need to change this to your values
+#
+group orcaservices {
+find_files		/var/orca/orcaservices/(.*)/(?:(?:orcaservices)|(?:percol))-\d{4}-\d{2}-\d{2}(?:\.(?:Z|gz|bz2))?
+column_description	first_line
+date_source		column_name timestamp
+date_format		%s
+interval		300
+reopen			1
+filename_compare	sub {
+			  my ($ay, $am, $ad) = $a =~ /-(\d{4})-(\d\d)-(\d\d)/;
+			  my ($by, $bm, $bd) = $b =~ /-(\d{4})-(\d\d)-(\d\d)/;
+			  if (my $c = (( $ay       <=>  $by) ||
+			               ( $am       <=>  $bm) ||
+			               (($ad >> 3) <=> ($bd >> 3)))) {
+			    return 2*$c;
+			  }
+			  $ad <=> $bd;
+			}
+}
+
+#
+# ATTENTION: change this to your values
+#
+html_top_title		Services Status
+
+#
+# ATTENTION: change this to your values
+#
+html_page_header
+  <a href="http://www.kpnQwest.pt/">
+    <img border=0 alt="kpnQwest Portugal"
+     src="http://www.kpnqwest.pt/images/kqlogopt_mini.gif"
+     width=101 height=61></a>
+  <spacer type=vertical size=4>
+
+html_page_footer
+  <spacer type=vertical size=20>
+  <font face="Arial,Helvetica">
+    These plots brought to you by your local system administrator.
+  </font>
+
+
+plot {
+title			%g SMTP Mail Queue
+source			orcaservices
+data			mailq_total
+legend			Msgs. in queue (5m)
+y_legend		Number of Messages
+line_type		line2
+data_min		0
+data_max		U
+href			http://o-s.kpnqwest.pt/orcaservices.html#SMTP_Mail_Queue
+}
+
+plot {
+title			%g SMTP Messages in 5 minutes
+source			orcaservices
+data			smtp_from
+data			smtp_sent
+legend			Messages In (5m)
+legend			Messages Out (5m)
+y_legend		Number of Messages
+data_min		0
+data_max		U
+href			http://o-s.kpnqwest.pt/orcaservices.html#SMTP_Messages_in_5_minutes
+}
+
+plot {
+title			%g SMTP Size
+source			orcaservices
+data			smtp_sizes
+data			smtp_tops
+line_type		area
+line_type		line1
+legend			5 min average
+legend			Peak 5 minute
+y_legend		Message size (bytes)
+data_min		0
+data_max		U
+href			http://o-s.kpnqwest.pt/orcaservices.html#SMTP_Size
+}
+
+plot {
+title			%g SMTP Delay
+source			orcaservices
+data			smtp_delay
+data			smtp_maxd
+line_type		area
+line_type		line1
+legend			5 min average
+legend			Peak 5 minute
+y_legend		Message Delay (seconds)
+data_min		0
+data_max		U
+href			http://o-s.kpnqwest.pt/orcaservices.html#SMTP_Delay
+}
+
+plot {
+title			%g SMTP Retries and Queueing
+source			orcaservices
+data			smtp_rtrs
+data			smtp_queued
+legend			Retries (5m)
+legend			Messages Queued (5m)
+y_legend		Number of Messages
+data_min		0
+data_max		U
+href			http://o-s.kpnqwest.pt/orcaservices.html#SMTP_Retries_and_Queueing
+}
+
+plot {
+title			%g SMTP Failed
+source			orcaservices
+data			smtp_torf
+data			smtp_c_ml
+data			smtp_c_rt
+data			smtp_ntfs
+legend			Temp or Fatal Error (5m)
+legend			Check Mail (5m)
+legend			Check Rcpt (5m)
+legend			Portmaster Notifies (5m)
+y_legend		Number of Messages
+data_min		0
+data_max		U
+href			http://o-s.kpnqwest.pt/orcaservices.html#SMTP_Failed
+}
+
+plot {
+title			%g SMTP DSN and Undefs
+source			orcaservices
+data			smtp_dsns
+data			smtp_undf
+legend			Number of DSNs (5m)
+legend			Undefined log (5m)
+y_legend		Number of Messages
+data_min		0
+data_max		U
+href			http://o-s.kpnqwest.pt/orcaservices.html#SMTP_DSN_and_Undefs
+}
+
+
+
+
+plot {
+title			%g MERIT RADIUS AUTH in 5 minutes
+source			orcaservices
+data			radius_auth
+data			radius_auth_ok
+data			radius_auth_nok
+legend			Auth (5m)
+legend			Auth OK (5m)
+legend			Auth FAILED (5m)
+y_legend		Number of Auth Packets
+data_min		0
+data_max		U
+href			http://o-s.kpnqwest.pt/orcaservices.html#MERIT_RADIUS_AUTH_in_5_minutes
+}
+
+plot {
+title			%g MERIT RADIUS ACCT in 5 minutes
+source			orcaservices
+data			radius_acct_start
+data			radius_acct_stop
+legend			Start records (5m)
+legend			Stop records (5m)
+y_legend		Number of Acct Packets
+data_min		0
+data_max		U
+href			http://o-s.kpnqwest.pt/orcaservices.html#MERIT_RADIUS_ACCT_in_5_minutes
+}
+
+plot {
+title			%g MERIT RADIUS REMOTE AUTH in 5 minutes
+source			orcaservices
+data			radius_rem_auth
+data			radius_rem_auth_ok
+data			radius_rem_auth_nok
+legend			Remote Auth (5m)
+legend			Remote Auth OK (5m)
+legend			Remote Auth FAILED (5m)
+y_legend		Number of Remote Auth Packets
+data_min		0
+data_max		U
+href			http://o-s.kpnqwest.pt/orcaservices.html#MERIT_RADIUS_REMOTE_AUTH_in_5_minutes
+}
+
+plot {
+title			%g MERIT RADIUS UNDEFS in 5 minutes
+source			orcaservices
+data			radius_undefs
+legend			Undef lines (5m)
+y_legend		Number of undef lines
+data_min		0
+data_max		U
+href			http://o-s.kpnqwest.pt/orcaservices.html#MERIT_RADIUS_UNDEFS_in_5_minutes
+}
+
+
+
+plot {
+title			%g POP SESSIONS in 5 minutes
+source			orcaservices
+data			pop_connect
+data			pop_login
+data			pop_logout
+legend			Connect (5m)
+legend			Login (5m)
+legend			Logout (5m)
+y_legend		Units in 5 minutes
+data_min		0
+data_max		U
+href			http://o-s.kpnqwest.pt/orcaservices.html#POP_SESSIONS_in_5_minutes
+}
+
+plot {
+title			%g POP DENIED in 5 minutes
+source			orcaservices
+data			pop_failure
+data			pop_refused
+legend			Failures (5m)
+legend			Refused (5m)
+y_legend		Units in 5 minutes
+data_min		0
+data_max		U
+href			http://o-s.kpnqwest.pt/orcaservices.html#POP_DENIED_in_5_minutes
+}
+
+plot {
+title			%g POP FAILURES in 5 minutes
+source			orcaservices
+data			pop_net_error
+data			pop_local_error
+legend			Network errors (5m)
+legend			Local errors (5m)
+y_legend		Units in 5 minutes
+data_min		0
+data_max		U
+href			http://o-s.kpnqwest.pt/orcaservices.html#POP_FAILURES_in_5_minutes
+}
+
+plot {
+title			%g POP UNDEFS in 5 minutes
+source			orcaservices
+data			pop_undefs
+legend			Undefs (5m)
+y_legend		Units in 5 minutes
+data_min		0
+data_max		U
+href			http://o-s.kpnqwest.pt/orcaservices.html#POP_UNDEFS_in_5_minutes
+}
+
+plot {
+title			%g Radius time usage
+source			orcaservices
+line_type		line2
+data			rad_time/60
+legend			Time consumption (5 min)
+y_legend		Minutes
+data_min		0
+data_max		U
+href			http://o-s.kpnqwest.pt/orcaservices.html#Radius_time_usage
+}
+
+plot {
+title			%g Radius sessions
+source			orcaservices
+line_type		line2
+data			rad_sessions
+legend			Number of Sessions (5 min)
+y_legend		Terminated Sessions
+data_min		0
+data_max		U
+href			http://o-s.kpnqwest.pt/orcaservices.html#Radius_sessions
+}
+
+
+
+plot {
+title			%g NAMED CPU Usage in 1 hour
+source			orcaservices
+data			dns_cpu_u
+data			dns_cpu_s
+data			dns_ccpu_u
+data			dns_ccpu_s
+line_type		line2
+line_type		line2
+line_type		line2
+line_type		line2
+legend			User
+legend			System
+legend			Child User
+legend			Child System
+y_legend		Seconds in 1 hour
+data_min		0
+data_max		U
+href			http://o-s.kpnqwest.pt/orcaservices.html#NAMED_CPU_Usage_in_1_hour
+}
+
+plot {
+title			%g NAMED Major queries
+source			orcaservices
+data			dns_a
+data			dns_ptr
+data			dns_mx
+data			dns_any
+line_type		line2
+line_type		line2
+line_type		line2
+line_type		line2
+legend			A
+legend			PTR
+legend			MX
+legend			ANY
+y_legend		Units in 1 hour
+data_min		0
+data_max		U
+href			http://o-s.kpnqwest.pt/orcaservices.html#NAMED_Major_queries
+}
+
+plot {
+title			%g NAMED Minor queries
+source			orcaservices
+data			dns_ns
+data			dns_soa
+data			dns_axfr
+data			dns_aaaa
+data			dns_other
+line_type		line2
+line_type		line2
+line_type		line2
+line_type		line2
+line_type		line2
+legend			NS
+legend			SOA
+legend			AXFR
+legend			AAAA
+legend			OTHER
+y_legend		Units in 1 hour
+data_min		0
+data_max		U
+href			http://o-s.kpnqwest.pt/orcaservices.html#NAMED_Minor_queries
+}
+
+plot {
+title			%g NAMED Received
+source			orcaservices
+data			dns_rr
+data			dns_rq
+data			dns_rother
+line_type		line2
+line_type		line2
+line_type		line2
+legend			R-Responses
+legend			R-Queries
+legend			R-OTHER
+y_legend		Units in 1 hour
+data_min		0
+data_max		U
+href			http://o-s.kpnqwest.pt/orcaservices.html#NAMED_Received
+}
+
+plot {
+title			%g NAMED Sent
+source			orcaservices
+data			dns_sans
+data			dns_snaans
+data			dns_snxd
+data			dns_sother
+line_type		line2
+line_type		line2
+line_type		line2
+line_type		line2
+legend			S-Answer
+legend			S-NA Answer
+legend			S-Negative
+legend			S-OTHER
+y_legend		Units in 1 hour
+data_min		0
+data_max		U
+href			http://o-s.kpnqwest.pt/orcaservices.html#NAMED_Sent
+}

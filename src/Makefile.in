@@ -3,8 +3,8 @@
 prefix		= @prefix@
 exec_prefix	= @exec_prefix@
 bindir		= @bindir@
-MKDIR		= @MKDIR@
 INSTALL		= @INSTALL@
+MKDIR		= @MKDIR@
 PERL_HEAD	= @PERL_HEAD@
 ORCALLATOR_DIR	= @ORCALLATOR_DIR@
 RRD_DIR		= @RRD_DIR@
@@ -42,7 +42,6 @@ distclean:	clean
 
 Makefile:	Makefile.in
 		cd .. && CONFIG_FILES=src/Makefile ./config.status
-		$(MAKE)
 
 orca.pl:	orca.pl.in
 		cd .. && CONFIG_FILES=src/orca.pl ./config.status

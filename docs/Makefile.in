@@ -1,7 +1,9 @@
+@SET_MAKE@
+
 prefix	= @prefix@
 mandir	= @mandir@/man1
-MKDIR	= @MKDIR@
 INSTALL	= @INSTALL@
+MKDIR	= @MKDIR@
 ORCA	= ../src/orca.pl
 
 TARGETS	= orca.man orca.html orca.txt
@@ -23,7 +25,6 @@ install: all
 
 Makefile: Makefile.in
 	cd .. && CONFIG_FILES=docs/Makefile ./config.status
-	$(MAKE)
 
 clean:
 	$(RM) $(TARGETS) pod2html-*

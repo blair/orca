@@ -1,5 +1,5 @@
 /*****************************************************************************
- * RRDtool 1.0.13  Copyright Tobias Oetiker, 1997, 1998, 1999
+ * RRDtool 1.0.33  Copyright Tobias Oetiker, 1997 - 2000
  *****************************************************************************
  * rrd_fetch.c  read date from an rrd to use for further processing
  *****************************************************************************
@@ -231,7 +231,6 @@ rrd_fetch_fn(
 
     *ds_cnt =   rrd.stat_head->ds_cnt; 
     if (((*data) = malloc(*ds_cnt * rows * sizeof(rrd_value_t)))==NULL){
-	long i;
 	rrd_set_error("malloc fetch data area");
 	for (i=0;i<*ds_cnt;i++)
 	      free((*ds_namv)[i]);
@@ -273,7 +272,6 @@ rrd_fetch_fn(
 		   + (rra_pointer
 		      * *ds_cnt
 		      * sizeof(rrd_value_t))),SEEK_SET) != 0){
-	long i;
 	rrd_set_error("seek error in RRA");
 	for (i=0;i<*ds_cnt;i++)
 	      free((*ds_namv)[i]);
@@ -325,10 +323,9 @@ rrd_fetch_fn(
 		if(fseek(in_file,(rra_base+rra_pointer
 			       * *ds_cnt
 			       * sizeof(rrd_value_t)),SEEK_SET) != 0){
-		    long i;
 		    rrd_set_error("wrap seek in RRA did fail");
-		    for (i=0;i<*ds_cnt;i++)
-			free((*ds_namv)[i]);
+		    for (ii=0;ii<*ds_cnt;ii++)
+			free((*ds_namv)[ii]);
 		    free(*ds_namv);
 		    rrd_free(&rrd);
 		    free(*data);
@@ -344,10 +341,9 @@ rrd_fetch_fn(
 	    if(fread(data_ptr,
 		     sizeof(rrd_value_t),
 		     *ds_cnt,in_file) != rrd.stat_head->ds_cnt){
-		long i;
 		rrd_set_error("fetching cdp from rra");
-		for (i=0;i<*ds_cnt;i++)
-		    free((*ds_namv)[i]);
+		for (ii=0;ii<*ds_cnt;ii++)
+		    free((*ds_namv)[ii]);
 		free(*ds_namv);
 		rrd_free(&rrd);
 		free(*data);

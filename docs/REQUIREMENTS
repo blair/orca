@@ -7,7 +7,7 @@ Orca::SourceDataFile
 		Can have brand new data fields at any point in time
 
 	Internal Storage
-		
+
 	Methods
 
 Orca::RRDFile

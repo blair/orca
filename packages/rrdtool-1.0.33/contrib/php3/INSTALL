@@ -1,0 +1,16 @@
+Installation:
+
+  You'll want to have the following sources available somewhere:
+        php
+        rrdtool
+        apache (if you built php as a DSO)
+
+  Edit the *INCLUDE and *LIB variables in the Makefile to indicate
+the correct locations for your files.
+
+  After php3_rrdtool.so builds correctly, copy this file to wherever
+you'd like.  Possibly APACHE_ROOT/libexec/ .
+
+
+
+After you install, you should probably read README and API.

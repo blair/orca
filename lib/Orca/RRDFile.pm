@@ -1,6 +1,6 @@
 # Orca::RRDFile: Manage RRD file creation and updating.
 #
-# Copyright (C) 1998, 1999 Blair Zajac and Yahoo!, Inc.
+# Copyright (C) 1998-2001 Blair Zajac and Yahoo!, Inc.
 
 package Orca::RRDFile;
 
@@ -9,13 +9,14 @@ use Carp;
 use RRDs;
 use Orca::Constants qw($opt_verbose
           	       $ORCA_RRD_VERSION
-                       $incorrect_number_of_args
                        @RRA_PDP_COUNTS
-                       @RRA_ROW_COUNTS);
-use Orca::Config    qw(%config_options
-                       %config_groups
+                       @RRA_ROW_COUNTS
+                       $INCORRECT_NUMBER_OF_ARGS);
+use Orca::Config    qw(%config_global
+                       @config_groups
+                       @config_groups_names
                        @config_plots);
-use Orca::Utils     qw(recursive_mkdir);
+use Orca::Utils     qw(name_to_fsname recursive_mkdir);
 use vars            qw($VERSION);
 
 $VERSION = substr q$Revision: 0.01 $, 10;
@@ -25,49 +26,52 @@ $VERSION = substr q$Revision: 0.01 $, 10;
 # order of these indexes change, make sure to rearrange the
 # constructor in new.
 sub I_RRD_FILENAME     () { 0 }
-sub I_NAME             () { 1 }
+sub I_DATA_EXPRESSION  () { 1 }
 sub I_NEW_DATA         () { 2 }
 sub I_CREATED_IMAGES   () { 3 }
 sub I_PLOT_REF         () { 4 }
-sub I_INTERVAL         () { 5 }
-sub I_RRD_VERSION      () { 6 }
-sub I_CHOOSE_DATA_SUBS () { 7 }
-sub I_RRD_UPDATE_TIME  () { 8 }
+sub I_DATA_NUMBER      () { 5 }
+sub I_INTERVAL         () { 6 }
+sub I_RRD_VERSION      () { 7 }
+sub I_CHOOSE_DATA_SUBS () { 8 }
+sub I_RRD_UPDATE_TIME  () { 9 }
 
 sub new {
-  unless (@_ == 5) {
-    confess "$0: Orca::RRDFile::new $incorrect_number_of_args";
+  unless (@_ == 6) {
+    confess "$0: Orca::RRDFile::new $INCORRECT_NUMBER_OF_ARGS";
   }
 
   my ($class,
-      $group_name,
+      $group_index,
       $subgroup_name,
-      $name,
-      $plot_ref) = @_;
+      $data_expression,
+      $plot_ref,
+      $data_number) = @_;
 
-  # Remove any special characters from the unique name and do some
-  # replacements.
-  $name = &::escape_name($name);
+  # Escape any special characters from the data expression and do some
+  # replacements to make the name shorter.  Leave space at the end of
+  # the name to append '.rrd'.
+  $data_expression = name_to_fsname($data_expression, 4);
 
-  # Create the paths to the data directory.
-  my $rrd_dir = $config_options{rrd_dir};
-  if ($config_groups{$group_name}{sub_dir}) {
-    $rrd_dir .= "/$subgroup_name";
-    unless (-d $rrd_dir) {
-      warn "$0: making directory `$rrd_dir'.\n";
-      recursive_mkdir($rrd_dir);
-    }
+  # Create the path to the RRD directory and filename.
+  my $group_name = $config_groups_names[$group_index];
+  my $dir = "$config_global{rrd_dir}/" .
+            name_to_fsname("${group_name}_${subgroup_name}", 0);
+  unless (-d $dir) {
+    warn "$0: making directory `$dir'.\n";
+    recursive_mkdir($dir);
   }
-  my $rrd_filename = "$rrd_dir/$name.rrd";
+  my $rrd_filename = "$dir/$data_expression.rrd";
 
   # Create the new object.
   my $self = bless [
     $rrd_filename,
-    $name,
+    $data_expression,
     {},
     {},
     $plot_ref,
-    int($config_groups{$group_name}{interval}+0.5),
+    $data_number,
+    int($config_groups[$group_index]{interval}+0.5),
     $ORCA_RRD_VERSION,
     {},
     -2
@@ -120,8 +124,8 @@ sub filename {
   $_[0]->[I_RRD_FILENAME];
 }
 
-sub name {
-  $_[0]->[I_NAME];
+sub data_expression {
+  $_[0]->[I_DATA_EXPRESSION];
 }
 
 sub rrd_update_time {
@@ -171,13 +175,14 @@ sub flush_data {
 
     # Assume that a maximum of two time intervals are needed before a
     # data source value is set to unknown.
-    my $interval = $self->[I_INTERVAL];
-   
-    my $data_source = "DS:Orca$ORCA_RRD_VERSION:" .
-                      $self->[I_PLOT_REF]{data_type};
-    $data_source   .= sprintf ":%d:", 2*$interval;
-    $data_source   .= $self->[I_PLOT_REF]{data_min} . ':';
-    $data_source   .= $self->[I_PLOT_REF]{data_max};
+    my $interval    = $self->[I_INTERVAL];
+    my $data_number = $self->[I_DATA_NUMBER];
+    my $data_source = "DS:Orca$ORCA_RRD_VERSION:"                  .
+                      $self->[I_PLOT_REF]{data_type}[$data_number] .
+                      sprintf(":%d:", 2*$interval)                 .
+                      $self->[I_PLOT_REF]{data_min}[$data_number]  .
+                      ':'                                          .
+                      $self->[I_PLOT_REF]{data_max}[$data_number];
     my @options = ($rrd_filename,
                    '-b', $times[0]-1,
                    '-s', $interval,
@@ -186,7 +191,7 @@ sub flush_data {
     # Create the round robin archives.  Take special care to not
     # create two RRA's with the same number of primary data points.
     # This can happen if the interval is equal to one of the
-    # consoldated intervals.
+    # consolidated intervals.
     my $count          = int($RRA_ROW_COUNTS[0]*300.0/$interval + 0.5);
     my @one_pdp_option = ("RRA:AVERAGE:0.5:1:$count");
 

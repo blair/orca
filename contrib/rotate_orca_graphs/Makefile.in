@@ -1,0 +1,34 @@
+@SET_MAKE@
+
+bindir	= @bindir@
+INSTALL	= @INSTALL
+MKDIR	= @MKDIR@
+
+TARGETS	= rotate_orca_graphs
+
+all:	Makefile $(TARGETS)
+
+Makefile: Makefile.in
+	cd ../.. && CONFIG_FILES=contrib/rotate_orca_graphs/Makefile ./config.status
+
+rotate_orca_graphs.sh: rotate_orca_graphs.sh.in
+	cd ../.. && CONFIG_FILES=contrib/rotate_orca_graphs/rotate_orca_graphs.sh ./config.status
+
+.SUFFIXES:	.sh
+
+.sh:
+	cp $< $@
+	chmod 0755 $@
+
+install:
+	$(MKDIR) $(bindir)
+	@for file in $(TARGETS); do			\
+		echo $(INSTALL) $$file $(bindir);	\
+		$(INSTALL) $$file $(bindir);		\
+	done
+
+clean:
+	$(RM) $(TARGETS)
+
+distclean: clean
+	$(RM) *.sh Makefile

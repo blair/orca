@@ -1,0 +1,157 @@
+Change 579 on 2000/09/04 by <gbarr@pobox.com> (Graham Barr)
+
+	Date::Parse
+	- Support for more date formats
+	
+	Time::Zone
+	- Added more zones
+
+Change 539 on 2000/06/14 by <gbarr@pobox.com> (Graham Barr)
+
+	Documentation updates
+
+Change 536 on 2000/06/06 by <gbarr@pobox.com> (Graham Barr)
+
+	Fix VERSION numbers
+
+Change 535 on 2000/06/06 by <gbarr@pobox.com> (Graham Barr)
+
+	Date::Format
+	- Added support for %O* to support output of roman numerals
+
+Change 443 on 2000/03/29 by <gbarr@pobox.com> (Graham Barr)
+
+	Release 1.09
+
+Change 442 on 2000/03/29 by <gbarr@pobox.com> (Graham Barr)
+
+	Added PPD stuff to Makefile.PL
+
+Change 441 on 2000/03/29 by <gbarr@pobox.com> (Graham Barr)
+
+	Date::Parse
+	- Allow "s after the timezone
+
+Change 440 on 2000/03/29 by <gbarr@pobox.com> (Graham Barr)
+
+	Date::Format
+	- Fix doc for %c and %C
+
+Change 409 on 2000/03/28 by <gbarr@pobox.com> (Graham Barr)
+
+	Moved .pm files into lib directory
+
+Change 408 on 2000/03/28 by <gbarr@pobox.com> (Graham Barr)
+
+	str2time returns undef on error bit Time::Local returns
+	-1. Check if the -1 is real or an error
+
+Change 407 on 2000/03/28 by <gbarr@pobox.com> (Graham Barr)
+
+	Added Eastern European Summer Time EEST
+
+Change 268 on 1999/03/18 by <gbarr@pobox.com> (Graham Barr)
+
+	Date::Format, Time::Zone
+	- Fix problem with %z and %Z as suggested by
+	  Jason A Smith <smithj4@rpi.edu>
+
+Change 267 on 1999/03/18 by <gbarr@pobox.com> (Graham Barr)
+
+	- Make t/getdate.t more portable as suggested by
+	  Paul Schinder <schinder@pobox.com>
+
+Change 250 on 1999/02/06 by <gbarr@pobox.com> (Graham Barr)
+
+	Date::Format
+	- Correct docs for %d and %e
+
+Change 249 on 1999/02/06 by <gbarr@pobox.com> (Graham Barr)
+
+	Added Date::Language::Czech
+
+Change 180 on 1998/08/05 by <gbarr@pobox.com> (Graham Barr)
+
+	Date::Language
+	- Added Date::Language::French contributed by
+	  Emmanuel Bataille (bem@residents.frmug.org)
+	- Split out the languages into .pm's
+	
+	Date::Parse
+	- Added patch from Alan Burlison to Date::Parse to allow zone
+	  offests +7, +10 and +700
+	- Parse now supports GMT+0100
+
+*** Release 1.08
+
+Fri Jan  2 1998 <gbarr@pobox.com> (Graham Barr)
+
+	Date::Format, Time::Zone
+	- Fix for formatting %z and %Z
+	
+	all
+	- Update Email address and year
+
+Tue Feb 17 1998 <gbarr@pobox.com> (Graham Barr)
+
+	Date::Language
+	- Added format_o to German
+
+Fri Sep 12 1997 <gbarr@pobox.com> (Graham Barr)
+
+        Date::Parse
+        - Added 'DST' to parser, it adjusts $zone by 3600 (but that may not
+          be right in all cases)
+	- Added a check to str2time to ensure valid
+	  values are passed to Time::Local, to avoid croak-ing
+	- Fixed to treat AM and PM correctly when the hour is 12. (I hope :-)
+
+	Time::Zone
+	- Modified for Western Australia
+
+Tue 07 Jan 1996
+
+	o Release 1.07
+	o Fixed a problem in Time::Zone (had @l[8] instead of $l[8], doh! )
+
+Thu 02 Jan 1996
+
+	o Release 1.06
+	o Fixed t/getdate.t
+	o Date::Parse can now parse the date-format 960913, which apparently
+	  is fairly common in sweden.
+
+Wed 31 Jul 1996 <bodg@tiuk.ti.com>
+
+	o Release 1.05
+	o Modified Date::Format not to use single letter sub names,
+	  all format sub names are nore prefixed with format_
+	o Cleaned up Date/Format.pm so that AUTOLOAD is not required
+	o Patched Date/Language.pm to add Norwegian. Thanks to
+	  Gisle Aas <aas@bergen.sn.no> for the patch
+
+Thu 27 Jun 1996 <bodg@tiuk.ti.com>
+
+	o Added %z to Date::Format to output timezone in +/-0000 format
+	o Added multi-language support via Date::Language,.
+
+Tue 25 Jun 1996 <bodg@tiuk.ti.com>
+
+        o Some code tidying up
+        o added a new test, copied from Date::GetDate
+        o improved performance
+
+Wed 22 May 1996 <bodg@tiuk.ti.com>
+
+	o Fixed a bug in the parser for dates in a default (local) timezone
+	  but a different dst
+
+Wed 15 May 1996 <bodg@tiuk.ti.com>
+
+    	o Added support for mainframe type dates
+
+Fri  3 May 1996 <bodg@tiuk.ti.com>
+
+	o Added %s to date formatting at request of Josh Osborne
+	  <stripes@va.pubnix.com>.
+

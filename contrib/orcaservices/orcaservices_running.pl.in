@@ -1,0 +1,41 @@
+# orcaservices_running: warn if orcaservices files are not up to date.
+#
+# Copyright (C) 2000 Carlos Canau and KPNQwest Portugal
+# Copyright (C) 1998, 1999 Blair Zajac and Yahoo!, Inc.
+
+use strict;
+use POSIX qw(strftime);
+
+# Set this to the list of directories that contain the output from
+# percoservices.se.
+my @stats_dirs = ('@ORCASERVICES_DIR@');
+
+foreach my $stats_dir (@stats_dirs) {
+
+  die "$0: unable to change to `$stats_dir'" unless chdir $stats_dir;
+
+  die "$0: unable to open `.' for reading: $!\n" unless opendir(DIR, '.');
+
+  my @hosts = sort grep { $_ !~ /^\./ } readdir(DIR);
+
+  closedir(DIR);
+
+  print "Now in $stats_dir\n";
+
+  my $percol = strftime("percol-%Y-%m-%d", localtime());
+
+  foreach my $host (@hosts) {
+    my $file = "$host/$percol";
+    unless (-f $file) {
+      warn "$0: $file does not exist.\n";
+      next;
+    }
+    my $age = (-M $file)*(24*60);
+    if ( $age > 8) {
+      $file= sprintf "%35s", $file;
+      $age = sprintf "%8.2f", $age;
+      warn "$0: $file is $age minutes old.\n";
+      next;
+    }
+  }
+}

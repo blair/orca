@@ -26,6 +26,7 @@ RRD_C_FILES =		\
 	rrd_create.c	\
 	rrd_diff.c	\
 	rrd_dump.c	\
+	rrd_info.c	\
 	rrd_error.c	\
 	rrd_fetch.c	\
 	rrd_format.c	\
@@ -36,7 +37,7 @@ RRD_C_FILES =		\
 	rrd_restore.c	\
 	rrd_tune.c	\
 	rrd_update.c	\
-	getopt.h      ntconfig.h    parsetime.h   rrd_format.h  rrd_tool.h
+	getopt.h ntconfig.h parsetime.h rrd_format.h rrd_tool.h rrd.h
 
 # Build two libraries.  One is a public one that gets installed in
 # $prefix/lib.  Libtool does not create an archive of the PIC compiled
@@ -58,13 +59,27 @@ librrd_la_SOURCES         = $(RRD_C_FILES)
 librrd_private_la_SOURCES = $(RRD_C_FILES)
 
 librrd_la_LIBADD          = $(RRD_LIBS)
-librrd_private_la_LIBADD  = $(RRD_LIBS)
 librrd_la_LDFLAGS         = -version-info 0:0:0
 
-bin_PROGRAMS	= rrdcgi rrdtool
+include_HEADERS	= rrd.h
+
+librrd_private_la_LIBADD  = $(RRD_LIBS)
+librrd_private_la_LDFLAGS = -static
+
+bin_PROGRAMS	= rrdcgi rrdtool rrdupdate
 
 rrdcgi_SOURCES	= rrd_cgi.c
 rrdcgi_LDADD	= librrd.la
+
+rrdupdate_SOURCES = 
+rrdupdate_LDADD	= rrdupdate.o librrd.la
+
+
+rrdupdate.c: rrd_update.c
+	-ln -s rrd_update.c rrdupdate.c
+
+rrdupdate.o: rrdupdate.c
+	$(COMPILE) -DSTANDALONE -c rrdupdate.c
 
 rrdtool_SOURCES	= rrd_tool.c
 rrdtool_LDADD	= librrd.la

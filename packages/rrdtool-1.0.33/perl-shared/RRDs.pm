@@ -7,7 +7,7 @@ use vars qw(@ISA $VERSION);
 
 require DynaLoader;
 
-$VERSION = 1.000131;
+$VERSION = 1.000331;
 
 bootstrap RRDs $VERSION;
 
@@ -23,6 +23,7 @@ RRDs - Access rrdtool as a shared module
   use RRDs;
   RRDs::error
   RRDs::last ...
+  RRDs::info ...
   RRDs::create ...
   RRDs::update ...
   RRDs::graph ...
@@ -37,22 +38,27 @@ This module accesses rrdtool functionality directly from within perl. The
 arguments to the functions listed in the SYNOPSIS are explained in the regular
 rrdtool documentation. The commandline call
 
- rrdtool update mydemo.rrd N:12:13
+ rrdtool update mydemo.rrd --template in:out N:12:13
 
 gets turned into
 
- RRDs::update ("mydemo.rrd", "N:12:13");
+ RRDs::update ("mydemo.rrd", "--template", "in:out", "N:12:13");
+
+Note that
+
+ --template=in:out
+
+is also valid.
+
 
 =head2 Error Handling
 
 The RRD functions will not abort your program even when they can not make
-sense out of the arguments you fed them. There are two ways to determine if
-an error has occured.
+sense out of the arguments you fed them.
 
-First the every function will return the value -1 if an error occured.
-Second, the function RRDs::error can be called to get the error message
-from the last function call. If RRDs::error does not return an error
-then the previous function has completed its task succesfully.
+The function RRDs::error should be called to get the error status
+after each function call. If RRDs::error does not return anything
+then the previous function has completed its task successfully.
 
  use RRDs;
  RRDs::update ("mydemo.rrd","N:12:13");
@@ -61,23 +67,32 @@ then the previous function has completed its task succesfully.
 
 =head2 Return Values
 
-The functions RRDs::last, RRDs::graph and RRDs::fetch return their
+The functions RRDs::last, RRDs::graph, RRDs::info and RRDs::fetch return their
 findings.
 
-RRDs::last returns a single INTEGER representing the last update time.
+B<RRDs::last> returns a single INTEGER representing the last update time.
 
  $lastupdate = RRDs::last ...
 
-RRDs::graph returns an pointer to an ARRAY containing the x-size and y-size of the
+B<RRDs::graph> returns an pointer to an ARRAY containing the x-size and y-size of the
 created gif and results of the PRINT arguments.
 
  ($averages,$xsize,$ysize) = RRDs::graph ...
  print "Gifsize: ${xsize}x${ysize}\n";
  print "Averages: ", (join ", ", @$averages);
 
-RRDs::fetch is the most complex of the pack regarding return values. There are
-4 values. Two normal integers, a pointer to an array and a pointer to a
-array of pointers.
+B<RRDs::info> returns a pointer to a hash. The keys of the hash
+represent the property names of the rrd and the values of the hash are
+the values of the properties.  
+
+ $hash = RRDs::info "example.rrd";
+ foreach my $key (keys %$hash){
+   print "$key = $$hash{$key}\n";
+ }
+
+B<RRDs::fetch> is the most complex of
+the pack regarding return values. There are 4 values. Two normal
+integers, a pointer to an array and a pointer to a array of pointers.
 
   my ($start,$step,$names,$data) = RRDs::fetch ... 
   print "Start:       ", scalar localtime($start), " ($start)\n";
@@ -98,6 +113,6 @@ See the examples directory for more ways to use this extension.
 
 =head1 AUTHOR
 
-Tobias Oetiker <oeitker@ee.ethy.ch>
+Tobias Oetiker E<lt>oetiker@ee.ethz.chE<gt>
 
 =cut

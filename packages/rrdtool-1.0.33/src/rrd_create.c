@@ -1,5 +1,5 @@
 /*****************************************************************************
- * RRDtool 1.0.13  Copyright Tobias Oetiker, 1997, 1998, 1999
+ * RRDtool 1.0.33  Copyright Tobias Oetiker, 1997 - 2000
  *****************************************************************************
  * rrd_create.c  creates new rrds
  *****************************************************************************/
@@ -105,7 +105,7 @@ rrd_create(int argc, char **argv)
     rrd.live_head->last_up = last_up;
 
     for(i=optind+1;i<argc;i++){
-	char minstr[20], maxstr[20];	
+	char minstr[DS_NAM_SIZE], maxstr[DS_NAM_SIZE];	
 	int ii;
 	if (strncmp(argv[i],"DS:",3)==0){
 	    size_t old_size = sizeof(ds_def_t)*(rrd.stat_head->ds_cnt);
@@ -224,7 +224,7 @@ rrd_create_fn(char *file_name, rrd_t *rrd)
     rrd_value_t       unknown = DNAN ;
 
     if ((rrd_file = fopen(file_name,"wb")) == NULL ) {
-	rrd_set_error("can't create '%s'",file_name);
+	rrd_set_error("creating '%s': %s",file_name,strerror(errno));
 	free(rrd->stat_head);
 	free(rrd->ds_def);
 	free(rrd->rra_def);

@@ -40,32 +40,41 @@ char *strchr (), *strrchr ();
 #endif      
 
 #if HAVE_MATH_H
-#  include <math.h>                                                                                                                      
-#endif                                                                                                                                   
-                                                                                                                                         
-#if HAVE_FLOAT_H                                                                                                                         
-#  include <float.h>                                                                                                                     
-#endif                                                                                                                                   
- 
+#  include <math.h>
+#endif
+
+#if HAVE_FLOAT_H
+#  include <float.h>
+#endif
+
+#if HAVE_IEEEFP_H
+#  include <ieeefp.h>
+#endif
+
+#if HAVE_FP_CLASS_H
+#  include <fp_class.h>
+#endif
 
 /* for Solaris */
 #if (! defined(HAVE_ISINF) && defined(HAVE_FPCLASS))
-#define HAVE_ISINF 1
-#include <ieeefp.h>
-#define isinf(a) (fpclass(a) == FP_NINF || fpclass(a) == FP_PINF)
+#  define HAVE_ISINF 1
+#  define isinf(a) (fpclass(a) == FP_NINF || fpclass(a) == FP_PINF)
 #endif
 
 /* for OSF1 Digital Unix */
 #if (! defined(HAVE_ISINF) && defined(HAVE_FP_CLASS) && defined(HAVE_FP_CLASS_H))
 #  define HAVE_ISINF 1
-#  include <fp_class.h>
 #  define isinf(a) (fp_class(a) == FP_NEG_INF || fp_class(a) == FP_POS_INF)
 #endif
 
-/* for HP-UX 10.20 */
-#if (! defined(HAVE_ISINF) && defined(HAVE_FPCLASSIFY) )
+#if (! defined(HAVE_ISINF) && defined(HAVE_FPCLASSIFY) && defined(FP_PLUS_INF) && defined(FP_MINUS_INF))
 #  define HAVE_ISINF 1
-#  define isinf(a) (fpclassify(a) == FP_MINUS_INF || fpclassify(a) == FP_PLUS_INF)  
+#  define isinf(a) (fpclassify(a) == FP_MINUS_INF || fpclassify(a) == FP_PLUS_INF)
+#endif
+
+#if (! defined(HAVE_ISINF) && defined(HAVE_FPCLASSIFY) && defined(FP_INFINITE))
+#  define HAVE_ISINF 1
+#  define isinf(a) (fpclassify(a) == FP_INFINITE)
 #endif
 
 /* for AIX */
@@ -74,9 +83,14 @@ char *strchr (), *strrchr ();
 #  define isinf(a) (class(a) == FP_MINUS_INF || class(a) == FP_PLUS_INF)
 #endif
 
+#if (! defined (HAVE_FINITE) && defined (HAVE_ISFINITE))
+#  define HAVE_FINITE 1
+#  define finite(a) isfinite(a)
+#endif
+
 #if (! defined(HAVE_FINITE) && defined(HAVE_ISNAN) && defined(HAVE_ISINF))
-#define HAVE_FINITE 1
-#define finite(a) (! isnan(a) && ! isinf(a))
+#  define HAVE_FINITE 1
+#  define finite(a) (! isnan(a) && ! isinf(a))
 #endif
 
 #ifndef HAVE_FINITE
@@ -88,5 +102,4 @@ char *strchr (), *strrchr ();
 #endif
 
 #endif /* CONFIG_H */
-
 

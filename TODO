@@ -1,16 +1,27 @@
-XXX Fix the bug where if a legend is listed in a plot {} then the
-XXX number of colored boxes in the generated plot are more than the
-XXX data that appears there.
+* Bug: If there is no match made in a find_files, then handle this case.
+  See the message in my Sent box at 11/8/2000 4:00 PM with a subject
+  Unable to view orca graphs.
 
 This is a pretty comprehensive to-do list for Orca and the related data
 gathering tools.  Any comments and additions to this list are welcome.
 
-To motivate the discussion of this to do list, let me give some background
-on our setup.  GeoCities site has over 100 hosts.  I've been running
-orcallator.se on some hosts since September 1998 that have stored over
-300 source text files. Currently I have 34472 files using 7.3 gigabytes
-of storage.  I have 9 different orcallator.cfg for different classes
-of machines.
+To motivate the discussion of this to do list, let me give some
+background on our setup.  GeoCities site has over 100 hosts.  I've
+been running orcallator.se on some hosts since September 1998 that
+have stored over 300 source text files. Currently I have 34472 files
+using 7.3 gigabytes of storage.  I have 9 different orcallator.cfg for
+different classes of machines.
+
+* Orca: Have an install option just for orcallator.se and not the
+        Orca whole pacckage.
+
+* Orca: Add flag to put Orca in background or daemonize it.
+
+* Orca: bug fix:
+
+	Fix the bug where if a legend is listed in a plot {} then the
+	number of colored boxes in the generated plot are more than
+	the data that appears there.
 
 * Orca: Load arbitrarily formatted source text files.
 
@@ -251,6 +262,11 @@ of machines.
 	Since orcallator.se measures HTTP proxy and caching statistics,
 	update orcallator.cfg.in to display these data sets.
 
+* orcallator.se: Temperature measurements
+
+	Since /usr/platform/sun4u/sbin/prtdiag -v measures the ambient
+	and CPU temperature, get orcallator.se to measure this data.
+
 * Orca:
 
 	Do what it takes to remove the same Ethernet port listings in
@@ -338,7 +354,7 @@ specific use.
           Also, suggestions for what to do if things are bad.
         + Finer resolution (more graphs) on each Data Set.
           For example, a graph for each disk, when you click on that graph
-          you get a graph for each: 
+          you get a graph for each:
           Bytes read
           Bytes written
           KBytes read
@@ -384,7 +400,7 @@ specific use.
           or swap thrashing.
           Maybe we should plot the sr field of vmstat. p.329
         + Page Usage
-          Unless you know how memory subsystems work, 
+          Unless you know how memory subsystems work,
           this graph is hard to read. The only obvious
           thing this graph tells you is if the Free List
           is too small. The Free List can be fine, but you

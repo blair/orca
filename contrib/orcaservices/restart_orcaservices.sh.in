@@ -1,0 +1,12 @@
+#!/bin/sh
+
+# This stops and restarts orcaservices.se.
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+bindir=@bindir@
+
+# Kill any running orcaservicess.
+$bindir/stop_orcaservices
+
+# Start the orcaservices.
+$bindir/start_orcaservices

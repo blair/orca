@@ -64,15 +64,26 @@ host_triplet = @host@
 target_alias = @target_alias@
 target_triplet = @target@
 CC = @CC@
-CFLAGS = @CFLAGS@
 CGI_LIB_DIR = @CGI_LIB_DIR@
 COMP_PERL = @COMP_PERL@
 CPP = @CPP@
 GD_LIB_DIR = @GD_LIB_DIR@
 LIBTOOL = @LIBTOOL@
+NROFF = @NROFF@
 PERL = @PERL@
+PERLFLAGS = @PERLFLAGS@
+PERL_MAKE_OPTIONS = @PERL_MAKE_OPTIONS@
 PNG_LIB_DIR = @PNG_LIB_DIR@
 RANLIB = @RANLIB@
+SO_EXT = @SO_EXT@
+TCL_LD_SEARCH_FLAGS = @TCL_LD_SEARCH_FLAGS@
+TCL_PACKAGE_PATH = @TCL_PACKAGE_PATH@
+TCL_PREFIX = @TCL_PREFIX@
+TCL_SHLIB_CFLAGS = @TCL_SHLIB_CFLAGS@
+TCL_SHLIB_LD = @TCL_SHLIB_LD@
+TCL_SHLIB_SUFFIX = @TCL_SHLIB_SUFFIX@
+TROFF = @TROFF@
+VERSION = @VERSION@
 ZLIB_LIB_DIR = @ZLIB_LIB_DIR@
 
 INCLUDES = -I../../src -I../../gd1.3
@@ -95,6 +106,7 @@ LIBS = @LIBS@
 trytime_OBJECTS =  trytime.o
 trytime_DEPENDENCIES =  ../../src/librrd.la
 trytime_LDFLAGS = 
+CFLAGS = @CFLAGS@
 COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
@@ -105,7 +117,6 @@ DIST_COMMON =  README Makefile.am Makefile.in
 
 
 PACKAGE = @PACKAGE@
-VERSION = @VERSION@
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
@@ -118,7 +129,7 @@ all: all-redirect
 .SUFFIXES:
 .SUFFIXES: .S .c .lo .o .s
 $(srcdir)/Makefile.in: Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
-	cd $(top_srcdir) && $(AUTOMAKE) --gnu --include-deps contrib/trytime/Makefile
+	cd $(top_srcdir) && $(AUTOMAKE) --foreign --include-deps contrib/trytime/Makefile
 
 Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status
 	cd $(top_builddir) \
@@ -248,7 +259,7 @@ distdir: $(DISTFILES)
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  if test -d $$d/$$file; then \
-	    cp -pr $$/$$file $(distdir)/$$file; \
+	    cp -pr $$d/$$file $(distdir)/$$file; \
 	  else \
 	    test -f $(distdir)/$$file \
 	    || ln $$d/$$file $(distdir)/$$file 2> /dev/null \
@@ -256,8 +267,8 @@ distdir: $(DISTFILES)
 	  fi; \
 	done
 trytime.o: trytime.c ../../src/getopt.h ../../src/rrd_tool.h \
-	../../config/config.h ../../src/parsetime.h \
-	../../src/rrd_format.h ../../gd1.3/gd.h
+	../../config/config.h ../../src/rrd.h ../../src/rrd_format.h \
+	../../gd1.3/gd.h
 
 info-am:
 info: info-am

@@ -12,6 +12,7 @@ SSSSYYYYNNNNOOOOPPPPSSSSIIIISSSS
        use RRDs;
        RRDs::error
        RRDs::last ...
+       RRDs::info ...
        RRDs::create ...
        RRDs::update ...
        RRDs::graph ...
@@ -27,24 +28,27 @@ DDDDEEEESSSSCCCCRRRRIIIIPPPPTTTTIIIIOOOONNNN
      SYNOPSIS are explained in the regular rrdtool documentation.
      The commandline call
 
-      rrdtool update mydemo.rrd N:12:13
+      rrdtool update mydemo.rrd --template in:out N:12:13
 
      gets turned into
 
-      RRDs::update ("mydemo.rrd", "N:12:13");
+      RRDs::update ("mydemo.rrd", "--template", "in:out", "N:12:13");
 
+     Note that
+
+      --template=in:out
+
+     is also valid.
 
      EEEErrrrrrrroooorrrr HHHHaaaannnnddddlllliiiinnnngggg
 
      The RRD functions will not abort your program even when they
-     can not make sense out of the arguments you fed them. There
-     are two ways to determine if an error has occured.
+     can not make sense out of the arguments you fed them.
 
-     First the every function will return the value -1 if an
-     error occured.  Second, the function RRDs::error can be
-     called to get the error message from the last function call.
-     If RRDs::error does not return an error then the previous
-     function has completed its task succesfully.
+     The function RRDs::error should be called to get the error
+     status after each function call. If RRDs::error does not
+     return anything then the previous function has completed its
+     task successfully.
 
       use RRDs;
       RRDs::update ("mydemo.rrd","N:12:13");
@@ -52,15 +56,11 @@ DDDDEEEESSSSCCCCRRRRIIIIPPPPTTTTIIIIOOOONNNN
       die "ERROR while updating mydemo.rrd: $ERR\n" if $ERR;
 
 
-     RRRReeeettttuuuurrrrnnnn VVVVaaaalllluuuueeeessss
-
-     The functions RRDs::last, RRDs::graph and RRDs::fetch return
-     their findings.
 
 
 
 
-13/Feb/2000            Last change: 1.0.13                      1
+2001-02-22             Last change: 1.0.33                      1
 
 
 
@@ -71,20 +71,34 @@ rrdtool                                                   RRDs(3)
 
 
 
-     RRDs::last returns a single INTEGER representing the last
+     RRRReeeettttuuuurrrrnnnn VVVVaaaalllluuuueeeessss
+
+     The functions RRDs::last, RRDs::graph, RRDs::info and
+     RRDs::fetch return their findings.
+
+     RRRRRRRRDDDDssss::::::::llllaaaasssstttt returns a single INTEGER representing the last
      update time.
 
       $lastupdate = RRDs::last ...
 
-     RRDs::graph returns an pointer to an ARRAY containing the
-     x-size and y-size of the created gif and results of the
-     PRINT arguments.
+     RRRRRRRRDDDDssss::::::::ggggrrrraaaapppphhhh returns an pointer to an ARRAY containing the x-
+     size and y-size of the created gif and results of the PRINT
+     arguments.
 
       ($averages,$xsize,$ysize) = RRDs::graph ...
       print "Gifsize: ${xsize}x${ysize}\n";
       print "Averages: ", (join ", ", @$averages);
 
-     RRDs::fetch is the most complex of the pack regarding return
+     RRRRRRRRDDDDssss::::::::iiiinnnnffffoooo returns a pointer to a hash. The keys of the hash
+     represent the property names of the rrd and the values of
+     the hash are the values of the properties.
+
+      $hash = RRDs::info "example.rrd";
+      foreach my $key (keys %$hash){
+        print "$key = $$hash{$key}\n";
+      }
+
+     RRRRRRRRDDDDssss::::::::ffffeeeettttcccchhhh is the most complex of the pack regarding return
      values. There are 4 values. Two normal integers, a pointer
      to an array and a pointer to a array of pointers.
 
@@ -107,26 +121,12 @@ rrdtool                                                   RRDs(3)
      extension.
 
 AAAAUUUUTTTTHHHHOOOORRRR
-     Tobias Oetiker <oeitker@ee.ethy.ch>
+     Tobias Oetiker <oetiker@ee.ethz.ch>
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-13/Feb/2000            Last change: 1.0.13                      2
+2001-02-22             Last change: 1.0.33                      2
 
 
 

@@ -89,15 +89,15 @@ gdImagePtr gdImageCreateFromXbm(FILE *fd);
 void gdImageDestroy(gdImagePtr im);
 void gdImageSetPixel(gdImagePtr im, int x, int y, int color);
 int gdImageGetPixel(gdImagePtr im, int x, int y);
-void gdImageLine(gdImagePtr im, int x1, int y1, int x2, int y2, int color);
+void gdImageLine(gdImagePtr im, int xA, int yA, int xB, int yB, int color);
 /* For backwards compatibility only. Use gdImageSetStyle()
 	for much more flexible line drawing. */
-void gdImageDashedLine(gdImagePtr im, int x1, int y1, int x2, int y2, int color);
+void gdImageDashedLine(gdImagePtr im, int xA, int yA, int xB, int yB, int color);
 /* Corners specified (not width and height). Upper left first, lower right
  	second. */
-void gdImageRectangle(gdImagePtr im, int x1, int y1, int x2, int y2, int color);
+void gdImageRectangle(gdImagePtr im, int xA, int yA, int xB, int yB, int color);
 /* Solid bar. Upper left corner first, lower right corner second. */
-void gdImageFilledRectangle(gdImagePtr im, int x1, int y1, int x2, int y2, int color);
+void gdImageFilledRectangle(gdImagePtr im, int xA, int yA, int xB, int yB, int color);
 int gdImageBoundsSafe(gdImagePtr im, int x, int y);
 void gdImageChar(gdImagePtr im, gdFontPtr f, int x, int y, int c, int color);
 void gdImageCharUp(gdImagePtr im, gdFontPtr f, int x, int y, int c, int color);

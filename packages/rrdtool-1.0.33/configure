@@ -11,7 +11,12 @@
 ac_help=
 ac_default_prefix=/usr/local
 # Any additions from configure.in:
-ac_default_prefix=/usr/local/rrdtool-1.0.13 
+ac_default_prefix=/usr/local/rrdtool-1.0.33 
+ac_help="$ac_help
+  --with-tcllib=DIR       location of the tclConfig.sh"
+ac_help="$ac_help
+  --with-perl-options=[OPTIONS]  options to pass on command-line when
+                          generating Makefile from Makefile.PL"
 ac_help="$ac_help
   --enable-shared[=PKGS]  build shared libraries [default=no]"
 ac_help="$ac_help
@@ -581,7 +586,7 @@ else { echo "configure: error: can not run $ac_config_sub" 1>&2; exit 1; }
 fi
 
 echo $ac_n "checking host system type""... $ac_c" 1>&6
-echo "configure:585: checking host system type" >&5
+echo "configure:590: checking host system type" >&5
 
 host_alias=$host
 case "$host_alias" in
@@ -602,7 +607,7 @@ host_os=`echo $host | sed 's/^\([^-]*\)-\([^-]*\)-\(.*\)$/\3/'`
 echo "$ac_t""$host" 1>&6
 
 echo $ac_n "checking target system type""... $ac_c" 1>&6
-echo "configure:606: checking target system type" >&5
+echo "configure:611: checking target system type" >&5
 
 target_alias=$target
 case "$target_alias" in
@@ -620,7 +625,7 @@ target_os=`echo $target | sed 's/^\([^-]*\)-\([^-]*\)-\(.*\)$/\3/'`
 echo "$ac_t""$target" 1>&6
 
 echo $ac_n "checking build system type""... $ac_c" 1>&6
-echo "configure:624: checking build system type" >&5
+echo "configure:629: checking build system type" >&5
 
 build_alias=$build
 case "$build_alias" in
@@ -655,7 +660,7 @@ test "$host_alias" != "$target_alias" &&
 # SVR4 /usr/ucb/install, which tries to use the nonexistent group "staff"
 # ./install, which can be erroneously created by make from ./install.sh.
 echo $ac_n "checking for a BSD compatible install""... $ac_c" 1>&6
-echo "configure:659: checking for a BSD compatible install" >&5
+echo "configure:664: checking for a BSD compatible install" >&5
 if test -z "$INSTALL"; then
 if eval "test \"`echo '$''{'ac_cv_path_install'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -708,7 +713,7 @@ test -z "$INSTALL_SCRIPT" && INSTALL_SCRIPT='${INSTALL_PROGRAM}'
 test -z "$INSTALL_DATA" && INSTALL_DATA='${INSTALL} -m 644'
 
 echo $ac_n "checking whether build environment is sane""... $ac_c" 1>&6
-echo "configure:712: checking whether build environment is sane" >&5
+echo "configure:717: checking whether build environment is sane" >&5
 # Just in case
 sleep 1
 echo timestamp > conftestfile
@@ -765,7 +770,7 @@ test "$program_suffix" != NONE &&
 test "$program_transform_name" = "" && program_transform_name="s,x,x,"
 
 echo $ac_n "checking whether ${MAKE-make} sets \${MAKE}""... $ac_c" 1>&6
-echo "configure:769: checking whether ${MAKE-make} sets \${MAKE}" >&5
+echo "configure:774: checking whether ${MAKE-make} sets \${MAKE}" >&5
 set dummy ${MAKE-make}; ac_make=`echo "$2" | sed 'y%./+-%__p_%'`
 if eval "test \"`echo '$''{'ac_cv_prog_make_${ac_make}_set'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -794,7 +799,7 @@ fi
 
 PACKAGE=rrdtool
 
-VERSION=1.0.13
+VERSION=1.0.33
 
 if test "`cd $srcdir && pwd`" != "`pwd`" && test -f $srcdir/config.status; then
   { echo "configure: error: source directory already configured; run "make distclean" there first" 1>&2; exit 1; }
@@ -811,7 +816,7 @@ EOF
 
 missing_dir=`cd $ac_aux_dir && pwd`
 echo $ac_n "checking for working aclocal""... $ac_c" 1>&6
-echo "configure:815: checking for working aclocal" >&5
+echo "configure:820: checking for working aclocal" >&5
 # Run test in a subshell; some versions of sh will print an error if
 # an executable is not found, even if stderr is redirected.
 # Redirect stdin to placate older versions of autoconf.  Sigh.
@@ -824,7 +829,7 @@ else
 fi
 
 echo $ac_n "checking for working autoconf""... $ac_c" 1>&6
-echo "configure:828: checking for working autoconf" >&5
+echo "configure:833: checking for working autoconf" >&5
 # Run test in a subshell; some versions of sh will print an error if
 # an executable is not found, even if stderr is redirected.
 # Redirect stdin to placate older versions of autoconf.  Sigh.
@@ -837,7 +842,7 @@ else
 fi
 
 echo $ac_n "checking for working automake""... $ac_c" 1>&6
-echo "configure:841: checking for working automake" >&5
+echo "configure:846: checking for working automake" >&5
 # Run test in a subshell; some versions of sh will print an error if
 # an executable is not found, even if stderr is redirected.
 # Redirect stdin to placate older versions of autoconf.  Sigh.
@@ -850,7 +855,7 @@ else
 fi
 
 echo $ac_n "checking for working autoheader""... $ac_c" 1>&6
-echo "configure:854: checking for working autoheader" >&5
+echo "configure:859: checking for working autoheader" >&5
 # Run test in a subshell; some versions of sh will print an error if
 # an executable is not found, even if stderr is redirected.
 # Redirect stdin to placate older versions of autoconf.  Sigh.
@@ -863,7 +868,7 @@ else
 fi
 
 echo $ac_n "checking for working makeinfo""... $ac_c" 1>&6
-echo "configure:867: checking for working makeinfo" >&5
+echo "configure:872: checking for working makeinfo" >&5
 # Run test in a subshell; some versions of sh will print an error if
 # an executable is not found, even if stderr is redirected.
 # Redirect stdin to placate older versions of autoconf.  Sigh.
@@ -885,9 +890,10 @@ fi
 
 
 
+
 CGI_LIB_DIR=cgilib-0.4
 GD_LIB_DIR=gd1.3
-PNG_LIB_DIR=libpng-1.0.3
+PNG_LIB_DIR=libpng-1.0.9
 ZLIB_LIB_DIR=zlib-1.1.3
 
 
@@ -899,7 +905,7 @@ ZLIB_LIB_DIR=zlib-1.1.3
 # Extract the first word of "perl", so it can be a program name with args.
 set dummy perl; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:903: checking for $ac_word" >&5
+echo "configure:909: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_path_PERL'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -932,18 +938,73 @@ else
   echo "$ac_t""no" 1>&6
 fi
 
-if test "x$PERL" = "nox"; then
+if test "x$PERL" = "xno"; then
 	COMP_PERL=
 else
 	COMP_PERL="perl_piped perl_shared"
+	echo $ac_n "checking for shared library extension""... $ac_c" 1>&6
+echo "configure:947: checking for shared library extension" >&5
+	SO_EXT=`$PERL -e 'use Config; if (defined $Config{so} and $Config{so} ne 'a') {print "$Config{so}\n"} else {print "so\n"};'`
+	echo "$ac_t""$SO_EXT" 1>&6
 fi
+
+
+
+withval=""
+# Check whether --with-tcllib or --without-tcllib was given.
+if test "${with_tcllib+set}" = set; then
+  withval="$with_tcllib"
+  :
+fi
+
+found=0
+echo $ac_n "checking for tclConfig.sh in $withval""... $ac_c" 1>&6
+echo "configure:963: checking for tclConfig.sh in $withval" >&5
+if test -f "$withval/tclConfig.sh" ; then
+    	tcl_config=$withval/tclConfig.sh
+        found=1
+        echo "$ac_t""yes" 1>&6
+        break
+else
+        echo "$ac_t""no" 1>&6
+fi
+
+if test $found -eq 0 ; then
+        echo "configure: warning: tclConfig.sh not found - Tcl interface won't be built" 1>&2
+else
+	. $tcl_config
+fi
+
+# Options to pass when configuring perl module
+# Check whether --with-perl-options or --without-perl-options was given.
+if test "${with_perl_options+set}" = set; then
+  withval="$with_perl_options"
+  PERL_MAKE_OPTIONS=$withval
+fi
+
+
+
+
+
+if test x$found = x1 ; then
+  COMP_TCL_TRUE=
+  COMP_TCL_FALSE='#'
+else
+  COMP_TCL_TRUE='#'
+  COMP_TCL_FALSE=
+fi
+
+
+
+
+
 
 
 
 # Extract the first word of "gcc", so it can be a program name with args.
 set dummy gcc; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:947: checking for $ac_word" >&5
+echo "configure:1008: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_prog_CC'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -973,7 +1034,7 @@ if test -z "$CC"; then
   # Extract the first word of "cc", so it can be a program name with args.
 set dummy cc; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:977: checking for $ac_word" >&5
+echo "configure:1038: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_prog_CC'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -1024,7 +1085,7 @@ fi
       # Extract the first word of "cl", so it can be a program name with args.
 set dummy cl; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:1028: checking for $ac_word" >&5
+echo "configure:1089: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_prog_CC'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -1056,7 +1117,7 @@ fi
 fi
 
 echo $ac_n "checking whether the C compiler ($CC $CFLAGS $LDFLAGS) works""... $ac_c" 1>&6
-echo "configure:1060: checking whether the C compiler ($CC $CFLAGS $LDFLAGS) works" >&5
+echo "configure:1121: checking whether the C compiler ($CC $CFLAGS $LDFLAGS) works" >&5
 
 ac_ext=c
 # CFLAGS is not in ac_cpp because -g, -O, etc. are not valid cpp options.
@@ -1067,12 +1128,12 @@ cross_compiling=$ac_cv_prog_cc_cross
 
 cat > conftest.$ac_ext << EOF
 
-#line 1071 "configure"
+#line 1132 "configure"
 #include "confdefs.h"
 
 main(){return(0);}
 EOF
-if { (eval echo configure:1076: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:1137: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   ac_cv_prog_cc_works=yes
   # If we can't run a trivial program, we are probably using a cross compiler.
   if (./conftest; exit) 2>/dev/null; then
@@ -1098,12 +1159,12 @@ if test $ac_cv_prog_cc_works = no; then
   { echo "configure: error: installation or configuration problem: C compiler cannot create executables." 1>&2; exit 1; }
 fi
 echo $ac_n "checking whether the C compiler ($CC $CFLAGS $LDFLAGS) is a cross-compiler""... $ac_c" 1>&6
-echo "configure:1102: checking whether the C compiler ($CC $CFLAGS $LDFLAGS) is a cross-compiler" >&5
+echo "configure:1163: checking whether the C compiler ($CC $CFLAGS $LDFLAGS) is a cross-compiler" >&5
 echo "$ac_t""$ac_cv_prog_cc_cross" 1>&6
 cross_compiling=$ac_cv_prog_cc_cross
 
 echo $ac_n "checking whether we are using GNU C""... $ac_c" 1>&6
-echo "configure:1107: checking whether we are using GNU C" >&5
+echo "configure:1168: checking whether we are using GNU C" >&5
 if eval "test \"`echo '$''{'ac_cv_prog_gcc'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -1112,7 +1173,7 @@ else
   yes;
 #endif
 EOF
-if { ac_try='${CC-cc} -E conftest.c'; { (eval echo configure:1116: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; } | egrep yes >/dev/null 2>&1; then
+if { ac_try='${CC-cc} -E conftest.c'; { (eval echo configure:1177: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; } | egrep yes >/dev/null 2>&1; then
   ac_cv_prog_gcc=yes
 else
   ac_cv_prog_gcc=no
@@ -1131,7 +1192,7 @@ ac_test_CFLAGS="${CFLAGS+set}"
 ac_save_CFLAGS="$CFLAGS"
 CFLAGS=
 echo $ac_n "checking whether ${CC-cc} accepts -g""... $ac_c" 1>&6
-echo "configure:1135: checking whether ${CC-cc} accepts -g" >&5
+echo "configure:1196: checking whether ${CC-cc} accepts -g" >&5
 if eval "test \"`echo '$''{'ac_cv_prog_cc_g'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -1163,7 +1224,7 @@ else
 fi
 
 echo $ac_n "checking how to run the C preprocessor""... $ac_c" 1>&6
-echo "configure:1167: checking how to run the C preprocessor" >&5
+echo "configure:1228: checking how to run the C preprocessor" >&5
 # On Suns, sometimes $CPP names a directory.
 if test -n "$CPP" && test -d "$CPP"; then
   CPP=
@@ -1178,13 +1239,13 @@ else
   # On the NeXT, cc -E runs the code through the compiler's parser,
   # not just through cpp.
   cat > conftest.$ac_ext <<EOF
-#line 1182 "configure"
+#line 1243 "configure"
 #include "confdefs.h"
 #include <assert.h>
 Syntax Error
 EOF
 ac_try="$ac_cpp conftest.$ac_ext >/dev/null 2>conftest.out"
-{ (eval echo configure:1188: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
+{ (eval echo configure:1249: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
 ac_err=`grep -v '^ *+' conftest.out | grep -v "^conftest.${ac_ext}\$"`
 if test -z "$ac_err"; then
   :
@@ -1195,13 +1256,13 @@ else
   rm -rf conftest*
   CPP="${CC-cc} -E -traditional-cpp"
   cat > conftest.$ac_ext <<EOF
-#line 1199 "configure"
+#line 1260 "configure"
 #include "confdefs.h"
 #include <assert.h>
 Syntax Error
 EOF
 ac_try="$ac_cpp conftest.$ac_ext >/dev/null 2>conftest.out"
-{ (eval echo configure:1205: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
+{ (eval echo configure:1266: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
 ac_err=`grep -v '^ *+' conftest.out | grep -v "^conftest.${ac_ext}\$"`
 if test -z "$ac_err"; then
   :
@@ -1212,13 +1273,13 @@ else
   rm -rf conftest*
   CPP="${CC-cc} -nologo -E"
   cat > conftest.$ac_ext <<EOF
-#line 1216 "configure"
+#line 1277 "configure"
 #include "confdefs.h"
 #include <assert.h>
 Syntax Error
 EOF
 ac_try="$ac_cpp conftest.$ac_ext >/dev/null 2>conftest.out"
-{ (eval echo configure:1222: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
+{ (eval echo configure:1283: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
 ac_err=`grep -v '^ *+' conftest.out | grep -v "^conftest.${ac_ext}\$"`
 if test -z "$ac_err"; then
   :
@@ -1316,7 +1377,7 @@ fi
 # Extract the first word of "ranlib", so it can be a program name with args.
 set dummy ranlib; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:1320: checking for $ac_word" >&5
+echo "configure:1381: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_prog_RANLIB'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -1355,7 +1416,7 @@ ac_prog=ld
 if test "$ac_cv_prog_gcc" = yes; then
   # Check if gcc -print-prog-name=ld gives a path.
   echo $ac_n "checking for ld used by GCC""... $ac_c" 1>&6
-echo "configure:1359: checking for ld used by GCC" >&5
+echo "configure:1420: checking for ld used by GCC" >&5
   ac_prog=`($CC -print-prog-name=ld) 2>&5`
   case "$ac_prog" in
     # Accept absolute paths.
@@ -1379,10 +1440,10 @@ echo "configure:1359: checking for ld used by GCC" >&5
   esac
 elif test "$with_gnu_ld" = yes; then
   echo $ac_n "checking for GNU ld""... $ac_c" 1>&6
-echo "configure:1383: checking for GNU ld" >&5
+echo "configure:1444: checking for GNU ld" >&5
 else
   echo $ac_n "checking for non-GNU ld""... $ac_c" 1>&6
-echo "configure:1386: checking for non-GNU ld" >&5
+echo "configure:1447: checking for non-GNU ld" >&5
 fi
 if eval "test \"`echo '$''{'ac_cv_path_LD'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -1416,9 +1477,8 @@ else
   echo "$ac_t""no" 1>&6
 fi
 test -z "$LD" && { echo "configure: error: no acceptable ld found in \$PATH" 1>&2; exit 1; }
-
 echo $ac_n "checking if the linker ($LD) is GNU ld""... $ac_c" 1>&6
-echo "configure:1422: checking if the linker ($LD) is GNU ld" >&5
+echo "configure:1482: checking if the linker ($LD) is GNU ld" >&5
 if eval "test \"`echo '$''{'ac_cv_prog_gnu_ld'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -1434,7 +1494,7 @@ echo "$ac_t""$ac_cv_prog_gnu_ld" 1>&6
 
 
 echo $ac_n "checking for BSD-compatible nm""... $ac_c" 1>&6
-echo "configure:1438: checking for BSD-compatible nm" >&5
+echo "configure:1498: checking for BSD-compatible nm" >&5
 if eval "test \"`echo '$''{'ac_cv_path_NM'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -1469,9 +1529,8 @@ fi
 NM="$ac_cv_path_NM"
 echo "$ac_t""$NM" 1>&6
 
-
 echo $ac_n "checking whether ln -s works""... $ac_c" 1>&6
-echo "configure:1475: checking whether ln -s works" >&5
+echo "configure:1534: checking whether ln -s works" >&5
 if eval "test \"`echo '$''{'ac_cv_prog_LN_S'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -1491,6 +1550,11 @@ else
   echo "$ac_t""no" 1>&6
 fi
 
+
+case "$target" in
+NONE) lt_target="$host" ;;
+*) lt_target="$target" ;;
+esac
 
 # Check for any special flags to pass to ltconfig.
 libtool_flags="--cache-file=$cache_file"
@@ -1512,11 +1576,11 @@ test x"$silent" = xyes && libtool_flags="$libtool_flags --silent"
 
 # Some flags need to be propagated to the compiler or linker for good
 # libtool support.
-case "$host" in
+case "$lt_target" in
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 1519 "configure"' > conftest.$ac_ext
-  if { (eval echo configure:1520: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+  echo '#line 1583 "configure"' > conftest.$ac_ext
+  if { (eval echo configure:1584: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
     case "`/usr/bin/file conftest.o`" in
     *32-bit*)
       LD="${LD-ld} -32"
@@ -1537,19 +1601,19 @@ case "$host" in
   SAVE_CFLAGS="$CFLAGS"
   CFLAGS="$CFLAGS -belf"
   echo $ac_n "checking whether the C compiler needs -belf""... $ac_c" 1>&6
-echo "configure:1541: checking whether the C compiler needs -belf" >&5
+echo "configure:1605: checking whether the C compiler needs -belf" >&5
 if eval "test \"`echo '$''{'lt_cv_cc_needs_belf'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 1546 "configure"
+#line 1610 "configure"
 #include "confdefs.h"
 
 int main() {
 
 ; return 0; }
 EOF
-if { (eval echo configure:1553: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:1617: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   lt_cv_cc_needs_belf=yes
 else
@@ -1627,7 +1691,7 @@ LD="$LD" LDFLAGS="$LDFLAGS" LIBS="$LIBS" \
 LN_S="$LN_S" NM="$NM" RANLIB="$RANLIB" \
 DLLTOOL="$DLLTOOL" AS="$AS" OBJDUMP="$OBJDUMP" \
 ${CONFIG_SHELL-/bin/sh} $ac_aux_dir/ltconfig --no-reexec \
-$libtool_flags --no-verify $ac_aux_dir/ltmain.sh $host \
+$libtool_flags --no-verify $ac_aux_dir/ltmain.sh $lt_target \
 || { echo "configure: error: libtool configure failed" 1>&2; exit 1; }
 
 # Reload cache, that may have been modified by ltconfig
@@ -1652,12 +1716,12 @@ exec 5>>./config.log
 
 
 echo $ac_n "checking for ANSI C header files""... $ac_c" 1>&6
-echo "configure:1656: checking for ANSI C header files" >&5
+echo "configure:1720: checking for ANSI C header files" >&5
 if eval "test \"`echo '$''{'ac_cv_header_stdc'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 1661 "configure"
+#line 1725 "configure"
 #include "confdefs.h"
 #include <stdlib.h>
 #include <stdarg.h>
@@ -1665,7 +1729,7 @@ else
 #include <float.h>
 EOF
 ac_try="$ac_cpp conftest.$ac_ext >/dev/null 2>conftest.out"
-{ (eval echo configure:1669: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
+{ (eval echo configure:1733: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
 ac_err=`grep -v '^ *+' conftest.out | grep -v "^conftest.${ac_ext}\$"`
 if test -z "$ac_err"; then
   rm -rf conftest*
@@ -1682,7 +1746,7 @@ rm -f conftest*
 if test $ac_cv_header_stdc = yes; then
   # SunOS 4.x string.h does not declare mem*, contrary to ANSI.
 cat > conftest.$ac_ext <<EOF
-#line 1686 "configure"
+#line 1750 "configure"
 #include "confdefs.h"
 #include <string.h>
 EOF
@@ -1700,7 +1764,7 @@ fi
 if test $ac_cv_header_stdc = yes; then
   # ISC 2.0.2 stdlib.h does not declare free, contrary to ANSI.
 cat > conftest.$ac_ext <<EOF
-#line 1704 "configure"
+#line 1768 "configure"
 #include "confdefs.h"
 #include <stdlib.h>
 EOF
@@ -1721,7 +1785,7 @@ if test "$cross_compiling" = yes; then
   :
 else
   cat > conftest.$ac_ext <<EOF
-#line 1725 "configure"
+#line 1789 "configure"
 #include "confdefs.h"
 #include <ctype.h>
 #define ISLOWER(c) ('a' <= (c) && (c) <= 'z')
@@ -1732,7 +1796,7 @@ if (XOR (islower (i), ISLOWER (i)) || toupper (i) != TOUPPER (i)) exit(2);
 exit (0); }
 
 EOF
-if { (eval echo configure:1736: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext} && (./conftest; exit) 2>/dev/null
+if { (eval echo configure:1800: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext} && (./conftest; exit) 2>/dev/null
 then
   :
 else
@@ -1755,21 +1819,21 @@ EOF
 
 fi
 
-for ac_hdr in fcntl.h fp_class.h malloc.h unistd.h math.h sys/time.h sys/times.h sys/param.h sys/resource.h float.h
+for ac_hdr in fcntl.h fp_class.h malloc.h unistd.h ieeefp.h math.h sys/time.h sys/times.h sys/param.h sys/resource.h float.h
 do
 ac_safe=`echo "$ac_hdr" | sed 'y%./+-%__p_%'`
 echo $ac_n "checking for $ac_hdr""... $ac_c" 1>&6
-echo "configure:1763: checking for $ac_hdr" >&5
+echo "configure:1827: checking for $ac_hdr" >&5
 if eval "test \"`echo '$''{'ac_cv_header_$ac_safe'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 1768 "configure"
+#line 1832 "configure"
 #include "confdefs.h"
 #include <$ac_hdr>
 EOF
 ac_try="$ac_cpp conftest.$ac_ext >/dev/null 2>conftest.out"
-{ (eval echo configure:1773: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
+{ (eval echo configure:1837: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
 ac_err=`grep -v '^ *+' conftest.out | grep -v "^conftest.${ac_ext}\$"`
 if test -z "$ac_err"; then
   rm -rf conftest*
@@ -1797,12 +1861,12 @@ done
 
 
 echo $ac_n "checking for working const""... $ac_c" 1>&6
-echo "configure:1801: checking for working const" >&5
+echo "configure:1865: checking for working const" >&5
 if eval "test \"`echo '$''{'ac_cv_c_const'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 1806 "configure"
+#line 1870 "configure"
 #include "confdefs.h"
 
 int main() {
@@ -1851,7 +1915,7 @@ ccp = (char const *const *) p;
 
 ; return 0; }
 EOF
-if { (eval echo configure:1855: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:1919: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   ac_cv_c_const=yes
 else
@@ -1872,12 +1936,12 @@ EOF
 fi
 
 echo $ac_n "checking whether time.h and sys/time.h may both be included""... $ac_c" 1>&6
-echo "configure:1876: checking whether time.h and sys/time.h may both be included" >&5
+echo "configure:1940: checking whether time.h and sys/time.h may both be included" >&5
 if eval "test \"`echo '$''{'ac_cv_header_time'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 1881 "configure"
+#line 1945 "configure"
 #include "confdefs.h"
 #include <sys/types.h>
 #include <sys/time.h>
@@ -1886,7 +1950,7 @@ int main() {
 struct tm *tp;
 ; return 0; }
 EOF
-if { (eval echo configure:1890: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:1954: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   ac_cv_header_time=yes
 else
@@ -1907,12 +1971,12 @@ EOF
 fi
 
 echo $ac_n "checking whether struct tm is in sys/time.h or time.h""... $ac_c" 1>&6
-echo "configure:1911: checking whether struct tm is in sys/time.h or time.h" >&5
+echo "configure:1975: checking whether struct tm is in sys/time.h or time.h" >&5
 if eval "test \"`echo '$''{'ac_cv_struct_tm'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 1916 "configure"
+#line 1980 "configure"
 #include "confdefs.h"
 #include <sys/types.h>
 #include <time.h>
@@ -1920,7 +1984,7 @@ int main() {
 struct tm *tp; tp->tm_sec;
 ; return 0; }
 EOF
-if { (eval echo configure:1924: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:1988: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   ac_cv_struct_tm=time.h
 else
@@ -1941,8 +2005,54 @@ EOF
 fi
 
 
+echo $ac_n "checking for acos""... $ac_c" 1>&6
+echo "configure:2010: checking for acos" >&5
+if eval "test \"`echo '$''{'ac_cv_func_acos'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  cat > conftest.$ac_ext <<EOF
+#line 2015 "configure"
+#include "confdefs.h"
+/* System header to define __stub macros and hopefully few prototypes,
+    which can conflict with char acos(); below.  */
+#include <assert.h>
+/* Override any gcc2 internal prototype to avoid an error.  */
+/* We use char because int might match the return type of a gcc2
+    builtin and then its argument prototype would still apply.  */
+char acos();
+
+int main() {
+
+/* The GNU C library defines this for functions which it implements
+    to always fail with ENOSYS.  Some functions are actually named
+    something starting with __ and the normal name is an alias.  */
+#if defined (__stub_acos) || defined (__stub___acos)
+choke me
+#else
+acos();
+#endif
+
+; return 0; }
+EOF
+if { (eval echo configure:2038: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+  rm -rf conftest*
+  eval "ac_cv_func_acos=yes"
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  rm -rf conftest*
+  eval "ac_cv_func_acos=no"
+fi
+rm -f conftest*
+fi
+
+if eval "test \"`echo '$ac_cv_func_'acos`\" = yes"; then
+  echo "$ac_t""yes" 1>&6
+  :
+else
+  echo "$ac_t""no" 1>&6
 echo $ac_n "checking for acos in -lm""... $ac_c" 1>&6
-echo "configure:1946: checking for acos in -lm" >&5
+echo "configure:2056: checking for acos in -lm" >&5
 ac_lib_var=`echo m'_'acos | sed 'y%./+-%__p_%'`
 if eval "test \"`echo '$''{'ac_cv_lib_$ac_lib_var'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -1950,7 +2060,7 @@ else
   ac_save_LIBS="$LIBS"
 LIBS="-lm  $LIBS"
 cat > conftest.$ac_ext <<EOF
-#line 1954 "configure"
+#line 2064 "configure"
 #include "confdefs.h"
 /* Override any gcc2 internal prototype to avoid an error.  */
 /* We use char because int might match the return type of a gcc2
@@ -1961,7 +2071,7 @@ int main() {
 acos()
 ; return 0; }
 EOF
-if { (eval echo configure:1965: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:2075: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_lib_$ac_lib_var=yes"
 else
@@ -1976,7 +2086,7 @@ LIBS="$ac_save_LIBS"
 fi
 if eval "test \"`echo '$ac_cv_lib_'$ac_lib_var`\" = yes"; then
   echo "$ac_t""yes" 1>&6
-    ac_tr_lib=HAVE_LIB`echo m | sed -e 's/[^a-zA-Z0-9_]/_/g' \
+    ac_tr_lib=HAVE_LIB`echo m | sed -e 's/^a-zA-Z0-9_/_/g' \
     -e 'y/abcdefghijklmnopqrstuvwxyz/ABCDEFGHIJKLMNOPQRSTUVWXYZ/'`
   cat >> confdefs.h <<EOF
 #define $ac_tr_lib 1
@@ -1988,23 +2098,107 @@ else
   echo "$ac_t""no" 1>&6
 fi
 
+fi
 
-oCFLAGS=$CFLAGS
-CFLAGS="$CFLAGS -Wall -pedantic"
-echo $ac_n "checking if we can use GCC-specific compiler options""... $ac_c" 1>&6
-echo "configure:1996: checking if we can use GCC-specific compiler options" >&5
+
+for ac_prog in gnroff nroff
+do
+# Extract the first word of "$ac_prog", so it can be a program name with args.
+set dummy $ac_prog; ac_word=$2
+echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
+echo "configure:2110: checking for $ac_word" >&5
+if eval "test \"`echo '$''{'ac_cv_path_NROFF'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  case "$NROFF" in
+  /*)
+  ac_cv_path_NROFF="$NROFF" # Let the user override the test with a path.
+  ;;
+  ?:/*)			 
+  ac_cv_path_NROFF="$NROFF" # Let the user override the test with a dos path.
+  ;;
+  *)
+  IFS="${IFS= 	}"; ac_save_ifs="$IFS"; IFS=":"
+  ac_dummy="$PATH"
+  for ac_dir in $ac_dummy; do 
+    test -z "$ac_dir" && ac_dir=.
+    if test -f $ac_dir/$ac_word; then
+      ac_cv_path_NROFF="$ac_dir/$ac_word"
+      break
+    fi
+  done
+  IFS="$ac_save_ifs"
+  ;;
+esac
+fi
+NROFF="$ac_cv_path_NROFF"
+if test -n "$NROFF"; then
+  echo "$ac_t""$NROFF" 1>&6
+else
+  echo "$ac_t""no" 1>&6
+fi
+
+test -n "$NROFF" && break
+done
+
+for ac_prog in groff troff
+do
+# Extract the first word of "$ac_prog", so it can be a program name with args.
+set dummy $ac_prog; ac_word=$2
+echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
+echo "configure:2150: checking for $ac_word" >&5
+if eval "test \"`echo '$''{'ac_cv_path_TROFF'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  case "$TROFF" in
+  /*)
+  ac_cv_path_TROFF="$TROFF" # Let the user override the test with a path.
+  ;;
+  ?:/*)			 
+  ac_cv_path_TROFF="$TROFF" # Let the user override the test with a dos path.
+  ;;
+  *)
+  IFS="${IFS= 	}"; ac_save_ifs="$IFS"; IFS=":"
+  ac_dummy="$PATH"
+  for ac_dir in $ac_dummy; do 
+    test -z "$ac_dir" && ac_dir=.
+    if test -f $ac_dir/$ac_word; then
+      ac_cv_path_TROFF="$ac_dir/$ac_word"
+      break
+    fi
+  done
+  IFS="$ac_save_ifs"
+  ;;
+esac
+fi
+TROFF="$ac_cv_path_TROFF"
+if test -n "$TROFF"; then
+  echo "$ac_t""$TROFF" 1>&6
+else
+  echo "$ac_t""no" 1>&6
+fi
+
+test -n "$TROFF" && break
+done
+
+
+if test "x$GCC" = "xyes"; then
+  oCFLAGS=$CFLAGS
+  CFLAGS="$CFLAGS -Wall -pedantic -Wshadow -Wpointer-arith -Wcast-align -Wmissing-prototypes -Wmissing-declarations -Wnested-externs -Winline"
+  echo $ac_n "checking if we can use GCC-specific compiler options""... $ac_c" 1>&6
+echo "configure:2190: checking if we can use GCC-specific compiler options" >&5
 if eval "test \"`echo '$''{'rd_cv_gcc_opt'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 2001 "configure"
+#line 2195 "configure"
 #include "confdefs.h"
 
 int main() {
 return 0 
 ; return 0; }
 EOF
-if { (eval echo configure:2008: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:2202: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   rd_cv_gcc_opt=yes
 else
@@ -2014,60 +2208,31 @@ else
   rd_cv_gcc_opt=no 
 fi
 rm -f conftest*
-	       
-       
+               
+        
 fi
 
 echo "$ac_t""$rd_cv_gcc_opt" 1>&6
-if test $rd_cv_gcc_opt = no; then
-	CFLAGS=$oCFLAGS
+  if test $rd_cv_gcc_opt = no; then
+         CFLAGS=$oCFLAGS
+  fi
 fi
 
+CFLAGS="$CFLAGS "`grep pic_flag= libtool | sed -e 's/.*pic_flag=//' -e 's/"//g'`
 
-oCFLAGS=$CFLAGS
-CFLAGS="$CFLAGS -fPIC"
-echo $ac_n "checking if we can use -fPIC as this may help building the perl module""... $ac_c" 1>&6
-echo "configure:2031: checking if we can use -fPIC as this may help building the perl module" >&5
-if eval "test \"`echo '$''{'rd_cv_pic'+set}'`\" = set"; then
-  echo $ac_n "(cached) $ac_c" 1>&6
-else
-  if test "$cross_compiling" = yes; then
-  :
-else
-  cat > conftest.$ac_ext <<EOF
-#line 2039 "configure"
-#include "confdefs.h"
-int main(void){return 0;}
-EOF
-if { (eval echo configure:2043: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext} && (./conftest; exit) 2>/dev/null
-then
-  rd_cv_pic=yes
-else
-  echo "configure: failed program was:" >&5
-  cat conftest.$ac_ext >&5
-  rm -fr conftest*
-  rd_cv_pic=no
-fi
-rm -fr conftest*
-fi
-
-	       
-       
-fi
-
-echo "$ac_t""$rd_cv_pic" 1>&6
-if test $rd_cv_pic = no; then
-	CFLAGS=$oCFLAGS
-fi
-
+case $target_os in
+*hpux*)
+	CLFAGS=`echo $CFLAGS|sed -e 's/-fPIC/-fpic/g'`
+;;
+esac
 
 echo $ac_n "checking for strftime""... $ac_c" 1>&6
-echo "configure:2066: checking for strftime" >&5
+echo "configure:2231: checking for strftime" >&5
 if eval "test \"`echo '$''{'ac_cv_func_strftime'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 2071 "configure"
+#line 2236 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char strftime(); below.  */
@@ -2090,7 +2255,7 @@ strftime();
 
 ; return 0; }
 EOF
-if { (eval echo configure:2094: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:2259: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_strftime=yes"
 else
@@ -2112,7 +2277,7 @@ else
   echo "$ac_t""no" 1>&6
 # strftime is in -lintl on SCO UNIX.
 echo $ac_n "checking for strftime in -lintl""... $ac_c" 1>&6
-echo "configure:2116: checking for strftime in -lintl" >&5
+echo "configure:2281: checking for strftime in -lintl" >&5
 ac_lib_var=`echo intl'_'strftime | sed 'y%./+-%__p_%'`
 if eval "test \"`echo '$''{'ac_cv_lib_$ac_lib_var'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -2120,7 +2285,7 @@ else
   ac_save_LIBS="$LIBS"
 LIBS="-lintl  $LIBS"
 cat > conftest.$ac_ext <<EOF
-#line 2124 "configure"
+#line 2289 "configure"
 #include "confdefs.h"
 /* Override any gcc2 internal prototype to avoid an error.  */
 /* We use char because int might match the return type of a gcc2
@@ -2131,7 +2296,7 @@ int main() {
 strftime()
 ; return 0; }
 EOF
-if { (eval echo configure:2135: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:2300: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_lib_$ac_lib_var=yes"
 else
@@ -2158,12 +2323,12 @@ fi
 fi
 
 echo $ac_n "checking for vprintf""... $ac_c" 1>&6
-echo "configure:2162: checking for vprintf" >&5
+echo "configure:2327: checking for vprintf" >&5
 if eval "test \"`echo '$''{'ac_cv_func_vprintf'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 2167 "configure"
+#line 2332 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char vprintf(); below.  */
@@ -2186,7 +2351,7 @@ vprintf();
 
 ; return 0; }
 EOF
-if { (eval echo configure:2190: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:2355: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_vprintf=yes"
 else
@@ -2210,12 +2375,12 @@ fi
 
 if test "$ac_cv_func_vprintf" != yes; then
 echo $ac_n "checking for _doprnt""... $ac_c" 1>&6
-echo "configure:2214: checking for _doprnt" >&5
+echo "configure:2379: checking for _doprnt" >&5
 if eval "test \"`echo '$''{'ac_cv_func__doprnt'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 2219 "configure"
+#line 2384 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char _doprnt(); below.  */
@@ -2238,7 +2403,7 @@ _doprnt();
 
 ; return 0; }
 EOF
-if { (eval echo configure:2242: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:2407: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func__doprnt=yes"
 else
@@ -2263,15 +2428,16 @@ fi
 fi
 
 
-for ac_func in snprintf vsnprintf fpclass class fpclassify fp_class isnan finite isinf memmove strchr mktime getrusage gettimeofday
+
+for ac_func in strerror snprintf vsnprintf fpclass class fp_class isnan memmove strchr mktime getrusage gettimeofday
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:2270: checking for $ac_func" >&5
+echo "configure:2436: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 2275 "configure"
+#line 2441 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -2294,7 +2460,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:2298: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:2464: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -2319,9 +2485,302 @@ fi
 done
 
 
+for ac_func in fpclassify
+do
+echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
+echo "configure:2492: checking for $ac_func" >&5
+if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  cat > conftest.$ac_ext <<EOF
+#line 2497 "configure"
+#include "confdefs.h"
+/* System header to define __stub macros and hopefully few prototypes,
+    which can conflict with char $ac_func(); below.  */
+#include <assert.h>
+/* Override any gcc2 internal prototype to avoid an error.  */
+/* We use char because int might match the return type of a gcc2
+    builtin and then its argument prototype would still apply.  */
+char $ac_func();
+
+int main() {
+
+/* The GNU C library defines this for functions which it implements
+    to always fail with ENOSYS.  Some functions are actually named
+    something starting with __ and the normal name is an alias.  */
+#if defined (__stub_$ac_func) || defined (__stub___$ac_func)
+choke me
+#else
+$ac_func();
+#endif
+
+; return 0; }
+EOF
+if { (eval echo configure:2520: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+  rm -rf conftest*
+  eval "ac_cv_func_$ac_func=yes"
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  rm -rf conftest*
+  eval "ac_cv_func_$ac_func=no"
+fi
+rm -f conftest*
+fi
+
+if eval "test \"`echo '$ac_cv_func_'$ac_func`\" = yes"; then
+  echo "$ac_t""yes" 1>&6
+    ac_tr_func=HAVE_`echo $ac_func | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
+  cat >> confdefs.h <<EOF
+#define $ac_tr_func 1
+EOF
+ 
+else
+  echo "$ac_t""no" 1>&6
+echo $ac_n "checking for fpclassify with <math.h>""... $ac_c" 1>&6
+echo "configure:2542: checking for fpclassify with <math.h>" >&5
+    cat > conftest.$ac_ext <<EOF
+#line 2544 "configure"
+#include "confdefs.h"
+#include <math.h>
+int main() {
+float f = 0.0; fpclassify(f)
+; return 0; }
+EOF
+if { (eval echo configure:2551: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+  rm -rf conftest*
+  echo "$ac_t""yes" 1>&6
+      cat >> confdefs.h <<\EOF
+#define HAVE_FPCLASSIFY 1
+EOF
+
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  rm -rf conftest*
+  echo "$ac_t""no" 1>&6
+fi
+rm -f conftest*
+fi
+done
+
+for ac_func in finite
+do
+echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
+echo "configure:2571: checking for $ac_func" >&5
+if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  cat > conftest.$ac_ext <<EOF
+#line 2576 "configure"
+#include "confdefs.h"
+/* System header to define __stub macros and hopefully few prototypes,
+    which can conflict with char $ac_func(); below.  */
+#include <assert.h>
+/* Override any gcc2 internal prototype to avoid an error.  */
+/* We use char because int might match the return type of a gcc2
+    builtin and then its argument prototype would still apply.  */
+char $ac_func();
+
+int main() {
+
+/* The GNU C library defines this for functions which it implements
+    to always fail with ENOSYS.  Some functions are actually named
+    something starting with __ and the normal name is an alias.  */
+#if defined (__stub_$ac_func) || defined (__stub___$ac_func)
+choke me
+#else
+$ac_func();
+#endif
+
+; return 0; }
+EOF
+if { (eval echo configure:2599: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+  rm -rf conftest*
+  eval "ac_cv_func_$ac_func=yes"
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  rm -rf conftest*
+  eval "ac_cv_func_$ac_func=no"
+fi
+rm -f conftest*
+fi
+
+if eval "test \"`echo '$ac_cv_func_'$ac_func`\" = yes"; then
+  echo "$ac_t""yes" 1>&6
+    ac_tr_func=HAVE_`echo $ac_func | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
+  cat >> confdefs.h <<EOF
+#define $ac_tr_func 1
+EOF
+ 
+else
+  echo "$ac_t""no" 1>&6
+for ac_func in isfinite
+do
+echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
+echo "configure:2623: checking for $ac_func" >&5
+if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  cat > conftest.$ac_ext <<EOF
+#line 2628 "configure"
+#include "confdefs.h"
+/* System header to define __stub macros and hopefully few prototypes,
+    which can conflict with char $ac_func(); below.  */
+#include <assert.h>
+/* Override any gcc2 internal prototype to avoid an error.  */
+/* We use char because int might match the return type of a gcc2
+    builtin and then its argument prototype would still apply.  */
+char $ac_func();
+
+int main() {
+
+/* The GNU C library defines this for functions which it implements
+    to always fail with ENOSYS.  Some functions are actually named
+    something starting with __ and the normal name is an alias.  */
+#if defined (__stub_$ac_func) || defined (__stub___$ac_func)
+choke me
+#else
+$ac_func();
+#endif
+
+; return 0; }
+EOF
+if { (eval echo configure:2651: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+  rm -rf conftest*
+  eval "ac_cv_func_$ac_func=yes"
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  rm -rf conftest*
+  eval "ac_cv_func_$ac_func=no"
+fi
+rm -f conftest*
+fi
+
+if eval "test \"`echo '$ac_cv_func_'$ac_func`\" = yes"; then
+  echo "$ac_t""yes" 1>&6
+    ac_tr_func=HAVE_`echo $ac_func | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
+  cat >> confdefs.h <<EOF
+#define $ac_tr_func 1
+EOF
+ 
+else
+  echo "$ac_t""no" 1>&6
+echo $ac_n "checking for isfinite with <math.h>""... $ac_c" 1>&6
+echo "configure:2673: checking for isfinite with <math.h>" >&5
+    cat > conftest.$ac_ext <<EOF
+#line 2675 "configure"
+#include "confdefs.h"
+#include <math.h>
+int main() {
+float f = 0.0; isfinite(f)
+; return 0; }
+EOF
+if { (eval echo configure:2682: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+  rm -rf conftest*
+  echo "$ac_t""yes" 1>&6
+      cat >> confdefs.h <<\EOF
+#define HAVE_ISFINITE 1
+EOF
+
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  rm -rf conftest*
+  echo "$ac_t""no" 1>&6
+fi
+rm -f conftest*
+fi
+done
+
+fi
+done
+
+for ac_func in isinf
+do
+echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
+echo "configure:2705: checking for $ac_func" >&5
+if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  cat > conftest.$ac_ext <<EOF
+#line 2710 "configure"
+#include "confdefs.h"
+/* System header to define __stub macros and hopefully few prototypes,
+    which can conflict with char $ac_func(); below.  */
+#include <assert.h>
+/* Override any gcc2 internal prototype to avoid an error.  */
+/* We use char because int might match the return type of a gcc2
+    builtin and then its argument prototype would still apply.  */
+char $ac_func();
+
+int main() {
+
+/* The GNU C library defines this for functions which it implements
+    to always fail with ENOSYS.  Some functions are actually named
+    something starting with __ and the normal name is an alias.  */
+#if defined (__stub_$ac_func) || defined (__stub___$ac_func)
+choke me
+#else
+$ac_func();
+#endif
+
+; return 0; }
+EOF
+if { (eval echo configure:2733: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+  rm -rf conftest*
+  eval "ac_cv_func_$ac_func=yes"
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  rm -rf conftest*
+  eval "ac_cv_func_$ac_func=no"
+fi
+rm -f conftest*
+fi
+
+if eval "test \"`echo '$ac_cv_func_'$ac_func`\" = yes"; then
+  echo "$ac_t""yes" 1>&6
+    ac_tr_func=HAVE_`echo $ac_func | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
+  cat >> confdefs.h <<EOF
+#define $ac_tr_func 1
+EOF
+ 
+else
+  echo "$ac_t""no" 1>&6
+echo $ac_n "checking for isinf with <math.h>""... $ac_c" 1>&6
+echo "configure:2755: checking for isinf with <math.h>" >&5
+    cat > conftest.$ac_ext <<EOF
+#line 2757 "configure"
+#include "confdefs.h"
+#include <math.h>
+int main() {
+float f = 0.0; isinf(f)
+; return 0; }
+EOF
+if { (eval echo configure:2764: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+  rm -rf conftest*
+  echo "$ac_t""yes" 1>&6
+      cat >> confdefs.h <<\EOF
+#define HAVE_ISINF 1
+EOF
+
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  rm -rf conftest*
+  echo "$ac_t""no" 1>&6
+fi
+rm -f conftest*
+fi
+done
+
+
 
 echo $ac_n "checking if realloc can deal with NULL""... $ac_c" 1>&6
-echo "configure:2325: checking if realloc can deal with NULL" >&5
+echo "configure:2784: checking if realloc can deal with NULL" >&5
 if eval "test \"`echo '$''{'rd_cv_null_realloc'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -2329,7 +2788,7 @@ else
   :
 else
   cat > conftest.$ac_ext <<EOF
-#line 2333 "configure"
+#line 2792 "configure"
 #include "confdefs.h"
 #include <stdlib.h>
 	      int main(void){
@@ -2339,7 +2798,7 @@ else
 	      return 0;
              }
 EOF
-if { (eval echo configure:2343: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext} && (./conftest; exit) 2>/dev/null
+if { (eval echo configure:2802: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext} && (./conftest; exit) 2>/dev/null
 then
   rd_cv_null_realloc=yes
 else
@@ -2365,11 +2824,9 @@ fi
 
 
 
-oCFLAGS=$CFLAGS
-unset CFLAGS
-
+_cflags=${CFLAGS}
 echo $ac_n "checking if IEEE math works out of the box""... $ac_c" 1>&6
-echo "configure:2373: checking if IEEE math works out of the box" >&5
+echo "configure:2830: checking if IEEE math works out of the box" >&5
 if eval "test \"`echo '$''{'rd_cv_ieee_works'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -2377,68 +2834,75 @@ else
   :
 else
   cat > conftest.$ac_ext <<EOF
-#line 2381 "configure"
+#line 2838 "configure"
 #include "confdefs.h"
 
 
 #if HAVE_MATH_H
-#  include <math.h>                                                                                                                                        
+#  include <math.h>
 #endif
 
 #if HAVE_FLOAT_H
 #  include <float.h>  
 #endif
 
-/* for solaris */
+#if HAVE_IEEEFP_H
+#  include <ieeefp.h>
+#endif
+
+#if HAVE_FP_CLASS_H
+#  include <fp_class.h>
+#endif
+
+/* Solaris */
 #if (! defined(HAVE_ISINF) && defined(HAVE_FPCLASS))
 #  define HAVE_ISINF 1
-#  include <ieeefp.h>
 #  define isinf(a) (fpclass(a) == FP_NINF || fpclass(a) == FP_PINF)
 #endif
-/* for dec unix */
+
+/* Digital UNIX */
 #if (! defined(HAVE_ISINF) && defined(HAVE_FP_CLASS) && defined(HAVE_FP_CLASS_H))
 #  define HAVE_ISINF 1
-#  include <fp_class.h>
 #  define isinf(a) (fp_class(a) == FP_NEG_INF || fp_class(a) == FP_POS_INF)
-#endif
-/* for HP-UX 10.20 */
-#if (! defined(HAVE_ISINF) && defined(HAVE_FPCLASSIFY))
-#  define HAVE_ISINF 1
-#  define isinf(a) (fpclassify(a) == FP_MINUS_INF || fpclassify(a) == FP_PLUS_INF)
-#endif
-/* for AIX */
+#endif 
+
+/* AIX */
 #if (! defined(HAVE_ISINF) && defined(HAVE_CLASS))
 #  define HAVE_ISINF 1
 #  define isinf(a) (class(a) == FP_MINUS_INF || class(a) == FP_PLUS_INF)
 #endif
 
-#if (! defined(HAVE_FINITE) && defined(HAVE_ISNAN) && defined(HAVE_ISINF))
-#  define HAVE_FINITE 1
-#  define finite(a) (! isnan(a) && ! isinf(a))
+#if (! defined(HAVE_ISINF) && defined(HAVE_FPCLASSIFY) && defined(FP_PLUS_INF) && defined(FP_MINUS_INF))
+#  define HAVE_ISINF 1
+#  define isinf(a) (fpclassify(a) == FP_MINUS_INF || fpclassify(a) == FP_PLUS_INF)
 #endif
 
+#if (! defined(HAVE_ISINF) && defined(HAVE_FPCLASSIFY) && defined(FP_INFINITE))
+#  define HAVE_ISINF 1
+#  define isinf(a) (fpclassify(a) == FP_INFINITE)
+#endif
 
 #include <stdio.h>
 int main(void){
-    double nan,inf,c,d;
-     ;
-     /* some math to see if we get a segfault; */
-     nan=0.0/0.0;
-     inf=1.0/0.0;
-     c = 1.0;
-     c = c / 0.0; /* try getting fpe */
-     c = inf + nan;
-     c = inf / nan;
-     if (! isnan(nan)) {printf ("isnan(NaN) ... "); return 1;}
-     if (nan == nan) {printf ("nan != nan ..."); return 1;}
-     if (! isinf(inf)) {printf ("isinf(oo) ... "); return 1;}
-     if (! isinf(-inf)) {printf ("isinf(-oo) ... "); return 1;}
-     if (! inf > 0) {printf ("inf > 0 ... "); return 1;}
-     if (! -inf < 0) {printf ("inf < 0 ... "); return 1;}
-     return 0;
-}
+    double nan,inf,c,zero;
+    ;
+    /* some math to see if we get a floating point exception */
+    zero=sin(0.0); /* don't let the compiler optimize us away */
+    nan=0.0/zero; /* especially here */
+    inf=1.0/zero; /* and here. I want to know if it can do the magic */
+		  /* at run time without sig fpe */
+    c = inf + nan;
+    c = inf / nan;
+    if (! isnan(nan)) {printf ("not isnan(NaN) ... "); return 1;}
+    if (nan == nan) {printf ("nan == nan ... "); return 1;}
+    if (! isinf(inf)) {printf ("not isinf(oo) ... "); return 1;}
+    if (! isinf(-inf)) {printf ("not isinf(-oo) ... "); return 1;}
+    if (! inf > 0) {printf ("not inf > 0 ... "); return 1;}
+    if (! -inf < 0) {printf ("not -inf < 0 ... "); return 1;}
+    return 0;
+ }
 EOF
-if { (eval echo configure:2442: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext} && (./conftest; exit) 2>/dev/null
+if { (eval echo configure:2906: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext} && (./conftest; exit) 2>/dev/null
 then
   rd_cv_ieee_works=yes
 else
@@ -2452,12 +2916,14 @@ fi
 
 fi
 
-echo "$ac_t""$rd_cv_ieee_works" 1>&6
-if test "$rd_cv_ieee_works" != yes ; then
-
-CFLAGS=-ieee
-echo $ac_n "checking if IEEE math works with the -ieee switch""... $ac_c" 1>&6
-echo "configure:2461: checking if IEEE math works with the -ieee switch" >&5
+if test x${rd_cv_ieee_works} = "xyes"; then
+ echo "$ac_t""yes" 1>&6
+ 
+else
+ echo "$ac_t""no" 1>&6
+ CFLAGS="$_cflags -ieee"
+  echo $ac_n "checking if IEEE math works with the -ieee switch""... $ac_c" 1>&6
+echo "configure:2927: checking if IEEE math works with the -ieee switch" >&5
 if eval "test \"`echo '$''{'rd_cv_ieee_switch'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -2465,68 +2931,75 @@ else
   :
 else
   cat > conftest.$ac_ext <<EOF
-#line 2469 "configure"
+#line 2935 "configure"
 #include "confdefs.h"
 
 
 #if HAVE_MATH_H
-#  include <math.h>                                                                                                                                        
+#  include <math.h>
 #endif
 
 #if HAVE_FLOAT_H
 #  include <float.h>  
 #endif
 
-/* for solaris */
+#if HAVE_IEEEFP_H
+#  include <ieeefp.h>
+#endif
+
+#if HAVE_FP_CLASS_H
+#  include <fp_class.h>
+#endif
+
+/* Solaris */
 #if (! defined(HAVE_ISINF) && defined(HAVE_FPCLASS))
 #  define HAVE_ISINF 1
-#  include <ieeefp.h>
 #  define isinf(a) (fpclass(a) == FP_NINF || fpclass(a) == FP_PINF)
 #endif
-/* for dec unix */
+
+/* Digital UNIX */
 #if (! defined(HAVE_ISINF) && defined(HAVE_FP_CLASS) && defined(HAVE_FP_CLASS_H))
 #  define HAVE_ISINF 1
-#  include <fp_class.h>
 #  define isinf(a) (fp_class(a) == FP_NEG_INF || fp_class(a) == FP_POS_INF)
-#endif
-/* for HP-UX 10.20 */
-#if (! defined(HAVE_ISINF) && defined(HAVE_FPCLASSIFY))
-#  define HAVE_ISINF 1
-#  define isinf(a) (fpclassify(a) == FP_MINUS_INF || fpclassify(a) == FP_PLUS_INF)
-#endif
-/* for AIX */
+#endif 
+
+/* AIX */
 #if (! defined(HAVE_ISINF) && defined(HAVE_CLASS))
 #  define HAVE_ISINF 1
 #  define isinf(a) (class(a) == FP_MINUS_INF || class(a) == FP_PLUS_INF)
 #endif
 
-#if (! defined(HAVE_FINITE) && defined(HAVE_ISNAN) && defined(HAVE_ISINF))
-#  define HAVE_FINITE 1
-#  define finite(a) (! isnan(a) && ! isinf(a))
+#if (! defined(HAVE_ISINF) && defined(HAVE_FPCLASSIFY) && defined(FP_PLUS_INF) && defined(FP_MINUS_INF))
+#  define HAVE_ISINF 1
+#  define isinf(a) (fpclassify(a) == FP_MINUS_INF || fpclassify(a) == FP_PLUS_INF)
 #endif
 
+#if (! defined(HAVE_ISINF) && defined(HAVE_FPCLASSIFY) && defined(FP_INFINITE))
+#  define HAVE_ISINF 1
+#  define isinf(a) (fpclassify(a) == FP_INFINITE)
+#endif
 
 #include <stdio.h>
 int main(void){
-    double nan,inf,c,d;
-     ;
-     /* some math to see if we get a segfault; */
-     nan=0.0/0.0;
-     inf=1.0/0.0;
-     c = 1.0;
-     c = c / 0.0; /* try getting fpe */
-     c = inf + nan;
-     c = inf / nan;
-     if (! isnan(nan)) {printf ("isnan(NaN) ... "); return 1;}
-     if (nan == nan) {printf ("nan != nan ..."); return 1;}
-     if (! isinf(inf)) {printf ("isinf(oo) ... "); return 1;}
-     if (! isinf(-inf)) {printf ("isinf(-oo) ... "); return 1;}
-     if (! inf > 0) {printf ("inf > 0 ... "); return 1;}
-     if (! -inf < 0) {printf ("inf < 0 ... "); return 1;}
-     return 0;
-}
+    double nan,inf,c,zero;
+    ;
+    /* some math to see if we get a floating point exception */
+    zero=sin(0.0); /* don't let the compiler optimize us away */
+    nan=0.0/zero; /* especially here */
+    inf=1.0/zero; /* and here. I want to know if it can do the magic */
+		  /* at run time without sig fpe */
+    c = inf + nan;
+    c = inf / nan;
+    if (! isnan(nan)) {printf ("not isnan(NaN) ... "); return 1;}
+    if (nan == nan) {printf ("nan == nan ... "); return 1;}
+    if (! isinf(inf)) {printf ("not isinf(oo) ... "); return 1;}
+    if (! isinf(-inf)) {printf ("not isinf(-oo) ... "); return 1;}
+    if (! inf > 0) {printf ("not inf > 0 ... "); return 1;}
+    if (! -inf < 0) {printf ("not -inf < 0 ... "); return 1;}
+    return 0;
+ }
 EOF
-if { (eval echo configure:2530: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext} && (./conftest; exit) 2>/dev/null
+if { (eval echo configure:3003: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext} && (./conftest; exit) 2>/dev/null
 then
   rd_cv_ieee_switch=yes
 else
@@ -2540,12 +3013,14 @@ fi
 
 fi
 
-echo "$ac_t""$rd_cv_ieee_switch" 1>&6
-if test "$rd_cv_ieee_switch" != yes ; then
-
-CFLAGS=-qfloat=nofold
-echo $ac_n "checking if IEEE math works with the -qfloat=nofold switch""... $ac_c" 1>&6
-echo "configure:2549: checking if IEEE math works with the -qfloat=nofold switch" >&5
+if test x${rd_cv_ieee_switch} = "xyes"; then
+ echo "$ac_t""yes" 1>&6
+ 
+else
+ echo "$ac_t""no" 1>&6
+ CFLAGS="$_cflags -qfloat=nofold"
+    echo $ac_n "checking if IEEE math works with the -qfloat=nofold switch""... $ac_c" 1>&6
+echo "configure:3024: checking if IEEE math works with the -qfloat=nofold switch" >&5
 if eval "test \"`echo '$''{'rd_cv_ieee_nofold'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -2553,68 +3028,75 @@ else
   :
 else
   cat > conftest.$ac_ext <<EOF
-#line 2557 "configure"
+#line 3032 "configure"
 #include "confdefs.h"
 
 
 #if HAVE_MATH_H
-#  include <math.h>                                                                                                                                        
+#  include <math.h>
 #endif
 
 #if HAVE_FLOAT_H
 #  include <float.h>  
 #endif
 
-/* for solaris */
+#if HAVE_IEEEFP_H
+#  include <ieeefp.h>
+#endif
+
+#if HAVE_FP_CLASS_H
+#  include <fp_class.h>
+#endif
+
+/* Solaris */
 #if (! defined(HAVE_ISINF) && defined(HAVE_FPCLASS))
 #  define HAVE_ISINF 1
-#  include <ieeefp.h>
 #  define isinf(a) (fpclass(a) == FP_NINF || fpclass(a) == FP_PINF)
 #endif
-/* for dec unix */
+
+/* Digital UNIX */
 #if (! defined(HAVE_ISINF) && defined(HAVE_FP_CLASS) && defined(HAVE_FP_CLASS_H))
 #  define HAVE_ISINF 1
-#  include <fp_class.h>
 #  define isinf(a) (fp_class(a) == FP_NEG_INF || fp_class(a) == FP_POS_INF)
-#endif
-/* for HP-UX 10.20 */
-#if (! defined(HAVE_ISINF) && defined(HAVE_FPCLASSIFY))
-#  define HAVE_ISINF 1
-#  define isinf(a) (fpclassify(a) == FP_MINUS_INF || fpclassify(a) == FP_PLUS_INF)
-#endif
-/* for AIX */
+#endif 
+
+/* AIX */
 #if (! defined(HAVE_ISINF) && defined(HAVE_CLASS))
 #  define HAVE_ISINF 1
 #  define isinf(a) (class(a) == FP_MINUS_INF || class(a) == FP_PLUS_INF)
 #endif
 
-#if (! defined(HAVE_FINITE) && defined(HAVE_ISNAN) && defined(HAVE_ISINF))
-#  define HAVE_FINITE 1
-#  define finite(a) (! isnan(a) && ! isinf(a))
+#if (! defined(HAVE_ISINF) && defined(HAVE_FPCLASSIFY) && defined(FP_PLUS_INF) && defined(FP_MINUS_INF))
+#  define HAVE_ISINF 1
+#  define isinf(a) (fpclassify(a) == FP_MINUS_INF || fpclassify(a) == FP_PLUS_INF)
 #endif
 
+#if (! defined(HAVE_ISINF) && defined(HAVE_FPCLASSIFY) && defined(FP_INFINITE))
+#  define HAVE_ISINF 1
+#  define isinf(a) (fpclassify(a) == FP_INFINITE)
+#endif
 
 #include <stdio.h>
 int main(void){
-    double nan,inf,c,d;
-     ;
-     /* some math to see if we get a segfault; */
-     nan=0.0/0.0;
-     inf=1.0/0.0;
-     c = 1.0;
-     c = c / 0.0; /* try getting fpe */
-     c = inf + nan;
-     c = inf / nan;
-     if (! isnan(nan)) {printf ("isnan(NaN) ... "); return 1;}
-     if (nan == nan) {printf ("nan != nan ..."); return 1;}
-     if (! isinf(inf)) {printf ("isinf(oo) ... "); return 1;}
-     if (! isinf(-inf)) {printf ("isinf(-oo) ... "); return 1;}
-     if (! inf > 0) {printf ("inf > 0 ... "); return 1;}
-     if (! -inf < 0) {printf ("inf < 0 ... "); return 1;}
-     return 0;
-}
+    double nan,inf,c,zero;
+    ;
+    /* some math to see if we get a floating point exception */
+    zero=sin(0.0); /* don't let the compiler optimize us away */
+    nan=0.0/zero; /* especially here */
+    inf=1.0/zero; /* and here. I want to know if it can do the magic */
+		  /* at run time without sig fpe */
+    c = inf + nan;
+    c = inf / nan;
+    if (! isnan(nan)) {printf ("not isnan(NaN) ... "); return 1;}
+    if (nan == nan) {printf ("nan == nan ... "); return 1;}
+    if (! isinf(inf)) {printf ("not isinf(oo) ... "); return 1;}
+    if (! isinf(-inf)) {printf ("not isinf(-oo) ... "); return 1;}
+    if (! inf > 0) {printf ("not inf > 0 ... "); return 1;}
+    if (! -inf < 0) {printf ("not -inf < 0 ... "); return 1;}
+    return 0;
+ }
 EOF
-if { (eval echo configure:2618: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext} && (./conftest; exit) 2>/dev/null
+if { (eval echo configure:3100: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext} && (./conftest; exit) 2>/dev/null
 then
   rd_cv_ieee_nofold=yes
 else
@@ -2628,12 +3110,14 @@ fi
 
 fi
 
-echo "$ac_t""$rd_cv_ieee_nofold" 1>&6
-if test "$rd_cv_ieee_nofold" != yes ; then
-
-CFLAGS="-w -qflttrap=enable:zerodivide"
-echo $ac_n "checking if IEEE math works with the -w -qflttrap=enable:zerodivide""... $ac_c" 1>&6
-echo "configure:2637: checking if IEEE math works with the -w -qflttrap=enable:zerodivide" >&5
+if test x${rd_cv_ieee_nofold} = "xyes"; then
+ echo "$ac_t""yes" 1>&6
+ 
+else
+ echo "$ac_t""no" 1>&6
+ CFLAGS="$_cflags -w -qflttrap=enable:zerodivide"
+      echo $ac_n "checking if IEEE math works with the -w -qflttrap=enable:zerodivide""... $ac_c" 1>&6
+echo "configure:3121: checking if IEEE math works with the -w -qflttrap=enable:zerodivide" >&5
 if eval "test \"`echo '$''{'rd_cv_ieee_flttrap'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -2641,68 +3125,75 @@ else
   :
 else
   cat > conftest.$ac_ext <<EOF
-#line 2645 "configure"
+#line 3129 "configure"
 #include "confdefs.h"
 
 
 #if HAVE_MATH_H
-#  include <math.h>                                                                                                                                        
+#  include <math.h>
 #endif
 
 #if HAVE_FLOAT_H
 #  include <float.h>  
 #endif
 
-/* for solaris */
+#if HAVE_IEEEFP_H
+#  include <ieeefp.h>
+#endif
+
+#if HAVE_FP_CLASS_H
+#  include <fp_class.h>
+#endif
+
+/* Solaris */
 #if (! defined(HAVE_ISINF) && defined(HAVE_FPCLASS))
 #  define HAVE_ISINF 1
-#  include <ieeefp.h>
 #  define isinf(a) (fpclass(a) == FP_NINF || fpclass(a) == FP_PINF)
 #endif
-/* for dec unix */
+
+/* Digital UNIX */
 #if (! defined(HAVE_ISINF) && defined(HAVE_FP_CLASS) && defined(HAVE_FP_CLASS_H))
 #  define HAVE_ISINF 1
-#  include <fp_class.h>
 #  define isinf(a) (fp_class(a) == FP_NEG_INF || fp_class(a) == FP_POS_INF)
-#endif
-/* for HP-UX 10.20 */
-#if (! defined(HAVE_ISINF) && defined(HAVE_FPCLASSIFY))
-#  define HAVE_ISINF 1
-#  define isinf(a) (fpclassify(a) == FP_MINUS_INF || fpclassify(a) == FP_PLUS_INF)
-#endif
-/* for AIX */
+#endif 
+
+/* AIX */
 #if (! defined(HAVE_ISINF) && defined(HAVE_CLASS))
 #  define HAVE_ISINF 1
 #  define isinf(a) (class(a) == FP_MINUS_INF || class(a) == FP_PLUS_INF)
 #endif
 
-#if (! defined(HAVE_FINITE) && defined(HAVE_ISNAN) && defined(HAVE_ISINF))
-#  define HAVE_FINITE 1
-#  define finite(a) (! isnan(a) && ! isinf(a))
+#if (! defined(HAVE_ISINF) && defined(HAVE_FPCLASSIFY) && defined(FP_PLUS_INF) && defined(FP_MINUS_INF))
+#  define HAVE_ISINF 1
+#  define isinf(a) (fpclassify(a) == FP_MINUS_INF || fpclassify(a) == FP_PLUS_INF)
 #endif
 
+#if (! defined(HAVE_ISINF) && defined(HAVE_FPCLASSIFY) && defined(FP_INFINITE))
+#  define HAVE_ISINF 1
+#  define isinf(a) (fpclassify(a) == FP_INFINITE)
+#endif
 
 #include <stdio.h>
 int main(void){
-    double nan,inf,c,d;
-     ;
-     /* some math to see if we get a segfault; */
-     nan=0.0/0.0;
-     inf=1.0/0.0;
-     c = 1.0;
-     c = c / 0.0; /* try getting fpe */
-     c = inf + nan;
-     c = inf / nan;
-     if (! isnan(nan)) {printf ("isnan(NaN) ... "); return 1;}
-     if (nan == nan) {printf ("nan != nan ..."); return 1;}
-     if (! isinf(inf)) {printf ("isinf(oo) ... "); return 1;}
-     if (! isinf(-inf)) {printf ("isinf(-oo) ... "); return 1;}
-     if (! inf > 0) {printf ("inf > 0 ... "); return 1;}
-     if (! -inf < 0) {printf ("inf < 0 ... "); return 1;}
-     return 0;
-}
+    double nan,inf,c,zero;
+    ;
+    /* some math to see if we get a floating point exception */
+    zero=sin(0.0); /* don't let the compiler optimize us away */
+    nan=0.0/zero; /* especially here */
+    inf=1.0/zero; /* and here. I want to know if it can do the magic */
+		  /* at run time without sig fpe */
+    c = inf + nan;
+    c = inf / nan;
+    if (! isnan(nan)) {printf ("not isnan(NaN) ... "); return 1;}
+    if (nan == nan) {printf ("nan == nan ... "); return 1;}
+    if (! isinf(inf)) {printf ("not isinf(oo) ... "); return 1;}
+    if (! isinf(-inf)) {printf ("not isinf(-oo) ... "); return 1;}
+    if (! inf > 0) {printf ("not inf > 0 ... "); return 1;}
+    if (! -inf < 0) {printf ("not -inf < 0 ... "); return 1;}
+    return 0;
+ }
 EOF
-if { (eval echo configure:2706: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext} && (./conftest; exit) 2>/dev/null
+if { (eval echo configure:3197: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext} && (./conftest; exit) 2>/dev/null
 then
   rd_cv_ieee_flttrap=yes
 else
@@ -2716,12 +3207,14 @@ fi
 
 fi
 
-echo "$ac_t""$rd_cv_ieee_flttrap" 1>&6
-if test "$rd_cv_ieee_flttrap" != yes ; then
-
-CFLAGS=-mieee
-echo $ac_n "checking if IEEE math works with the -mieee switch""... $ac_c" 1>&6
-echo "configure:2725: checking if IEEE math works with the -mieee switch" >&5
+if test x${rd_cv_ieee_flttrap} = "xyes"; then
+ echo "$ac_t""yes" 1>&6
+ 
+else
+ echo "$ac_t""no" 1>&6
+ CFLAGS="$_cflags -mieee"
+       echo $ac_n "checking if IEEE math works with the -mieee switch""... $ac_c" 1>&6
+echo "configure:3218: checking if IEEE math works with the -mieee switch" >&5
 if eval "test \"`echo '$''{'rd_cv_ieee_mswitch'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -2729,68 +3222,75 @@ else
   :
 else
   cat > conftest.$ac_ext <<EOF
-#line 2733 "configure"
+#line 3226 "configure"
 #include "confdefs.h"
 
 
 #if HAVE_MATH_H
-#  include <math.h>                                                                                                                                        
+#  include <math.h>
 #endif
 
 #if HAVE_FLOAT_H
 #  include <float.h>  
 #endif
 
-/* for solaris */
+#if HAVE_IEEEFP_H
+#  include <ieeefp.h>
+#endif
+
+#if HAVE_FP_CLASS_H
+#  include <fp_class.h>
+#endif
+
+/* Solaris */
 #if (! defined(HAVE_ISINF) && defined(HAVE_FPCLASS))
 #  define HAVE_ISINF 1
-#  include <ieeefp.h>
 #  define isinf(a) (fpclass(a) == FP_NINF || fpclass(a) == FP_PINF)
 #endif
-/* for dec unix */
+
+/* Digital UNIX */
 #if (! defined(HAVE_ISINF) && defined(HAVE_FP_CLASS) && defined(HAVE_FP_CLASS_H))
 #  define HAVE_ISINF 1
-#  include <fp_class.h>
 #  define isinf(a) (fp_class(a) == FP_NEG_INF || fp_class(a) == FP_POS_INF)
-#endif
-/* for HP-UX 10.20 */
-#if (! defined(HAVE_ISINF) && defined(HAVE_FPCLASSIFY))
-#  define HAVE_ISINF 1
-#  define isinf(a) (fpclassify(a) == FP_MINUS_INF || fpclassify(a) == FP_PLUS_INF)
-#endif
-/* for AIX */
+#endif 
+
+/* AIX */
 #if (! defined(HAVE_ISINF) && defined(HAVE_CLASS))
 #  define HAVE_ISINF 1
 #  define isinf(a) (class(a) == FP_MINUS_INF || class(a) == FP_PLUS_INF)
 #endif
 
-#if (! defined(HAVE_FINITE) && defined(HAVE_ISNAN) && defined(HAVE_ISINF))
-#  define HAVE_FINITE 1
-#  define finite(a) (! isnan(a) && ! isinf(a))
+#if (! defined(HAVE_ISINF) && defined(HAVE_FPCLASSIFY) && defined(FP_PLUS_INF) && defined(FP_MINUS_INF))
+#  define HAVE_ISINF 1
+#  define isinf(a) (fpclassify(a) == FP_MINUS_INF || fpclassify(a) == FP_PLUS_INF)
 #endif
 
+#if (! defined(HAVE_ISINF) && defined(HAVE_FPCLASSIFY) && defined(FP_INFINITE))
+#  define HAVE_ISINF 1
+#  define isinf(a) (fpclassify(a) == FP_INFINITE)
+#endif
 
 #include <stdio.h>
 int main(void){
-    double nan,inf,c,d;
-     ;
-     /* some math to see if we get a segfault; */
-     nan=0.0/0.0;
-     inf=1.0/0.0;
-     c = 1.0;
-     c = c / 0.0; /* try getting fpe */
-     c = inf + nan;
-     c = inf / nan;
-     if (! isnan(nan)) {printf ("isnan(NaN) ... "); return 1;}
-     if (nan == nan) {printf ("nan != nan ..."); return 1;}
-     if (! isinf(inf)) {printf ("isinf(oo) ... "); return 1;}
-     if (! isinf(-inf)) {printf ("isinf(-oo) ... "); return 1;}
-     if (! inf > 0) {printf ("inf > 0 ... "); return 1;}
-     if (! -inf < 0) {printf ("inf < 0 ... "); return 1;}
-     return 0;
-}
+    double nan,inf,c,zero;
+    ;
+    /* some math to see if we get a floating point exception */
+    zero=sin(0.0); /* don't let the compiler optimize us away */
+    nan=0.0/zero; /* especially here */
+    inf=1.0/zero; /* and here. I want to know if it can do the magic */
+		  /* at run time without sig fpe */
+    c = inf + nan;
+    c = inf / nan;
+    if (! isnan(nan)) {printf ("not isnan(NaN) ... "); return 1;}
+    if (nan == nan) {printf ("nan == nan ... "); return 1;}
+    if (! isinf(inf)) {printf ("not isinf(oo) ... "); return 1;}
+    if (! isinf(-inf)) {printf ("not isinf(-oo) ... "); return 1;}
+    if (! inf > 0) {printf ("not inf > 0 ... "); return 1;}
+    if (! -inf < 0) {printf ("not -inf < 0 ... "); return 1;}
+    return 0;
+ }
 EOF
-if { (eval echo configure:2794: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext} && (./conftest; exit) 2>/dev/null
+if { (eval echo configure:3294: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext} && (./conftest; exit) 2>/dev/null
 then
   rd_cv_ieee_mswitch=yes
 else
@@ -2804,12 +3304,14 @@ fi
 
 fi
 
-echo "$ac_t""$rd_cv_ieee_mswitch" 1>&6
-if test "$rd_cv_ieee_mswitch" != yes ; then
-
-CFLAGS="-q float=rndsngl"
-echo $ac_n "checking if IEEE math works with the -q float=rndsngl switch""... $ac_c" 1>&6
-echo "configure:2813: checking if IEEE math works with the -q float=rndsngl switch" >&5
+if test x${rd_cv_ieee_mswitch} = "xyes"; then
+ echo "$ac_t""yes" 1>&6
+ 
+else
+ echo "$ac_t""no" 1>&6
+ CFLAGS="$_cflags -q float=rndsngl"
+         echo $ac_n "checking if IEEE math works with the -q float=rndsngl switch""... $ac_c" 1>&6
+echo "configure:3315: checking if IEEE math works with the -q float=rndsngl switch" >&5
 if eval "test \"`echo '$''{'rd_cv_ieee_qswitch'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -2817,68 +3319,75 @@ else
   :
 else
   cat > conftest.$ac_ext <<EOF
-#line 2821 "configure"
+#line 3323 "configure"
 #include "confdefs.h"
 
 
 #if HAVE_MATH_H
-#  include <math.h>                                                                                                                                        
+#  include <math.h>
 #endif
 
 #if HAVE_FLOAT_H
 #  include <float.h>  
 #endif
 
-/* for solaris */
+#if HAVE_IEEEFP_H
+#  include <ieeefp.h>
+#endif
+
+#if HAVE_FP_CLASS_H
+#  include <fp_class.h>
+#endif
+
+/* Solaris */
 #if (! defined(HAVE_ISINF) && defined(HAVE_FPCLASS))
 #  define HAVE_ISINF 1
-#  include <ieeefp.h>
 #  define isinf(a) (fpclass(a) == FP_NINF || fpclass(a) == FP_PINF)
 #endif
-/* for dec unix */
+
+/* Digital UNIX */
 #if (! defined(HAVE_ISINF) && defined(HAVE_FP_CLASS) && defined(HAVE_FP_CLASS_H))
 #  define HAVE_ISINF 1
-#  include <fp_class.h>
 #  define isinf(a) (fp_class(a) == FP_NEG_INF || fp_class(a) == FP_POS_INF)
-#endif
-/* for HP-UX 10.20 */
-#if (! defined(HAVE_ISINF) && defined(HAVE_FPCLASSIFY))
-#  define HAVE_ISINF 1
-#  define isinf(a) (fpclassify(a) == FP_MINUS_INF || fpclassify(a) == FP_PLUS_INF)
-#endif
-/* for AIX */
+#endif 
+
+/* AIX */
 #if (! defined(HAVE_ISINF) && defined(HAVE_CLASS))
 #  define HAVE_ISINF 1
 #  define isinf(a) (class(a) == FP_MINUS_INF || class(a) == FP_PLUS_INF)
 #endif
 
-#if (! defined(HAVE_FINITE) && defined(HAVE_ISNAN) && defined(HAVE_ISINF))
-#  define HAVE_FINITE 1
-#  define finite(a) (! isnan(a) && ! isinf(a))
+#if (! defined(HAVE_ISINF) && defined(HAVE_FPCLASSIFY) && defined(FP_PLUS_INF) && defined(FP_MINUS_INF))
+#  define HAVE_ISINF 1
+#  define isinf(a) (fpclassify(a) == FP_MINUS_INF || fpclassify(a) == FP_PLUS_INF)
 #endif
 
+#if (! defined(HAVE_ISINF) && defined(HAVE_FPCLASSIFY) && defined(FP_INFINITE))
+#  define HAVE_ISINF 1
+#  define isinf(a) (fpclassify(a) == FP_INFINITE)
+#endif
 
 #include <stdio.h>
 int main(void){
-    double nan,inf,c,d;
-     ;
-     /* some math to see if we get a segfault; */
-     nan=0.0/0.0;
-     inf=1.0/0.0;
-     c = 1.0;
-     c = c / 0.0; /* try getting fpe */
-     c = inf + nan;
-     c = inf / nan;
-     if (! isnan(nan)) {printf ("isnan(NaN) ... "); return 1;}
-     if (nan == nan) {printf ("nan != nan ..."); return 1;}
-     if (! isinf(inf)) {printf ("isinf(oo) ... "); return 1;}
-     if (! isinf(-inf)) {printf ("isinf(-oo) ... "); return 1;}
-     if (! inf > 0) {printf ("inf > 0 ... "); return 1;}
-     if (! -inf < 0) {printf ("inf < 0 ... "); return 1;}
-     return 0;
-}
+    double nan,inf,c,zero;
+    ;
+    /* some math to see if we get a floating point exception */
+    zero=sin(0.0); /* don't let the compiler optimize us away */
+    nan=0.0/zero; /* especially here */
+    inf=1.0/zero; /* and here. I want to know if it can do the magic */
+		  /* at run time without sig fpe */
+    c = inf + nan;
+    c = inf / nan;
+    if (! isnan(nan)) {printf ("not isnan(NaN) ... "); return 1;}
+    if (nan == nan) {printf ("nan == nan ... "); return 1;}
+    if (! isinf(inf)) {printf ("not isinf(oo) ... "); return 1;}
+    if (! isinf(-inf)) {printf ("not isinf(-oo) ... "); return 1;}
+    if (! inf > 0) {printf ("not inf > 0 ... "); return 1;}
+    if (! -inf < 0) {printf ("not -inf < 0 ... "); return 1;}
+    return 0;
+ }
 EOF
-if { (eval echo configure:2882: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext} && (./conftest; exit) 2>/dev/null
+if { (eval echo configure:3391: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext} && (./conftest; exit) 2>/dev/null
 then
   rd_cv_ieee_qswitch=yes
 else
@@ -2892,12 +3401,111 @@ fi
 
 fi
 
-echo "$ac_t""$rd_cv_ieee_qswitch" 1>&6
-if test "$rd_cv_ieee_qswitch" != yes ; then
+if test x${rd_cv_ieee_qswitch} = "xyes"; then
+ echo "$ac_t""yes" 1>&6
+ 
+else
+ echo "$ac_t""no" 1>&6
+ CFLAGS="$_cflags -OPT:IEEE_comparisons=ON"
+           echo $ac_n "checking if IEEE math works with the -OPT:IEEE_comparisons=ON switch""... $ac_c" 1>&6
+echo "configure:3412: checking if IEEE math works with the -OPT:IEEE_comparisons=ON switch" >&5
+if eval "test \"`echo '$''{'rd_cv_ieee_ieeecmpswitch'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  if test "$cross_compiling" = yes; then
+  :
+else
+  cat > conftest.$ac_ext <<EOF
+#line 3420 "configure"
+#include "confdefs.h"
 
-unset CFLAGS
-echo $ac_n "checking if IEEE math works with fpsetmask(0)""... $ac_c" 1>&6
-echo "configure:2901: checking if IEEE math works with fpsetmask(0)" >&5
+
+#if HAVE_MATH_H
+#  include <math.h>
+#endif
+
+#if HAVE_FLOAT_H
+#  include <float.h>  
+#endif
+
+#if HAVE_IEEEFP_H
+#  include <ieeefp.h>
+#endif
+
+#if HAVE_FP_CLASS_H
+#  include <fp_class.h>
+#endif
+
+/* Solaris */
+#if (! defined(HAVE_ISINF) && defined(HAVE_FPCLASS))
+#  define HAVE_ISINF 1
+#  define isinf(a) (fpclass(a) == FP_NINF || fpclass(a) == FP_PINF)
+#endif
+
+/* Digital UNIX */
+#if (! defined(HAVE_ISINF) && defined(HAVE_FP_CLASS) && defined(HAVE_FP_CLASS_H))
+#  define HAVE_ISINF 1
+#  define isinf(a) (fp_class(a) == FP_NEG_INF || fp_class(a) == FP_POS_INF)
+#endif 
+
+/* AIX */
+#if (! defined(HAVE_ISINF) && defined(HAVE_CLASS))
+#  define HAVE_ISINF 1
+#  define isinf(a) (class(a) == FP_MINUS_INF || class(a) == FP_PLUS_INF)
+#endif
+
+#if (! defined(HAVE_ISINF) && defined(HAVE_FPCLASSIFY) && defined(FP_PLUS_INF) && defined(FP_MINUS_INF))
+#  define HAVE_ISINF 1
+#  define isinf(a) (fpclassify(a) == FP_MINUS_INF || fpclassify(a) == FP_PLUS_INF)
+#endif
+
+#if (! defined(HAVE_ISINF) && defined(HAVE_FPCLASSIFY) && defined(FP_INFINITE))
+#  define HAVE_ISINF 1
+#  define isinf(a) (fpclassify(a) == FP_INFINITE)
+#endif
+
+#include <stdio.h>
+int main(void){
+    double nan,inf,c,zero;
+    ;
+    /* some math to see if we get a floating point exception */
+    zero=sin(0.0); /* don't let the compiler optimize us away */
+    nan=0.0/zero; /* especially here */
+    inf=1.0/zero; /* and here. I want to know if it can do the magic */
+		  /* at run time without sig fpe */
+    c = inf + nan;
+    c = inf / nan;
+    if (! isnan(nan)) {printf ("not isnan(NaN) ... "); return 1;}
+    if (nan == nan) {printf ("nan == nan ... "); return 1;}
+    if (! isinf(inf)) {printf ("not isinf(oo) ... "); return 1;}
+    if (! isinf(-inf)) {printf ("not isinf(-oo) ... "); return 1;}
+    if (! inf > 0) {printf ("not inf > 0 ... "); return 1;}
+    if (! -inf < 0) {printf ("not -inf < 0 ... "); return 1;}
+    return 0;
+ }
+EOF
+if { (eval echo configure:3488: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext} && (./conftest; exit) 2>/dev/null
+then
+  rd_cv_ieee_ieeecmpswitch=yes
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  rm -fr conftest*
+  rd_cv_ieee_ieeecmpswitch=no
+fi
+rm -fr conftest*
+fi
+
+fi
+
+if test x${rd_cv_ieee_ieeecmpswitch} = "xyes"; then
+ echo "$ac_t""yes" 1>&6
+ 
+else
+ echo "$ac_t""no" 1>&6
+ CFLAGS=$_cflags
+             echo $ac_n "checking if IEEE math works with fpsetmask(0)""... $ac_c" 1>&6
+echo "configure:3509: checking if IEEE math works with fpsetmask(0)" >&5
 if eval "test \"`echo '$''{'rd_cv_ieee_mask'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -2905,68 +3513,75 @@ else
   :
 else
   cat > conftest.$ac_ext <<EOF
-#line 2909 "configure"
+#line 3517 "configure"
 #include "confdefs.h"
 #include <floatingpoint.h>
 
 #if HAVE_MATH_H
-#  include <math.h>                                                                                                                                        
+#  include <math.h>
 #endif
 
 #if HAVE_FLOAT_H
 #  include <float.h>  
 #endif
 
-/* for solaris */
+#if HAVE_IEEEFP_H
+#  include <ieeefp.h>
+#endif
+
+#if HAVE_FP_CLASS_H
+#  include <fp_class.h>
+#endif
+
+/* Solaris */
 #if (! defined(HAVE_ISINF) && defined(HAVE_FPCLASS))
 #  define HAVE_ISINF 1
-#  include <ieeefp.h>
 #  define isinf(a) (fpclass(a) == FP_NINF || fpclass(a) == FP_PINF)
 #endif
-/* for dec unix */
+
+/* Digital UNIX */
 #if (! defined(HAVE_ISINF) && defined(HAVE_FP_CLASS) && defined(HAVE_FP_CLASS_H))
 #  define HAVE_ISINF 1
-#  include <fp_class.h>
 #  define isinf(a) (fp_class(a) == FP_NEG_INF || fp_class(a) == FP_POS_INF)
-#endif
-/* for HP-UX 10.20 */
-#if (! defined(HAVE_ISINF) && defined(HAVE_FPCLASSIFY))
-#  define HAVE_ISINF 1
-#  define isinf(a) (fpclassify(a) == FP_MINUS_INF || fpclassify(a) == FP_PLUS_INF)
-#endif
-/* for AIX */
+#endif 
+
+/* AIX */
 #if (! defined(HAVE_ISINF) && defined(HAVE_CLASS))
 #  define HAVE_ISINF 1
 #  define isinf(a) (class(a) == FP_MINUS_INF || class(a) == FP_PLUS_INF)
 #endif
 
-#if (! defined(HAVE_FINITE) && defined(HAVE_ISNAN) && defined(HAVE_ISINF))
-#  define HAVE_FINITE 1
-#  define finite(a) (! isnan(a) && ! isinf(a))
+#if (! defined(HAVE_ISINF) && defined(HAVE_FPCLASSIFY) && defined(FP_PLUS_INF) && defined(FP_MINUS_INF))
+#  define HAVE_ISINF 1
+#  define isinf(a) (fpclassify(a) == FP_MINUS_INF || fpclassify(a) == FP_PLUS_INF)
 #endif
 
+#if (! defined(HAVE_ISINF) && defined(HAVE_FPCLASSIFY) && defined(FP_INFINITE))
+#  define HAVE_ISINF 1
+#  define isinf(a) (fpclassify(a) == FP_INFINITE)
+#endif
 
 #include <stdio.h>
 int main(void){
-    double nan,inf,c,d;
-     fpsetmask(0);
-     /* some math to see if we get a segfault; */
-     nan=0.0/0.0;
-     inf=1.0/0.0;
-     c = 1.0;
-     c = c / 0.0; /* try getting fpe */
-     c = inf + nan;
-     c = inf / nan;
-     if (! isnan(nan)) {printf ("isnan(NaN) ... "); return 1;}
-     if (nan == nan) {printf ("nan != nan ..."); return 1;}
-     if (! isinf(inf)) {printf ("isinf(oo) ... "); return 1;}
-     if (! isinf(-inf)) {printf ("isinf(-oo) ... "); return 1;}
-     if (! inf > 0) {printf ("inf > 0 ... "); return 1;}
-     if (! -inf < 0) {printf ("inf < 0 ... "); return 1;}
-     return 0;
-}
+    double nan,inf,c,zero;
+    fpsetmask(0);
+    /* some math to see if we get a floating point exception */
+    zero=sin(0.0); /* don't let the compiler optimize us away */
+    nan=0.0/zero; /* especially here */
+    inf=1.0/zero; /* and here. I want to know if it can do the magic */
+		  /* at run time without sig fpe */
+    c = inf + nan;
+    c = inf / nan;
+    if (! isnan(nan)) {printf ("not isnan(NaN) ... "); return 1;}
+    if (nan == nan) {printf ("nan == nan ... "); return 1;}
+    if (! isinf(inf)) {printf ("not isinf(oo) ... "); return 1;}
+    if (! isinf(-inf)) {printf ("not isinf(-oo) ... "); return 1;}
+    if (! inf > 0) {printf ("not inf > 0 ... "); return 1;}
+    if (! -inf < 0) {printf ("not -inf < 0 ... "); return 1;}
+    return 0;
+ }
 EOF
-if { (eval echo configure:2970: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext} && (./conftest; exit) 2>/dev/null
+if { (eval echo configure:3585: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext} && (./conftest; exit) 2>/dev/null
 then
   rd_cv_ieee_mask=yes
 else
@@ -2980,11 +3595,17 @@ fi
 
 fi
 
-echo "$ac_t""$rd_cv_ieee_mask" 1>&6
-if test "$rd_cv_ieee_mask" != yes ; then
+if test x${rd_cv_ieee_mask} = "xyes"; then
+ echo "$ac_t""yes" 1>&6
+ cat >> confdefs.h <<\EOF
+#define MUST_DISABLE_FPMASK 1
+EOF
 
-echo $ac_n "checking if IEEE math works with signal(SIGFPE,SIG_IGN)""... $ac_c" 1>&6
-echo "configure:2988: checking if IEEE math works with signal(SIGFPE,SIG_IGN)" >&5
+	       PERLFLAGS="CCFLAGS=-DMUST_DISABLE_FPMASK"
+else
+ echo "$ac_t""no" 1>&6
+ echo $ac_n "checking if IEEE math works with signal(SIGFPE,SIG_IGN)""... $ac_c" 1>&6
+echo "configure:3609: checking if IEEE math works with signal(SIGFPE,SIG_IGN)" >&5
 if eval "test \"`echo '$''{'rd_cv_ieee_sigfpe'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -2992,68 +3613,75 @@ else
   :
 else
   cat > conftest.$ac_ext <<EOF
-#line 2996 "configure"
+#line 3617 "configure"
 #include "confdefs.h"
 #include <signal.h>
 
 #if HAVE_MATH_H
-#  include <math.h>                                                                                                                                        
+#  include <math.h>
 #endif
 
 #if HAVE_FLOAT_H
 #  include <float.h>  
 #endif
 
-/* for solaris */
+#if HAVE_IEEEFP_H
+#  include <ieeefp.h>
+#endif
+
+#if HAVE_FP_CLASS_H
+#  include <fp_class.h>
+#endif
+
+/* Solaris */
 #if (! defined(HAVE_ISINF) && defined(HAVE_FPCLASS))
 #  define HAVE_ISINF 1
-#  include <ieeefp.h>
 #  define isinf(a) (fpclass(a) == FP_NINF || fpclass(a) == FP_PINF)
 #endif
-/* for dec unix */
+
+/* Digital UNIX */
 #if (! defined(HAVE_ISINF) && defined(HAVE_FP_CLASS) && defined(HAVE_FP_CLASS_H))
 #  define HAVE_ISINF 1
-#  include <fp_class.h>
 #  define isinf(a) (fp_class(a) == FP_NEG_INF || fp_class(a) == FP_POS_INF)
-#endif
-/* for HP-UX 10.20 */
-#if (! defined(HAVE_ISINF) && defined(HAVE_FPCLASSIFY))
-#  define HAVE_ISINF 1
-#  define isinf(a) (fpclassify(a) == FP_MINUS_INF || fpclassify(a) == FP_PLUS_INF)
-#endif
-/* for AIX */
+#endif 
+
+/* AIX */
 #if (! defined(HAVE_ISINF) && defined(HAVE_CLASS))
 #  define HAVE_ISINF 1
 #  define isinf(a) (class(a) == FP_MINUS_INF || class(a) == FP_PLUS_INF)
 #endif
 
-#if (! defined(HAVE_FINITE) && defined(HAVE_ISNAN) && defined(HAVE_ISINF))
-#  define HAVE_FINITE 1
-#  define finite(a) (! isnan(a) && ! isinf(a))
+#if (! defined(HAVE_ISINF) && defined(HAVE_FPCLASSIFY) && defined(FP_PLUS_INF) && defined(FP_MINUS_INF))
+#  define HAVE_ISINF 1
+#  define isinf(a) (fpclassify(a) == FP_MINUS_INF || fpclassify(a) == FP_PLUS_INF)
 #endif
 
+#if (! defined(HAVE_ISINF) && defined(HAVE_FPCLASSIFY) && defined(FP_INFINITE))
+#  define HAVE_ISINF 1
+#  define isinf(a) (fpclassify(a) == FP_INFINITE)
+#endif
 
 #include <stdio.h>
 int main(void){
-    double nan,inf,c,d;
-     signal(SIGFPE,SIG_IGN);
-     /* some math to see if we get a segfault; */
-     nan=0.0/0.0;
-     inf=1.0/0.0;
-     c = 1.0;
-     c = c / 0.0; /* try getting fpe */
-     c = inf + nan;
-     c = inf / nan;
-     if (! isnan(nan)) {printf ("isnan(NaN) ... "); return 1;}
-     if (nan == nan) {printf ("nan != nan ..."); return 1;}
-     if (! isinf(inf)) {printf ("isinf(oo) ... "); return 1;}
-     if (! isinf(-inf)) {printf ("isinf(-oo) ... "); return 1;}
-     if (! inf > 0) {printf ("inf > 0 ... "); return 1;}
-     if (! -inf < 0) {printf ("inf < 0 ... "); return 1;}
-     return 0;
-}
+    double nan,inf,c,zero;
+    signal(SIGFPE,SIG_IGN);
+    /* some math to see if we get a floating point exception */
+    zero=sin(0.0); /* don't let the compiler optimize us away */
+    nan=0.0/zero; /* especially here */
+    inf=1.0/zero; /* and here. I want to know if it can do the magic */
+		  /* at run time without sig fpe */
+    c = inf + nan;
+    c = inf / nan;
+    if (! isnan(nan)) {printf ("not isnan(NaN) ... "); return 1;}
+    if (nan == nan) {printf ("nan == nan ... "); return 1;}
+    if (! isinf(inf)) {printf ("not isinf(oo) ... "); return 1;}
+    if (! isinf(-inf)) {printf ("not isinf(-oo) ... "); return 1;}
+    if (! inf > 0) {printf ("not inf > 0 ... "); return 1;}
+    if (! -inf < 0) {printf ("not -inf < 0 ... "); return 1;}
+    return 0;
+ }
 EOF
-if { (eval echo configure:3057: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext} && (./conftest; exit) 2>/dev/null
+if { (eval echo configure:3685: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext} && (./conftest; exit) 2>/dev/null
 then
   rd_cv_ieee_sigfpe=yes
 else
@@ -3067,62 +3695,46 @@ fi
 
 fi
 
-echo "$ac_t""$rd_cv_ieee_sigfpe" 1>&6
-if test "$rd_cv_ieee_sigfpe" != yes ; then
-
-
-echo "--------------------------------------------------------------"
-echo "Your Compiler does not do propper IEEE math ... "
-echo "Please find out how to make IEEE math work with your Compiler"
-echo "and let me know (oetiker@ee.ethz.ch)"
-echo "Check config.log to see what went wrong ..."
-echo ""
-exit 1
-       fi
-      fi
-     fi
-    fi
-   fi
-  fi
- fi
-fi
-
-CFLAGS=$oCFLAGS
-
-if test x$rd_cv_ieee_sigfpe = xyes; then
-   cat >> confdefs.h <<\EOF
+if test x${rd_cv_ieee_sigfpe} = "xyes"; then
+ echo "$ac_t""yes" 1>&6
+ cat >> confdefs.h <<\EOF
 #define MUST_DISABLE_SIGFPE 1
 EOF
 
+                 PERLFLAGS="CCFLAGS=-DMUST_DISABLE_SIGFPE"
+else
+ echo "$ac_t""no" 1>&6
+ { echo "configure: error: 
+Your Compiler does not do propper IEEE math ... Please find out how to
+make IEEE math work with your compiler and let me know (oetiker@ee.ethz.ch).
+Check config.log to see what went wrong ...
+" 1>&2; exit 1; }
 fi
 
-if test x$rd_cv_ieee_mask = xyes; then
-   cat >> confdefs.h <<\EOF
-#define MUST_DISABLE_FPMASK 1
-EOF
 
-   CFLAGS="$CFLAGS -DMUST_DISABLE_FPMASK"
 fi
 
-if test x$rd_cv_ieee_switch = xyes; then
-   CFLAGS="$CFLAGS -ieee"
+
 fi
 
-if test x$rd_cv_ieee_nofold = xyes; then
-   CFLAGS="$CFLAGS -qfloat=nofold"
+
 fi
 
-if test x$rd_cv_ieee_flttrap = xyes; then
-   CFLAGS="$CFLAGS -w -qflttrap=enable:zerodivide"
+
 fi
 
-if test x$rd_cv_ieee_mswitch = xyes; then
-   CFLAGS="$CFLAGS -mieee"
+
 fi
 
-if test x$rd_cv_ieee_qswitch = xyes; then
-   CFLAGS="$CFLAGS -q float=rndsngl"
+
 fi
+
+
+fi
+
+
+fi
+
 
 
 
@@ -3238,24 +3850,18 @@ trap 'rm -fr `echo "cgilib-0.4/Makefile				\
           examples/Makefile				\
           contrib/Makefile				\
           contrib/trytime/Makefile			\
-          contrib/log2rrd/Makefile			\
           contrib/log2rrd/log2rrd.pl			\
-          contrib/killspike/Makefile			\
           contrib/killspike/killspike.pl		\
-          contrib/rrdlastds/Makefile			\
           contrib/rrdlastds/rrdlastds.pl		\
-          contrib/rrdfetchnames/Makefile		\
           contrib/rrdfetchnames/rrdfetchnames.pl	\
-          contrib/add_ds/Makefile			\
           contrib/add_ds/add_ds.pl			\
 	  contrib/add_ds/batch.pl			\
-          contrib/rrd-file-icon/Makefile		\
-          contrib/rrdproc/Makefile			\
           doc/Makefile					\
           gd1.3/Makefile				\
-          libpng-1.0.3/Makefile				\
+          libpng-1.0.9/Makefile				\
           zlib-1.1.3/Makefile				\
           src/Makefile					\
+          tcl/Makefile					\
           Makefile config/config.h" | sed "s/:[^ ]*//g"` conftest*; exit 1' 1 2 15
 EOF
 cat >> $CONFIG_STATUS <<EOF
@@ -3318,15 +3924,26 @@ s%@CGI_LIB_DIR@%$CGI_LIB_DIR%g
 s%@GD_LIB_DIR@%$GD_LIB_DIR%g
 s%@PNG_LIB_DIR@%$PNG_LIB_DIR%g
 s%@ZLIB_LIB_DIR@%$ZLIB_LIB_DIR%g
+s%@PERLFLAGS@%$PERLFLAGS%g
 s%@PERL@%$PERL%g
 s%@COMP_PERL@%$COMP_PERL%g
+s%@SO_EXT@%$SO_EXT%g
+s%@PERL_MAKE_OPTIONS@%$PERL_MAKE_OPTIONS%g
+s%@COMP_TCL_TRUE@%$COMP_TCL_TRUE%g
+s%@COMP_TCL_FALSE@%$COMP_TCL_FALSE%g
+s%@TCL_PREFIX@%$TCL_PREFIX%g
+s%@TCL_SHLIB_CFLAGS@%$TCL_SHLIB_CFLAGS%g
+s%@TCL_SHLIB_LD@%$TCL_SHLIB_LD%g
+s%@TCL_SHLIB_SUFFIX@%$TCL_SHLIB_SUFFIX%g
+s%@TCL_PACKAGE_PATH@%$TCL_PACKAGE_PATH%g
+s%@TCL_LD_SEARCH_FLAGS@%$TCL_LD_SEARCH_FLAGS%g
 s%@CC@%$CC%g
 s%@CPP@%$CPP%g
 s%@RANLIB@%$RANLIB%g
-s%@LD@%$LD%g
-s%@NM@%$NM%g
 s%@LN_S@%$LN_S%g
 s%@LIBTOOL@%$LIBTOOL%g
+s%@NROFF@%$NROFF%g
+s%@TROFF@%$TROFF%g
 
 CEOF
 EOF
@@ -3379,24 +3996,18 @@ CONFIG_FILES=\${CONFIG_FILES-"cgilib-0.4/Makefile				\
           examples/Makefile				\
           contrib/Makefile				\
           contrib/trytime/Makefile			\
-          contrib/log2rrd/Makefile			\
           contrib/log2rrd/log2rrd.pl			\
-          contrib/killspike/Makefile			\
           contrib/killspike/killspike.pl		\
-          contrib/rrdlastds/Makefile			\
           contrib/rrdlastds/rrdlastds.pl		\
-          contrib/rrdfetchnames/Makefile		\
           contrib/rrdfetchnames/rrdfetchnames.pl	\
-          contrib/add_ds/Makefile			\
           contrib/add_ds/add_ds.pl			\
 	  contrib/add_ds/batch.pl			\
-          contrib/rrd-file-icon/Makefile		\
-          contrib/rrdproc/Makefile			\
           doc/Makefile					\
           gd1.3/Makefile				\
-          libpng-1.0.3/Makefile				\
+          libpng-1.0.9/Makefile				\
           zlib-1.1.3/Makefile				\
           src/Makefile					\
+          tcl/Makefile					\
           Makefile"}
 EOF
 cat >> $CONFIG_STATUS <<\EOF
@@ -3580,10 +4191,10 @@ test "$no_create" = yes || ${CONFIG_SHELL-/bin/sh} $CONFIG_STATUS || exit 1
 
 
 echo $ac_n "checking in""... $ac_c" 1>&6
-echo "configure:3584: checking in" >&5
+echo "configure:4195: checking in" >&5
 echo "$ac_t""and out again" 1>&6
 
-echo $ac_n "ordering CD from http://ee-staff.ethz-ch/~oetiker/wish $ac_c" 1>&6
+echo $ac_n "ordering CD from http://ee-staff.ethz.ch/~oetiker/wish $ac_c" 1>&6
 sleep 1
 echo $ac_n ".$ac_c" 1>&6
 sleep 1
@@ -3599,13 +4210,14 @@ echo "----------------------------------------------------------------"
 echo "Config is DONE!"
 echo
 echo "Type 'make' to compile the software and use 'make install' to "
-echo "install everything to $prefix. If you want to install the perl"
+echo "install everything to: $prefix."
+echo
+echo "If you want to install the perl"
 echo "modules in site-perl, try 'make site-perl-install'."
 echo 
-echo "       ... that wishlist mentioned above does really exist. So if"
-echo "you feel like showing your appreciation for rrdtool this is the"
-echo "place to go. :-)"
+echo "       ... that wishlist is NO JOKE. If you find RRDtool useful"
+echo "make me happy. Go to http://ee-staff.ethz.ch/~oetiker/wish and"
+echo "place an order."
 echo 
-echo "                            -- Tobi Oetiker <oetiker@ee.ethz.ch>"
+echo "                               -- Tobi Oetiker <tobi@oetiker.ch>"
 echo "----------------------------------------------------------------"
-

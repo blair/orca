@@ -4,8 +4,8 @@ prefix		= @prefix@
 exec_prefix	= @exec_prefix@
 bindir		= @bindir@
 libdir		= @libdir@
-MKDIR		= @MKDIR@
 INSTALL		= @INSTALL@
+MKDIR		= @MKDIR@
 PERL_HEAD	= @PERL_HEAD@
 ORCALLATOR_DIR	= @ORCALLATOR_DIR@
 RRD_DIR		= @RRD_DIR@
@@ -56,7 +56,6 @@ distclean:	clean
 
 Makefile:	Makefile.in
 		cd .. && CONFIG_FILES=orcallator/Makefile ./config.status
-		$(MAKE)
 
 orcallator.cfg:			orcallator.cfg.in
 		cd .. && CONFIG_FILES=orcallator/orcallator.cfg ./config.status

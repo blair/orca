@@ -1,58 +1,49 @@
 <HTML>
 <HEAD>
 <TITLE>rrddump</TITLE>
-<LINK REV="made" HREF="mailto:karrer@zinal.ee.ethz.ch">
+<LINK REV="made" HREF="mailto:karrer@iis.ee.ethz.ch">
 </HEAD>
 
 <BODY>
 
+<A NAME="__index__"></A>
 <!-- INDEX BEGIN -->
 <!--
 
 <UL>
 
-	<LI><A HREF="#NAME">NAME</A>
-	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
-	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
-	<LI><A HREF="#AUTHOR">AUTHOR</A>
+	<LI><A HREF="#name">NAME</A></LI>
+	<LI><A HREF="#synopsis">SYNOPSIS</A></LI>
+	<LI><A HREF="#description">DESCRIPTION</A></LI>
+	<LI><A HREF="#author">AUTHOR</A></LI>
 </UL>
 -->
 <!-- INDEX END -->
 
 <P>
-<H1><A NAME="NAME">NAME</A></H1>
-<P>
-rrdtool dump - dump the contents of an <STRONG>RRD</STRONG> to XML format
-
+<H1><A NAME="name">NAME</A></H1>
+<P>rrdtool dump - dump the contents of an <STRONG>RRD</STRONG> to XML format</P>
+<div align="right"><a href="rrddump.pdf">PDF</a> version.</div><P>
+<HR>
+<H1><A NAME="synopsis">SYNOPSIS</A></H1>
+<P><STRONG>rrdtool</STRONG> <STRONG>dump</STRONG> <EM>filename.rrd</EM> &gt; <EM>filename.xml</EM></P>
 <P>
 <HR>
-<H1><A NAME="SYNOPSIS">SYNOPSIS</A></H1>
-<P>
-<STRONG>rrdtool</STRONG>  <STRONG>dump</STRONG>  <EM>filename.rrd</EM>  &gt;  <EM>filename.xml</EM> 
-
- 
-
-<P>
-<HR>
-<H1><A NAME="DESCRIPTION">DESCRIPTION</A></H1>
-<P>
-The <STRONG>dump</STRONG> function prints the contents of an <STRONG>RRD</STRONG> in human readable (?) XML format. This format can be read by rrdrestore.
-Together they allow you to transfer your files from one architecture to
-another as well as manipulating the contents of an <STRONG>RRD</STRONG> file in a somewhat more convenient manner.
-
+<H1><A NAME="description">DESCRIPTION</A></H1>
+<P>The <STRONG>dump</STRONG> function prints the contents of an <STRONG>RRD</STRONG> in human
+readable (?) XML format. This format can be read by rrdrestore.
+Together they allow you to transfer your files from one architecture
+to another as well as manipulating the contents of an <STRONG>RRD</STRONG> file in a
+somewhat more convenient manner.</P>
 <DL>
-<DT><STRONG><A NAME="item_filename">filename.rrd</A></STRONG><DD>
-<P>
+<DT><STRONG><A NAME="item_filename%2Errd"><EM>filename.rrd</EM></A></STRONG><BR>
+<DD>
 The name of the <STRONG>RRD</STRONG> you want to dump.
-
-</DL>
+<P></P></DL>
 <P>
 <HR>
-<H1><A NAME="AUTHOR">AUTHOR</A></H1>
-<P>
-Tobias Oetiker &lt;<A HREF="mailto:oetiker@ee.ethz.ch">oetiker@ee.ethz.ch</A>&gt;
-
-
+<H1><A NAME="author">AUTHOR</A></H1>
+<P>Tobias Oetiker &lt;<A HREF="mailto:oetiker@ee.ethz.ch">oetiker@ee.ethz.ch</A>&gt;</P>
 
 </BODY>
 

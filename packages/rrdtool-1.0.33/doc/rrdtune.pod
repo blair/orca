@@ -2,6 +2,8 @@
 
 rrdtool tune - Modify some basic properties of a Round Robin Database
 
+=for html <div align="right"><a href="rrdtune.pdf">PDF</a> version.</div>
+
 =head1 SYNOPSIS
 
 B<rrdtool> B<tune> I<filename> 
@@ -57,7 +59,7 @@ rename a data source
 
 =head1 EXAMPLE
 
-C<rrdtool tune data.rrd -h in:100000 -h in:100000 -h in:100000>
+C<rrdtool tune data.rrd -h in:100000 -h out:100000 -h through:100000>
 
 Set the minimum required heartbeat for data sources 'in', 'out' 
 and 'through' to 10000 seconds which is a little over one day in data.rrd.

@@ -2,6 +2,8 @@
 
 rrdtool - round robin database tool
 
+=for html <div align="right"><a href="rrdtool.pdf">PDF</a> version.</div>
+
 =head1 SYNOPSIS
 
 B<rrdtool> B<-> | I<function>
@@ -29,11 +31,14 @@ For an introduction to the usage of rrdtool make sure you check L<rrdtutorial>.
 
 =head2 FUNCTIONS
 
-While the man pages talk of command line switches you have to set in order to
-make B<rrdtool> work it is important to note that the B<rrdtool> can be
-'remote controlled' through a set of pipes. This saves a considerable
-amount of startup time when you plan to make B<rrdtool> do a lot of
-things quickly. Check the section on L<"Remote Control"> further down.
+While the man pages talk of command line switches you have to set in
+order to make B<rrdtool> work it is important to note that the
+B<rrdtool> can be 'remote controlled' through a set of pipes. This
+saves a considerable amount of startup time when you plan to make
+B<rrdtool> do a lot of things quickly. Check the section on L<"Remote
+Control"> further down. There is also a number of language bindings
+for rrdtool which allow you to use it directly from perl, python, tcl,
+php, ...
 
 =over 8
 

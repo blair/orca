@@ -1,0 +1,79 @@
+$Id: INSTALL,v 1.2 2000/08/07 16:48:48 joeym Exp joeym $
+
+* Installing rrdtool module as a self-contained extension:
+
+There are two ways to install the rrdtool module for php4/zend.
+The first involves simply compiling the rrdtool module as a
+'self-contained extension'.  This is similar to the previous
+rrdtool module for php3 in that to use the rrd_* functions you
+must first load the module in each script that will use the
+rrd_* functions with a dl() call.  See the USAGE file for
+more info on this.
+
+To install as a self-contained extension:
+
+    1.  Install rrdtool.  (Tested with rrdtool-1.0.25)
+        Make sure you build shared and static libraries, if
+        your system lets you.  
+
+        rrdtool% ./configure --enable-shared
+
+    2.  Make sure Apache is installed.
+
+    3.  Make sure PHP4 is installed (tested with php-4.0.1pl2)
+
+    4.  Now we can build the rrdtool module.  
+
+        rrdtool-module% ./configure --with-rrdtool=/usr/local/rrdtool \
+                            --with-php-config=/usr/local/bin/php-config
+
+        'php-config' is usually installed in /usr/local/bin, and is often
+        readable/executable only by root, so you will have to run the
+        configure script as root.
+
+        rrdtool-module% make
+        rrdtool-module% make install
+
+        This should build and install 'rrdtool.so' into the correct
+        directory on your system.
+
+        Now you can access the rrd_* functions from your php4 scripts
+        by first calling "  dl("rrdtool.so"); ".  See the README and USAGE
+        for more info on the rrd_* functions.
+
+
+* Installing the rrdtool module as an embedded extension
+
+Installing rrdtool module as an embedded extension provides all of
+your php4 scripts access to the rrd_* functions without having to
+load any shared libs with the dl() function of php.  
+
+In order to install the rrdtool module as an embedded extension
+you will need to have autoconf/automake and friends installed.
+
+    1. make sure you have the php4 sources untarred somewhere, lets
+        call it /src/php-4.0.1pl2/
+
+    2. create a home for our embedded extension in the php4 source
+        tree.
+
+            % mkdir /src/php-4.0.1pl2/ext/rrdtool
+
+    3. from the rrdtool module directory, do:
+
+            % cp config.m4 Makefile.in php_rrdtool.h rrdtool.c \
+                /src/php-4.0.1pl2/ext/rrdtool/
+
+    4. Now we must recreate the configure scripts, etc for php4.
+    
+            % cd /src/php-4.0.1pl2
+            % ./buildconf
+            
+    5. If all goes well, you should be ready to run configure for
+        php4.  Make sure you include "--with-rrdtool" in the options
+        to configure.  
+
+    6. make, make install.  and you're ready to go.
+
+
+- Joe Miller, <joeym@inficad.com, joeym@ibizcorp.com>, 7/19/2000

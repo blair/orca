@@ -1,5 +1,5 @@
 /*****************************************************************************
- * RRDtool 1.0.13  Copyright Tobias Oetiker, 1997, 1998, 1999
+ * RRDtool 1.0.33  Copyright Tobias Oetiker, 1997 - 2000
  *****************************************************************************
  * change header parameters of an rrd
  *****************************************************************************
@@ -53,10 +53,12 @@ rrd_tune(int argc, char **argv)
 	    if ((matches = sscanf(optarg, DS_NAM_FMT ":%ld",ds_nam,&heartbeat)) != 2){
 		rrd_set_error("invalid arguments for heartbeat");
 		rrd_free(&rrd);
+	        fclose(rrd_file);
 		return -1;
 	    }
 	    if ((ds=ds_match(&rrd,ds_nam))==-1){
 		rrd_free(&rrd);
+                fclose(rrd_file);
 		return -1;
 	    }
 	    rrd.ds_def[ds].par[DS_mrhb_cnt].u_cnt = heartbeat;
@@ -66,10 +68,12 @@ rrd_tune(int argc, char **argv)
 	    if ((matches = sscanf(optarg,DS_NAM_FMT ":%lf",ds_nam,&min)) <1){
 		rrd_set_error("invalid arguments for minimum ds value");
 		rrd_free(&rrd);
+                fclose(rrd_file);
 		return -1;
 	    }
 	    if ((ds=ds_match(&rrd,ds_nam))==-1){
 		rrd_free(&rrd);
+                fclose(rrd_file);
 		return -1;
 	    }
 
@@ -82,10 +86,12 @@ rrd_tune(int argc, char **argv)
 	    if ((matches = sscanf(optarg, DS_NAM_FMT ":%lf",ds_nam,&max)) <1){
 		rrd_set_error("invalid arguments for maximum ds value");
 		rrd_free(&rrd);
+	        fclose(rrd_file);
 		return -1;
 	    }
 	    if ((ds=ds_match(&rrd,ds_nam))==-1){
 		rrd_free(&rrd);
+	        fclose(rrd_file);
 		return -1;
 	    }
 	    if(matches == 1) 
@@ -97,14 +103,17 @@ rrd_tune(int argc, char **argv)
 	    if ((matches = sscanf(optarg, DS_NAM_FMT ":" DST_FMT ,ds_nam,dst)) != 2){
 		rrd_set_error("invalid arguments for data source type");
 		rrd_free(&rrd);
+	        fclose(rrd_file);
 		return -1;
 	    }
 	    if ((ds=ds_match(&rrd,ds_nam))==-1){
 		rrd_free(&rrd);
+	        fclose(rrd_file);
 		return -1;
 	    }
 	    if (dst_conv(dst) == -1){
 		rrd_free(&rrd);
+	        fclose(rrd_file);
 		return -1;
 	    }
 	    strncpy(rrd.ds_def[ds].dst,dst,DST_SIZE-1);
@@ -122,10 +131,12 @@ rrd_tune(int argc, char **argv)
 		 sscanf(optarg,DS_NAM_FMT ":" DS_NAM_FMT , ds_nam,ds_new)) != 2){
 		rrd_set_error("invalid arguments for data source type");
 		rrd_free(&rrd);
+	        fclose(rrd_file);
 		return -1;
 	    }
 	    if ((ds=ds_match(&rrd,ds_nam))==-1){
 		rrd_free(&rrd);
+	        fclose(rrd_file);
 		return -1;
 	    }
 	    strncpy(rrd.ds_def[ds].ds_nam,ds_new,DS_NAM_SIZE-1);
@@ -137,6 +148,7 @@ rrd_tune(int argc, char **argv)
             else
                 rrd_set_error("unknown option '%s'",argv[optind-1]);
 	    rrd_free(&rrd);	    
+            fclose(rrd_file);
             return -1;
         }
     }

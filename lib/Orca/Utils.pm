@@ -1,24 +1,50 @@
 # Orca::Utils: Small utility subroutines.
 #
-# Copyright (C) 1998, 1999 Blair Zajac and Yahoo!, Inc.
+# Copyright (C) 1998-2001 Blair Zajac and Yahoo!, Inc.
 
 package Orca::Utils;
 
 use strict;
 use Carp;
 use Exporter;
-use Orca::Constants     qw($incorrect_number_of_args);
+use Digest::MD5         qw(md5_base64);
+use Orca::Constants     qw($INCORRECT_NUMBER_OF_ARGS);
+use Orca::Config        qw(%config_global);
 use Orca::SourceFileIDs qw(new_fids);
 use vars qw(@EXPORT_OK @ISA $VERSION);
 
-@EXPORT_OK = qw(gcd perl_glob recursive_mkdir unique);
+@EXPORT_OK = qw(email_message
+                gcd name_to_fsname
+                perl_glob
+                recursive_mkdir
+                unique);
 @ISA       = qw(Exporter);
 $VERSION   = substr q$Revision: 0.01 $, 10;
+
+# Email the list of people a message.
+sub email_message {
+  my ($people, $subject) = @_;
+
+  return unless $people;
+
+  if (open(SENDMAIL, "|/usr/lib/sendmail -oi -t")) {
+    print SENDMAIL <<"EOF";
+To: $people
+Subject: Orca: $subject
+
+Orca: $subject
+EOF
+    close(SENDMAIL) or
+      warn "$0: warning: sendmail did not close: $!\n";
+  } else {
+    warn "$0: warning: cannot fork for sendmail: $!\n";
+  }
+}
 
 # Return the greatest common divisor.
 sub gcd {
   unless (@_ == 2) {
-    confess "$0: Orca::Utils::gcd $incorrect_number_of_args";
+    confess "$0: Orca::Utils::gcd $INCORRECT_NUMBER_OF_ARGS";
   }
   my ($m, $n) = @_;
   if ($n > $m) {
@@ -31,6 +57,77 @@ sub gcd {
     $n = $r;
   }
   $n;
+}
+
+# Replace special characters from names, remove redundant characters,
+# and shorten the names so the maximum path name is not exceeded.  If
+# the name is still too long such that the maximum filename path
+# length ($config_global{max_filename_length}) may be exceeded by
+# appending -daily.html or other names to the name, then compute a MD5
+# hash of the name, trim the name the name to max_filename_length
+# minus at least 23 plus the postfix length characters to leave space
+# for a 22 byte base64 MD5 digest, plus a separating '-', and plus the
+# postfix.
+sub name_to_fsname {
+  unless (@_ == 2) {
+    confess "$0: Orca::Utils::name_to_fsname $INCORRECT_NUMBER_OF_ARGS";
+  }
+
+  my ($name, $postfix_length) = @_;
+
+  $name =~ s/:/_/g;
+  $name =~ s:/:_per_:g;
+  $name =~ s:\s+:_:g;
+  $name =~ s:%:_pct_:g;
+  $name =~ s:#:_num_:g;
+  $name =~ s:\*:_X_:g;
+
+  # Trim anything containing orcallator and orca to o.
+  $name =~ s:orcallator:o:g;
+  $name =~ s:orca:o:g;
+
+  # Remove trailing _'s.
+  $name =~ s:_+$::;
+  $name =~ s:_+,:,:g;
+
+  # Replace multiple _'s with one _, except when they follow a , which
+  # happens when the same group and subgroup appear for a new data
+  # source.
+  $name =~ s:,_{2,}:\200:g;
+  $name =~ s:_{2,}:_:g;
+  $name =~ s:\200:,__:g;
+
+  my $max_filename_length = $config_global{max_filename_length};
+  if (length($name)+$postfix_length > $max_filename_length) {
+
+    my $md5         = md5_base64($name);
+    my $trim_length = $max_filename_length - 23 - $postfix_length;
+    $name           = substr($name, 0, $trim_length) . "-$md5";
+
+    # Be careful to convert any /, \ or + characters to _.  The /
+    # character definitely needs to be modified since / is a valid
+    # base64 character and can't be used since we don't want a
+    # directory.
+    $name =~ s:[/\\\+]:_:g;
+  }
+
+  $name;
+}
+
+sub old_name_to_fsname {
+  my $name = shift;
+  $name =~ s/:/_/g;
+  $name =~ s:/:_per_:g;
+  $name =~ s:\s+:_:g;
+  $name =~ s:%:_percent_:g;
+  $name =~ s:#:_number_:g;
+  $name =~ s:\*:_X_:g;
+  $name =~ s:([_,]){2,}:$1:g;
+
+  # Remove trailing _'s.
+  $name =~ s:_+$::;
+  $name =~ s:_+,:,:g;
+  $name;
 }
 
 # Find all files matching a particular Perl regular expression and

@@ -2,6 +2,8 @@
 
 Binary Decimal Hexadecimal - How does it work
 
+=for html <div align="right"><a href="bin_dec_hex.pdf">PDF</a> version.</div>
+
 =head1 DESCRIPTION
 
 Most people use the decimal numbering system. This system uses ten

@@ -1,15 +1,12 @@
 /*****************************************************************************
- * RRDtool 1.0.13  Copyright Tobias Oetiker, 1997, 1998, 1999
+ * RRDtool 1.0.33  Copyright Tobias Oetiker, 1997 - 2001
  *****************************************************************************
  * rrd_tool.c  Startup wrapper
- *****************************************************************************
- * $Id: rrd_tool.c,v 1.8 1998/03/08 12:35:11 oetiker Exp oetiker $
- * $Log: rrd_tool.c,v $
  *****************************************************************************/
 
 #include "rrd_tool.h"
 
-void PrintUsage(void);
+void PrintUsage(char *cmd);
 int CountArgs(char *aLine);
 int CreateArgs(char *, char *, int, char **);
 int HandleInputLine(int, char **, FILE*);
@@ -18,38 +15,53 @@ int HandleInputLine(int, char **, FILE*);
 #define MAX_LENGTH	10000
 
 
-void PrintUsage(void)
+void PrintUsage(char *cmd)
 {
-    printf("\n"
-	   "RRDtool 1.0.13  Copyright (C) 1999 by Tobias Oetiker <tobi@oetiker.ch>\n\n"
-	   "Usage: rrdtool [options] command command_options\n\n"
-	   "Valid commands and command_options are listed below.\n\n"
 
+    char help_main[] =
+	   "RRDtool 1.0.33  Copyright 1997-2001 by Tobias Oetiker <tobi@oetiker.ch>\n\n"
+	   "Usage: rrdtool [options] command command_options\n\n";
+
+    char help_list[] =
+	   "Valid commands: create, update, graph, dump, restore,\n"
+	   "\t\tlast, info, fetch, tune, resize\n\n";
+
+    char help_create[] =
 	   "* create - create a new RRD\n\n"
 	   "\trrdtool create filename [--start|-b start time]\n"
 	   "\t\t[--step|-s step]\n"
-	   "\t\t[DS:ds-name:DST:heartbeat:min:max] [RRA:CF:xff:steps:rows]\n\n"
+	   "\t\t[DS:ds-name:DST:heartbeat:min:max] [RRA:CF:xff:steps:rows]\n\n";
 
+    char help_dump[] =
 	   "* dump - dump an RRD to XML\n\n"
-	   "\trrdtool dump filename.rrd >filename.xml\n\n"
+	   "\trrdtool dump filename.rrd >filename.xml\n\n";
 
+    char help_info[] =
+	   "* info - returns the configuration and status of the\n\n"
+	   "\trrdtool info filename.rrd\n\n";
+
+    char help_restore[] =
 	   "* restore - restore an RRD file from its XML form\n\n"
-	   "\trrdtool restore [--range-check|-r] filename.xml filename.rrd\n\n"
+	   "\trrdtool restore [--range-check|-r] filename.xml filename.rrd\n\n";
 
+    char help_last[] =
            "* last - show last update time for RRD\n\n"
-           "\trrdtool last filename.rrd\n\n"
+           "\trrdtool last filename.rrd\n\n";
 
+    char help_update[] =
 	   "* update - update an RRD\n\n"
 	   "\trrdtool update filename\n"
 	   "\t\t--template|-t ds-name:ds-name:...\n"
 	   "\t\ttime|N:value[:value...]\n\n"
-	   "\t\t[ time:value[:value...] ..]\n\n"
+	   "\t\t[ time:value[:value...] ..]\n\n";
 
+    char help_fetch[] =
 	   "* fetch - fetch data out of an RRD\n\n"
 	   "\trrdtool fetch filename.rrd CF\n"
 	   "\t\t[--resolution|-r resolution]\n"
-	   "\t\t[--start|-s start] [--end|-e end]\n\n"
-	   	   
+	   "\t\t[--start|-s start] [--end|-e end]\n\n";
+
+    char help_graph[] =
 	   "* graph - generate a graph from one or several RRD\n\n"
 	   "\trrdtool graph filename [-s|--start seconds] [-e|--end seconds]\n"
 	   "\t\t[-x|--x-grid x-axis grid and label]\n"
@@ -60,6 +72,9 @@ void PrintUsage(void)
 	   "\t\t[-u|--upper-limit value] [-z|--lazy]\n"
 	   "\t\t[-l|--lower-limit value] [-r|--rigid]\n"
 	   "\t\t[--alt-autoscale]\n"
+	   "\t\t[--alt-autoscale-max]\n"
+	   "\t\t[--units-exponent value]\n"	   
+	   "\t\t[--step seconds]\n"	   
 	   "\t\t[-f|--imginfo printfstr]\n"
 	   "\t\t[-a|--imgformat GIF|PNG]\n"
 	   "\t\t[-c|--color COLORTAG#rrggbb] [-t|--title string]\n"
@@ -71,23 +86,92 @@ void PrintUsage(void)
 	   "\t\t[VRULE:value#rrggbb[:legend]]\n"
 	   "\t\t[LINE{1|2|3}:vname[#rrggbb[:legend]]]\n"
 	   "\t\t[AREA:vname[#rrggbb[:legend]]]\n"
-	   "\t\t[STACK:vname[#rrggbb[:legend]]]\n\n"
+	   "\t\t[STACK:vname[#rrggbb[:legend]]]\n\n";
 
-	   
+    char help_tune[] =
 	   " * tune -  Modify some basic properties of an RRD\n\n"
 	   "\trrdtool tune filename\n"
 	   "\t\t[--heartbeat|-h ds-name:heartbeat]\n"
 	   "\t\t[--data-source-type|-d ds-name:DST\n"
 	   "\t\t[--data-source-rename|-r old-name:new-name\n"
-	   "\t\t[--minimum|-i ds-name:min] [--maximum|-a ds-name:max]\n\n"
+	   "\t\t[--minimum|-i ds-name:min] [--maximum|-a ds-name:max]\n\n";
 
+    char help_resize[] =
 	   " * resize - alter the lenght of one of the RRAs in an RRD\n\n"
-	   "\trrdtool resize filename rranum GROW|SHRINK rows\n\n"
+	   "\trrdtool resize filename rranum GROW|SHRINK rows\n\n";
 
+    char help_lic[] =
 	   "RRDtool is distributed under the Terms of the GNU General\n"
 	   "Public License Version 2. (www.gnu.org/copyleft/gpl.html)\n\n"
 
-	   "For more information read the RRD manpages\n\n");
+	   "For more information read the RRD manpages\n\n";
+
+    enum { C_NONE, C_CREATE, C_DUMP, C_INFO, C_RESTORE, C_LAST,
+	   C_UPDATE, C_FETCH, C_GRAPH, C_TUNE, C_RESIZE };
+
+    int help_cmd = C_NONE;
+
+    if (cmd)
+	{
+	    if (!strcmp(cmd,"create"))
+		help_cmd = C_CREATE;
+    	    else if (!strcmp(cmd,"dump"))
+		help_cmd = C_DUMP;
+    	    else if (!strcmp(cmd,"info"))
+		help_cmd = C_INFO;
+    	    else if (!strcmp(cmd,"restore"))
+		help_cmd = C_RESTORE;
+    	    else if (!strcmp(cmd,"last"))
+		help_cmd = C_LAST;
+    	    else if (!strcmp(cmd,"update"))
+		help_cmd = C_UPDATE;
+    	    else if (!strcmp(cmd,"fetch"))
+		help_cmd = C_FETCH;
+    	    else if (!strcmp(cmd,"graph"))
+		help_cmd = C_GRAPH;
+    	    else if (!strcmp(cmd,"tune"))
+		help_cmd = C_TUNE;
+    	    else if (!strcmp(cmd,"resize"))
+		help_cmd = C_RESIZE;
+	}
+    fputs(help_main, stdout);
+    switch (help_cmd)
+	{
+	    case C_NONE:
+		fputs(help_list, stdout);
+		break;
+	    case C_CREATE:
+		fputs(help_create, stdout);
+		break;
+	    case C_DUMP:
+		fputs(help_dump, stdout);
+		break;
+	    case C_INFO:
+		fputs(help_info, stdout);
+		break;
+	    case C_RESTORE:
+		fputs(help_restore, stdout);
+		break;
+	    case C_LAST:
+		fputs(help_last, stdout);
+		break;
+	    case C_UPDATE:
+		fputs(help_update, stdout);
+		break;
+	    case C_FETCH:
+		fputs(help_fetch, stdout);
+		break;
+	    case C_GRAPH:
+		fputs(help_graph, stdout);
+		break;
+	    case C_TUNE:
+		fputs(help_tune, stdout);
+		break;
+	    case C_RESIZE:
+		fputs(help_resize, stdout);
+		break;
+	}
+    fputs(help_lic, stdout);
 }
 
 
@@ -103,11 +187,11 @@ int main(int argc, char *argv[])
 #endif
     if (argc == 1)
 	{
-	    PrintUsage();
+	    PrintUsage("");
 	    return 0;
 	}
     
-    if ((argc == 2) && (*argv[1] == '-'))
+    if ((argc == 2) && !strcmp("-",argv[1]))
 	{
 #if HAVE_GETRUSAGE
 	  struct rusage  myusage;
@@ -155,6 +239,11 @@ int main(int argc, char *argv[])
 		fflush(stdout); /* this is important for pipes to work */
 	    }
 	}
+    else if (argc == 2)
+	{
+		PrintUsage(argv[1]);
+		exit(0);
+	}
     else
 	HandleInputLine(argc, argv, stderr);    
     return 0;
@@ -171,7 +260,7 @@ int HandleInputLine(int argc, char **argv, FILE* out)
 	|| strcmp("-help", argv[1]) == 0
 	|| strcmp("-?", argv[1]) == 0
 	|| strcmp("-h", argv[1]) == 0 ) {
-	PrintUsage();
+	PrintUsage("");
 	return 0;
     }
     
@@ -179,12 +268,42 @@ int HandleInputLine(int argc, char **argv, FILE* out)
 	rrd_create(argc-1, &argv[1]);
     else if (strcmp("dump", argv[1]) == 0)
 	rrd_dump(argc-1, &argv[1]);
+    else if (strcmp("info", argv[1]) == 0){
+	info_t *data,*save;
+	data=rrd_info(argc-1, &argv[1]);
+	while (data) {
+	    save=data;
+	    printf ("%s = ", data->key);
+	    free(data->key);
+	    
+	    switch (data->type) {
+	    case RD_I_VAL:
+		if (isnan (data->value.u_val))
+		    printf("NaN");
+		else
+		    printf ("%0.10e", data->value.u_val);
+		break;
+	    case RD_I_CNT:
+		printf ("%lu", data->value.u_cnt);
+		break;
+	    case RD_I_STR:
+		printf ("\"%s\"", data->value.u_str);
+		free(data->value.u_str);
+		break;
+	    }
+	    data = data->next;
+	    free(save);
+	    printf ("\n");
+	}
+	free(data);
+    }
+	
     else if (strcmp("--version", argv[1]) == 0 ||
 	     strcmp("version", argv[1]) == 0 || 
 	     strcmp("v", argv[1]) == 0 ||
 	     strcmp("-v", argv[1]) == 0  ||
 	     strcmp("-version", argv[1]) == 0  )
-        printf("RRDtool   Copyright (C) 1999 by Tobias Oetiker <tobi@oetiker.ch>\n");
+        printf("RRDtool 1.0.33  Copyright (C) 1997-2001 by Tobias Oetiker <tobi@oetiker.ch>\n");
     else if (strcmp("restore", argv[1]) == 0)
 	rrd_restore(argc-1, &argv[1]);
     else if (strcmp("resize", argv[1]) == 0)
@@ -207,7 +326,7 @@ int HandleInputLine(int argc, char **argv, FILE* out)
 	    for (i = start; i <= end; i += step){
 	        printf("%10lu:", i);
 	        for (ii = 0; ii < ds_cnt; ii++)
-		    printf(" %13.2f", *(datai++));
+		    printf(" %0.10e", *(datai++));
 	        printf("\n");
 	    }
 	    for (i=0;i<ds_cnt;i++)

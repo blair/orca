@@ -10,19 +10,19 @@ NNNNAAAAMMMMEEEE
      XML dump format
 
 SSSSYYYYNNNNOOOOPPPPSSSSIIIISSSS
-     rrrrrrrrddddttttoooooooollll rrrreeeessssttttoooorrrreeee _f_i_l_e_n_a_m_e._x_m_l _f_i_l_e_n_a_m_e._r_r_d [--------rrrraaaannnnggggeeee----cccchhhheeeecccckkkk|----rrrr]
+     rrrrrrrrddddttttoooooooollll rrrreeeessssttttoooorrrreeee _f_i_l_e_n_a_m_e_._x_m_l _f_i_l_e_n_a_m_e_._r_r_d [--------rrrraaaannnnggggeeee----cccchhhheeeecccckkkk|----rrrr]
 
 DDDDEEEESSSSCCCCRRRRIIIIPPPPTTTTIIIIOOOONNNN
      The rrrreeeessssttttoooorrrreeee function reads the XML representation of an RRD
      and converts it into the native RRRRRRRRDDDD format.
 
-     _f_i_l_e_n_a_m_e._x_m_l
+     _f_i_l_e_n_a_m_e_._x_m_l
              The name of the XXXXMMMMLLLL you want to restore.
 
-     _f_i_l_e_n_a_m_e._r_r_d
+     _f_i_l_e_n_a_m_e_._r_r_d
              The name of the RRRRRRRRDDDD to restore.
 
-     --------rrrraaaannnnggggeeee----cccchhhheeeecccckkkk|-rrrr
+     --------rrrraaaannnnggggeeee----cccchhhheeeecccckkkk|----rrrr
              Make sure the values in the RRAs do not exceed the
              limits defined for the different datasources.
 
@@ -60,7 +60,7 @@ AAAAUUUUTTTTHHHHOOOORRRR
 
 
 
-24/Oct/1999            Last change: 1.0.13                      1
+2001-02-20             Last change: 1.0.33                      1
 
 
 

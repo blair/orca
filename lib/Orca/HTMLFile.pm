@@ -1,6 +1,6 @@
 # Orca::HTMLFile: Manage the creation of HTML files.
 #
-# Copyright (C) 1998, 1999 Blair Zajac and Yahoo!, Inc.
+# Copyright (C) 1998-2001 Blair Zajac and Yahoo!, Inc.
 
 package Orca::HTMLFile;
 
@@ -35,7 +35,7 @@ sub new {
   print FD <<END;
 <html>
 <head>
-<title>$title</title>
+<title>Orca - $title</title>
 </head>
 <body bgcolor="#ffffff">
 
@@ -69,7 +69,7 @@ $self->[$i_bottom]
       <font FACE="Arial,Helvetica" size=2>
         Orca-$ORCA_VERSION by
         <a href="http://www.gps.caltech.edu/~blair/">Blair Zajac</a>
-        <a href="mailto:blair\@akamai.com">blair\@akamai.com</a>.
+        <a href="mailto:blair\@blair.gps.caltech.edu">blair\@gps.caltech.edu</a>.
       </font>
     </td>
     <td width=120 valign=center>

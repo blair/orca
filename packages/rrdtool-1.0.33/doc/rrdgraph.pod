@@ -2,6 +2,8 @@
 
 rrdtool graph - Create a graph based on data from one or several RRD
 
+=for html <div align="right"><a href="rrdgraph.pdf">PDF</a> version.</div> 
+
 =head1 SYNOPSIS
 
 B<rrdtool> B<graph> I<filename> 
@@ -11,6 +13,8 @@ S<[B<-x>|B<--x-grid> I<x-axis grid and label>]>
 S<[B<-y>|B<--y-grid> I<y-axis grid and label>]>
 S<[B<--alt-y-grid>]>
 S<[B<--alt-autoscale>]>
+S<[B<--alt-autoscale-max>]>
+S<[B<--units-exponent>]> I<value>]>
 S<[B<-v>|B<--vertical-label> I<text>]>
 S<[B<-w>|B<--width> I<pixels>]>
 S<[B<-h>|B<--height> I<pixels>]> 
@@ -22,9 +26,9 @@ S<[B<-o>|B<--logarithmic>]>
 S<[B<-u>|B<--upper-limit> I<value>]> 
 S<[B<-l>|B<--lower-limit> I<value>]>
 S<[B<-r>|B<--rigid>]>
+S<[B<--step> I<value>]>
 S<[B<-b>|B<--base> I<value>]>
 S<[B<-c>|B<--color> I<COLORTAG>B<#>I<rrggbb>]>
-
 S<[B<-t>|B<--title> I<title>]>
 S<[B<DEF:>I<vname>B<=>I<rrd>B<:>I<ds-name>B<:>I<CF>]>
 S<[B<CDEF:>I<vname>B<=>I<rpn-expression>]>
@@ -43,7 +47,7 @@ The B<graph> functions main purpose is to create graphical
 representations of the data stored in one or several B<RRD>s. Apart
 from generating graphs, it can also extract numerical reports.
 
-=over 8
+=over
 
 =item I<filename> 
 
@@ -78,7 +82,9 @@ The x-axis label is quite complex to configure. So if you don't have
 very special needs, you can rely on the autoconfiguration to get this
 right.
 
-The x-axis label is configured, using the following format:
+If you want no x-grid at all, use the magic setting B<none>.
+
+The x-axis label and grid can be configured, using the following format:
 
 I<GTM>B<:>I<GST>B<:>I<MTM>B<:>I<MST>B<:>I<LTM>:I<LST>B<:>I<LPR>B<:>I<LFM>
 
@@ -113,6 +119,8 @@ Makes vertical grid lines appear at I<grid step> interval. Every
 I<label factor> gridstep, a major grid line is printed, along with
 label showing the value of the grid line.
 
+If you want no y-grid at all set specify the magic word B<none>.
+
 =item B<--alt-y-grid>
 
 Place Y grid dynamically based on graph Y range. Algorithm ensures
@@ -131,6 +139,26 @@ will use Y range from 250 to 300 and on the graph you will see
 almost straight line. With --alt-autoscale Y range will be
 from slightly less the 260 - 0.001 to slightly more then 260 + 0.001
 and periodic behavior will be seen.   (contributed by Sasha Mikheev)
+
+=item B<--alt-autoscale-max>
+
+Where --alt-autoscale will modify both the absolute maximum AND minimum
+values, this option will only affect the maximum value. The minimum 
+value, if not defined on the command line, will be 0. This option can
+be useful when graphing router traffic when the WAN line uses compression,
+and thus the throughput may be higher than the WAN line speed.
+
+=item B<--units-exponent> I<value> (default autoconfigure)
+
+This sets the 10**exponent scaling of the y-axis values.  Normally
+values will be scaled to the appropriate units (k, M, etc.).  However
+you may wish to display units always in k (Kilo, 10e3) even if the data
+is in the M (Mega, 10e6) range for instance.  Value should be an
+integer which is a multiple of 3 between -18 and 18 inclusive.  It is
+the exponent on the units you which to use.  For example, use 3 to
+display the y-axis values in k (Kilo, 10e3, thousands), use -6 to
+display the y-axis values in u (Micro, 10e-6, millionths).  Use a value
+of 0 to prevent any scaling of the y-axis values.
 
 =item B<-v>|B<--vertical-label> I<text>
 
@@ -178,15 +206,12 @@ existent.
 
 =item B<-u>|B<--upper-limit> I<value> (default autoconfigure)
 
-This is not the upper limit of a graph!  But rather, this is the
-minimum upper bound of a graph.  Use this to expand graphs up.
-For example, the value 100 will result in graphs that have a upper
-bound of 100 or more.  Setting the upper limit to the maximum value
-for some DS will result in disabling RRDtool's autoscaling down (ie
-it will "expand" graphs up.)  To disable RRDtool's autoscaling up
-(to the max value for the DSs graphed), use a nifty CDEF like so:
-CDEF:mcpu=cpu,100,GT,100,cpu,IF.  If this CDEF is applied to all DSs
-in a graph, then the graph will have an upper limit of 100.
+Defines the value normally located at the upper border of the
+graph. If the graph contains higher values, the upper border will
+move upwards to accomodate these values as well.
+
+If you want to define an upper-limit which will not move in any
+event you have to set the B<--rigid> option as well.
 
 =item B<-l>|B<--lower-limit> I<value> (default autoconfigure)
 
@@ -219,9 +244,21 @@ B<SHADEA> left/top border, B<SHADEB> right/bottom border, B<GRID>, B<MGRID>
 major grid, B<FONT>, B<FRAME> and axis of the graph or B<ARROW>. This option
 can be called multiple times to set several colors.
 
+=item B<-g>|B<--no-legend>
+
+Suppress generation of legend; only render the graph.
+
 =item B<-t>|B<--title> I<text> (default no title)
 
 Define a title to be written into the graph
+
+=item B<--step> I<value> (default automatic)
+
+By default rrdgraph calculates the width of one pixle in the time domain and
+tries to get data at that resolution from the RRD. With this switch you can
+override this behaviour. If you want rrdgraph to get data at 1 hour
+resolution from the RRD, then you can set the step to 3600 seconds. Note,
+that a step smaller than 1 pixle will be silently ignored.
 
 =item B<DEF:>I<vname>B<=>I<rrd>B<:>I<ds-name>B<:>I<CF>
 
@@ -260,7 +297,7 @@ The I<rpn-expression> in the B<CDEF> function takes both, constant values
 as well as I<vname> variables. The following operators can be used on these
 values: 
 
-=over 8
+=over
 
 =item +, -, *, /, %
 
@@ -268,7 +305,7 @@ pops two values from the stack applies the selected operator and pushes
 the result back onto the stack. The % operator stands for the modulo
 operation.
 
-=item SIN, COS, LOG, EXP
+=item SIN, COS, LOG, EXP, FLOOR, CEIL
 
 pops one value from the stack, applies the selected function and pushes
 the result back onto the stack.
@@ -289,6 +326,17 @@ If the stack contains the values A, B, C, D, E are presently on the
 stack, the IF operator will pop the values E D and C of the stack. It will
 look at C and if it is not 0 it will push D back onto the stack, otherwise
 E will be sent back to the stack.
+
+=item MIN, MAX
+
+selects the lesser or larger of the two top stack values respectively
+
+=item LIMIT
+
+replaces the value with I<*UNKNOWN*> if it is outside the limits specified
+by the two values above it on the stack.
+
+ CDEF:a=alpha,0,100,LIMIT
 
 =item DUP, EXC, POP
 
@@ -325,7 +373,20 @@ Push the current (real world) time onto the stack.
 
 =item TIME
 
-Push the time the current sample was taken onto the stack.
+Push the time the current sample was taken onto the stack. This is the
+number of non-skip seconds since 0:00:00 January 1, 1970.
+
+=item LTIME
+
+This is like TIME B<+ current timezone offset in seconds>. The current
+offset takes daylight saving time into account, given your OS supports
+this. If you were looking at a sample, in Zurich, in summer, the
+offset would be 2*3600 seconds, as Zurich at that time of year is 2
+hours ahead of UTC.
+
+Note that the timezone offset is always calculated for the time the
+current sample was taken at. It has nuthing todo with the time you are
+doing the calculation.
 
 =back
 
@@ -355,9 +416,24 @@ unless the value is 0, in which case it does not remember a SI magnitude
 unit and a SI magnitude unit will only be calculated when the next '%s' is
 seen or the next '%S' for a non-zero value.
 
+If you want to put a '%' into your PRINT string, use '%%' instead.
+
 =item B<GPRINT:>I<vname>B<:>I<CF>B<:>I<format>
 
 Same as B<PRINT> but the result is printed into the graph below the legend.
+
+=back
+
+B<Caveat:> When using the B<PRINT> and B<GRPRINT> functions to
+calculate data summaries over time periods bounded by the current
+time, it is important to note that the last sample will almost always
+yield a value of UNKNOWN as it lies after the last update time.  This
+can result in slight data skewing, particularly with the B<AVERAGE>
+function.  In order to avoid this, make sure that your end time is at
+least one heartbeat prior to the current time.
+
+=over
+
 
 =item B<COMMENT:>I<text>
 
@@ -398,7 +474,7 @@ Note, that when you STACK onto *UNKNOWN* data, rrdtool will not draw
 any graphics ... *UNKNOWN* is not zero ... if you want it to zero
 then you might want to use a CDEF argument with IF and UN functions to
 turn *UNKNOWN* into zero ...
- 
+
 =back
 
 =head1 NOTES on legend arguments
@@ -428,7 +504,7 @@ inside the string if it is at the very end of the string. This can be used
 in connection with B<%s> to supress empty unit strings.
 
  GPRINT:a:MAX:%lf%s\g
- 
+
 A special case is COMMENT:B<\s> this inserts some additional vertical space
 before placing the next row of legends.
 
@@ -441,7 +517,7 @@ the gif it has just created to STDOUT. This line looks like this: XSIZExYSIZE.
 
   rrdtool graph demo.gif --title="Demo Graph" \
           DEF:cel=demo.rrd:exhaust:AVERAGE \
-          "CDEF:far=cel,32,-,0.55555,*" \
+          "CDEF:far=cel,1.8,*,32,+"" \
           LINE2:cel#00a000:"D. Celsius" \
           LINE2:far#ff0000:"D. Fahrenheit\c"
 
@@ -490,7 +566,7 @@ all inputs are overlaid with another AREA.
          STACK:val2#00C000:Value2 \
          STACK:val3#FFFF00:Value3 \
          STACK:val4#FFC000:Value4 \
-         AREA:whipeout#FF0000:Unknown
+         AREA:wipeout#FF0000:Unknown
 
 The first CDEF uses val4 as a dummy value. It's value is removed immediately
 from the stack. Then a decision is made based on the time that a sample was
@@ -506,7 +582,7 @@ normal area to overlay it with data. Stack the other data until they are all plo
 not least, overlay everything with eye-hurting red
 to signal any unknown data.
 
-Note that this example assumesthat your data is in the positive half of the y-axis
+Note that this example assumes that your data is in the positive half of the y-axis
 otherwhise you would would have to add NEGINF in order to extend the coverage
 of the rea to whole graph.
 
@@ -517,5 +593,3 @@ Tobias Oetiker E<lt>oetiker@ee.ethz.chE<gt>
 =head1 REFERENCES
 
 [1] http://www.dotpoint.com/xnumber/rpn_or_adl.htm
-
-

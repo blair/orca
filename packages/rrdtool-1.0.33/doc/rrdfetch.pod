@@ -2,6 +2,8 @@
 
 rrdtool fetch - fetch data from an rrd.
 
+=for html <div align="right"><a href="rrdfetch.pdf">PDF</a> version.</div>
+
 =head1 SYNOPSIS
 
 B<rrdtool> B<fetch> I<filename> I<CF> 
@@ -78,9 +80,11 @@ and optional 2- or 4-digit I<year> number (e.g. March 8 1999).
 Alternatively, you can use I<day-of-week-name> (e.g. Monday),
 or one of the words: B<yesterday>, B<today>, B<tomorrow>.
 You can also specify I<day> as a full date in several numerical formats;
-these include: B<MM/DD/[YY]YY>, B<DD.MM.[YY]YY>, B<YYYYMMDD>
-(I<NOTE1>: this is different from the original at(1) behavior,
-which interprets a single-number date as MMDD[YY]YY)
+these include: B<MM/DD/[YY]YY>, B<DD.MM.[YY]YY>, B<YYYYMMDD>.
+
+I<NOTE1>: this is different from the original at(1) behavior,
+which interprets a single-number date as MMDD[YY]YY.
+
 I<NOTE2>: if you specify I<day> this way, the I<time-of-day> is REQUIRED
 to be present.
 
@@ -93,7 +97,6 @@ categories (rrdfetch, rrdgraph).
 Month and weekday names can be used in their naturally abbreviated form
 (e.g., Dec for December, Sun for Sunday, etc.). The words B<now>,
 B<start>, B<end> can be abbreviated to B<n>, B<s>, B<e>.
-
 
 =head2 TIME OFFSET SPECIFICATION
 

@@ -10,12 +10,6 @@
 # even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 # PARTICULAR PURPOSE.
 
-#AUTOMAKE_OPTIONS        = foreign
-
-# where we keep local rules for automake
-#ACLOCAL_M4 = $(top_srcdir)/config/aclocal.m4
-#AUTOHEADER = @AUTOHEADER@ --localdir=$(top_srcdir)/config
-
 
 SHELL = @SHELL@
 
@@ -70,21 +64,32 @@ host_triplet = @host@
 target_alias = @target_alias@
 target_triplet = @target@
 CC = @CC@
-CFLAGS = @CFLAGS@
 CGI_LIB_DIR = @CGI_LIB_DIR@
 COMP_PERL = @COMP_PERL@
 CPP = @CPP@
 GD_LIB_DIR = @GD_LIB_DIR@
 LIBTOOL = @LIBTOOL@
+NROFF = @NROFF@
 PERL = @PERL@
+PERLFLAGS = @PERLFLAGS@
+PERL_MAKE_OPTIONS = @PERL_MAKE_OPTIONS@
 PNG_LIB_DIR = @PNG_LIB_DIR@
 RANLIB = @RANLIB@
+SO_EXT = @SO_EXT@
+TCL_LD_SEARCH_FLAGS = @TCL_LD_SEARCH_FLAGS@
+TCL_PACKAGE_PATH = @TCL_PACKAGE_PATH@
+TCL_PREFIX = @TCL_PREFIX@
+TCL_SHLIB_CFLAGS = @TCL_SHLIB_CFLAGS@
+TCL_SHLIB_LD = @TCL_SHLIB_LD@
+TCL_SHLIB_SUFFIX = @TCL_SHLIB_SUFFIX@
+TROFF = @TROFF@
+VERSION = @VERSION@
 
 ZLIB_LIB_DIR = @ZLIB_LIB_DIR@
 
 INCLUDES = -I$(top_srcdir)/$(ZLIB_LIB_DIR)
 
-EXTRA_DIST = ANNOUNCE CHANGES INSTALL KNOWNBUG README README.rrdtool TODO Y2KINFO example.c libpng.3 		libpng.txt libpngpf.3 png.5 png.dsp png.dsw 
+EXTRA_DIST = ANNOUNCE CHANGES INSTALL KNOWNBUG README README.rrdtool             TODO Y2KINFO example.c libpng.3     	    libpng.txt libpngpf.3 png.5 png.dsp png.dsw 
 
 
 noinst_LTLIBRARIES = librrd_png.la
@@ -106,16 +111,15 @@ librrd_png_la_LIBADD =
 librrd_png_la_OBJECTS =  png.lo pngerror.lo pngget.lo pngmem.lo \
 pngpread.lo pngread.lo pngrio.lo pngrtran.lo pngrutil.lo pngset.lo \
 pngtrans.lo pngwio.lo pngwrite.lo pngwtran.lo pngwutil.lo
+CFLAGS = @CFLAGS@
 COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
 LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(LDFLAGS) -o $@
-DIST_COMMON =  README INSTALL Makefile.am Makefile.in TODO ansi2knr.1 \
-ansi2knr.c
+DIST_COMMON =  README INSTALL Makefile.am Makefile.in TODO configure
 
 
 PACKAGE = @PACKAGE@
-VERSION = @VERSION@
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
@@ -128,7 +132,7 @@ all: all-redirect
 .SUFFIXES:
 .SUFFIXES: .S .c .lo .o .s
 $(srcdir)/Makefile.in: Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
-	cd $(top_srcdir) && $(AUTOMAKE) --gnu --include-deps libpng-1.0.3/Makefile
+	cd $(top_srcdir) && $(AUTOMAKE) --foreign --include-deps libpng-1.0.9/Makefile
 
 Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status
 	cd $(top_builddir) \
@@ -216,13 +220,13 @@ maintainer-clean-tags:
 
 distdir = $(top_builddir)/$(PACKAGE)-$(VERSION)/$(subdir)
 
-subdir = libpng-1.0.3
+subdir = libpng-1.0.9
 
 distdir: $(DISTFILES)
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  if test -d $$d/$$file; then \
-	    cp -pr $$/$$file $(distdir)/$$file; \
+	    cp -pr $$d/$$file $(distdir)/$$file; \
 	  else \
 	    test -f $(distdir)/$$file \
 	    || ln $$d/$$file $(distdir)/$$file 2> /dev/null \

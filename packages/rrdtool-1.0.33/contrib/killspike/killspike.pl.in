@@ -1,6 +1,6 @@
 #! @PERL@ -w
 
-# $Id: killspike.pl,v 1.2 2000/01/14 01:56:59 bertd Exp $
+# $Id: killspike.pl,v 1.3 2000/06/11 22:08:08 bertd Exp $
 # $Source: /cvs-mis/local/support/killspike/killspike.pl,v $
 
 # This script will read an XML file produced by
@@ -35,13 +35,17 @@ my @dsl = ();
 my @dsi = ();
 my @topindx = ();
 my @botindx = ();
+my @dsname = ();
 my $i;
 my $j;
 
 # Count the number of data sources
 open(IN, $file) || die;
 while(<IN>) {
-	$nds++ if /<name>\s*ds/;
+	if (/<name>\s*(\w+)\s*/) {
+		$dsname[$nds] = $1;
+		$nds++;
+	}
 }
 close IN;
 
@@ -79,7 +83,7 @@ close IN;
 # Set up a LoL with indexes, and ditch the values that represent NaN's
 for ($i = 0; $i < $nds; $i++) {
 	@{$dsi[$i]} = grep { ${$dsl[$i]}[$_] ne "NaN" } (0..$recno);
-	print "Ds$i has $#{$dsi[$i]} valid samples\n" if $debug;
+	print "$dsname[$i] has $#{$dsi[$i]} valid samples\n" if $debug;
 }
 
 sub sortit {
@@ -87,10 +91,11 @@ sub sortit {
 }
 my %indexes;
 for ($i = 0; $i < $nds; $i++) {
+	next if ($#{$dsi[$i]} < $maxspike);
 	@{$dsi[$i]} = sort sortit @{$dsi[$i]};
 	@{$botindx[$i]} = @{$dsi[$i]};
 	@{$topindx[$i]} = splice(@{$botindx[$i]}, -$maxspike);
-	print "ds$i top $maxspike: ".join(' ', @{$topindx[$i]})."\n";
+	print "$dsname[$i] top $maxspike: ".join(' ', @{$topindx[$i]})."\n";
 	for($j = 0; $j < $maxspike; $j++) {
 		$indexes{${$topindx[$i]}[$j]} = 0 if
 				!defined($indexes{${$topindx[$i]}[$j]});

@@ -1,5 +1,5 @@
 /*****************************************************************************
- * RRDtool 1.0.13  Copyright Tobias Oetiker, 1997, 1998, 1999
+ * RRDtool 1.0.33  Copyright Tobias Oetiker, 1997 - 2000
  *****************************************************************************
  * rrd_error.c   Common Header File
  *****************************************************************************
@@ -8,7 +8,8 @@
  *************************************************************************** */
 
 #include "rrd_tool.h"
-static char* rrd_error = NULL;
+#define MAXLEN 4096
+static char rrd_error[MAXLEN] = "\0";
 #include <stdarg.h>
 
 
@@ -16,33 +17,30 @@ static char* rrd_error = NULL;
 void
 rrd_set_error(char *fmt, ...)
 {
-    int maxlen = 4096;
     va_list argp;
     rrd_clear_error();
-    rrd_error = malloc(sizeof(char)*maxlen);
     va_start(argp, fmt);
 #ifdef HAVE_VSNPRINTF
-    vsnprintf(rrd_error, maxlen-1, fmt, argp);
+    vsnprintf((char *)rrd_error, MAXLEN-1, fmt, argp);
 #else
-    vsprintf(rrd_error, fmt, argp);
+    vsprintf((char *)rrd_error, fmt, argp);
 #endif
     va_end(argp);
 }
 
 int
 rrd_test_error(void) {
-    return rrd_error != NULL;
+    return rrd_error[0] != '\0';
 }
 
 void
 rrd_clear_error(void){
-    free(rrd_error);
-    rrd_error = NULL;
+    rrd_error[0] = '\0';
 }
 
 char *
 rrd_get_error(void){
-    return rrd_error;
+    return (char *)rrd_error;
 }
 
 

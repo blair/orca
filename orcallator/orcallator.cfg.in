@@ -1,5 +1,8 @@
 # Orca configuration file for orcallator files.
 
+# Require at least this version of Orca.
+require			Orca 0.263
+
 # base_dir is prepended to the paths find_files, html_dir, rrd_dir,
 # and state_file only if the path does not match the regular
 # expression ^\\?\.{0,2}/, which matches /, ./, ../, and \./.
@@ -34,6 +37,14 @@ find_times		0:10 1:00 6:00 12:00 19:00
 warn_email		root@localhost
 late_interval		interval + 30
 
+# These parameters specify which plots to generate.
+generate_hourly_plot	0
+generate_daily_plot	1
+generate_weekly_plot	1
+generate_monthly_plot	1
+generate_quarterly_plot	1
+generate_yearly_plot	1
+
 # This defines where the find the source data files and the format of
 # those files.  Notes about the fields:
 # find_files
@@ -53,9 +64,7 @@ group orcallator {
 find_files		@ORCALLATOR_DIR@/(.*)/(?:(?:orcallator)|(?:percol))-\d{4}-\d{2}-\d{2}(?:\.(?:Z|gz|bz2))?
 column_description	first_line
 date_source		column_name timestamp
-date_format		%s
 interval		300
-reopen			1
 filename_compare	sub {
 			  my ($ay, $am, $ad) = $a =~ /-(\d{4})-(\d\d)-(\d\d)/;
 			  my ($by, $bm, $bd) = $b =~ /-(\d{4})-(\d\d)-(\d\d)/;
@@ -103,12 +112,15 @@ title			%g CPU Usage
 source			orcallator
 data			usr%
 data			sys%
-data			100 - usr% - sys%
+data			wio%
+data			idle%
 line_type		area
+line_type		stack
 line_type		stack
 line_type		stack
 legend			User
 legend			System
+legend			Wait IO
 legend			Idle
 y_legend		Percent
 data_min		0
@@ -228,71 +240,12 @@ data_min		0
 href			http://www.gps.caltech.edu/~blair/orca/docs/orcallator.html#web_server_error_rate
 }
 
+# Interface bits per second for 10 Mbit interfaces.
 plot {
-title			%g Interface Bits Per Second: be0
+title			%g Interface Bits Per Second: $1
 source			orcallator
-data			1024 * 8 * be0InKB/s
-data			1024 * 8 * be0OuKB/s
-line_type		area
-line_type		line1
-legend			Input
-legend			Output
-y_legend		Bits/s
-data_min		0
-data_max		100000000
-href			http://www.gps.caltech.edu/~blair/orca/docs/orcallator.html#interface_bits_per_second
-}
-
-plot {
-title			%g Interface Bits Per Second: elxl0
-source			orcallator
-data			1024 * 8 * elxl0InKB/s
-data			1024 * 8 * elxl0OuKB/s
-line_type		area
-line_type		line1
-legend			Input
-legend			Output
-y_legend		Bits/s
-data_min		0
-data_max		100000000
-href			http://www.gps.caltech.edu/~blair/orca/docs/orcallator.html#interface_bits_per_second
-}
-
-plot {
-title			%g Interface Bits Per Second: hme0
-source			orcallator
-data			1024 * 8 * hme0InKB/s
-data			1024 * 8 * hme0OuKB/s
-line_type		area
-line_type		line1
-legend			Input
-legend			Output
-y_legend		Bits/s
-data_min		0
-data_max		100000000
-href			http://www.gps.caltech.edu/~blair/orca/docs/orcallator.html#interface_bits_per_second
-}
-
-plot {
-title			%g Interface Bits Per Second: hme1
-source			orcallator
-data			1024 * 8 * hme1InKB/s
-data			1024 * 8 * hme1OuKB/s
-line_type		area
-line_type		line1
-legend			Input
-legend			Output
-y_legend		Bits/s
-data_min		0
-data_max		100000000
-href			http://www.gps.caltech.edu/~blair/orca/docs/orcallator.html#interface_bits_per_second
-}
-
-plot {
-title			%g Interface Bits Per Second: le0
-source			orcallator
-data			1024 * 8 * le0InKB/s
-data			1024 * 8 * le0OuKB/s
+data			1024 * 8 * ((?:(?:elxl)|(?:le)|(?:qe))\d+)InKB/s
+data			1024 * 8 * $1OuKB/s
 line_type		area
 line_type		line1
 legend			Input
@@ -303,25 +256,42 @@ data_max		10000000
 href			http://www.gps.caltech.edu/~blair/orca/docs/orcallator.html#interface_bits_per_second
 }
 
+# Interface bits per second for 100 Mbit interfaces.
 plot {
-title			%g Interface Bits Per Second: le1
+title			%g Interface Bits Per Second: $1
 source			orcallator
-data			1024 * 8 * le1InKB/s
-data			1024 * 8 * le1OuKB/s
+data			1024 * 8 * ((?:(?:be)|(?:hme))\d+)InKB/s
+data			1024 * 8 * $1OuKB/s
 line_type		area
 line_type		line1
 legend			Input
 legend			Output
 y_legend		Bits/s
 data_min		0
-data_max		10000000
+data_max		100000000
+href			http://www.gps.caltech.edu/~blair/orca/docs/orcallator.html#interface_bits_per_second
+}
+
+# Interface bits per second for 1 Gbit interfaces.
+plot {
+title			%g Interface Bits Per Second: $1
+source			orcallator
+data			1024 * 8 * (v?ge\d+)InKB/s
+data			1024 * 8 * $1OuKB/s
+line_type		area
+line_type		line1
+legend			Input
+legend			Output
+y_legend		Bits/s
+data_min		0
+data_max		1000000000
 href			http://www.gps.caltech.edu/~blair/orca/docs/orcallator.html#interface_bits_per_second
 }
 
 plot {
 title			%g Interface Packets Per Second: $1
 source			orcallator
-data			(.*\d)Ipkt/s
+data			(.*\d+)Ipkt/s
 data			$1Opkt/s
 line_type		area
 line_type		line1
@@ -337,7 +307,7 @@ href			http://www.gps.caltech.edu/~blair/orca/docs/orcallator.html#interface_pac
 plot {
 title			%g Interface Errors Per Second: $1
 source			orcallator
-data			(.*\d)IErr/s
+data			(.*\d+)IErr/s
 data			$1OErr/s
 line_type		area
 line_type		line1
@@ -350,21 +320,9 @@ href			http://www.gps.caltech.edu/~blair/orca/docs/orcallator.html#interface_err
 }
 
 plot {
-title			%g Interface Nocanput Rate
-source			orcallator
-data			(.*\d)NoCP/s
-line_type		area
-legend			$1
-y_legend		Nocanput/s
-data_min		0
-flush_regexps		1
-href			http://www.gps.caltech.edu/~blair/orca/docs/orcallator.html#interface_nocanput_rate
-}
-
-plot {
 title			%g Interface Deferred Packet Rate
 source			orcallator
-data			(.*\d)Defr/s
+data			(.*\d+)Defr/s
 line_type		area
 legend			$1
 y_legend		Defers/s
@@ -376,7 +334,7 @@ href			http://www.gps.caltech.edu/~blair/orca/docs/orcallator.html#interface_def
 plot {
 title			%g Interface Collisions
 source			orcallator
-data			(.*\d)Coll%
+data			(.*\d+)Coll%
 line_type		area
 legend			$1
 y_legend		Percent
@@ -384,6 +342,18 @@ data_min		0
 data_max		200
 flush_regexps		1
 href			http://www.gps.caltech.edu/~blair/orca/docs/orcallator.html#interface_collisions
+}
+
+plot {
+title			%g Interface Nocanput Rate
+source			orcallator
+data			(.*\d+)NoCP/s
+line_type		area
+legend			$1
+y_legend		Nocanput/s
+data_min		0
+flush_regexps		1
+href			http://www.gps.caltech.edu/~blair/orca/docs/orcallator.html#interface_nocanput_rate
 }
 
 plot {

@@ -69,8 +69,8 @@ distclean: $(DISTCLEAN_RRDTOOL)
 		(cd $$dir && $(MAKE) distclean);	\
 	done
 	$(RM) -r autom4te*.cache
-	$(RM) config/PerlHead1 config/PerlHead2
-	$(RM) config.cache config.log config.status Makefile
+	$(RM) config/aclocal.m4 config/PerlHead1 config/PerlHead2
+	$(RM) configure config.cache config.log config.status Makefile
 
 to-autoconf:
 	aclocal -I config --output=config/aclocal.m4

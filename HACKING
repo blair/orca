@@ -59,11 +59,11 @@ and above CVS.  To get an overview of Subversion, check out
 
 The Orca Subversion repository is located at
 
-   http://svn.orcaware.com/repos/trunk/orca/
+   http://svn.orcaware.com:8000/repos/trunk/orca/
 
 with tagged releases located at
 
-   http://svn.orcaware.com/repos/tags/orca/
+   http://svn.orcaware.com:8000/repos/tags/orca/
 
 The Subversion home page is at
 
@@ -86,6 +86,25 @@ and download the latest tar.gz.  To build Subversion, read these pages
    http://svn.collab.net/repos/svn/trunk/INSTALL
    http://subversion.tigris.org/project_source.html
 
+Once you've downloaded and installed Subversion, run the following
+command to check out Orca HEAD:
+
+   % svn co http://svn.orcaware.com:8000/repos/trunk/orca/
+
+This will create a directory named `orca' in the current working
+directory.
+
+You will then need to create the `configure' script by running:
+
+   % cd orca
+   % ./autogen.sh
+
+Running this will check if you have the proper version of autoconf on
+your system and build `configure'.
+
+At this point, you will have the `configure' script in the `orca'
+directory and you can configure and build Orca normally as described
+in the `INSTALL' file.
 
 
 What to read

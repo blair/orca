@@ -6,7 +6,7 @@ AC_CONFIG_AUX_DIR(config)
 AC_CANONICAL_SYSTEM
 
 # Minimum Autoconf version required.
-AC_PREREQ(2.52)
+AC_PREREQ(2.53)
 
 # Remember the command line arguments to configure for use when
 # configure is run again.  Also create the command line options for

@@ -277,7 +277,11 @@ sub create_static_images {
     } elsif (/OPEN (.*)/) {
       $image_filename = "$config_global{html_dir}/$1";
       print "Creating $1.\n" if $opt_verbose;
-      unless (open(ORCA_WRITE, ">$image_filename")) {
+      if (open(ORCA_WRITE, ">$image_filename")) {
+        # Some of these generated files are images, so always open in
+        # binary mode.
+        binmode ORCA_WRITE;
+      } else {
         warn "$0: cannot open `$image_filename' for writing: $!\n";
         $image_filename = '';
       }

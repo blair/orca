@@ -11,7 +11,7 @@ COMPRESSOR="@COMPRESSOR@"
 CUT=@CUT@
 EXPR=@EXPR@
 UNAME=@UNAME@
-ORCALLATOR_DIR=@VAR_DIR@/orcallator
+RAW_ORCALLATOR_DIR=@VAR_DIR@/orcallator
 SE=@SE@
 
 # WEB_LOG contains the location of the web server log file that
@@ -69,8 +69,8 @@ if test -z "$uname"; then
   exit 1
 fi
 
-# The directory these files go into is $ORCALLATOR_DIR/HOSTNAME
-OUTDIR=$ORCALLATOR_DIR/$uname
+# The directory these files go into is $RAW_ORCALLATOR_DIR/HOSTNAME
+OUTDIR=$RAW_ORCALLATOR_DIR/$uname
 
 # Export the environmental variables.
 export COMPRESSOR OUTDIR WEB_LOG WEB_SERVER WEB_SERVER_SECURE
@@ -109,5 +109,6 @@ nohup $SE $SE_PATCHES -DWATCH_OS $WATCH_WEB $libdir/orcallator.se &
 pid=$!
 echo $pid > $OUTDIR/orcallator.pid
 
-# Sleep for a couple of seconds to allow any orcallator warnings to appear.
+# Sleep for a couple of seconds to allow any orcallator startup
+# warnings to appear on the terminal before exiting.
 sleep 5

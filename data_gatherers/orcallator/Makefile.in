@@ -1,46 +1,74 @@
 @SET_MAKE@
 
-prefix            = @prefix@
-exec_prefix       = @exec_prefix@
-bindir            = @bindir@
-libdir            = @libdir@
-INSTALL           = @INSTALL@
-MKDIR             = @MKDIR@
-PERL_HEAD         = @PERL_HEAD@
-VAR_DIR           = @VAR_DIR@
-RRD_DIR           = @RRD_DIR@
-RRDTOOL_DIR       = @RRDTOOL_DIR@
-ORCALLATOR_DIR    = $(VAR_DIR)/orcallator
-PERL_SCRIPTS      = orcallator_column \
-                    orcallator_running
-SHELL_SCRIPTS     = restart_orcallator \
-                    stop_orcallator \
-                    start_orcallator \
-                    S99orcallator
-TARGETS           = $(PERL_SCRIPTS) $(SHELL_SCRIPTS)
+prefix                = @prefix@
+exec_prefix           = @exec_prefix@
+bindir                = @bindir@
+libdir                = @libdir@
+libexecdir            = @libexecdir@
+sysconfdir            = @sysconfdir@
+INSTALL               = @INSTALL@
+MKDIR                 = @MKDIR@
+PERL_HEAD             = @PERL_HEAD@
+VAR_DIR               = @VAR_DIR@
+RRD_DIR               = @RRD_DIR@
+INIT_D_DIR            = @INIT_D_DIR@
+RCX_D_CONTAINING_DIR  = @RCX_D_CONTAINING_DIR@
+RAW_ORCALLATOR_DIR    = $(VAR_DIR)/orcallator
+RRD_ORCALLATOR_DIR    = $(RRD_DIR)/orcallator
+
+BIN_PERL_SCRIPTS      = orcallator_column \
+                        orcallator_running
+LIBEXEC_PERL_SCRIPTS  =
+NOINST_PERL_SCRIPTS   =
+PERL_SCRIPTS          = $(BIN_PERL_SCRIPTS) \
+                        $(LIBEXEC_PERL_SCRIPTS) \
+                        $(NOINST_PERL_SCRIPTS)
+
+BIN_SHELL_SCRIPTS     = restart_orcallator \
+                        stop_orcallator \
+                        start_orcallator
+LIBEXEC_SHELL_SCRIPTS =
+NOINST_SHELL_SCRIPTS  = S99orcallator
+SHELL_SCRIPTS         = $(BIN_SHELL_SCRIPTS) \
+                        $(LIBEXEC_SHELL_SCRIPTS) \
+                        $(NOINST_SHELL_SCRIPTS)
+
+TARGETS               = $(PERL_SCRIPTS) \
+                        $(SHELL_SCRIPTS)
+BIN_TARGETS           = $(BIN_PERL_SCRIPTS) \
+                        $(BIN_SHELL_SCRIPTS)
+LIBEXEC_TARGETS       = $(LIBEXEC_PERL_SCRIPTS) \
+                        $(LIBEXEC_SHELL_SCRIPTS)
 
 all: Makefile $(TARGETS) orcallator.cfg
 
 install: all
 	$(MKDIR) $(bindir)
 	$(MKDIR) $(libdir)
-	@for file in $(TARGETS); do \
+	$(MKDIR) $(sysconfdir)
+	$(MKDIR) $(RAW_ORCALLATOR_DIR)
+	$(MKDIR) $(RRD_ORCALLATOR_DIR)
+	@for file in $(BIN_TARGETS); do \
 	  echo $(INSTALL) $$file $(bindir); \
 	  $(INSTALL) $$file $(bindir); \
 	done
-	if test -r $(libdir)/orcallator.cfg; then \
-	  cp -p $(libdir)/orcallator.cfg $(libdir)/orcallator.cfg.`date +%Y-%m-%d-%H:%M:%S`; \
-	fi
-	$(INSTALL) -m 0644 orcallator.cfg $(libdir)
 	$(INSTALL) -m 0644 orcallator.se $(libdir)
+	if test -r $(sysconfdir)/orcallator.cfg; then \
+	  cp -p $(sysconfdir)/orcallator.cfg $(sysconfdir)/orcallator.cfg.`date +%Y-%m-%d-%H:%M:%S`; \
+	fi
+	$(INSTALL) -m 0644 orcallator.cfg $(sysconfdir)
 
 orcallator_run_at_boot: all
-	-$(RM) /etc/init.d/orcallator /etc/rc0.d/K01orcallator
-	-$(RM) /etc/rc1.d/K01orcallator /etc/rc3.d/S99orcallator
-	$(INSTALL) -m 0744 S99orcallator /etc/init.d/orcallator
-	ln /etc/init.d/orcallator /etc/rc0.d/K01orcallator
-	ln /etc/init.d/orcallator /etc/rc1.d/K01orcallator
-	ln /etc/init.d/orcallator /etc/rc3.d/S99orcallator
+	test "$(INIT_D_DIR)"
+	test "$(RCX_D_CONTAINING_DIR)"
+	-$(RM) $(INIT_D_DIR)/orcallator
+	-$(RM) $(RCX_D_CONTAINING_DIR)/rc0.d/K01orcallator
+	-$(RM) $(RCX_D_CONTAINING_DIR)/rc1.d/K01orcallator
+	-$(RM) $(RCX_D_CONTAINING_DIR)/rc3.d/S99orcallator
+	$(INSTALL) -m 0744 S99orcallator $(INIT_D_DIR)/orcallator
+	ln $(INIT_D_DIR)/orcallator $(RCX_D_CONTAINING_DIR)/rc0.d/K01orcallator
+	ln $(INIT_D_DIR)/orcallator $(RCX_D_CONTAINING_DIR)/rc1.d/K01orcallator
+	ln $(INIT_D_DIR)/orcallator $(RCX_D_CONTAINING_DIR)/rc3.d/S99orcallator
 
 clean:
 	$(RM) $(TARGETS)

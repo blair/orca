@@ -1,13 +1,19 @@
 @SET_MAKE@
 
-SUBDIRS           = orcallator \
-                    orca_services
+SUBDIRS               = orcallator \
+                        orca_services
 
 all:	Makefile $(TARGETS)
 	@for dir in $(SUBDIRS); do \
 	  echo "cd $$dir && $(MAKE) CFLAGS=$(CFLAGS)"; \
 	  (cd $$dir && $(MAKE) CFLAGS="$(CFLAGS)"); \
 	done
+
+orcallator_run_at_boot:
+	cd orcallator && $(MAKE) orcallator_run_at_boot
+
+orca_services_run_at_boot:
+	cd orca_services && $(MAKE) orca_services_run_at_boot
 
 install:
 	@for dir in $(SUBDIRS); do \

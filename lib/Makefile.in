@@ -1,10 +1,10 @@
 @SET_MAKE@
 
-prefix            = @prefix@
-exec_prefix       = @exec_prefix@
-libdir            = @libdir@
-INSTALL           = @INSTALL@
-MKDIR             = @MKDIR@
+prefix                = @prefix@
+exec_prefix           = @exec_prefix@
+libdir                = @libdir@
+INSTALL               = @INSTALL@
+MKDIR                 = @MKDIR@
 
 all: Makefile \
      orca_logo.gif.hex \

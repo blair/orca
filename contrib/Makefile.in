@@ -1,6 +1,6 @@
 @SET_MAKE@
 
-SUBDIRS           = rotate_orca_graphs
+SUBDIRS               = rotate_orca_graphs
 
 all:	Makefile $(TARGETS)
 	@for dir in $(SUBDIRS); do \

@@ -1,30 +1,53 @@
 @SET_MAKE@
 
-prefix            = @prefix@
-exec_prefix       = @exec_prefix@
-bindir            = @bindir@
-INSTALL           = @INSTALL@
-MKDIR             = @MKDIR@
-PERL_HEAD         = @PERL_HEAD@
-RRD_DIR           = @RRD_DIR@
-VAR_DIR           = @VAR_DIR@
-ORCALLATOR_DIR    = $(VAR_DIR)/orcallator
-PERL_SCRIPTS      = orca \
-                    upgrade_installation
-SHELL_SCRIPTS     =
-TARGETS           = $(PERL_SCRIPTS) $(SHELL_SCRIPTS)
+prefix                = @prefix@
+exec_prefix           = @exec_prefix@
+bindir                = @bindir@
+INSTALL               = @INSTALL@
+MKDIR                 = @MKDIR@
+PERL_HEAD             = @PERL_HEAD@
+RRD_DIR               = @RRD_DIR@
+VAR_DIR               = @VAR_DIR@
+RAW_ORCALLATOR_DIR    = $(VAR_DIR)/orcallator
+
+BIN_PERL_SCRIPTS      = orca
+LIBEXEC_PERL_SCRIPTS  =
+NOINST_PERL_SCRIPTS   = upgrade_installation
+PERL_SCRIPTS          = $(BIN_PERL_SCRIPTS) \
+                        $(LIBEXEC_PERL_SCRIPTS) \
+                        $(NOINST_PERL_SCRIPTS)
+
+BIN_SHELL_SCRIPTS     =
+LIBEXEC_SHELL_SCRIPTS =
+NOINST_SHELL_SCRIPTS  =
+SHELL_SCRIPTS         = $(BIN_SHELL_SCRIPTS) \
+                        $(LIBEXEC_SHELL_SCRIPTS) \
+                        $(NOINST_SHELL_SCRIPTS)
+
+TARGETS               = $(PERL_SCRIPTS) \
+                        $(SHELL_SCRIPTS)
+BIN_TARGETS           = $(BIN_PERL_SCRIPTS) \
+                        $(BIN_SHELL_SCRIPTS)
+LIBEXEC_TARGETS       = $(LIBEXEC_PERL_SCRIPTS) \
+                        $(LIBEXEC_SHELL_SCRIPTS)
 
 all: Makefile $(TARGETS)
 
 install: all
 	$(MKDIR) $(bindir)
-	@for file in $(TARGETS); do \
+	@for file in $(BIN_TARGETS); do \
 	  echo $(INSTALL) $$file $(bindir); \
 	  $(INSTALL) $$file $(bindir); \
 	done
 
 upgrade: upgrade_installation
-	./upgrade_installation $(prefix) $(exec_prefix) $(bindir) $(libdir) $(ORCALLATOR_DIR) $(RRD_DIR)
+	./upgrade_installation \
+	  $(prefix) \
+	  $(exec_prefix) \
+	  $(bindir) \
+	  $(libdir) \
+	  $(RAW_ORCALLATOR_DIR) \
+	  $(RRD_DIR)
 
 clean:
 	$(RM) $(TARGETS)

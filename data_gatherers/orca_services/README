@@ -1,6 +1,6 @@
 ##
 ##
-## Orca_services.pl, a log generating services usage monitor
+## Orca_services: a log generating services usage monitor
 ##
 ##
 
@@ -25,7 +25,7 @@ PERL_SCRIPTS
 	orca_services_running
 		warn if orca_services files are not up to date.
 		Not changed by canau.
-	orca_services.pl
+	orca_services
 		main data collector
 
 SHELL_SCRIPTS
@@ -82,7 +82,7 @@ radius stats via the "--radius_db=off" parameter
    Most of the skeleton code of orca_services comes from orcallator. So
    everything is very similar.
 
-4) You might need to edit orca_services.pl to suit your needs. Look for
+4) You might need to edit orca_services to suit your needs. Look for
    code need the ATTENTION string.  You'll probably need to edit
    orca_services.cfg.in.
 

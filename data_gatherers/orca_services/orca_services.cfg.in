@@ -58,7 +58,6 @@ group orca_services {
 find_files		@VAR_DIR@/orca_services/(.*)/(?:(?:orca_services)|(?:percol))-\d{4}-\d{2}-\d{2}(?:\.(?:Z|gz|bz2))?
 column_description	first_line
 date_source		column_name timestamp
-date_format		%s
 interval		300
 reopen			1
 filename_compare	sub {

@@ -71,12 +71,13 @@ sub new {
   # configuration file specifies that images should be expired.
   my $max_length = $MAX_PLOT_TYPE_LENGTH + 2 + length($IMAGE_SUFFIX);
   if ($config_global{expire_images}) {
-  $max_length += 5;
+    $max_length += 5;
   }
   $name = name_to_fsname($name, $max_length);
 
   # Create the paths to the html directory and subdirectories.
   my $html_dir     = "$config_global{html_dir}/$subgroup_name";
+
   # Create the html_dir directories if necessary.
   unless (-d $html_dir) {
     warn "$0: making directory `$html_dir'.\n";

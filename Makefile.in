@@ -11,7 +11,7 @@ all:	configure
 
 install:
 	./config/mkinstalldirs $(PERCOLLATOR_DIR)
-	./config/mkinstalldirs $(RRD_DIR)/percollator
+	./config/mkinstalldirs $(RRD_DIR)
 	@for dir in $(SUBDIRS); do			\
 		echo "cd $$dir; $(MAKE) install";	\
 		(cd $$dir; $(MAKE) install);		\

@@ -1,10 +1,78 @@
+Tue Feb 16 10:49:07 PST 1999
+
+	Version 0.17.
+
+	Sort group names depending upon the format of the group names.
+	This now allows nfs13 to be listed after nfs5, even though cmp
+	will list nfs13 before nfs5.
+
+	Created GIFs now also print the current measured value in addition
+	to the average measured value.
+
+	Update the http and inode with page steals plots in
+	percollator.cfg.in to have shorter legends so that RRDtool would
+	plot the whole comment along with the average and last value in
+	the GIF.
+
+Mon Feb 15 12:29:18 PST 1999
+
+	Require RRDtool 0.99.11.
+
+	Add version information to the DS names created by Orca so new
+	version of Orca and make older RRD files obsolete.  This feature
+	now used to make sure LAST measurements are stored in Orca's RRDs.
+
+Fri Feb 12 15:10:05 PST 1999
+
+	Require RRDtool 0.99.10.
+
+	When creating a brand new RRD, create new RRAs for the last
+	value measured using LAST.
+
+Thu Feb 11 11:48:14 PST 1999
+
+	Require RRDtool 0.99.8.
+
+Thu Feb  4 12:51:54 PST 1999
+
+	Update the installation instructions for SE 3.1 beta.
+
+Fri Jan 29 15:38:53 PST 1999
+
+	Require RRDtool 0.99.6.
+
+Thu Jan 28 15:44:07 PST 1999
+
+	If a file uses the first line as a column description and if
+	the following line does not have the same number of columns,
+	then warn and skip that line.
+
+	Require RRDtool 0.99.4.
+
+Tue Jan 26 15:28:26 PST 1999
+
+	Rename Orca::GIFFile::expire_string to
+	Orca::GIFFile::_expire_string.
+
+	Change the default location of the percollator RRDs to be
+	$prefix/var/orca/rrd/percollator instead of $prefix/var/orca/rrd.
+
+	Sort the order of RRD files being updated by the RRD's filename.
+
+	Do not make RRD_DIR/percollator
+
+	Require RRDtool 0.99.2.
+
+	Remove sanity check on group update times that could cause
+	false dies.
+
 Tue Jan 26 10:07:40 PST 1999
 
 	Fix a bug in lib/Makefile.in where the variable $(CP) was used
 	but never defined.
 
-	Fix a bug where watch_data_sources() would do an extra loop
-	each time file updates were looked for.
+	Fix a bug where watch_data_sources() would do an extra loop each
+	time file updates were looked for.
 
 	Version 0.16.
 
@@ -16,16 +84,16 @@ Mon Jan 25 15:25:12 PST 1999
 
 	Update the URL to Tobias Oetiker's RRD web site.
 
-	Make sure lib/Makefile does not overwrite old lib/percollator.cfg's
-	when a make install is done.
+	Make sure lib/Makefile does not overwrite old
+	lib/percollator.cfg's when a make install is done.
 
 	Version 0.15.
 
 Fri Jan 22 20:17:56 PST 1999
 
-	Create an Orca logo and have the logo appear at the bottom
-	of each HTML file.  The logo is stored as hexidecimal inside
-	the Orca perl script.
+	Create an Orca logo and have the logo appear at the bottom of
+	each HTML file.  The logo is stored as hexadecimal inside the
+	Orca perl script.
 
 	Update percollator.cfg.in to not contain bzajac@geostaff.com
 	any more.  Changed it to root@localhost.
@@ -35,9 +103,9 @@ Thu Jan 21 13:31:50 PST 1999
 	Add a configure script to Orca to make installation of Orca and
 	percollator much easier.
 
-	Add a new file env_percol to set up all the environmental variables
-	so that percollator runs correctly instead of having to edit
-	start_percol, stop_percol, and restart_percol.
+	Add a new file env_percol to set up all the environmental
+	variables so that percollator runs correctly instead of having
+	to edit start_percol, stop_percol, and restart_percol.
 
 Mon Jan 11 16:58:28 PST 1999
 

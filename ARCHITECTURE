@@ -1,0 +1,122 @@
+Orca::OpenFileHash
+Orca::HTMLFile
+Orca::DataFile
+Orca::SourceDataFile
+
+This file describes Orca's internal design.
+
+Orca makes use of several internal classes (objects).  They are:
+
+	Orca::OpenFileHash
+	Orca::HTMLFile
+	Orca::DataFile
+	Orca::SourceDataFile is a subclass of Orca::DataFile
+	Orca::RRDFile is a subclass of Orca::DataFile
+	Orca::GIFFile
+
+Orca::OpenFileHash
+
+	This class provides a cache of open file descriptors to the
+	user of the class.  Upon creation, Orca::OpenFileHash is
+	told how many open file descriptors to cache.  When a file
+	descriptor is needed for a file, the filename is passed to
+	a method and if the descriptor is already open, then it
+	is given back to the caller, otherwise the file is opened
+	and the newly opened descritor is passed back.  If there are
+	already a maximum number of file descriptors open, then the
+	class closes the least recently used one.
+
+	This class is used by the Orca::SourceDataFile to keep
+	files open as Orca waits for file updates.
+
+	constructor	new
+	method		open
+	method		add
+	method		close
+	method		change_weight
+	method		list
+	method		select
+	method		get_fd
+	method		sysread_readline
+	method		is_open
+	hidden method	_close_extra
+
+Orca::HTMLFile
+
+	This class is basically a object file descriptor that can be
+	printed to.  This class does not provide the same level of
+	abstraction that IO::File does.  It only supports the print
+	method.
+
+	What this class does is upon creation of an HTML file prints a
+	standard amount of HTNL to the beginning of the file.  This
+	includes the standard <html> and other tags.  Then, when the
+	object is destroyed, the DESTORY method writes some trailing
+	HTML to the file.
+
+	constructor	new
+	method		print
+	hidden method	DESTROY
+
+Orca::DataFile
+
+	Orca::DataFile is a class meant to be subclassed by other
+	classes.  What is does is cache file information, such as the
+	inode number, the device number of the mount point, the
+	files modification time (mtime).  The class can be instructed
+	to update the cache upon demand and to return the time when
+	the file was last stated.
+
+	The file information is cached to save file access and system
+	call overhead that can be prevented.
+
+	constructor	new
+	method		filename
+	method		file_dev
+	method		file_ino
+	method		file_mtime
+	method		last_stat_time
+	method		update_stat
+	method		status
+
+Orca::SourceDataFile
+
+	Orca::SourceDataFile subclasses itself from Orca::DataFile.
+	This classes primary mission is to load and parse data from
+	source text files and hand it off.
+
+	constructor	new
+	method		is_current
+	method		next_load_time
+	method		get_column_names
+	method		get_date_column
+	method		add_plots
+	method		load_new_data
+	method		rrds
+
+
+Orca::RRDFile
+
+	constructor	new
+	method		name
+	method		rrd_update_time
+	method		add_gif
+	method		created_gifs
+	method		queue_data
+	method		flush_data
+
+Orca::GIFFile
+
+	constructor	new
+	method		add_rrds
+	method		rrds
+	method		plot_ref
+	method		group
+	method		files_key
+	method		name
+	method		no_group_name
+	method		plot_end_time
+	method		plot
+	hidden method	_plot
+	hidden sub	_expire_string
+

@@ -15,9 +15,15 @@ $Data::Dumper::Indent   = 1;
 $Data::Dumper::Purity   = 1;
 $Data::Dumper::Deepcopy = 1;
 
-# This is the version of this code.
+# This is the version of Orca.
 use vars qw($VERSION);
-$VERSION = 0.16;
+$VERSION = 0.17;
+
+# This is the version number used in creating the DS names in RRDs.
+# This should be updated any time a new version of Orca needs some
+# new content in its RRD files.  The DS name is a concatentation of
+# the string Orca with this string of digits.
+my $ORCA_RRD_VERSION = 19990215;
 
 # The number of seconds in one day.
 my $day_seconds = 24*60*60;
@@ -112,13 +118,13 @@ END
     warn "$0: warning: cannot close `$self->{_filename}': $!\n";
 }
 
-package OpenFileHash;
+package Orca::OpenFileHash;
 
 use Carp;
 
 sub new {
   unless (@_ == 2) {
-    confess "$0: OpenFileHash::new passed wrong number of arguments.\n";
+    confess "$0: Orca::OpenFileHash::new passed wrong number of arguments.\n";
   }
 
   my $class        = shift;
@@ -134,7 +140,7 @@ sub new {
 
 sub open {
   unless (@_ == 3) {
-    confess "$0: OpenFileHash::open passed wrong number of arguments.\n";
+    confess "$0: Orca::OpenFileHash::open passed wrong number of arguments.\n";
   }
 
   my ($self, $filename, $weight) = @_;
@@ -324,7 +330,7 @@ package main;
 # Set up a cache of 150 open file descriptors.  This leaves 255-150-3 = 102
 # file descriptors for other use in the program.
 use vars qw($open_file_cache);
-$open_file_cache = OpenFileHash->new(150) unless $open_file_cache;
+$open_file_cache = Orca::OpenFileHash->new(150) unless $open_file_cache;
 
 package Orca::DataFile;
 
@@ -426,7 +432,7 @@ sub status {
 
 package Orca::GIFFile;
 
-use RRDs 0.99.0;
+use RRDs 0.99011;
 use Carp;
 
 sub new {
@@ -609,7 +615,7 @@ sub _plot {
   for (my $i=0; $i<$data_sources; ++$i) {
     my $rrd_key      = $self->{_my_rrd_list}[$i];
     my $rrd_filename = $self->{_all_rrd_ref}{$rrd_key}->filename;
-    push(@options, "DEF:source$i=$rrd_filename:orca:AVERAGE");
+    push(@options, "DEF:source$i=$rrd_filename:Orca$ORCA_RRD_VERSION:AVERAGE");
   }
   for (my $i=0; $i<$data_sources; ++$i) {
     my $legend    = ::replace_group_name($plot_ref->{legend}[$i], $group);
@@ -621,7 +627,8 @@ sub _plot {
     my $legend = ::replace_group_name($plot_ref->{legend}[$i], $group);
     $legend    =~ s:%:\200:g;
     $legend    =~ s:\200:%%:g;
-    push(@options, "GPRINT:source$i:AVERAGE:Average $legend is %f");
+    push(@options, "GPRINT:source$i:AVERAGE:Average $legend is %f",
+                   "GPRINT:source$i:LAST:Current $legend is %f");
   }
 
   my $gif_filename = "$self->{_gif_basename}-$plot_type.gif";
@@ -643,7 +650,7 @@ sub _plot {
       if (open(META, "> $gif_filename.meta")) {
         my $time = 
         print META "Expires: ",
-                   expire_string($plot_end_time + $plot_age + 30),
+                   _expire_string($plot_end_time + $plot_age + 30),
                    "\n";
         close(META) or
           warn "$0: warning: cannot close `$gif_filename.meta': $!\n";
@@ -657,7 +664,7 @@ sub _plot {
   1;
 }
 
-sub expire_string {
+sub _expire_string {
   my @gmtime = gmtime(shift);
   my ($wday) = ('Sun','Mon','Tue','Wed','Thu','Fri','Sat')[$gmtime[6]];
   my ($month) = ('Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep', 
@@ -717,21 +724,48 @@ sub new {
   $self->{_plot_ref}         = $plot_ref;
   $self->{_interval}         = int($config_files->{$files_key}{interval}+0.5);
 
-  # If the file exists, then get the time of the last data point entered,
-  # otherwise set the last update time to -2.  If the file doesn't exist,
-  # it is created later when the data is first flushed to it.
+  # See if the RRD file meets two requirements. The first is to see
+  # if the last update time can be sucessfully read.  The second is
+  # to see if the RRD has an DS named "Orca$ORCA_RRD_VERSION".  If
+  # neither one of these is true, then create a brand new RRD is
+  # created when data is first flushed to it.
   $self->{_rrd_update_time} = -2;
   if ($self->status >= 0) {
     my $update_time = RRDs::last $rrd_filename;
     if (my $error = RRDs::error) {
-      warn "$0: RRDs::last error: $error\n";
+      warn "$0: RRDs::last error: `$rrd_filename' $error\n";
     }
     else {
-      $self->{_rrd_update_time} = $update_time;
+      if (open(RRDFILE, "<$rrd_filename")) {
+        my $version = '';
+        while (<RRDFILE>) {
+          if (/Orca(\d{8})/) {
+            $version = $1;
+            last;
+          }
+        }
+        close(RRDFILE) or
+          warn "$0: error in closing `$rrd_filename' for reading: $!\n";
+
+        # Check the version number of file to the required version.
+        if ($version eq $ORCA_RRD_VERSION) {
+          $self->{_rrd_update_time} = $update_time;
+        }
+        elsif ($version) {
+          warn "$0: old version $version RRD `$rrd_filename' found: will create new version $ORCA_RRD_VERSION file.\n";
+        }
+        else {
+          warn "$0: unknown version RRD `$rrd_filename' found: will create new version $ORCA_RRD_VERSION file.\n";
+        }
+      }
     }
   }
 
   $self;
+}
+
+sub name {
+  $_[0]->{_name};
 }
 
 sub rrd_update_time {
@@ -795,7 +829,7 @@ sub flush_data {
     # data source value is set to unknown.
     my $interval = $self->{_interval};
    
-    my $data_source = "DS:orca:$self->{_plot_ref}{data_type}";
+    my $data_source = "DS:Orca$ORCA_RRD_VERSION:$self->{_plot_ref}{data_type}";
     $data_source   .= sprintf ":%d:", 2*$interval;
     $data_source   .= "$self->{_plot_ref}{data_min}:";
     $data_source   .= "$self->{_plot_ref}{data_max}";
@@ -808,16 +842,18 @@ sub flush_data {
     # RRA's with the same number of primary data points.  This can happen
     # if the interval is equal to one of the consoldated intervals.
     my $count = int($rra_row_count[0]*300.0/$interval + 0.5);
-    my $one_pdp_option = "RRA:AVERAGE:0.5:1:$count";
+    my @one_pdp_option = ("RRA:AVERAGE:0.5:1:$count",
+                          "RRA:LAST:0.5:1:1");
 
     for (my $i=1; $i<@rra_pdp_count; ++$i) {
       next if $interval > 300*$rra_pdp_count[$i];
       my $rra_pdp_count = int($rra_pdp_count[$i]*300.0/$interval + 0.5);
-      if ($one_pdp_option and $rra_pdp_count != 1) {
-        push(@options, $one_pdp_option);
+      if (@one_pdp_option and $rra_pdp_count != 1) {
+        push(@options, @one_pdp_option);
       }
-      $one_pdp_option = '';
-      push(@options, "RRA:AVERAGE:0.5:$rra_pdp_count:$rra_row_count[$i]");
+      @one_pdp_option = ();
+      push(@options, "RRA:AVERAGE:0.5:$rra_pdp_count:$rra_row_count[$i]",
+                     "RRA:LAST:0.5:$rra_pdp_count:1");
     }
 
     # Now do the actual creation.
@@ -831,7 +867,7 @@ sub flush_data {
     RRDs::create @options;
 
     if (my $error = RRDs::error) {
-      warn "$0: RRDs::create error: $error\n";
+      warn "$0: RRDs::create error: `$rrd_filename' $error\n";
       return;
     }
   }
@@ -886,7 +922,7 @@ sub new {
       $date_source,
       $date_format,
       $warn_email,
-      $source_file_state) = @_;
+      $saved_source_file_state) = @_;
 
   my $self = $class->SUPER::new($filename);
   $self->{_interval}           = $interval;
@@ -923,8 +959,8 @@ sub new {
   $self->{_read_interval} = int($read_interval + 0.5);
 
   # Load in any state information for this file.
-  if (defined $source_file_state->{$filename}) {
-    while (my ($key, $value) = each %{$source_file_state->{$filename}}) {
+  if (defined $saved_source_file_state->{$filename}) {
+    while (my ($key, $value) = each %{$saved_source_file_state->{$filename}}) {
       $self->{$key} = $value;
     }
   }
@@ -1354,7 +1390,7 @@ sub add_plots {
       push(@{$config_plots->[$old_i]{creates}}, $gif);
     }
 
-    # Put into each RRD the GIFS that are generated from it.
+    # Put into each RRD the GIFs that are generated from it.
     foreach my $rrd_key (@my_rrds) {
       $rrd_data_files_ref->{$rrd_key}->add_gif($gif);
     }
@@ -1443,8 +1479,18 @@ sub load_new_data {
   my $close_once_done   = 0;
   while (my $line = <$fd>) {
     my @line = split(' ', $line);
+
+    # Skip this input line if 1) the file uses the first line to define the
+    # column names, 2) the number of columns loaded is not equal to the
+    # number of columns in the column description.
+    if ($self->{_first_line} and @line != @{$self->{_column_description}}) {
+      warn "$0: number of columns in line $. of `$filename' does not match column description.\n";
+      next;
+    }
+
     my $time = $use_file_mtime ? $self->file_mtime : $line[$date_column_index];
     $last_data_time = $time if $time > $last_data_time;
+
     # If the file status from the source data file is greater than zero, then
     # it means the file has changed in some way, so we need to do updates for
     # all plots.  Load the available data and push it to the plots.
@@ -1595,7 +1641,7 @@ sub watch_data_sources {
   my $gif_files_ref = {list => [], hash => {}};
 
   # Load the current state of the source data files.
-  my $source_file_state = &load_state($config_options->{state_file});
+  my $saved_source_file_state = &load_state($config_options->{state_file});
 
   # The first time through we always find new files.  Determine the
   # time interval that the current time is in, where the intervals are
@@ -1633,7 +1679,7 @@ sub watch_data_sources {
                      $config_options,
                      $config_files,
                      $config_plots,
-                     $source_file_state,
+                     $saved_source_file_state,
                      $old_found_files_ref,
                      $rrd_data_files_ref,
                      $gif_files_ref);
@@ -1641,15 +1687,11 @@ sub watch_data_sources {
       # Go through all of the groups and for each group and all of the files
       # in the group find the next load time in the future.
       undef %group_load_time;
-      my $now = time;
       foreach my $group (keys %$group_files_ref) {
         my $group_load_time = 1e20;
         foreach my $filename (@{$group_files_ref->{$group}}) {
           my $load_time    = $new_found_files_ref->{$filename}->next_load_time;
           $group_load_time = $load_time if $load_time < $group_load_time;
-        }
-        if ($group_load_time < $now) {
-          die "$0: internal error: group_load_time less than current time.\n"
         }
         $group_load_time{$group} = $group_load_time;
       }
@@ -1715,14 +1757,14 @@ sub watch_data_sources {
       $updated_source_files = 1;
 
       # Flush the data that has been loaded for each plot.  To keep the
-      # RRD that was just created in the systems cache, plot GIFs that
+      # RRD that was just created in the system's cache, plot GIFs that
       # only depend on this RRD, since GIFs that depend upon two or more
       # RRDs will most likely be generated more than once and the other
       # required RRDs may not exist yet.
       if ($opt_verbose) {
         print "Flushing new data", $group ? " from $group" : "", ".\n";
       }
-      foreach my $rrd (values %this_group_rrds) {
+      foreach my $rrd (sort {$a->name cmp $b->name} values %this_group_rrds) {
         $rrd->flush_data;
         foreach my $gif ($rrd->created_gifs) {
           next if $gif->rrds > 1;
@@ -1784,10 +1826,40 @@ sub watch_data_sources {
   }
 }
 
+# Take a string and capatialize only the first character of the
+# string.
 sub Capatialize {
   my $string = shift;
   substr($string, 0, 1) = uc(substr($string, 0, 1));
   $string;
+}
+
+# Sort group names depending upon the type of characters in the
+# group's name.
+sub sort_group_names {
+  my $a_name = ref($a) ? $a->group : $a;
+  my $b_name = ref($b) ? $b->group : $b;
+
+  # If both names are purely digits, then do a numeric comparison.
+  if ($a_name =~ /^[-]?\d+$/ and $b_name =~ /[-]?\d+$/) {
+    return $a_name <=> $b_name;
+  }
+
+  # If the names are characters followed by digits, then compare the
+  # characters, and if they match, compare the digits.
+  my ($a_head, $a_digits, $b_head, $b_digits);
+  if (($a_head, $a_digits) = $a_name =~ /^([-a-zA-Z]+)(\d+)$/ and
+      ($b_head, $b_digits) = $b_name =~ /^([-a-zA-Z]+)(\d+)$/) {
+    my $return = $a_head cmp $b_head;
+    if ($return) {
+      return $return;
+    }
+    else {
+      return $a_digits <=> $b_digits;
+    }
+  }
+
+  $a_name cmp $b_name;
 }
 
 # Create all of the different HMTL files with all of the proper HREFs
@@ -1807,9 +1879,9 @@ sub create_html_files {
 
   # Create the main HTML index.html file.
   my $index_html = Orca::HTMLFile->new($index_filename,
-                                        $config_options->{html_top_title},
-                                        $config_options->{html_page_header},
-                                        $config_options->{html_page_footer});
+                                       $config_options->{html_top_title},
+                                       $config_options->{html_page_header},
+                                       $config_options->{html_page_footer});
   unless ($index_html) {
     warn "$0: warning: cannot open `$index_filename' for writing: $!\n";
     return;
@@ -1830,7 +1902,7 @@ sub create_html_files {
   # Go through each group.
   if (keys %$group_files_ref > 1) {
     $index_html->print("<h2>Available Targets</h2>\n\n<table>\n");
-    foreach my $group (sort keys %$group_files_ref) {
+    foreach my $group (sort sort_group_names keys %$group_files_ref) {
 
       # Create the HTML code for the main index.html file.
       my $group_basename = strip_key_name($group);
@@ -1857,9 +1929,9 @@ sub create_html_files {
         my $filename  = "$html_dir/$href";
         my $Plot_Type = Capatialize($plot_type);
         my $fd = Orca::HTMLFile->new($filename,
-                                      "$Plot_Type $group",
-                                      $config_options->{html_page_header},
-                                      $config_options->{html_page_footer});
+                                     "$Plot_Type $group",
+                                     $config_options->{html_page_header},
+                                     $config_options->{html_page_footer});
         unless ($fd) {
           warn "$0: warning: cannot open `$filename' for writing: $!\n";
           next;
@@ -1975,9 +2047,12 @@ sub create_html_files {
     }
 
     # Put together the correctly ordered list of GIFs using the array
-    # references in the legends hash.
+    # references in the legends hash.  Sort the GIFs using the
+    # special sorting routine for group names.
     my @gifs;
     foreach my $legend_no_group (sort keys %same_legends_gif_list) {
+      @{$same_legends_gif_list{$legend_no_group}} =
+        sort sort_group_names @{$same_legends_gif_list{$legend_no_group}};
       push(@gifs, @{$same_legends_gif_list{$legend_no_group}});
     }
 
@@ -2005,9 +2080,9 @@ sub create_html_files {
           my $filename  = "$html_dir/$href";
           my $Plot_Type = Capatialize($plot_type);
           my $fd = Orca::HTMLFile->new($filename,
-                                        "$Plot_Type $legend_no_group",
-                                        $config_options->{html_page_header},
-                                        "<hr>\n$config_options->{html_page_footer}");
+                                       "$Plot_Type $legend_no_group",
+                                       $config_options->{html_page_header},
+                                       "<hr>\n$config_options->{html_page_footer}");
           unless ($fd) {
             warn "$0: warning: cannot open `$filename' for writing: $!\n";
             next;
@@ -2067,9 +2142,9 @@ sub create_html_files {
                                                  $gif->group);
       my $summarize_name = "$html_dir/$with_group_name.html";
       my $summarize_html = Orca::HTMLFile->new($summarize_name,
-                                                $legend_with_group,
-                                                $config_options->{html_page_header},
-                                                $config_options->{html_page_footer});
+                                               $legend_with_group,
+                                               $config_options->{html_page_header},
+                                               $config_options->{html_page_footer});
       unless ($summarize_html) {
         warn "$0: warning: cannot open `$summarize_name' for writing: $!\n";
         next;
@@ -2232,7 +2307,7 @@ sub find_files {
       $config_options,
       $config_files,
       $config_plots,
-      $source_file_state,
+      $saved_source_file_state,
       $old_found_files_ref,
       $rrd_data_files_ref,
       $gif_files_ref) = @_;
@@ -2280,14 +2355,16 @@ sub find_files {
       $tmp_group_by_file{$filename} = $group;
     }
 
-    # Create a new list of filenames sorted by group name and inside each
-    # group sorted by filename.  This will cause the creates plots to
-    # appear in group order.
+    # Create a new list of filenames sorted by group name and inside
+    # each group sorted by filename.  This will cause the created
+    # plots to appear in group order.
     @filenames = ();
     foreach my $key (sort keys %tmp_files_by_group) {
       push(@filenames, sort @{$tmp_files_by_group{$key}});
     }
 
+    # Now for each file, create the Orca::SourceDataFile object that
+    # manages that file and the GIFs that get generated from the file.
     foreach my $filename (@filenames) {
       # Create the object that contains this file.  Take care if the same
       # file is being used in another files group.
@@ -2306,7 +2383,7 @@ sub find_files {
                                        $config_files->{$files_key}{date_source},
                                        $config_files->{$files_key}{date_format},
                                        $config_options->{warn_email},
-                                       $source_file_state);
+                                       $saved_source_file_state);
           unless ($data_file) {
             warn "$0: warning: cannot process `$filename'.\n";
             next;

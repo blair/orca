@@ -1,0 +1,30 @@
+Orca::SourceDataFile
+
+	Requirements
+		Manages one source data file
+		Knows when the data file will be updated
+		Only class to know the internal format of the file
+		Can have brand new data fields at any point in time
+
+	Internal Storage
+		
+	Methods
+
+Orca::RRDFile
+
+	Requirements
+		Manages on RRD file
+		RRD file can contain data resulting from arbitrary math
+			expressions.
+
+	Internal Storage
+
+	Methods
+
+Orca::GIFFile
+
+	Requirements
+
+	Internal Storage
+
+	Methods

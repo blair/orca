@@ -3,14 +3,14 @@ Outline:
 2) Install necessary Perl modules.
    a) Install Math::IntervalSearch version 1.00 or greater.
    b) Install Digest::MD5 version 2.00 or greater.
-   c) Install RRDs version 0.99.1 or greater.
+   c) Install RRDs version 0.99.6 or greater.
 3) Decide where Orca's binaries, RRD, HTML, and percollator directories
    will reside.  Make sure performance concerns are handled.
 4) Configure Orca.
 5) Install Orca.
 6) [Optional] Install percollator.
    a) Install the SE toolkit.
-   b) Apply a patch to the SE toolkit.
+   b) Apply a patch to the SE 3.0 toolkit.
    c) Examine Orca/percollator programs.
    d) Run start_percol on all systems.
    e) Edit percollator.cfg.
@@ -23,12 +23,10 @@ Outline:
    work with older versions of Perl.  I welcome feedback if Orca works
    with older Perls.
 
-   This step is too large to go into here.  The bottom line is to get
-   the latest Perl from
+   This step is too large to go into here.  The bottom line is to
+   follow the instructions at
 
-       ftp://ftp.funet.fi/pub/languages/perl/CPAN/src/stable.tar.gz
-
-   and compile and install it.
+      http://language.perl.com/info/software.html
 
 2) Install necessary Perl modules.
    a) Install Math::IntervalSearch version 1.00 or greater.
@@ -49,16 +47,16 @@ Outline:
 
       Download Digest::MD5 from:
 
-         http://www.perl.com/CPAN/authors/id/GAAS/Digest-MD5-2.01.tar.gz
+         http://www.perl.com/CPAN/authors/id/GAAS/Digest-MD5-2.02.tar.gz
 
-      % gunzip -c Digest-MD5-2.01.tar.gz | tar xvf -
-      % cd Digest-MD5-2.01
+      % gunzip -c Digest-MD5-2.02.tar.gz | tar xvf -
+      % cd Digest-MD5-2.02
       % perl Makefile.PL
       % make
       % make test
       % make install
 
-   c) Install RRDs version 0.99.1 or greater.
+   c) Install RRDs version 0.99.6 or greater.
 
       Download RRDs from:
 
@@ -151,7 +149,11 @@ Outline:
 
          http://www.sun.com/sun-on-net/performance/se3/
 
-   b) Apply a patch to the SE toolkit.
+      If you are running 2.6 or greater, then download SE 3.1 or greater.
+      Otherwise you will need SE 3.0.
+
+   b) Apply a patch to the SE 3.0 toolkit.  If you are running any other
+      release of SE, then do not install the patch.
 
       By default the SE toolkit will install into /opt/RICHPse.
       Run this command:

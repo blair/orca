@@ -1,6 +1,6 @@
 # percol_column: display selected columns from percollator output.
 #
-# Copyright (C) 1998 Blair Zajac and GeoCities, Inc.
+# Copyright (C) 1998, 1999 Blair Zajac and GeoCities, Inc.
 
 use strict;
 

@@ -8,6 +8,14 @@
 //
 // Portions copied from percollator.se written by Adrian Cockroft.
 //
+// Version 1.36:   Dec 17, 2002	Add measurements for tape (st) devices.  These
+//				tape measurements are only taken when the
+//				RAWDISK code is enabled.  The new measurements
+//				include system wide tape reads and writes per
+//				second (tape_rd/s and tape_wr/s), system wide
+//				tape transfer rate (tape_rK/s and tape_wK/s),
+//				and tape run percent (tape_runp_*). Patch
+//				contributed by Liston Bias <bias@pobox.com>.
 // Version 1.35:   Aug 11, 2002	Add a new measurement, the number of secure web
 //				server processes on the system using the
 //				column name #httpsds.  If the environmental
@@ -1659,28 +1667,52 @@ measure_mounts()
 #ifdef WATCH_DISK
 measure_disk()
 {
+  // These two variables are treated as static variables to keep track
+  // of any changes to the number of disks and tapes on the system.
+  int    previous_disk_count = -1;
+  int    previous_tape_count = -1;
+
   double mean_disk_busy;
   double peak_disk_busy;
-  double total_reads;
-  double total_writes;
-  double total_readk;
-  double total_writek;
-  int    previous_count = -1;
-  int    i;
+  double total_disk_reads;
+  double total_disk_writes;
+  double total_disk_readk;
+  double total_disk_writek;
   int    disk_count;
 
-  mean_disk_busy = 0.0;
-  peak_disk_busy = 0.0;
-  total_reads    = 0.0;
-  total_writes   = 0.0;
-  total_readk    = 0.0;
-  total_writek   = 0.0;
-  disk_count     = 0;
+  double total_tape_reads;
+  double total_tape_writes;
+  double total_tape_readk;
+  double total_tape_writek;
+  int    tape_count;
+
+  int    i;
+
+  mean_disk_busy      = 0.0;
+  peak_disk_busy      = 0.0;
+  total_disk_reads    = 0.0;
+  total_disk_writes   = 0.0;
+  total_disk_readk    = 0.0;
+  total_disk_writek   = 0.0;
+  disk_count          = 0;
+
+  total_tape_reads    = 0.0;
+  total_tape_writes   = 0.0;
+  total_tape_readk    = 0.0;
+  total_tape_writek   = 0.0;
+  tape_count          = 0;
 
 #ifdef USE_RAWDISK
   for (i=0; i<RAW_disk_count; ++i) {
-    // Block the listing of tape drives for now.
-    if (RAW_disk[i].short_name[1] == 't' && RAW_disk[i].short_name[0] == 's') {
+    // Record tape drive st devices differently than regular disk devices.
+    if (RAW_disk[i].short_name[0] == 's' && RAW_disk[i].short_name[1] == 't') {
+      tape_count++;
+      total_tape_reads  += RAW_disk[i].reads;
+      total_tape_writes += RAW_disk[i].writes;
+      total_tape_readk  += RAW_disk[i].kreads;
+      total_tape_writek += RAW_disk[i].kwrites;
+      put_output(sprintf("tape_runp_%s", RAW_disk[i].long_name),
+                 sprintf("%16.5f", RAW_disk[i].run_percent));
       continue;
     }
     // Block the listing of floppy drives for now.
@@ -1706,11 +1738,11 @@ measure_disk()
 #ifdef HAVE_EMC_DISK_CONTROL
     if ((pioGLOB_old_wlentime[i] + pioGLOB_old_rlentime[i]) > 1) {
 #endif
-      total_reads    += RAW_disk[i].reads;
-      total_writes   += RAW_disk[i].writes;
-      total_readk    += RAW_disk[i].kreads;
-      total_writek   += RAW_disk[i].kwrites;
-      mean_disk_busy += RAW_disk[i].run_percent;
+      total_disk_reads  += RAW_disk[i].reads;
+      total_disk_writes += RAW_disk[i].writes;
+      total_disk_readk  += RAW_disk[i].kreads;
+      total_disk_writek += RAW_disk[i].kwrites;
+      mean_disk_busy    += RAW_disk[i].run_percent;
       if (RAW_disk[i].run_percent > peak_disk_busy) {
          peak_disk_busy = RAW_disk[i].run_percent;
       }
@@ -1739,11 +1771,11 @@ measure_disk()
 #ifdef HAVE_EMC_DISK_CONTROL
     if ((pioGLOB_old_wlentime[i] + pioGLOB_old_rlentime[i]) > 1) {
 #endif
-      total_reads    += GLOBAL_disk[i].reads;
-      total_writes   += GLOBAL_disk[i].writes;
-      total_readk    += GLOBAL_disk[i].kreads;
-      total_writek   += GLOBAL_disk[i].kwrites;
-      mean_disk_busy += GLOBAL_disk[i].run_percent;
+      total_disk_reads  += GLOBAL_disk[i].reads;
+      total_disk_writes += GLOBAL_disk[i].writes;
+      total_disk_readk  += GLOBAL_disk[i].kreads;
+      total_disk_writek += GLOBAL_disk[i].kwrites;
+      mean_disk_busy    += GLOBAL_disk[i].run_percent;
       if (GLOBAL_disk[i].run_percent > peak_disk_busy) {
         peak_disk_busy = GLOBAL_disk[i].run_percent;
       }
@@ -1759,16 +1791,25 @@ measure_disk()
 
   put_output("disk_peak", sprintf("%9.3f", peak_disk_busy));
   put_output("disk_mean", sprintf("%9.3f", mean_disk_busy));
-  put_output("disk_rd/s", sprintf("%9.1f", total_reads));
-  put_output("disk_wr/s", sprintf("%9.1f", total_writes));
-  put_output("disk_rK/s", sprintf("%9.1f", total_readk));
-  put_output("disk_wK/s", sprintf("%9.1f", total_writek));
+  put_output("disk_rd/s", sprintf("%9.1f", total_disk_reads));
+  put_output("disk_wr/s", sprintf("%9.1f", total_disk_writes));
+  put_output("disk_rK/s", sprintf("%9.1f", total_disk_readk));
+  put_output("disk_wK/s", sprintf("%9.1f", total_disk_writek));
 
-  // If the number of disks has changed, say due to a add_drv, then print
-  // new headers.
-  if (previous_count != disk_count) {
-    print_header   = 1;
-    previous_count = disk_count;
+  put_output("tape_rd/s", sprintf("%9.1f", total_tape_reads));
+  put_output("tape_wr/s", sprintf("%9.1f", total_tape_writes));
+  put_output("tape_rK/s", sprintf("%9.1f", total_tape_readk));
+  put_output("tape_wK/s", sprintf("%9.1f", total_tape_writek));
+
+  // If the number of disks and/or tapes has changed, say due to a
+  // add_drv, then print new headers.
+  if (previous_disk_count != disk_count) {
+    print_header        = 1;
+    previous_disk_count = disk_count;
+  }
+  if (previous_tape_count != tape_count) {
+    print_header        = 1;
+    previous_tape_count = tape_count;
   }
 }
 #endif

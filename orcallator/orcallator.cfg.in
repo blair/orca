@@ -667,6 +667,47 @@ href			http://www.orcaware.com/orca/docs/orcallator.html#disk_inode_percent_usag
 }
 
 plot {
+title			%g Tape System Wide Reads/Writes Per Second
+source			orcallator
+data			tape_rd/s
+data			tape_wr/s
+line_type		area
+line_type		line1
+legend			Reads/s
+legend			Writes/s
+y_legend		Ops/s
+data_min		0
+href			http://www.orcaware.com/orca/docs/orcallator.html#tape_system_wide_reads_writes_per_second
+}
+
+plot {
+title			%g Tape System Wide Transfer Rate
+source			orcallator
+data			1024 * tape_rK/s
+data			1024 * tape_wK/s
+line_type		area
+line_type		line1
+legend			Read transfer rate
+legend			Write transfer rate
+y_legend		Bytes/s
+data_min		0
+href			http://www.orcaware.com/orca/docs/orcallator.html#tape_system_wide_transfer_rate
+}
+
+plot {
+title			%g Tape Run Percent
+source			orcallator
+data			tape_runp_(.*)
+line_type		line2
+legend			$1
+y_legend		Run Percent
+data_min		0
+data_max		100
+plot_min		0
+href			http://www.orcaware.com/orca/docs/orcallator.html#tape_run_percent
+}
+
+plot {
 title			%g Cache Hit Percentages
 source			orcallator
 data			dnlc_hit%

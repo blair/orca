@@ -1,5 +1,9 @@
 Fri Feb 19 11:55:50 PST 1999
 
+	Version 0.20.
+
+	Have the Orca logo be a hyperlink to the Orca home page.
+
 	Version 0.19.
 
 	Fix a bug in copying SE 3.1's percollator.se changes where it

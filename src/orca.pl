@@ -17,7 +17,7 @@ $Data::Dumper::Deepcopy = 1;
 
 # This is the version of Orca.
 use vars qw($VERSION);
-$VERSION = 0.19;
+$VERSION = '0.20';
 
 # This is the version number used in creating the DS names in RRDs.
 # This should be updated any time a new version of Orca needs some
@@ -106,7 +106,9 @@ $self->{_bottom}
 <table cellpadding=0 border=0>
   <tr>
     <td width=350 valign=center>
-        <img width=186 height=45 src="orca.gif" alt="Orca Home Page">
+      <a href="http://www.geocities.com/ResearchTriangle/Thinktank/4996/">
+        <img width=186 height=45 border=0 src="orca.gif" alt="Orca Home Page" >
+      </a>
       <br>
       <font FACE="Arial,Helvetica" SIZE=2>
         Orca-$::VERSION by
@@ -116,7 +118,7 @@ $self->{_bottom}
     </td>
     <td width=120 valign=center>
       <a href="http://ee-staff.ethz.ch/~oetiker/webtools/rrdtool">
-        <img width=120 height=34 src="rrdtool.gif" alt="RRDTool Home Page" border=0>
+        <img width=120 height=34 border=0 src="rrdtool.gif" alt="RRDTool Home Page">
       </a>
     </td>
   </tr>

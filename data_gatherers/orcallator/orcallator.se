@@ -347,7 +347,6 @@ orca_io_info_update() {
   int		index;
   ulong       ul;
   kstat_ctl_t kc[1];
-  kstat_t     kp[1];
   kstat_t     nkp[1];
   kstat_io_t  kio;
 
@@ -356,28 +355,22 @@ orca_io_info_update() {
   double      elapsed_etime;
   double      hz_etime;
 
+  // Initialize kstat control structure
   kc[0] = kstat_open();
-  // Read them.
-  if (kstat_read(kc, kp, 0) == -1) {
-    perror("orca_io_info_update:kstat_read");
-    exit(1);
-  }
-
   // Traverse the chain looking for IO events.
-  for (ul=kc[0].kc_chain; ul !=0; ul=nkp[0].ks_next) {
+  for (ul=kc[0].kc_chain; ul!=0; ul=nkp[0].ks_next) {
     struct_fill(nkp[0], ul);
     if (nkp[0].ks_type == KSTAT_TYPE_IO) {
       // Look for disk or tape statistics
       if (nkp[0].ks_class == "disk" || nkp[0].ks_class == "tape") {
-        // Update the device registers.
+        // Get data from the kernel for this kstat
         if (kstat_read(kc, nkp, 0) == -1) {
           perror("orca_io_info_update:kstat_read error");
           exit(1);
         }
-        // Read sys_kstat device IO queue to find out about recent activity.
         struct_fill(kio, nkp[0].ks_data);
 
-        // Try to locate device.
+        // Try to locate device in our array
         for (iodev=0; iodev < ORCA_io_dev_count; ++iodev) {
           if (ORCA_io_dev_info[iodev].short_name == nkp[0].ks_name) {
             break;

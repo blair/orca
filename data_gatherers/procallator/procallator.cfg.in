@@ -507,7 +507,7 @@ plot {
 title			%g Disk Reads/Writes Per Second
 source			procallator
 data			disk_rd_(.*)/s
-data			disk_wr_(.*)/s
+data			disk_wr_$1/s
 line_type		area
 line_type		line1
 legend			$1 Reads/s
@@ -522,7 +522,7 @@ plot {
 title			%g Disk Transfer Rate
 source			procallator
 data			disk_rB_(.*)/s
-data			disk_wB_(.*)/s
+data			disk_wB_$1/s
 line_type		area
 line_type		line1
 legend			$1 Read transfer rate

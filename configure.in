@@ -297,6 +297,21 @@ AC_ARG_ENABLE(procallator,
 AC_SUBST(BUILD_PROCALLATOR)
 AC_SUBST(PROCALLATOR_SUBDIR)
 
+BUILD_WINALLATOR=yes
+WINALLATOR_SUBDIR=winallator
+AC_ARG_ENABLE(winallator,
+  AC_HELP_STRING([--disable-winallator],
+                 [Do not enable building and installing winallator]),
+  [
+    if test "$enableval" = no; then
+      BUILD_WINALLATOR=no
+      WINALLATOR_SUBDIR=
+    fi
+  ]
+)
+AC_SUBST(BUILD_WINALLATOR)
+AC_SUBST(WINALLATOR_SUBDIR)
+
 # To get a default CFLAGS for this build, check for a C compiler.  This
 # is also needed to be ready to compile any Perl modules.
 AC_PROG_CC
@@ -648,6 +663,11 @@ if test "$BUILD_PROCALLATOR" = yes; then
                       data_gatherers/procallator/S99procallator.sh"
 fi
 
+if test "$BUILD_WINALLATOR" = yes; then
+  OUTPUT_WINALLATOR="data_gatherers/winallator/Makefile
+                     data_gatherers/winallator/winallator.cfg"
+fi
+
 AC_OUTPUT(Makefile
           config/PerlHead1
           config/PerlHead2
@@ -660,6 +680,7 @@ AC_OUTPUT(Makefile
           $OUTPUT_ORCALLATOR
           $OUTPUT_ORCA_SERVICES
           $OUTPUT_PROCALLATOR
+          $OUTPUT_WINALLATOR
           docs/Makefile
           lib/Makefile
           packages/Makefile

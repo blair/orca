@@ -1,0 +1,68 @@
+@SET_MAKE@
+
+prefix                = @prefix@
+exec_prefix           = @exec_prefix@
+bindir                = @bindir@
+libdir                = @libdir@
+libexecdir            = @libexecdir@
+sysconfdir            = @sysconfdir@
+INSTALL               = @INSTALL@
+MKDIR                 = @MKDIR@
+VAR_DIR               = @VAR_DIR@
+RRD_DIR               = @RRD_DIR@
+RAW_WINALLATOR_DIR    = $(VAR_DIR)/winallator
+RRD_WINALLATOR_DIR    = $(RRD_DIR)/winallator
+
+BIN_PERL_SCRIPTS      =
+LIBEXEC_PERL_SCRIPTS  =
+NOINST_PERL_SCRIPTS   =
+PERL_SCRIPTS          = $(BIN_PERL_SCRIPTS) \
+                        $(LIBEXEC_PERL_SCRIPTS) \
+                        $(NOINST_PERL_SCRIPTS)
+
+BIN_SHELL_SCRIPTS     =
+LIBEXEC_SHELL_SCRIPTS =
+NOINST_SHELL_SCRIPTS  =
+SHELL_SCRIPTS         = $(BIN_SHELL_SCRIPTS) \
+                        $(LIBEXEC_SHELL_SCRIPTS) \
+                        $(NOINST_SHELL_SCRIPTS)
+
+TARGETS               = $(PERL_SCRIPTS) \
+                        $(SHELL_SCRIPTS)
+BIN_TARGETS           = $(BIN_PERL_SCRIPTS) \
+                        $(BIN_SHELL_SCRIPTS)
+LIBEXEC_TARGETS       = $(LIBEXEC_PERL_SCRIPTS) \
+                        $(LIBEXEC_SHELL_SCRIPTS)
+
+all: Makefile $(TARGETS) winallator.cfg
+
+install: all
+	$(MKDIR) $(bindir)
+	$(MKDIR) $(libdir)
+	$(MKDIR) $(sysconfdir)
+	$(MKDIR) $(RAW_WINALLATOR_DIR)
+	$(MKDIR) $(RRD_WINALLATOR_DIR)
+	@for file in $(BIN_TARGETS); do \
+	  echo $(INSTALL) $$file $(bindir); \
+	  $(INSTALL) $$file $(bindir); \
+	done
+	@if test -r $(sysconfdir)/winallator.cfg; then \
+	  date="`date +%Y-%m-%d-%H:%M:%S`"; \
+	  echo $(INSTALL) -m 0644 winallator.cfg $(sysconfdir)/winallator.cfg.$$date; \
+	  $(INSTALL) -m 0644 winallator.cfg $(sysconfdir)/winallator.cfg.$$date; \
+	else \
+	  echo $(INSTALL) -m 0644 winallator.cfg $(sysconfdir); \
+	  $(INSTALL) -m 0644 winallator.cfg $(sysconfdir); \
+	fi
+
+clean:
+	$(RM) $(TARGETS)
+
+distclean: clean
+	$(RM) winallator.cfg Makefile
+
+Makefile: Makefile.in
+	cd ../.. && CONFIG_FILES=data_gatherers/winallator/Makefile ./config.status
+
+winallator.cfg: winallator.cfg.in
+	cd ../.. && CONFIG_FILES=data_gatherers/winallator/winallator.cfg ./config.status

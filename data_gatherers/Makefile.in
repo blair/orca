@@ -5,12 +5,14 @@ HPALLATOR_SUBDIR      = @HPALLATOR_SUBDIR@
 ORCALLATOR_SUBDIR     = @ORCALLATOR_SUBDIR@
 ORCA_SERVICES_SUBDIR  = @ORCA_SERVICES_SUBDIR@
 PROCALLATOR_SUBDIR    = @PROCALLATOR_SUBDIR@
+WINALLATOR_SUBDIR     = @WINALLATOR_SUBDIR@
 
 SUBDIRS               = $(AIXALLATOR_SUBDIR) \
                         $(HPALLATOR_SUBDIR) \
                         $(ORCALLATOR_SUBDIR) \
                         $(ORCA_SERVICES_SUBDIR) \
-                        $(PROCALLATOR_SUBDIR)
+                        $(PROCALLATOR_SUBDIR) \
+                        $(WINALLATOR_SUBDIR)
 
 all:	Makefile $(TARGETS)
 	@for dir in $(SUBDIRS); do \

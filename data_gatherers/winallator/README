@@ -1,0 +1,126 @@
+How To Collect Performance Data For Windows 2000/XP Systems
+===========================================================
+
+This tool used to be referred to as orcaNT.  It is now named
+winallator for two reasons.  First, since it is a data measurement
+tool and not a data plotting tool, it deserves a name for a data
+gatherer.  Second, the orcaNT portion of the original orcaNT package
+was just a patch to orca.pl that removed the call to 'ps aux' and
+reducing the package requirements.
+
+To follow in the tracks of the other *allator tools, this package was
+renamed winallator.
+
+ 1. From a Command Prompt, Cygwin Shell or the Start->Run, type
+
+    perfmon
+
+ 2. Click on "Performance Logs and Alerts" and expand on the left hand
+    column under "Console Root".
+
+ 3. Create a patched copy of Orca.  Currently Orca needs a patched
+    version of SourceFile.pm handle the Performance Monitor's log
+    files.  This patched version may not work with any other versions
+    input data files.
+
+    a) Get a copy of the Orca source tree on the system that will
+       process the Winallator log files.
+
+    b) Find the SourceFile.pm-patch-with-r362.txt file and note where
+       it is.
+
+    c) cd into the $prefix/lib/Orca directory, where $prefix is where
+       you installed your Orca.
+
+    c) Apply the patch by running:
+
+       cp -p SourceFile.pm SourceFile.FCS
+       patch -s -p0 < path/to/SourceFile.pm-patch-with-r362.txt
+
+ 4. You have two choices now.  The first and easy choice is to load in
+    a previously designed log configuration.  You can always modify
+    the settings later if you want, using the instructions below for
+    the advanced setup.
+
+ 5. Simple setup.
+
+    a) Download a copy of the winallator.htm file located in this
+       directory to your Windows system.
+
+    b) Right-click on "Counter Logs" and choose "New Log Settings
+       From...".  Find and open the downloaded winallator.htm in the
+       open file dialog box.
+
+    c) Give the new log settings a name that does not appear in the
+       Performance Monitor window and click OK.
+
+    d) The loaded settings here will record a number of different
+       measurements into log files in the C:\WinallatorLogs directory.
+
+    e) To end the simple setup, click OK.  Data will be recorded
+       immediately into the C:\WinallatorLogs directory.  If they are
+       not, then right click on the new Winallator name and select
+       "Start". For the advanced setup, continue reading at step 6c.
+
+    f) Click OK to begin recording data.
+
+ 6. Advanced Setup.
+
+    a) Right-click on "Counter Logs" and choose "New Log Settings..."
+
+    b) Give the new log settings a name that does not appear in the
+       Performance Monitor window and click OK.
+
+    c) This opens up a window with three tabs "General", "Log Files",
+       and "Schedule".
+
+    d) Select "General->Add Counters..."  This opens the Add Counters
+       window.
+
+    e) Now...
+       - Choose "Select counters from computer:".
+
+       - Performance object.
+         This is the category like Processor, Network Interface, etc.
+         Choose what you want here.
+
+       - Either choose "All counters" or be selective and choose the
+         counters you are interested in.  For more information on one,
+         click on the counter and then click on the "Explain" button.
+         Select counter from the list.
+
+       - Select the instances you want from the list.
+
+    f) Click "Add".  This will add the counter to previous window
+       without closing the window, so you can quickly select other
+       counters.  Click "Close" when you are done adding all the
+       counters.
+
+    g) Back to the "General" tab.
+       Change the "Sample data every:" to "5 minutes".
+
+    h) Leave "Run As: as "<default>".
+
+    i) Click on the "Log Files" tab.
+
+    j) Change the "Log file type:" to "Text File (Tab delimited)".
+
+    k) Click on the "Configure" button.
+       Enter the "Location" as "C:\WinallatorLogs\MachineName".
+       Change the "File name" to "winallator".
+       Set the "Log file size" to "Maximum limit".
+       Select OK.
+
+    l) Back on the "Log Files" tab.
+       Select "End Filenames with:" as "yyyymmddhh".
+       It will show the example path and filename.
+
+    m) Select the "Schedule" tab.
+       Set "Start Log" to "At: 12:00:00 AM" on any date.
+       Set "Stop Log" to "After 1 unit: days".
+       Turn on "When a log file closes: Start a new log file".
+
+    n) Select OK and the new log settings should be set.
+
+    o) If you see it not started just right click on the counter log
+       name on the right hand side window and select start.

@@ -8,6 +8,7 @@
 //
 // Portions copied from percollator.se written by Adrian Cockroft.
 //
+// Version 1.30:   Oct 19, 2001	Rename the new State_* columns to state_*.
 // Version 1.30b2: Oct 12, 2001	Output eleven new columns named State_* where
 //				each column represents numerically the state
 //				of one of the system's substates as they appear
@@ -1254,47 +1255,47 @@ measure_misc(long now, tm_t tm_now)
 
   statetmp  = tmp_lr_disk.state;
   states[0] = state_char(statetmp);
-  put_output("State_D", sprintf("%7d", state_digit(statetmp)));
+  put_output("state_D", sprintf("%7d", state_digit(statetmp)));
 
   statetmp  = tmp_lr_net.state;
   states[1] = state_char(statetmp);
-  put_output("State_N", sprintf("%7d", state_digit(statetmp)));
+  put_output("state_N", sprintf("%7d", state_digit(statetmp)));
 
   statetmp  = tmp_lr_rpcclient.state;
   states[2] = state_char(statetmp);
-  put_output("State_n", sprintf("%7d", state_digit(statetmp)));
+  put_output("state_n", sprintf("%7d", state_digit(statetmp)));
 
   statetmp  = tmp_lr_swapspace.state;
   states[3] = state_char(statetmp);
-  put_output("State_s", sprintf("%7d", state_digit(statetmp)));
+  put_output("state_s", sprintf("%7d", state_digit(statetmp)));
 
   statetmp  = tmp_lr_ram.state;
   states[4] = state_char(statetmp);
-  put_output("State_r", sprintf("%7d", state_digit(statetmp)));
+  put_output("state_r", sprintf("%7d", state_digit(statetmp)));
 
   statetmp  = tmp_lr_kmem.state;
   states[5] = state_char(statetmp);
-  put_output("State_k", sprintf("%7d", state_digit(statetmp)));
+  put_output("state_k", sprintf("%7d", state_digit(statetmp)));
 
   statetmp  = tmp_lr_cpu.state;
   states[6] = state_char(statetmp);
-  put_output("State_c", sprintf("%7d", state_digit(statetmp)));
+  put_output("state_c", sprintf("%7d", state_digit(statetmp)));
 
   statetmp  = tmp_lr_mutex.state;
   states[7] = state_char(statetmp);
-  put_output("State_m", sprintf("%7d", state_digit(statetmp)));
+  put_output("state_m", sprintf("%7d", state_digit(statetmp)));
 
   statetmp  = tmp_lr_dnlc.state;
   states[8] = state_char(statetmp);
-  put_output("State_d", sprintf("%7d", state_digit(statetmp)));
+  put_output("state_d", sprintf("%7d", state_digit(statetmp)));
 
   statetmp  = tmp_lr_inode.state;
   states[9] = state_char(statetmp);
-  put_output("State_i", sprintf("%7d", state_digit(statetmp)));
+  put_output("state_i", sprintf("%7d", state_digit(statetmp)));
 
   statetmp   = tmp_lr_tcp.state;
   states[10] = state_char(statetmp);
-  put_output("State_t", sprintf("%7d", state_digit(statetmp)));
+  put_output("state_t", sprintf("%7d", state_digit(statetmp)));
 
   put_output("DNnsrkcmdit", states);
 }

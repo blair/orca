@@ -81,7 +81,7 @@ html_page_footer
 #   generated RRD data files.
 
 group orcallator {
-find_files		@ORCALLATOR_DIR@/(.*)/(?:(?:orcallator)|(?:percol))-\d{4}-\d{2}-\d{2}(?:-\d{3,})?(?:\.(?:Z|gz|bz2))?
+find_files		@VAR_DIR@/orcallator/(.*)/(?:(?:orcallator)|(?:percol))-\d{4}-\d{2}-\d{2}(?:-\d{3,})?(?:\.(?:Z|gz|bz2))?
 column_description	first_line
 date_source		column_name timestamp
 interval		300

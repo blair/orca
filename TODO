@@ -208,20 +208,6 @@ different classes of machines.
 
         Question: Do the pros outweigh the cons?
 
-        Work to do: Get RRDtool to build a librrd.so that orcallator.se
-        would attach to.  The RRDs.so that gets built in the perl-shared
-        directory has RRDs.o included in it with references to Perl
-        variables, so this shared library cannot be loaded by anybody
-        else.  Two things can be done.  One is to modify the perl-shared
-        Makefile.PL to build a librrd.so without RRDs.so.  The other is
-        to somehow make librrd.so with libtool.  Either libtool can be
-        integrated into RRDtool as a whole, or probably simpler would
-        be to add another directory to RRDtool and use libtool in there
-        to make the shared library.  The first libtool solution would
-        allow RRDtool to make shared libraries on almost any host without
-        requiring that gcc be installed, since currently the Makefile's
-        look for gcc to use the -fPIC flags.
-
 * Orca: Potentially use Cricket's configuration ConfigTree Module.
 
         Given more complex Orca installations where many different Orca

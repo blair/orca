@@ -1196,11 +1196,29 @@ measure_misc(long now, tm_t tm_now)
   put_output("DNnsrkcmdit", states);
 }
 
+// This function puts the program to sleep until the beginning of the
+// sleep_till second (as measured in the number of seconds from the
+// Unix Epoch (00:00:00 UTC, January 1, 1970)) using microsecond sleep
+// intervals to wake from sleep as close to the beginning of the
+// sleep_till second as possible.
+orca_sleep_till(long sleep_till)
+{
+  timeval_t now[1];
+  ulong     time_to_sleep;
+
+  gettimeofday(now, 0);
+  time_to_sleep = sleep_till - now[0].tv_sec;
+  while (time_to_sleep > 0) {
+    usleep(1000000*time_to_sleep - now[0].tv_usec);
+    gettimeofday(now, 0);
+    time_to_sleep = sleep_till - now[0].tv_sec;
+  }
+}
+
 sleep_till_and_count_new_processes(long sleep_till)
 {
   long   now;
 #ifdef WATCH_CPU
-  long   sleep_till1;
   int    mpid5_diff;
   double mpid5_interval;
   double rate;
@@ -1210,11 +1228,12 @@ sleep_till_and_count_new_processes(long sleep_till)
   while (now < sleep_till) {
 #ifdef WATCH_CPU
     if (can_read_kernel != 0) {
-      // Sleep at least 5 seconds to make a measurement.
-      sleep_till1 = now + 5;
-      while (now < sleep_till1) {
-        sleep(sleep_till1 - now);
-        now = time(0);
+      // Sleep for 5 seconds to make a measurement or less to stay
+      // within the sleep_till limit.
+      if (now + 5 < sleep_till) {
+        orca_sleep_till(now + 5);
+      } else {
+        orca_sleep_till(sleep_till);
       }
 
       // Measure the 5 second process creation rate.
@@ -1243,10 +1262,10 @@ sleep_till_and_count_new_processes(long sleep_till)
       mpid_now      = mpid5_now;
     }
     else {
-      sleep(sleep_till - now);
+      orca_sleep_till(sleep_till);
     }
 #else
-    sleep(sleep_till - now);
+    orca_sleep_till(sleep_till);
 #endif
     now = time(0);
   }
@@ -2050,6 +2069,7 @@ measure_web(long sleep_till)
   char   buf[BUFSIZ];
   int    i;
   long   now;
+  long   sleep_till_tmp;
 
   httpops         = 0.0;
   httpops5        = 0.0;
@@ -2089,11 +2109,17 @@ measure_web(long sleep_till)
   if (www_log_filename != nil) {
     now = time(0);
     while (now < sleep_till) {
+      if (now + 5 < sleep_till) {
+        sleep_till_tmp = now + 5;
+      } else {
+        sleep_till_tmp = sleep_till;
+      }
 #ifdef WATCH_CPU
-      sleep_till_and_count_new_processes(now + 5);
+      sleep_till_and_count_new_processes(sleep_till_tmp);
 #else
-      sleep(5);
+      orca_sleep_till(sleep_till_tmp);
 #endif
+
       now = time(0);
       if (www_log_fp != 0) {
         buf[BUFSIZ-1] = 127;

@@ -359,100 +359,55 @@ orca_io_info_update() {
 
   // Initialize kstat control structure
   kc[0] = kstat_open();
-  // Traverse the chain looking for IO events.
+  // Traverse the chain looking for IO events for disk and tape devices
   for (ul=kc[0].kc_chain; ul!=0; ul=nkp[0].ks_next) {
-    struct_fill(nkp[0], ul);
-    if (nkp[0].ks_type == KSTAT_TYPE_IO) {
-      // Look for disk or tape statistics
+    nkp[0] = *((kstat_t *) ul);
+    if (nkp[0].ks_type == KSTAT_TYPE_IO &&
 #if defined (WATCH_DISK) && defined (WATCH_TAPE)
-      if (nkp[0].ks_class == "disk" || nkp[0].ks_class == "tape") {
+        (nkp[0].ks_class == "disk" || nkp[0].ks_class == "tape")) {
 #elif defined (WATCH_TAPE)
-      if (nkp[0].ks_class == "tape") {
+        nkp[0].ks_class == "tape") {
 #else
-      if (nkp[0].ks_class == "disk") {
+        nkp[0].ks_class == "disk") {
 #endif
-        // Get data from the kernel for this kstat
-        if (kstat_read(kc, nkp, 0) == -1) {
-          perror("orca_io_info_update:kstat_read error");
-          exit(1);
+      // Get data from the kernel for this kstat
+      if (kstat_read(kc, nkp, 0) == -1) {
+        perror("orca_io_info_update:kstat_read error");
+        exit(1);
+      }
+      kio = *((kstat_io_t *) nkp[0].ks_data);
+
+      // Try to locate device in our array
+      for (iodev=0; iodev < ORCA_io_dev_count; ++iodev) {
+        if (ORCA_io_dev_info[iodev].short_name == nkp[0].ks_name) {
+          break;
         }
-        struct_fill(kio, nkp[0].ks_data);
+      }
 
-        // Try to locate device in our array
-        for (iodev=0; iodev < ORCA_io_dev_count; ++iodev) {
-          if (ORCA_io_dev_info[iodev].short_name == nkp[0].ks_name) {
-            break;
-          }
+      // It must be new. Add it!
+      if (iodev == ORCA_io_dev_count) {
+        // Grow the device array if needed
+        if (ORCA_io_dev_count == ORCA_max_io_dev_count) {
+          ORCA_max_io_dev_count += 10;
+          ORCA_io_dev_info = renew ORCA_io_dev_info[ORCA_max_io_dev_count];
         }
-
-        // It must be new. Add it!
-        if (iodev == ORCA_io_dev_count) {
-          // Grow the device array if needed
-          if (ORCA_io_dev_count == ORCA_max_io_dev_count) {
-            ORCA_max_io_dev_count += 10;
-            ORCA_io_dev_info = renew ORCA_io_dev_info[ORCA_max_io_dev_count];
-          }
-          // Lookup index into GLOBAL_disk/tape_info array
-          if (nkp[0].ks_class == "tape") {
-            index = find_tape_inst(nkp[0].ks_name);
-          } else {
-            index = find_inst(nkp[0].ks_name);
-          }
-          if (index != -1) {
-            if (nkp[0].ks_class == "tape") {
-              ORCA_io_dev_info[iodev].long_name = GLOBAL_tape_info[index].long_name;
-            } else {
-              ORCA_io_dev_info[iodev].long_name = GLOBAL_disk_info[index].long_name;
-            }
-          } else {
-            ORCA_io_dev_info[iodev].long_name = nkp[0].ks_name;
-          }
-          ORCA_io_dev_info[iodev].short_name   = nkp[0].ks_name;
-          ORCA_io_dev_info[iodev].dev_class    = nkp[0].ks_class;
-          ORCA_io_dev_info[iodev]._writes      = kio.writes;
-          ORCA_io_dev_info[iodev]._nwritten    = kio.nwritten;
-          ORCA_io_dev_info[iodev]._wlastupdate = kio.wlastupdate;
-          ORCA_io_dev_info[iodev]._wlentime    = kio.wlentime;
-          ORCA_io_dev_info[iodev]._wtime       = kio.wtime;
-          ORCA_io_dev_info[iodev]._wcnt        = kio.wcnt;
-          ORCA_io_dev_info[iodev]._reads       = kio.reads;
-          ORCA_io_dev_info[iodev]._nread       = kio.nread;
-          ORCA_io_dev_info[iodev]._rlastupdate = kio.rlastupdate;
-          ORCA_io_dev_info[iodev]._rlentime    = kio.rlentime;
-          ORCA_io_dev_info[iodev]._rtime       = kio.rtime;
-          ORCA_io_dev_info[iodev]._rcnt        = kio.rcnt;
-          ORCA_io_dev_count++;
-        }
-
-        elapsed_etime = (kio.wlastupdate-ORCA_io_dev_info[iodev]._wlastupdate);
-        if (elapsed_etime == 0) {
-          elapsed_etime = NANOSEC;
-        }
-        hz_etime = elapsed_etime / NANOSEC;
-        big_etime = 1024.0 * hz_etime;
-
-        ORCA_io_dev_info[iodev].reads  =(kio.reads-ORCA_io_dev_info[iodev]._reads)      /hz_etime;
-        ORCA_io_dev_info[iodev].kreads =(kio.nread-ORCA_io_dev_info[iodev]._nread)      /big_etime;
-        ORCA_io_dev_info[iodev].writes =(kio.writes-ORCA_io_dev_info[iodev]._writes)    /hz_etime;
-        ORCA_io_dev_info[iodev].kwrites=(kio.nwritten-ORCA_io_dev_info[iodev]._nwritten)/big_etime;
-
-        ORCA_io_dev_info[iodev].avg_wait=(kio.wlentime-ORCA_io_dev_info[iodev]._wlentime)/elapsed_etime;
-        ORCA_io_dev_info[iodev].avg_run =(kio.rlentime-ORCA_io_dev_info[iodev]._rlentime)/elapsed_etime;
-
-        read_writes = (ORCA_io_dev_info[iodev].reads + ORCA_io_dev_info[iodev].writes) / 1000.0;
-        if (read_writes > 0) {
-          ORCA_io_dev_info[iodev].avg_wait_time = ORCA_io_dev_info[iodev].avg_wait / read_writes;
-          ORCA_io_dev_info[iodev].avg_serv_time = ORCA_io_dev_info[iodev].avg_run  / read_writes;
-          ORCA_io_dev_info[iodev].service  = ORCA_io_dev_info[iodev].avg_wait_time + ORCA_io_dev_info[iodev].avg_serv_time;
+        // Lookup index into GLOBAL_disk/tape_info array
+        if (nkp[0].ks_class == "tape") {
+          index = find_tape_inst(nkp[0].ks_name);
         } else {
-          ORCA_io_dev_info[iodev].avg_wait_time = 0.0;
-          ORCA_io_dev_info[iodev].avg_serv_time = 0.0;
-          ORCA_io_dev_info[iodev].service  = 0.0;
+          index = find_inst(nkp[0].ks_name);
         }
-
-        // Update the counters.
-        ORCA_io_dev_info[iodev].run_percent  = 100.0 * (kio.rtime - ORCA_io_dev_info[iodev]._rtime) / elapsed_etime;
-        ORCA_io_dev_info[iodev].wait_percent = 100.0 * (kio.wtime - ORCA_io_dev_info[iodev]._wtime) / elapsed_etime;
+        if (index != -1) {
+          if (nkp[0].ks_class == "tape") {
+            ORCA_io_dev_info[iodev].long_name = GLOBAL_tape_info[index].long_name;
+          } else {
+            ORCA_io_dev_info[iodev].long_name = GLOBAL_disk_info[index].long_name;
+          }
+        } else {
+          ORCA_io_dev_info[iodev].long_name = nkp[0].ks_name;
+        }
+        ORCA_io_dev_info[iodev].short_name   = nkp[0].ks_name;
+        ORCA_io_dev_info[iodev].dev_class    = nkp[0].ks_class;
         ORCA_io_dev_info[iodev]._writes      = kio.writes;
         ORCA_io_dev_info[iodev]._nwritten    = kio.nwritten;
         ORCA_io_dev_info[iodev]._wlastupdate = kio.wlastupdate;
@@ -465,7 +420,50 @@ orca_io_info_update() {
         ORCA_io_dev_info[iodev]._rlentime    = kio.rlentime;
         ORCA_io_dev_info[iodev]._rtime       = kio.rtime;
         ORCA_io_dev_info[iodev]._rcnt        = kio.rcnt;
+        ORCA_io_dev_count++;
       }
+
+      elapsed_etime = (kio.wlastupdate-ORCA_io_dev_info[iodev]._wlastupdate);
+      if (elapsed_etime == 0) {
+        elapsed_etime = NANOSEC;
+      }
+      hz_etime = elapsed_etime / NANOSEC;
+      big_etime = 1024.0 * hz_etime;
+
+      ORCA_io_dev_info[iodev].reads  =(kio.reads-ORCA_io_dev_info[iodev]._reads)      /hz_etime;
+      ORCA_io_dev_info[iodev].kreads =(kio.nread-ORCA_io_dev_info[iodev]._nread)      /big_etime;
+      ORCA_io_dev_info[iodev].writes =(kio.writes-ORCA_io_dev_info[iodev]._writes)    /hz_etime;
+      ORCA_io_dev_info[iodev].kwrites=(kio.nwritten-ORCA_io_dev_info[iodev]._nwritten)/big_etime;
+
+      ORCA_io_dev_info[iodev].avg_wait=(kio.wlentime-ORCA_io_dev_info[iodev]._wlentime)/elapsed_etime;
+      ORCA_io_dev_info[iodev].avg_run =(kio.rlentime-ORCA_io_dev_info[iodev]._rlentime)/elapsed_etime;
+
+      read_writes = (ORCA_io_dev_info[iodev].reads + ORCA_io_dev_info[iodev].writes) / 1000.0;
+      if (read_writes > 0) {
+        ORCA_io_dev_info[iodev].avg_wait_time = ORCA_io_dev_info[iodev].avg_wait / read_writes;
+        ORCA_io_dev_info[iodev].avg_serv_time = ORCA_io_dev_info[iodev].avg_run  / read_writes;
+        ORCA_io_dev_info[iodev].service  = ORCA_io_dev_info[iodev].avg_wait_time + ORCA_io_dev_info[iodev].avg_serv_time;
+      } else {
+        ORCA_io_dev_info[iodev].avg_wait_time = 0.0;
+        ORCA_io_dev_info[iodev].avg_serv_time = 0.0;
+        ORCA_io_dev_info[iodev].service  = 0.0;
+      }
+
+      // Update the counters.
+      ORCA_io_dev_info[iodev].run_percent  = 100.0 * (kio.rtime - ORCA_io_dev_info[iodev]._rtime) / elapsed_etime;
+      ORCA_io_dev_info[iodev].wait_percent = 100.0 * (kio.wtime - ORCA_io_dev_info[iodev]._wtime) / elapsed_etime;
+      ORCA_io_dev_info[iodev]._writes      = kio.writes;
+      ORCA_io_dev_info[iodev]._nwritten    = kio.nwritten;
+      ORCA_io_dev_info[iodev]._wlastupdate = kio.wlastupdate;
+      ORCA_io_dev_info[iodev]._wlentime    = kio.wlentime;
+      ORCA_io_dev_info[iodev]._wtime       = kio.wtime;
+      ORCA_io_dev_info[iodev]._wcnt        = kio.wcnt;
+      ORCA_io_dev_info[iodev]._reads       = kio.reads;
+      ORCA_io_dev_info[iodev]._nread       = kio.nread;
+      ORCA_io_dev_info[iodev]._rlastupdate = kio.rlastupdate;
+      ORCA_io_dev_info[iodev]._rlentime    = kio.rlentime;
+      ORCA_io_dev_info[iodev]._rtime       = kio.rtime;
+      ORCA_io_dev_info[iodev]._rcnt        = kio.rcnt;
     }
   }
   kstat_close(kc);
@@ -874,7 +872,7 @@ _measure_os()
 #endif
 
 #if defined (USE_KSTAT_IO) && (defined (WATCH_DISK) || defined (WATCH_TAPE))
-   orca_io_info_update();
+  orca_io_info_update();
 #endif
 }
 

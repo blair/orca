@@ -406,6 +406,14 @@ sub check_config {
     }
   }
 
+  # Having a single directory used for the html_dir and the rrd_dir is
+  # not a supported configuration.
+  if ($config_global{html_dir} eq $config_global{rrd_dir}) {
+    my $dir = $config_global{html_dir};
+    warn "$0: error: 'html_dir' and 'rrd_dir' '$dir' are identical.\n";
+    ++$number_errors;
+  }
+
   # Set any optional global parameters to '' if it isn't defined in
   # the configuration file.
   foreach my $option (@cc_default_is_false_global) {

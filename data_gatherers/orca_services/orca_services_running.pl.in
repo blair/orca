@@ -7,7 +7,7 @@ use strict;
 use POSIX qw(strftime);
 
 # Set this to the list of directories that contain the output from
-# percoservices.se.
+# orca_services.pl.
 my @stats_dirs = ('@VAR_DIR@/orca_services');
 
 foreach my $stats_dir (@stats_dirs) {
@@ -31,9 +31,9 @@ foreach my $stats_dir (@stats_dirs) {
       next;
     }
     my $age = (-M $file)*(24*60);
-    if ( $age > 8) {
-      $file= sprintf "%35s", $file;
-      $age = sprintf "%8.2f", $age;
+    if ($age > 8) {
+      $file = sprintf "%35s", $file;
+      $age  = sprintf "%8.2f", $age;
       warn "$0: $file is $age minutes old.\n";
       next;
     }

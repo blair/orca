@@ -136,10 +136,6 @@ sub DESTROY {
                  evidence that this has some effect. -->
             <a href="mailto:&#098;&#108;&#097;&#105;&#114;&#064;&#111;&#114;&#099;&#097;&#119;&#097;&#114;&#101;&#046;&#099;&#111;&#109;">
               &#098;&#108;&#097;&#105;&#114;&#064;&#111;&#114;&#099;&#097;&#119;&#097;&#114;&#101;&#046;&#099;&#111;&#109;</a>
-            <span style="position:absolute; left:0px; top:0px; width:100%; display:none;z-index:1">
-              <img src="http://images.orcaware.com/orca/orca_logo.gif?orca-version=$ORCA_VERSION"
-                   width="186" height="45" alt="Orca home page" />
-            </span>
           </font>
         </td>
         <td width="20">&nbsp;&nbsp;</td>

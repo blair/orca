@@ -44,7 +44,7 @@ install: all
 	$(MKDIR) $(bindir)
 	$(MKDIR) $(RAW_PROCALLATOR_DIR)
 	$(MKDIR) $(RRD_PROCALLATOR_DIR)
-	@if test "$(BIN_TARGETS)"; then \
+	@if test "`echo $(BIN_TARGETS)`"; then \
 	  for file in $(BIN_TARGETS); do \
 	    echo $(INSTALL) $$file $(bindir); \
 	    $(INSTALL) $$file $(bindir); \

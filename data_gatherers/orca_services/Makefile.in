@@ -47,13 +47,13 @@ install: all
 	$(MKDIR) $(sysconfdir)
 	$(MKDIR) $(RAW_ORCA_SERVICES_DIR)
 	$(MKDIR) $(RRD_ORCA_SERVICES_DIR)
-	@if test "$(BIN_TARGETS)"; then \
+	@if test "`echo $(BIN_TARGETS)`"; then \
 	  for file in $(BIN_TARGETS); do \
 	    echo $(INSTALL) $$file $(bindir); \
 	    $(INSTALL) $$file $(bindir); \
 	  done; \
 	fi
-	@if test "$(LIBEXEC_TARGETS)"; then \
+	@if test "`echo $(LIBEXEC_TARGETS)`"; then \
 	  for file in $(LIBEXEC_TARGETS); do \
 	    echo $(INSTALL) $$file $(libexecdir); \
 	    $(INSTALL) $$file $(libexecdir); \

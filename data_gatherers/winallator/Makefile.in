@@ -42,7 +42,7 @@ install: all
 	$(MKDIR) $(sysconfdir)
 	$(MKDIR) $(RAW_WINALLATOR_DIR)
 	$(MKDIR) $(RRD_WINALLATOR_DIR)
-	@if test "$(BIN_TARGETS)"; then \
+	@if test "`echo $(BIN_TARGETS)`"; then \
 	  for file in $(BIN_TARGETS); do \
 	    echo $(INSTALL) $$file $(bindir); \
 	    $(INSTALL) $$file $(bindir); \

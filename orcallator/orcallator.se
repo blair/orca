@@ -11,16 +11,17 @@
 // Version 1.34:   Jul 14, 2002	Support for SE version 3.3.  Break
 //				compatibility with SE version 3.1, which was
 //				released in April 1999, and older SE versions.
-//				Because there is no way at C preprocessing time
-//				of an SE script to determine which version of
-//				SE is being used, in orcallator.se, regardless
-//				of SE version, on Solaris 8 or later, do not
-//				record the pagesio data.  In the Yahoo!
-//				GeoCities data, this value has always been
-//				zero.  SE 3.3 finally removed the compatibility
-//				#define from prpsinfo_t to psinfo_t, so now use
-//				psinfo_t.  This breaks compatibility with SE
-//				3.0.
+//				Solaris 8 removed the pagesio variable and in
+//				SE 3.3, kstat.se #ifdef's out ks_system_pages's
+//				pagesio variable on Solaris 8 and above, so now
+//				orcallator.se only measures pagesio on Solaris
+//				7 or older.  Even with older versions of SE and
+//				orcallator.se which defined and used pagesio
+//				on Solaris 8, pagesio would always measure as
+//				0.  SE 3.3 finally removed the compatibility
+//				#define from prpsinfo_t to psinfo_t, so now
+//				use psinfo_t.  This breaks compatibility with
+//				SE 3.1 and older SE versions.
 // Version 1.33:   Jul 10, 2002	In check_output_log_filename(), stat() was
 //				was being passed a stat_t by value, instead of
 //				a pointer to a stat_t.  Only the return value

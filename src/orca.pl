@@ -17,7 +17,7 @@ $Data::Dumper::Deepcopy = 1;
 
 # This is the version of Orca.
 use vars qw($VERSION);
-$VERSION = 0.17;
+$VERSION = 0.18;
 
 # This is the version number used in creating the DS names in RRDs.
 # This should be updated any time a new version of Orca needs some

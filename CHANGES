@@ -1,16 +1,20 @@
 Tue Feb 16 10:49:07 PST 1999
 
+	Version 0.18.
+
+	Minor fixes.
+
 	Version 0.17.
 
-	Sort group names depending upon the format of the group names.
-	This now allows nfs13 to be listed after nfs5, even though cmp
-	will list nfs13 before nfs5.
+	Group names are now sorted depending upon the format of the
+	group names.  For example, this now will list nfs13 after nfs5,
+	even though cmp will sort nfs13 before nfs5.
 
-	Created GIFs now also print the current measured value in addition
+	Created GIFs now print the current measured value in addition
 	to the average measured value.
 
-	Update the http and inode with page steals plots in
-	percollator.cfg.in to have shorter legends so that RRDtool would
+	percollator.cfg.in updated to shorten the http and inode with
+	page steals legends to have shorter legends so that RRDtool will
 	plot the whole comment along with the average and last value in
 	the GIF.
 
@@ -18,16 +22,17 @@ Mon Feb 15 12:29:18 PST 1999
 
 	Require RRDtool 0.99.11.
 
-	Add version information to the DS names created by Orca so new
-	version of Orca and make older RRD files obsolete.  This feature
-	now used to make sure LAST measurements are stored in Orca's RRDs.
+	Add versioning information to the DS names created by Orca so new
+	versions of Orca can make older RRD files obsolete.  This feature
+	is now used to make sure that the current measurement using LAST
+	is stored in Orca's RRDs.
 
 Fri Feb 12 15:10:05 PST 1999
 
 	Require RRDtool 0.99.10.
 
-	When creating a brand new RRD, create new RRAs for the last
-	value measured using LAST.
+	When creating a brand new RRD, create new RRAs for the current
+	value measured using the LAST DS type.
 
 Thu Feb 11 11:48:14 PST 1999
 
@@ -68,15 +73,17 @@ Tue Jan 26 15:28:26 PST 1999
 
 Tue Jan 26 10:07:40 PST 1999
 
+	Version 0.16.
+
 	Fix a bug in lib/Makefile.in where the variable $(CP) was used
 	but never defined.
 
 	Fix a bug where watch_data_sources() would do an extra loop each
 	time file updates were looked for.
 
-	Version 0.16.
-
 Mon Jan 25 15:25:12 PST 1999
+
+	Version 0.15.
 
 	Update to use RRDtool 0.99.1.
 
@@ -86,8 +93,6 @@ Mon Jan 25 15:25:12 PST 1999
 
 	Make sure lib/Makefile does not overwrite old
 	lib/percollator.cfg's when a make install is done.
-
-	Version 0.15.
 
 Fri Jan 22 20:17:56 PST 1999
 
@@ -114,11 +119,11 @@ Mon Jan 11 16:58:28 PST 1999
 
 Wed Jan  6 09:47:44 PST 1999
 
+	Version 0.14.
+
 	Change the program's name from FMRTG to Orca.
 
 	Change all references of SMRTG to Cricket.
-
-	Version 0.14.
 
 Fri Dec 18 13:10:47 PST 1998
 
@@ -133,6 +138,8 @@ Thu Dec 10 16:47:20 PST 1998
 
 Thu Dec 10 12:50:19 PST 1998
 
+	Version 0.13.
+
 	Found an extra loop in creating the HTML files.  They are now
 	created much faster.
 
@@ -144,8 +151,6 @@ Thu Dec 10 12:50:19 PST 1998
 
 	Add some documentation describing why Digest::MD5 is used.
 
-	Version 0.13.
-
 Wed Dec  9 13:35:07 PST 1998
 
 	Add more documentation to fmrtg and percollator about setting
@@ -153,11 +158,13 @@ Wed Dec  9 13:35:07 PST 1998
 
 Wed Dec  9 09:55:01 PST 1998
 
-	Correct incorrect URL for Digest::MD5 in fmrtg.
-
 	Version 0.12.
 
+	Correct incorrect URL for Digest::MD5 in fmrtg.
+
 Tue Dec  8 12:12:07 PST 1998
+
+	Version 0.11.
 
 	Update the sample FMRTG configuration files to work properly
 	with the configuration options in FMRTG.
@@ -170,8 +177,6 @@ Tue Dec  8 12:12:07 PST 1998
 
 	Add some more documentation to the percollator/start_percol
 	script.
-
-	Version 0.11.
 
 Fri Dec  4 14:34:13 PST 1998
 

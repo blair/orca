@@ -28,27 +28,26 @@ rothschild_image_logo.png.hex: rothschild_image_logo.png
 
 install: all
 	$(MKDIR) $(libdir)/Orca
+	$(MKDIR) $(libdir)/SE/3.2.1
+	$(MKDIR) $(libdir)/SE/3.3
 	@for f in Orca/*.pm; do \
-	  $(INSTALL) -m 0644 $$f $(libdir)/Orca; \
 	  echo $(INSTALL) -m 0644 $$f $(libdir)/Orca; \
+	  $(INSTALL) -m 0644 $$f $(libdir)/Orca; \
 	done
 	@if test -d Orca/Config; then \
 	  $(MKDIR) $(libdir)/Orca/Config; \
 	  for f in Orca/Config/*.pm; do \
-	    $(INSTALL) -m 0644 $$f $(libdir)/Orca/Config; \
 	    echo $(INSTALL) -m 0644 $$f $(libdir)/Orca/Config; \
+	    $(INSTALL) -m 0644 $$f $(libdir)/Orca/Config; \
 	  done; \
 	fi
-
-	$(MKDIR) $(libdir)/SE/3.2.1
-	@for f in SE/3.2.1/*; do					\
-		$(INSTALL) -m 0644 $$f $(libdir)/SE/3.2.1;		\
-		echo $(INSTALL) -m 0644 $$f $(libdir)/SE/3.2.1;		\
+	@for f in SE/3.2.1/*; do \
+	  echo $(INSTALL) -m 0644 $$f $(libdir)/SE/3.2.1; \
+	  $(INSTALL) -m 0644 $$f $(libdir)/SE/3.2.1; \
 	done
-	$(MKDIR) $(libdir)/SE/3.3
-	@for f in SE/3.3/*; do						\
-		$(INSTALL) -m 0644 $$f $(libdir)/SE/3.3;		\
-		echo $(INSTALL) -m 0644 $$f $(libdir)/SE/3.3;		\
+	@for f in SE/3.3/*; do \
+	  echo $(INSTALL) -m 0644 $$f $(libdir)/SE/3.3; \
+	  $(INSTALL) -m 0644 $$f $(libdir)/SE/3.3; \
 	done
 
 clean:

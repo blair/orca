@@ -306,6 +306,17 @@ Outline:
 
     % make install_modules
 
+    This command will pass UNINST=1 down to the Perl Makefile's so
+    that any old installed Perl modules are properly deleted.
+    Otherwise, the Perl installation may have the old and new modules
+    installed and due to Perl's module search order, Perl may use the
+    older module instead of the newer installed module.
+
+    If you do not wish to delete older Perl modules, then run this
+    command:
+
+    % make install_modules UNINST=0
+
  8) Doing an upgrade from Orca 0.23 or older?  Follow these steps.
 
     Due to various changes to Orca between releases, many of the RRD,

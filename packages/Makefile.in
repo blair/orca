@@ -3,6 +3,13 @@
 PERL                             = @PERL@
 CFLAGS                           = @CFLAGS@
 
+# By default, pass UNINST=1 down to the Perl Makefile's so that any
+# old installed Perl modules are properly deleted.  Otherwise, the
+# Perl installation may have the old and new modules installed and and
+# due to Perl's module search order, Perl may use the older module
+# instead of the newer installed module.
+UNINST                           = 1
+
 compress_zlib_dir                = @COMPRESS_ZLIB_DIR@
 data_dumper_dir                  = @DATA_DUMPER_DIR@
 date_parse_dir                   = @DATE_PARSE_DIR@
@@ -192,28 +199,28 @@ install_lib_rrdtool: make_rrdtool
 install_modules: $(INSTALL_PERL_TARGETS)
 
 install_perl_compress_zlib: make_compress_zlib
-	cd $(compress_zlib_dir) && $(MAKE) OPTIMIZE="$(CFLAGS)" install
+	cd $(compress_zlib_dir) && $(MAKE) OPTIMIZE="$(CFLAGS)" UNINST="$(UNINST)" install
 
 install_perl_data_dumper: $(data_dumper_dir)/Makefile
-	cd $(data_dumper_dir) && $(MAKE) OPTIMIZE="$(CFLAGS)" install
+	cd $(data_dumper_dir) && $(MAKE) OPTIMIZE="$(CFLAGS)" UNINST="$(UNINST)" install
 
 install_perl_date_parse: $(date_parse_dir)/Makefile
-	cd $(date_parse_dir) && $(MAKE) OPTIMIZE="$(CFLAGS)" install
+	cd $(date_parse_dir) && $(MAKE) OPTIMIZE="$(CFLAGS)" UNINST="$(UNINST)" install
 
 install_perl_devel_dprof: $(devel_dprof_dir)/Makefile
-	cd $(devel_dprof_dir) && $(MAKE) OPTIMIZE="$(CFLAGS)" install
+	cd $(devel_dprof_dir) && $(MAKE) OPTIMIZE="$(CFLAGS)" UNINST="$(UNINST)" install
 
 install_perl_digest_md5: $(digest_md5_dir)/Makefile
-	cd $(digest_md5_dir) && $(MAKE) OPTIMIZE="$(CFLAGS)" install
+	cd $(digest_md5_dir) && $(MAKE) OPTIMIZE="$(CFLAGS)" UNINST="$(UNINST)" install
 
 install_perl_math_intervalsearch: $(math_intervalsearch_dir)/Makefile
-	cd $(math_intervalsearch_dir) && $(MAKE) OPTIMIZE="$(CFLAGS)" install
+	cd $(math_intervalsearch_dir) && $(MAKE) OPTIMIZE="$(CFLAGS)" UNINST="$(UNINST)" install
 
 install_perl_rrdtool: make_rrdtool
-	cd $(rrdtool_dir)/perl-shared && $(MAKE) OPTIMIZE="$(CFLAGS)" install
+	cd $(rrdtool_dir)/perl-shared && $(MAKE) OPTIMIZE="$(CFLAGS)" UNINST="$(UNINST)" install
 
 install_perl_storable: $(storable_dir)/Makefile
-	cd $(storable_dir) && $(MAKE) OPTIMIZE="$(CFLAGS)" install
+	cd $(storable_dir) && $(MAKE) OPTIMIZE="$(CFLAGS)" UNINST="$(UNINST)" install
 
 clean: $(CLEAN_TARGETS)
 

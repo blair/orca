@@ -178,6 +178,10 @@ data_max		100
 plot_min		0
 plot_max		100
 rigid_min_max		1
+color			00ff00
+color			ff0000
+color			0000ff
+color			ffffd0
 href			http://www.orcaware.com/orca/docs/orcallator.html#cpu_usage
 }
 

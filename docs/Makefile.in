@@ -1,7 +1,28 @@
-all:	README orca.man
+prefix	= @prefix@
+mandir	= @mandir@/man1
+MKDIR	= @MKDIR@
+INSTALL	= @INSTALL@
+ORCA	= ../src/orca.pl
 
-orca.man:	orca
+TARGETS	= orca.man orca.html orca.txt
+
+all:	$(TARGETS)
+
+orca.man: $(ORCA)
 	pod2man $< > $@
 
-README:		orca
+orca.html: $(ORCA)
+	pod2html $< > $@
+
+orca.txt: $(ORCA)
 	pod2text $< > $@
+
+install: all
+	$(MKDIR) $(mandir)
+	$(INSTALL) -m 0644 orca.man $(mandir)/orca.1
+
+clean:
+	$(RM) $(TARGETS) pod2html-*
+
+distclean: clean
+	$(RM) Makefile

@@ -183,9 +183,10 @@ Outline:
 
       You need to edit the installed percollator.cfg file and remove
       all unneeded references.  In particular, you'll want to change
-      warn_email, which is the email address that receives emails when
-      percollator generated files are out of date, which may signify a
-      percollator program that has died and is no longer gathering data.
+      warn_email, which is the email address that receives emails
+      when percollator generated files are out of date, which may
+      signify a percollator program that has died and is no longer
+      gathering data.
 
    f) Run Orca.
 

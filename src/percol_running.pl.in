@@ -1,14 +1,13 @@
-#!/home/bzajac/opt-sparc-solaris/perl5/bin/perl -w
+# not_running: warn if percollator files are not up to date.
+#
+# Copyright (C) 1998 Blair Zajac and GeoCities, Inc.
 
 use strict;
 use POSIX qw(strftime);
 
 # Set this to the list of directories that contain the output from
 # percollator.se.
-my @stats_dirs = (
-  '/net/admin1/raid/admin1/public-5.5.1/geocities/performance/stats_percollator',
-  '/net/admin1/raid/admin1/public-5.6/geocities/performance/stats_percollator'
-);
+my @stats_dirs = ('@PERCOLLATOR_DIR@');
 
 foreach my $stats_dir (@stats_dirs) {
 

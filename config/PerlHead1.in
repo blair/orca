@@ -1,0 +1,4 @@
+#!@PERL@ # -*- perl -*-
+
+require 5.005;
+

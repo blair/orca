@@ -1,12 +1,12 @@
 #!/bin/sh
 
-# This script runs percollator.se with the proper options for our site.
-
-# Set this variable.
-STATSDIR=/home/bzajac/Code/Orca/bzajac/percollator
+# This stops and restarts percollator.se.
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+bindir=@bindir@
 
 # Kill any running percollators.
-$STATSDIR/bin/stop_percol
+$bindir/stop_percol
 
 # Start the percollator.
-$STATSDIR/bin/start_percol
+$bindir/start_percol

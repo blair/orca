@@ -1,0 +1,126 @@
+# This file is an input file used by the GNU "autoconf" program to
+# generate the file "configure", which is run during Borp installation
+# to configure the system for the local environment.
+AC_INIT(src/orca.pl)
+AC_CONFIG_AUX_DIR(config)
+AC_CANONICAL_SYSTEM
+
+# Minimum Autoconf version required.
+AC_PREREQ(2.13)
+
+# Define the directories where the source percollator and RRD data files
+# will be installed.
+AC_ARG_WITH(rrd-dir,
+  [   --with-rrd-dir=DIR     directory were the RRD data files are stored],
+  [
+    case "$withval" in
+      "" | y | ye | yes | n | no)
+         AC_MSG_ERROR([*** You must supply an argument to the --with-rrd-dir option.])
+         ;;
+      *) RRD_DIR="$withval"
+         ;;
+    esac
+  ],
+  : ${RRD_DIR=$localstatedir/orca/rrd}
+)
+RRD_DIR=`(
+    test "x$prefix" = xNONE && prefix=$ac_default_prefix
+    test "x$exec_prefix" = xNONE && exec_prefix=${prefix}
+    eval echo "$RRD_DIR"
+)`
+AC_SUBST(RRD_DIR)
+
+AC_ARG_WITH(html-dir,
+  [   --with-html-dir=DIR    location of the root output HTML directory],
+  [
+    case "$withval" in
+      "" | y | ye | yes | n | no)
+         AC_MSG_ERROR([*** You must supply an argument to the --with-html-dir option.])
+         ;;
+      *) HTML_DIR="$withval"
+         ;;
+    esac
+  ],
+  AC_MSG_ERROR([*** You must use the --with-html-dir argument and supply a value.])
+)
+AC_SUBST(HTML_DIR)
+
+AC_ARG_WITH(perc-dir,
+  [   --with-perc-dir=DIR    directory were percollator output is stored],
+  [
+    case "$withval" in
+      "" | y | ye | yes | n | no)
+         AC_MSG_ERROR([*** You must supply an argument to the --with-perc-dir option.])
+         ;;
+      *) PERCOLLATOR_DIR="$withval"
+         ;;
+    esac
+  ],
+  : ${PERCOLLATOR_DIR=$localstatedir/orca/percollator}
+)
+PERCOLLATOR_DIR=`(
+    test "x$prefix" = xNONE && prefix=$ac_default_prefix
+    test "x$exec_prefix" = xNONE && exec_prefix=${prefix}
+    eval echo "$PERCOLLATOR_DIR"
+)`
+AC_SUBST(PERCOLLATOR_DIR)
+
+AC_ARG_WITH(access-log,
+  [   --with-access-log=FILE location of the Common Log Format access log],
+  [
+    case "$withval" in
+      "" | y | ye | yes | n | no)
+         AC_MSG_ERROR([*** You must supply an argument to the --with-access-log option.])
+         ;;
+      *) NCSAHTTPLOG="$withval"
+         ;;
+    esac
+  ]
+)
+AC_SUBST(NCSAHTTPLOG)
+
+AC_ARG_PROGRAM
+AC_PATH_PROGS(AWK,mawk gawk nawk awk)
+AC_PATH_PROG(CUT, cut, cut)
+AC_PATH_PROG(EXPR, expr, expr)
+AC_PATH_PROG(SE, se,,/opt/RICHPse/bin:$PATH)
+AC_PATH_PROG(UNAME, uname, uname)
+
+# Include the file that defined BORP_PERL_RUN.
+sinclude(config/acinclude.m4)
+AC_PATH_PROG(PERL, perl, NOT_FOUND)
+if test "x$PERL" != "xNOT_FOUND"; then
+  PERL="$PERL -w"
+  BORP_PERL_RUN($PERL, PERL_HEAD=PerlHead1, PERL_HEAD=PerlHead2)
+else
+  PERLHEAD=PerlHead2
+fi
+PERL_HEAD="../config/$PERL_HEAD"
+AC_SUBST(PERL_HEAD)
+
+# Define the INSTALL and MKDIR variables to point to the scripts in
+# the config directory.
+INSTALL="../config/install-sh -c"
+MKDIR="../config/mkinstalldirs"
+AC_SUBST(INSTALL)
+AC_SUBST(MKDIR)
+
+#--------------------------------------------------------------------
+#	Generate the Makefiles and shell scripts with the
+#	variable substitution.
+#--------------------------------------------------------------------
+AC_OUTPUT(config/PerlHead1
+	  config/PerlHead2
+	  src/percol_running.pl
+	  src/restart_percol.sh
+	  src/start_percol.sh
+	  src/stop_percol.sh
+	  src/Makefile
+	  lib/percollator.cfg
+	  lib/Makefile
+	  docs/Makefile
+	  Makefile)
+
+if test -z "$NCSAHTTPLOG"; then
+  AC_MSG_WARN([*** Unless you use --with-access_log you will not gather WWW access log data.])
+fi

@@ -1,63 +1,29 @@
-# MRTG configuration file for Percollator files.
+# Orca configuration file for Percollator files.
 
-#state_file		percol.state
-#data_dir		/export/home/bzajac/percol
-#html_dir		/raid/lun36/admin/graphs/hosts
-
-#state_file		big.state
-#data_dir		../rrd_files/big
-#html_dir		/home/bzajac/public_html/mrtg/big
-
-base_dir		/home/bzajac/Code/MRTG/bzajac/percollator
-state_file		small.state
-data_dir		./rrd_files/small
-html_dir		/home/bzajac/public_html/mrtg/small
-
-#base_dir		/home/bzajac/Code/MRTG/bzajac/percollator
-#state_file		update.state
-#data_dir		./rrd_files
-#html_dir		/home/bzajac/public_html/mrtg/update
-#expire_gifs		1
+base_dir		@RRD_DIR@
+state_file		percollator.state
+html_dir		@HTML_DIR@
+expire_gifs		1
 
 # Find files at the following times:
-#    0:10 to pick up new percollator files for the new day
-#    1:00 to pick up late comer percollator files for the new day
-#    6:00 to pick up new files before the working day
-#   12:00 to pick up new files during the working day
-#   19:00 to pick up new files after the working day
+#    0:10 to pick up new percollator files for the new day.
+#    1:00 to pick up late comer percollator files for the new day.
+#    6:00 to pick up new files before the working day.
+#   12:00 to pick up new files during the working day.
+#   19:00 to pick up new files after the working day.
 find_times		0:10 1:00 6:00 12:00 19:00
 
 # This defines the email address of people to warn when a file that is
 # being updated constantly stops being updated.  For mathematical
 # expressions use the word interval to get the interval number for
 # the data source.
-warn_email		bzajac@geostaff.com
+warn_email		root@localhost
 late_interval		interval + 30
 
 # This defines where the find the source data files and the format of those
 # files.
 files percol {
-find_files
-# site
-#	/usr/public.*/geocities/performance/stats_percollator/(.*)/percol-\d{4}-\d{2}-\d{2}
-#
-# big
-#	../Source.*/(.*)/percol-\d{4}-11-01
-#	../source/(.*)/percol-\d{4}-11-01
-#	../source/([m-z].*)/percol-\d{4}-10-2\d
-#	../source/([a-l].*)/percol-\d{4}-10-2\d
-#	../source/(admin1)/percol-\d{4}-10-2\d
-#	../source/(ads1)/percol-\d{4}-10-2\d
-#	../source/(apply1)/percol-\d{4}-10-2\d
-#	../source/(cat7)/percol-\d{4}-10-2\d
-#	../source/(mail4)/percol-\d{4}-10-2\d
-#
-# small
-	./source/Source/(www1[18])/percol-\d{4}-11-0[1-5]
-#	
-# update
-#	./source/(nfs-tb)/percol-\d{4}-\d{2}-\d{2}
-
+find_files		@PERCOLLATOR_DIR@/(.*)/percol-\d{4}-\d{2}-\d{2}
 column_description	first_line
 date_source		column_name timestamp
 date_format		%s
@@ -87,50 +53,9 @@ html_page_header
   <spacer type=vertical size=4>
 
 html_page_footer
-  <spacer type=vertical size=6>
-  <table border=0 cellspacing=0 cellpadding=0>
-    <tr>
-      <td WIDTH=63>
-        <a href="http://www.ee.ethz.ch/~oetiker/webtools/mrtg/mrtg.html">
-          <img ALT="MRTG" border=0 src="mrtg-l.gif">
-        </a>
-      </td>
-      <td width=25>
-        <a href="http://www.ee.ethz.ch/~oetiker/webtools/mrtg/mrtg.html">
-          <img ALT="MRTG" border=0 src="mrtg-m.gif">
-        </a>
-      </td>
-      <td width=388>
-        <a href="http://www.ee.ethz.ch/~oetiker/webtools/mrtg/mrtg.html">
-          <img ALT="MRTG" border=0 src="mrtg-r.gif">
-        </a>
-      </td>
-    </tr>
-  </table>
-  <table border=0 cellspacing=0 cellpadding=0>
-    <tr valign=top>
-      <td width=88 align=right>
-        <font face="Arial,Helvetica" size=2>
-          2.5.3-1997/06/12
-        </font>
-      </td>
-      <td width=388 align=right>
-        <font face="Arial,Helvetica" size=2>
-          <a href="http://www.ee.ethz.ch/~oetiker">Tobias Oetiker</a>
-          <a href="mailto:oetiker@ee.ethz.ch">&lt;oetiker@ee.ethz.ch&gt;</a> 
-          and&nbsp;<a href="http://www.bungi.com">Dave&nbsp;Rand</a>&nbsp;
-          <a href="mailto:dlr@bungi.com">&lt;dlr@bungi.com&gt;</a>
-        </font>
-      </td>
-    </tr>
-  </table>
-
-html_page_footer
   <spacer type=vertical size=20>
   <font face="Arial,Helvetica">
-    Please email requests for enhancements, comments, or suggestions
-    to Dr. Blair Zajac
-    <a href="mailto:bzajac@geostaff.com">&lt;bzajac@geostaff.com&gt;</a>.
+    These plots brought to you by your local system administrator.
   </font>
 
 plot {

@@ -1,4 +1,6 @@
-#!/home/bzajac/opt-sparc-solaris/perl5/bin/perl -w
+# percol_column: display selected columns from percollator output.
+#
+# Copyright (C) 1998 Blair Zajac and GeoCities, Inc.
 
 use strict;
 

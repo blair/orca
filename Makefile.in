@@ -1,0 +1,36 @@
+SUBDIRS 	= lib src docs
+PREFIX		= @prefix@
+PERCOLLATOR_DIR	= @PERCOLLATOR_DIR@
+RRD_DIR		= @RRD_DIR@
+
+all:	configure
+	@for dir in $(SUBDIRS); do			\
+		echo "cd $$dir; $(MAKE)";		\
+		(cd $$dir; $(MAKE));			\
+	done
+
+install:
+	./config/mkinstalldirs $(PERCOLLATOR_DIR)
+	./config/mkinstalldirs $(RRD_DIR)/percollator
+	@for dir in $(SUBDIRS); do			\
+		echo "cd $$dir; $(MAKE) install";	\
+		(cd $$dir; $(MAKE) install);		\
+	done
+
+clean:
+	@for dir in $(SUBDIRS); do			\
+		echo "cd $$dir; $(MAKE) clean";		\
+		(cd $$dir; $(MAKE) clean);		\
+	done
+
+distclean:
+	@for dir in $(SUBDIRS); do			\
+		echo "cd $$dir; $(MAKE) distclean";	\
+		(cd $$dir; $(MAKE) distclean);		\
+	done
+	$(RM) config/PerlHead1 config/PerlHead2
+	$(RM) config.cache config.log config.status Makefile
+
+configure: configure.in
+	autoconf
+	./config.status

@@ -1,34 +1,25 @@
 #!/bin/sh
 
-# This script runs percollator.se with the proper options for our site.
+# This script runs percollator.se with the proper options for your site.
 
-# Set these variables.  AWK is where your best version of awk lives.  This
-# should be preferably gawk, then nawk, and finall awk.  STATSDIR is the
-# base directory for the statistics.  Underneath STATSDIR is a bin/ and
-# stats_percollator/ directory.
-AWK=/usr/public/bin/gawk
-STATSDIR=/home/bzajac/Code/Orca/bzajac/percollator
+# Define program locations that will be needed.
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+AWK=@AWK@
+CUT=@CUT@
+EXPR=@EXPR@
+UNAME=@UNAME@
+NCSAHTTPLOG=@NCSAHTTPLOG@
+PERCOLLATOR_DIR=@PERCOLLATOR_DIR@
+SE=@SE@
 
-# Get the real hostname without any trailing .*.
-uname=`/usr/bin/uname -n | /usr/bin/cut -d. -f1`
+# Get the hostname without the fully qualified part; that is, trim off
+# anything past the first `.'.
+uname=`$UNAME -n | $CUT -d. -f1`
 
-# If this is running on a mail machine, then we need to write our files
-# into /export/home/stats_percollator/HOSTNAME, otherwise into the
-# STATSDIR/stats_percollator/HOSTNAME directory.
-if expr $uname : mail >/dev/null; then
-  OUTDIR=/export/home/stats_percollator/$uname
-else
-  OUTDIR=$STATSDIR/stats_percollator/$uname
-fi
-echo "Writing data into $OUTDIR/"
-
-# Choose the correct web access log.
-if test -r /export/home/JavaWebServer1.1.1/logs/javawebserver/access_log; then
-  NCSAHTTPLOG=/export/home/JavaWebServer1.1.1/logs/javawebserver/access_log
-else
-  NCSAHTTPLOG=/export/home/weblog/access_log
-fi
-echo "Using www access log file $NCSAHTTPLOG"
+# The directory these files go into is $PERCOLLATOR_DIR/HOSTNAME
+OUTDIR=$PERCOLLATOR_DIR/$uname
 
 # Export the environmental variables.
 export NCSAHTTPLOG OUTDIR
@@ -37,10 +28,13 @@ export NCSAHTTPLOG OUTDIR
 pids=`/usr/ucb/ps auxww | $AWK '/percollator.se/ && !/awk/ {print $2}'`
 if test "$pids" != ""; then
   echo "Percollator already running.  Exiting."
-  exit 0
+  exit 1
 fi
 
-# Cd to / so that any mounted /home filesystems can be unmounted.
+echo "Writing data into $OUTDIR/"
+echo "Using www access log file $NCSAHTTPLOG"
+
+# Cd to / so that any automounted filesystems can be unmounted.
 cd /
 
 # Create the output directory if it doesn't exist yet.
@@ -51,15 +45,18 @@ fi
 
 if test ! -d $OUTDIR; then
   echo "Unable to create $OUTDIR/" 1>&2
-  exit 1
+  exit 2
 fi
 
-# Kill any running percollators.
-$STATSDIR/bin/stop_percol
+# Only turn on HTTP recording if NCSAHTTPLOG is set.
+WATCH_HTTPD=
+if test "$NCSAHTTPLOG"; then
+  WATCH_HTTPD=-DWATCH_HTTPD
+fi
 
 # Now start the logging.
 echo "Starting logging"
-/usr/public/packages/RICHPse/bin/se $LE_PATCH -DWATCH_OS -DWATCH_HTTPD $STATSDIR/bin/percollator.se &
+$SE $LE_PATCH -DWATCH_OS $WATCH_HTTPD $libdir/percollator.se &
 
 # Write the PID of percollator to a file to make killing easier.
 pid=$!

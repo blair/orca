@@ -1,0 +1,37 @@
+prefix		= @prefix@
+exec_prefix	= @exec_prefix@
+bindir		= @bindir@
+MKDIR		= @MKDIR@
+INSTALL		= @INSTALL@
+PERL_HEAD	= @PERL_HEAD@
+PERL_SCRIPTS	= percol_running orca percol_column
+SHELL_SCRIPTS	= restart_percol stop_percol start_percol
+TARGETS		= $(PERL_SCRIPTS) $(SHELL_SCRIPTS)
+
+all:		$(TARGETS)
+
+install: all
+		$(MKDIR) $(bindir)
+		@for file in $(TARGETS); do			\
+			echo $(INSTALL) $$file $(bindir);	\
+			$(INSTALL) $$file $(bindir);		\
+		done
+
+clean:
+		$(RM) $(TARGETS)
+
+distclean:	clean
+		$(RM) *.sh percol_running.pl Makefile
+
+.SUFFIXES:	.pl .sh
+
+.pl:		$(PERL_HEAD)
+		cat $(PERL_HEAD) $< > $@
+		chmod 0755 $@
+
+.sh:
+		cp $< $@
+		chmod 0755 $@
+
+percol_running.pl: percol_running.pl.in
+		cd ..; ./config.status

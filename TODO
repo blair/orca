@@ -1,5 +1,4 @@
-orca:
-	Make it easier to install and get running
+Orca:
 	Lock file
 	Arbitrary date reading
 	Use Cricket's configuration ConfigTree?????
@@ -11,4 +10,3 @@ orca:
 
 percollator.se:
 	Better documentation
-	Autoconfigure support?????

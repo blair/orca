@@ -1,8 +1,6 @@
-#!/home/bzajac/opt-sparc-solaris/perl5/bin/perl -w
-
 # Orca: display arbitrary data from files onto web pages using RRD.
 #
-# Copyright (C) 1998 Blair Zajac and GeoCities, Inc.
+# Copyright (C) 1998, 1999 Blair Zajac and GeoCities, Inc.
 
 use strict;
 require 5.005;
@@ -18,7 +16,8 @@ $Data::Dumper::Purity   = 1;
 $Data::Dumper::Deepcopy = 1;
 
 # This is the version of this code.
-my $VERSION = 0.14;
+use vars qw($VERSION);
+$VERSION = 0.15;
 
 # The number of seconds in one day.
 my $day_seconds = 24*60*60;
@@ -96,6 +95,15 @@ sub DESTROY {
 
   print { $self->{_handle} } <<END;
 $self->{_bottom}
+<p>
+<hr align=left width=225>
+<img width=186 height=45 src="orca.gif">
+<br>
+<font FACE="Arial,Helvetica" SIZE=2>
+  Orca-$::VERSION by
+  <a href="http://www.geocities.com/ResearchTriangle/Thinktank/4996/">Blair Zajac</a>
+  <a href="mailto:bzajac\@geostaff.com">bzajac\@geostaff.com</a>.
+</font>
 </body>
 </html>
 END
@@ -418,7 +426,7 @@ sub status {
 
 package Orca::GIFFile;
 
-use RRD;
+use RRDs 0.99.0;
 use Carp;
 
 sub new {
@@ -449,7 +457,7 @@ sub new {
   # replacements.
   $name = &::strip_key_name($name);
 
-  # Create the paths to the html directory.
+  # Create the paths to the html directory and subdirectories.
   my $html_dir     = $config_options->{html_dir};
   if ($config_files->{$files_key}{sub_dir}) {
     $html_dir .= "/$group";
@@ -601,7 +609,7 @@ sub _plot {
   for (my $i=0; $i<$data_sources; ++$i) {
     my $rrd_key      = $self->{_my_rrd_list}[$i];
     my $rrd_filename = $self->{_all_rrd_ref}{$rrd_key}->filename;
-    push(@options, "DEF:source$i=$rrd_filename:0:AVERAGE");
+    push(@options, "DEF:source$i=$rrd_filename:orca:AVERAGE");
   }
   for (my $i=0; $i<$data_sources; ++$i) {
     my $legend    = ::replace_group_name($plot_ref->{legend}[$i], $group);
@@ -619,10 +627,10 @@ sub _plot {
   my $gif_filename = "$self->{_gif_basename}-$plot_type.gif";
   print "  Creating `$gif_filename'.\n" if $opt_verbose > 1;
 
-  my $graph_return = RRD::graph $gif_filename,
+  my $graph_return = RRDs::graph $gif_filename,
                                 '-s', ($plot_end_time-$days_back*$day_seconds),
                                 @options;
-  if (my $error = RRD::error) {
+  if (my $error = RRDs::error) {
     warn "$0: warning: cannot create `$gif_filename': $error\n";
   }
   else {
@@ -664,7 +672,7 @@ sub expire_string {
 
 package Orca::RRDFile;
 
-use RRD;
+use RRDs;
 use Carp;
 use vars qw(@ISA);
 
@@ -714,9 +722,9 @@ sub new {
   # it is created later when the data is first flushed to it.
   $self->{_rrd_update_time} = -2;
   if ($self->status >= 0) {
-    my $update_time = RRD::last $rrd_filename;
-    if (my $error = RRD::error) {
-      warn "$0: RRD::last error: $error\n";
+    my $update_time = RRDs::last $rrd_filename;
+    if (my $error = RRDs::error) {
+      warn "$0: RRDs::last error: $error\n";
     }
     else {
       $self->{_rrd_update_time} = $update_time;
@@ -787,7 +795,7 @@ sub flush_data {
     # data source value is set to unknown.
     my $interval = $self->{_interval};
    
-    my $data_source = "DS:$self->{_plot_ref}{data_type}";
+    my $data_source = "DS:orca:$self->{_plot_ref}{data_type}";
     $data_source   .= sprintf ":%d:", 2*$interval;
     $data_source   .= "$self->{_plot_ref}{data_min}:";
     $data_source   .= "$self->{_plot_ref}{data_max}";
@@ -800,7 +808,7 @@ sub flush_data {
     # RRA's with the same number of primary data points.  This can happen
     # if the interval is equal to one of the consoldated intervals.
     my $count = int($rra_row_count[0]*300.0/$interval + 0.5);
-    my $one_pdp_option = "RRA:AVERAGE:1:$count";
+    my $one_pdp_option = "RRA:AVERAGE:0.5:1:$count";
 
     for (my $i=1; $i<@rra_pdp_count; ++$i) {
       next if $interval > 300*$rra_pdp_count[$i];
@@ -809,7 +817,7 @@ sub flush_data {
         push(@options, $one_pdp_option);
       }
       $one_pdp_option = '';
-      push(@options, "RRA:AVERAGE:$rra_pdp_count:$rra_row_count[$i]");
+      push(@options, "RRA:AVERAGE:0.5:$rra_pdp_count:$rra_row_count[$i]");
     }
 
     # Now do the actual creation.
@@ -820,10 +828,10 @@ sub flush_data {
       }
       print ".\n";
     }
-    RRD::create @options;
+    RRDs::create @options;
 
-    if (my $error = RRD::error) {
-      warn "$0: RRD::create error: $error\n";
+    if (my $error = RRDs::error) {
+      warn "$0: RRDs::create error: $error\n";
       return;
     }
   }
@@ -832,11 +840,11 @@ sub flush_data {
   my @options;
   my $old_rrd_update_time = $self->{_rrd_update_time};
   foreach my $time (@times) {
-    push(@options, $time, "DATA:$self->{_new_data}{$time}");
+    push(@options, "$time:$self->{_new_data}{$time}");
   }
-  RRD::update $rrd_filename, '-t', @options;
+  RRDs::update $rrd_filename, @options;
   my $ok = 1;
-  if (my $error = RRD::error) {
+  if (my $error = RRDs::error) {
     warn "$0: warning: cannot put data starting at ",
          scalar localtime($times[0]),
          " ($times[0]) into `$rrd_filename': $error\n";
@@ -2427,6 +2435,17 @@ sub check_config {
                                 '00ffff');	#
   }
 
+  # If data_dir is not set, then use base_dir.  Only die if both
+  # are not set.
+  unless (defined $config_options->{data_dir}) {
+    if (defined $config_options->{base_dir}) {
+      $config_options->{data_dir} = $config_options->{base_dir};
+    }
+    else {
+      die "$0: error: must define `data_dir' in `$config_filename'.\n";
+    }
+  }
+
   # Check that we the required options are satisfied.
   foreach my $option (@cc_required_options) {
     unless (defined $config_options->{$option}) {
@@ -2678,6 +2697,28 @@ sub check_config {
       }
       $config_plots->[$i]{title} = $title;
     }
+  }
+
+  # Create orca.gif in the HTML directory.  Convert the hexadecimal form
+  # stored in the DATA section to the raw GIF form on disk.
+  my $orca_gif = "$config_options->{html_dir}/orca.gif";
+  print "Creating $orca_gif.\n" if $opt_verbose;
+  if (open(ORCA_WRITE, ">$orca_gif")) {
+    # Skip past the text following the __END__ until the code HEX_ORCA_GIF.
+    while (<main::DATA>) {
+      last if /^HEX_ORCA_GIF/;
+    }
+
+    # Now read in the 
+    while (<main::DATA>) {
+      chomp;
+      print ORCA_WRITE pack('h*', $_);
+    }
+    close(ORCA_WRITE) or
+      warn "$0: error in closing `$orca_gif' for writing: $!\n";
+  }
+  else {
+    warn "$0: cannot open `$orca_gif' for writing: $!\n";
   }
 }
 
@@ -3001,64 +3042,6 @@ A small static example of Orca is at
 Please inform me of any other sites using Orca and I will include them
 here.
 
-=head1 REQUIREMENTS
-
-I have used only version version 5.005_02 of Perl with Orca.  Because
-Orca makes very heavy use of references, it may or may not work
-with older versions of Perl.  I welcome feedback if Orca works with
-older Perls.
-
-Orca also requires several other Perl modules.  These are:
-
-  Math::IntervalSearch
-   Version 1.00 or greater.
-   ftp://ftp.gps.caltech.edu/pub/blair/Perl/Math-Interpolate-1.01.tar.gz
-   http://www.perl.com/CPAN/authors/id/B/BZ/BZAJAC/Math-Interpolate-1.01.tar.gz
-
-  Digest::MD5
-   Version 2.00 or greater.
-   http://www.perl.com/CPAN/authors/id/GAAS/Digest-MD5-2.01.tar.gz
-
-  RRD
-   Version 19981217.00 or greater.
-   http://ee-staff.ethz.ch/~oetiker/webtools/mrtg/3.0/
-
-The modules can be installed into your Perl tree with the following
-commands:
-
-Math::Interval:
-
-  % gunzip -c Math-Interpolate-1.01.tar.gz | tar xvf -
-  % cd Math-Interpolate-1.01
-  % perl Makefile.PL
-  % make
-  % make test
-  % make install
-
-Digest::MD5
-
-  % gunzip -c Digest-MD5-2.01.tar.gz | tar xvf -
-  % cd Digest-MD5-2.01
-  % perl Makefile.PL
-  % make
-  % make test
-  % make install
-
-RRD:
-
-  % gunzip -c mrtg-199?????.??.tar.gz | tar xvf -
-  % cd mrtg-199?????.??
-  % sh configure --verbose
-  % make				[ To optimize: make CFLAGS=-O3 ]
-  % cd perl
-  % perl Makefile.PL
-  % make				[ To optimize: make OPTIMIZE=-O3 ]
-  % make test
-  % make install
-
-For large installations, I recommend that RRD be compiled with
-optimization turned on.
-
 =head1 COMMAND LINE OPTIONS
 
 Orca has only two command line options.  They are:
@@ -3075,6 +3058,16 @@ After the command line options are listed, Orca takes one more argument
 which is the name of the configuration file to use.  Sample configuration
 files can be found in the sample_configs directory with the distribution
 of this tool.
+
+=head1 ARCHITECTURE ISSUES
+
+Because Orca is extremely IO intensive, I recommend that the host that
+locally mounts the web server content be the same machine that runs Orca.
+In addition, the RRD data files that Orca uses also require a good amount
+of IO.  The machine running Orca should always have the B<data_dir>
+directory locally mounted.  It is more important this B<data_dir> be
+locally stored than B<html_dir> for performance concerns.  The two options
+B<data_dir> and B<html_dir> are described in more detail below.
 
 =head1 INSTALLATION AND CONFIGURATION
 
@@ -3128,6 +3121,10 @@ for performance concerns.
 
 If I<directory> does not begin with a / and the B<base_dir> option was
 set, then the B<base_dir> directory will be prepended to I<directory>.
+
+If B<data_dir> is not defined, then B<base_dir> will be used as B<data_dir>.
+Orca will quit with an error if both B<data_dir> and B<base_dir> are
+not set.
 
 =item B<base_dir> I<directory>
 
@@ -3657,15 +3654,6 @@ previous graph, the STACK will either be a LINE? or an AREA.
 The B<legend> option specifies for a single data source the comment that
 is placed below the GIF plot.
 
-=head1 ARCHITECTURE ISSUES
-
-Because Orca is extremely IO intensive, I recommend that the host that
-locally mounts the web server content be the same machine that runs Orca.
-In addition, the RRD data files that Orca uses also require a good amount
-of IO.  The machine running Orca should always have the B<data_dir>
-directory locally mounted.  It is more important this B<data_dir> be
-locally stored than B<html_dir> for performance concerns.
-
 =head1 MAILING LISTS
 
 Discussions regarding Orca take place on the mrtg-developers mailing
@@ -3686,7 +3674,76 @@ In this case, the code to be evaluated is run through MD5, where the
 resulting binary code is used as a key in a hash with the value being the
 anonymous subroutine array.  This saves in memory and in processing time.
 
-AUTHOR, COMMENTS, AND BUGS
+=head1 AUTHOR, COMMENTS, AND BUGS
 
 I welcome all comments and bug reports.  Please email them to Blair
 Zajac <blair@geostaff.com>.
+
+=cut
+
+HEX_ORCA_GIF
+749464839316ab00d2007fff00ffffff1f0f8f2e1e2f4d1dbe5c2c4e7b3bed8a4a7da9
+490dc858ace7774c0776db16856b35940b44a39a63a22a72b1c991c059000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000129f401000000000c200000000ab00d2000480ff001080c1
+840b02081080610387001a1e3060a0e0c003841b2a5cb88133a642830e042060d0a124
+0700152e6c3982352542022b5abc6882304846051952d469f2376a45001e1808b88337
+ab4493081a3800a2506007024b1e184a10a1edc6a3439208300121014b900282558065
+1003080406023d9af51668d39c31100010c03de8c39804a6759b063c23df9209ba75aa
+65bee281860ceefd6ab6f26186856906d57020972ed6c71500ad4b941b2dc28e71f248
+60849260040c4b7a18b81060f161a9431c7e281081a28d883bcea61a38736a64c53718
+3c20a1b3bc5b8204273c60708fe9c00ea9575410802e6280d50d7f1d4cc3377969bacd
+0e0809cbd221ff81b018105fa95efee0fa8d11c340507e53e08dea31828f60dd317d57
+949daa28bcf5145c0d44b55a77bdb465135402160020698d94208763b1a44e5381e525
+361562c16618140e6100bf958ecd38515c6e1200c3d664f155e3964339a7c1625c3d96
+30d68106c412530609f6226d742e04c3d575151601cf4bf9c5f1264300e5bcd850a1a7
+d32282051017d209f5a4b4ea7b11f4f0c2835a76d49b5112e50952610010866c7f3ea9
+c6a2586210756b927e6430097e292776e10a04c5fe5c9b2918066e4e0820608a9a2517
+93db986610808d9d7ec9b8984e7a55545c8a4235d5a8708a69a42874326444ed891110
+c0d30df955e86b40cda56b139921e475adff8e02a407140f927403a8a7219aba6a436e
+75942a4a95ea3bafaa65d8b9a5a4bec530d29156553761431dfa96d66b15884ce58a2d
+1b77d3bd258557d788397b2254b409d93b99827d3068a145166b322684612b4e27b929
+282016b7024b27e89f96d5a3a85e9d4ad7916ea625b460c507db975a457d3040d89c0f
+c9f07c9581bb0043727dda6054831725585e64f2cb935bbed97a2ad3442b49a2910e5e
+04f22645b1001a6a53120570be61250b32febd29c4f5530c1bcc93b64b45652d634c33
+64efe14e995b615dc1fa5445e766277bb23fb356c5f002075f54600f9353b71256a505
+5c16d859ea8dc2e7d405109a635d531c609caad698608f6d2d2d8151ff0a7bc5c04fa6
+0d1d05fa557d66177357a2b7b7ac5e042047b4bc08655723069f5e8976e90020c93a93
+7a0090ca824d3e19fa5ff130c7398ccddd301cd225aec952bf5d2ac973aee534a0c2ea
+b96cc23c6608d90bb5574b8422ff85961b6116532dbc1bf7c5994666b6416bea61de71
+dfa54da84587855ba2b8a5e8deadd36f54299eec151d7155a7dba419a0a42afc5e6c4c
+01fd2ebf8725cc8e17a2f9c6d16bd65900aa14f964c535cb5856deb5a29169146630f3
+b79e60558792d1c64678c3abcb7a9770c8f5201967e27e99bec5e913f954e54d0c689a
+4c7328baf5feee55420215095727a5a025c83961116ddc06af32acb6a7620cb6140e92
+0088acb0ff7c7d6ac25b8e849691a5544f5d3cd80358a3a24da1a42c5f5a12adf6e471
+3c9c444a64590ed04ed552c5b46887893c39c85655c4c23ea9e13849a5595ad763bc80
+81b98a1913a103c894913d042d8edb53d850a662a3d4903d3711e325f252cda8222035
+218446951758b626acdc602743139764162a1c16f173258994a22538729c21fc812e1c
+f15da067c41da8ab2d2242a8c0b0f8a2112e97e39e0cfe53489758925e38072a442848
+42d52a31a06ca22ff9c06d2532c49351d21205041dc19a79022d5a1d8127a25e9d0fb8
+48cbdd75625da2536af6047346859ae3530064dde81019b980c2349c8928437428000b
+e804217241b1ea3be848c07a133f249a3c688306109c159cd3332eb9721805a299b482
+6ea437d9e72550a9433f66144000e3d49703004e9ea9bd2a6215284008b4f2b3ad2041
+542d29294f168414220b466c6392e449c339482de3543a1b7004e0161c405a33912d00
+6ed89cb844b61a2f0941c906257ec46086c5346a34b974ab43269001bd0a010cc31f42
+e4a56e419430cc78311cdffad9c5c6a4c499697b06e4ecbaf1449010a15e004ba1d29a
+ad4f721a0e9965d8404000b3

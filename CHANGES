@@ -1,3 +1,39 @@
+Mon Jan 25 15:25:12 PST 1999
+
+	Update to use RRDtool 0.99.1.
+
+	Rename not_running to percol_running.
+
+	Update the URL to Tobias Oetiker's RRD web site.
+
+	Make sure lib/Makefile does not overwrite old lib/percollator.cfg's
+	when a make install is done.
+
+	Version 0.15.
+
+Fri Jan 22 20:17:56 PST 1999
+
+	Create an Orca logo and have the logo appear at the bottom
+	of each HTML file.  The logo is stored as hexidecimal inside
+	the Orca perl script.
+
+	Update percollator.cfg.in to not contain bzajac@geostaff.com
+	any more.  Changed it to root@localhost.
+
+Thu Jan 21 13:31:50 PST 1999
+
+	Add a configure script to Orca to make installation of Orca and
+	percollator much easier.
+
+	Add a new file env_percol to set up all the environmental variables
+	so that percollator runs correctly instead of having to edit
+	start_percol, stop_percol, and restart_percol.
+
+Mon Jan 11 16:58:28 PST 1999
+
+	Require MRTG version 0.04 minimum.  This corresponds to
+	mrtg-19990111.22.
+
 Wed Jan  6 09:47:44 PST 1999
 
 	Change the program's name from FMRTG to Orca.

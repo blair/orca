@@ -10,8 +10,14 @@
 
 #include <EXTERN.h>
 #include <perl.h>
-#include <patchlevel.h>		/* Perl's one, needed since 5.6 */
 #include <XSUB.h>
+
+#ifndef PATCHLEVEL
+#    include <patchlevel.h>		/* Perl's one, needed since 5.6 */
+#    if !(defined(PERL_VERSION) || (SUBVERSION > 0 && defined(PATCHLEVEL)))
+#        include <could_not_find_Perl_patchlevel.h>
+#    endif
+#endif
 
 #ifndef NETWARE
 #if 0
@@ -1954,7 +1960,7 @@ static int store_scalar(stcxt_t *cxt, SV *sv)
 #else
 
             SvIV_please(sv);
-            if (SvIOK(sv)) {
+	    if (SvIOK_notUV(sv)) {
                 iv = SvIV(sv);
                 goto integer;		/* Share code above */
             }
@@ -2263,7 +2269,7 @@ static int store_hash(stcxt_t *cxt, HV *hv)
 
 		/*
 		 * Storing in "random" order (in the order the keys are stored
-		 * within the the hash).  This is the default and will be faster!
+		 * within the hash).  This is the default and will be faster!
 		 */
   
 		for (i = 0; i < len; i++) {
@@ -2424,14 +2430,14 @@ static int store_code(stcxt_t *cxt, CV *cv)
 
 	text = POPs;
 	len = SvLEN(text);
-	reallen = strlen(SvPV(text,PL_na));
+	reallen = strlen(SvPV_nolen(text));
 
 	/*
 	 * Empty code references or XS functions are deparsed as
 	 * "(prototype) ;" or ";".
 	 */
 
-	if (len == 0 || *(SvPV(text,PL_na)+reallen-1) == ';') {
+	if (len == 0 || *(SvPV_nolen(text)+reallen-1) == ';') {
 	    CROAK(("The result of B::Deparse::coderef2text was empty - maybe you're trying to serialize an XS function?\n"));
 	}
 
@@ -2441,13 +2447,13 @@ static int store_code(stcxt_t *cxt, CV *cv)
 
 	PUTMARK(SX_CODE);
 	TRACEME(("size = %d", len));
-	TRACEME(("code = %s", SvPV(text,PL_na)));
+	TRACEME(("code = %s", SvPV_nolen(text)));
 
 	/*
 	 * Now store the source code.
 	 */
 
-	STORE_SCALAR(SvPV(text,PL_na), len);
+	STORE_SCALAR(SvPV_nolen(text), len);
 
 	FREETMPS;
 	LEAVE;
@@ -2469,6 +2475,7 @@ static int store_code(stcxt_t *cxt, CV *cv)
 static int store_tied(stcxt_t *cxt, SV *sv)
 {
 	MAGIC *mg;
+	SV *obj = NULL;
 	int ret = 0;
 	int svt = SvTYPE(sv);
 	char mtype = 'P';
@@ -2514,7 +2521,9 @@ static int store_tied(stcxt_t *cxt, SV *sv)
 	 * accesses on the retrieved object will indeed call the magic methods...
 	 */
 
-	if ((ret = store(cxt, mg->mg_obj)))		/* Extra () for -Wall, grr... */
+	/* [#17040] mg_obj is NULL for scalar self-ties. AMS 20030416 */
+	obj = mg->mg_obj ? mg->mg_obj : newSV(0);
+	if ((ret = store(cxt, obj)))
 		return ret;
 
 	TRACEME(("ok (tied)"));
@@ -3366,7 +3375,7 @@ static int magic_write(stcxt_t *cxt)
         length -= sizeof (magicstr) - 1;
     }        
 
-    WRITE(header, length);
+    WRITE( (unsigned char*) header, length);
 
     if (!cxt->netorder) {
 	TRACEME(("ok (magic_write byteorder = 0x%lx [%d], I%d L%d P%d D%d)",
@@ -4257,19 +4266,27 @@ static SV *retrieve_tied_hash(stcxt_t *cxt, char *cname)
 static SV *retrieve_tied_scalar(stcxt_t *cxt, char *cname)
 {
 	SV *tv;
-	SV *sv;
+	SV *sv, *obj = NULL;
 
 	TRACEME(("retrieve_tied_scalar (#%d)", cxt->tagnum));
 
 	tv = NEWSV(10002, 0);
 	SEEN(tv, cname);			/* Will return if rv is null */
 	sv = retrieve(cxt, 0);		/* Retrieve <object> */
-	if (!sv)
+	if (!sv) {
 		return (SV *) 0;		/* Failed */
+	}
+	else if (SvTYPE(sv) != SVt_NULL) {
+		obj = sv;
+	}
 
 	sv_upgrade(tv, SVt_PVMG);
-	sv_magic(tv, sv, 'q', Nullch, 0);
-	SvREFCNT_dec(sv);			/* Undo refcnt inc from sv_magic() */
+	sv_magic(tv, obj, 'q', Nullch, 0);
+
+	if (obj) {
+		/* Undo refcnt inc from sv_magic() */
+		SvREFCNT_dec(obj);
+	}
 
 	TRACEME(("ok (retrieve_tied_scalar at 0x%"UVxf")", PTR2UV(tv)));
 
@@ -4969,7 +4986,7 @@ static SV *retrieve_code(stcxt_t *cxt, char *cname)
 	 */
 
 	sub = newSVpvn("sub ", 4);
-	sv_catpv(sub, SvPV(text, PL_na)); /* XXX no sv_catsv! */
+	sv_catpv(sub, SvPV_nolen(text)); /* XXX no sv_catsv! */
 	SvREFCNT_dec(text);
 
 	/*
@@ -5008,16 +5025,17 @@ static SV *retrieve_code(stcxt_t *cxt, char *cname)
 			CROAK(("Unexpected return value from $Storable::Eval callback\n"));
 		cv = POPs;
 		if (SvTRUE(errsv)) {
-			CROAK(("code %s caused an error: %s", SvPV(sub, PL_na), SvPV(errsv, PL_na)));
+			CROAK(("code %s caused an error: %s",
+				SvPV_nolen(sub), SvPV_nolen(errsv)));
 		}
 		PUTBACK;
 	} else {
-		cv = eval_pv(SvPV(sub, PL_na), TRUE);
+		cv = eval_pv(SvPV_nolen(sub), TRUE);
 	}
 	if (cv && SvROK(cv) && SvTYPE(SvRV(cv)) == SVt_PVCV) {
 	    sv = SvRV(cv);
 	} else {
-	    CROAK(("code %s did not evaluate to a subroutine reference\n", SvPV(sub, PL_na)));
+	    CROAK(("code %s did not evaluate to a subroutine reference\n", SvPV_nolen(sub)));
 	}
 
 	SvREFCNT_inc(sv); /* XXX seems to be necessary */

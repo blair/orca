@@ -110,10 +110,12 @@ sub new {
             $self->[I_RRD_UPDATE_TIME] = $update_time;
             $self->[I_RRD_VERSION]     = $version;
           } else {
-            warn "$0: old version $version RRD '$rrd_filename' found: will create new version $ORCA_RRD_VERSION file.\n";
+            warn "$0: old version $version RRD '$rrd_filename' found: will ",
+                  "create new version $ORCA_RRD_VERSION file.\n";
           }
         } else {
-          warn "$0: unknown version RRD '$rrd_filename' found: will create new version $ORCA_RRD_VERSION file.\n";
+          warn "$0: unknown version RRD '$rrd_filename' found: will create ",
+               "new version $ORCA_RRD_VERSION file.\n";
         }
       }
     }
@@ -150,7 +152,7 @@ sub created_images {
 
 # Queue a list of (time, value) data pairs.  Return the number of data
 # pairs sucessfully queued.
-# Call:   $self->(unix_epoch_time1, value1, unix_epoch_time2, value2, ...);
+# Call: $self->(unix_epoch_time1, value1, unix_epoch_time2, value2, ...);
 sub queue_data {
   my $self = shift;
 

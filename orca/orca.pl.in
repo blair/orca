@@ -1156,12 +1156,9 @@ orca - Make HTML & PNG plots of daily, weekly, monthly & yearly data
 Orca is a tool useful for plotting arbitrary data from text files onto
 a directory on Web server.  It has the following features:
 
-  * Configuration file based.
   * Reads white space separated data files.
   * Watches data files for updates and sleeps between reads.
   * Finds new files at specified times.
-  * Remembers the last modification times for files so they do not
-    have to be reread continuously.
   * Can plot the same type of data from different files into different
     or the same PNGs.
   * Different plots can be created based on the filename.
@@ -1177,6 +1174,8 @@ a directory on Web server.  It has the following features:
   * Creates an index of URL links listing all available targets.
   * Creates an index of URL links listing all different plot types.
   * No separate CGI set up required.
+  * Remembers the last modification times for files so they do not
+    have to be reread continuously.
   * Can be run under cron or it can sleep itself waiting for file
     updates based on when the file was last updated.
 
@@ -1221,19 +1220,19 @@ here.
 
 Orca has only five command line options.  They are:
 
-B<-gifs>: Generate GIFs instead of PNGs.  Tell Orca to generate GIFs
-instead of PNGs.  You may not want to generate GIFs since PNGs are 1/3
-the size of GIFs and take less time to generate.  The only reason to
-do this is if you are using a browser that does not support PNGs and
-only supports GIFs.
+B<-gifs>: Tell Orca to generate GIFs instead of PNGs.  Most likely,
+you will not want to generate GIFs since PNGs are 1/3 the size of GIFs
+and take less time to generate.  The only reason to do this is if you
+are using a browser that does not support PNGs and only supports GIFs.
 
 B<-no-html>: Do not generate any HTML files and only update the
 images.
 
 B<-o>: Once.  This tells Orca to go through the steps of finding
 files, updating the RRDs, updating the PNGs, and creating the HTML
-files once.  Normally, Orca loops continuously looking for new and
-updated files.
+files once.  Normally, Orca continuously loops reading new data from
+updated data files and sleeping waiting for the data files to be
+updated.
 
 B<-r>: RRD only.  Have Orca only update its RRD files.  Do not
 generate any HTML or PNG files.  This is useful if you are loading in
@@ -1246,9 +1245,9 @@ more B<-v>'s to the command line, more messages are sent out.  Any
 more than three B<-v>'s are not used by Orca.
 
 After the command line options are listed, Orca takes one more
-argument which is the name of the configuration file to use.  Sample
-configuration files can be found in the sample_configs directory with
-the distribution of this tool.
+argument which is the name of the configuration file to use.  Actual
+configuration files can be found in the data_gatherers directory
+distributed with Orca.
 
 =head1 MAILING LISTS
 
@@ -1256,7 +1255,7 @@ Four mailing lists exist for Orca.  To subscribe to any of the mailing
 lists, please visit the URL listed below.  You have the option of
 choosing a digest form of the mailing list when you subscribe to the
 mailing list or anytime thereafter.  To send email to any of these
-lists you must subscribe to the list.
+lists you must first subscribe to the list.
 
 B<orca-announce@orcaware.com>
 
@@ -1276,10 +1275,13 @@ B<orca-announce@orcaware.com>
 
 B<orca-users@orcaware.com>
 
-    The orca-users@orcaware.com is the mailing list for Orca users.
-    Problems relating to downloading, configuring, compiling the
-    necessary Perl modules, installing and configuring Orca belong
-    here.
+    The orca-users@orcaware.com is a general discussion mailing list
+    for Orca users.  This mailing list is appropriate for almost any
+    Orca discussion except for the development of Orca, as those
+    discussions belong on the orca-dev@orcaware.com mailing list.  So
+    issues relating to the installation of, configuring of, and
+    understanding of Orca are welcome.  So are questions relating to
+    the Perl module's that Orca requires.
 
     Home Page
         http://www.orcaware.com/mailman/listinfo/orca-users
@@ -1328,7 +1330,7 @@ B<orca-checkins@orcaware.com>
 
 =head1 PLOT PREFIXES
 
-RRDtool generates the actual GIF or PNG plots and sometimes will need
+RRDtool generates the actual PNG or GIF plots and sometimes will need
 to scale the Y axis of the plot to have normal looking like numbers,
 such as 1 M instead of 1,000,000.  If you see a letter following the
 numbers in the bottom of the plot, then use that letter to scale the Y
@@ -1384,7 +1386,7 @@ last key's value.
 There are three main groups of parameters in a Orca configuration
 file: global parameters, file specific parameters, and plot specific
 parameters.  Global parameters may be used by the group and plot
-specific parameters.  If an parameter is required, then it is only
+specific parameters.  If a parameter is required, then it is only
 placed one time into the configuration file.
 
 Global parameters break down into two main groups, required and
@@ -1393,6 +1395,13 @@ optional.  These are the required parameters:
 =head2 Required Global Parameters
 
 =over 4
+
+=item B<base_dir> I<directory>
+
+If B<base_dir> is set, then it is used to prepend to any file or
+directory names that do not begin with /.  These are currently
+B<state_file>, B<html_dir>, B<rrd_dir>, and the B<find_files>
+parameter in the B<group> section.
 
 =item B<state_file> I<filename>
 
@@ -1435,13 +1444,6 @@ If B<rrd_dir> is not defined, then B<base_dir> will be used as
 B<rrd_dir>.  Orca will quit with an error if both B<rrd_dir> and
 B<base_dir> are not set.
 
-=item B<base_dir> I<directory>
-
-If B<base_dir> is set, then it is used to prepend to any file or
-directory based names that do not begin with /.  These are currently
-B<state_file>, B<html_dir>, B<rrd_dir>, and the B<find_files>
-parameter in the B<group> section.
-
 =back
 
 =head2 Optional Global Parameters
@@ -1450,36 +1452,13 @@ parameter in the B<group> section.
 
 =item B<require> I<package name> I<version number>
 
-B<require> allows the configuration file to specify the minimum
-required version of a package to run as in the same way that B<use>
-and B<require> are used in Perl programs.  Here, both I<package name>
+The B<require> parameter allows the configuration file to specify the
+minimum required version of a package to run.  Both I<package name>
 and I<version number> are required and I<version number> must be a
 number, not a general Perl expression.
 
-Currently, only the version of Orca can be specified and I<package
-name> must be set to Orca.
-
-=item B<late_interval> I<Perl expression>
-
-B<late_interval> is used to calculate the time interval between a
-file's last modification time and the time when that file is
-considered to be late for an update.  In this case, an email message
-may be sent out using the B<warn_email> addresses.  Because different
-input files may be updated at different rates, B<late_interval> takes
-an arbitrary Perl expression, including mathematical expressions, as
-its argument.  If the word I<interval> occurs in the mathematical
-expression it is replaced with the sampling interval of the input data
-file in question.
-
-This is useful for allowing the data files to update somewhat later
-than they would in an ideal world.  For example, to add a 10% overhead
-to the sampling_interval before an input file is considered late, this
-would be used
-
-  late_interval 1.1 * interval
-
-By default, the input file's sampling interval is used as the
-late_interval.
+Currently, only the minimum required version of Orca can be specified
+and I<package name> must be set to Orca.
 
 =item B<warn_email> I<email_address> [I<email_address> ...]
 
@@ -1499,12 +1478,34 @@ or
 
   warn_email
 
+=item B<late_interval> I<Perl expression>
+
+B<late_interval> is used to calculate the time interval between a
+file's last modification time and the time when that file is
+considered to be late for an update.  When this happens, an email
+message will be sent out using the B<warn_email> addresses.  Because
+different input files may be updated at different rates,
+B<late_interval> takes an arbitrary Perl expression, including
+mathematical expressions, as its argument.  If the word I<interval>
+occurs in the mathematical expression it is replaced with the sampling
+interval of the input data file in question.
+
+This is useful for allowing the data files to update somewhat later
+than they would in an ideal world.  For example, to add a 10% overhead
+to the sampling_interval before an input file is considered late, this
+would be used
+
+  late_interval 1.1*interval
+
+By default, the input file's sampling interval is used as the
+late_interval.
+
 =item B<expire_images> 1
 
 If B<expire_images> is set then .meta files will be created for all
 generated PNG files.  If the Apache web server 1.3.2 or greater is
-being used, then the following modifications must added to srm.conf or
-httpd.conf.
+being used, then the following modifications must added to Apache's
+httpd.conf file.
 
   <
   < #MetaDir .web
@@ -1521,9 +1522,9 @@ By default, expiration of images is not enabled.
 
 =item B<find_times> I<hours:minutes> [I<hours:minutes> ...]
 
-The B<find_times> parameter is used to tell Orca when to go and find
-new files.  This particularly useful when new input data files are
-created at midnight.  In this case, something like this may work:
+The B<find_times> parameter is used to tell Orca when to find new
+files.  This particularly useful when new input data files are created
+at midnight.  In this case, something like this may work:
 
   # Find files at the following times:
   #    0:10 to pick up new orcallator files for the new day.
@@ -1542,21 +1543,21 @@ By default, files are only searched for when Orca starts up.
 =item B<html_top_title> I<text> ...
 
 This sets the text, that should not be HTML markup, that is used only
-in the main index.html file.  It is used in the <title></title>
+in the main index.html file.  It is placed in the <title></title>
 element and also placed in the HTML body after the html_page_header in
-a <h1></h1> element index.html file.  By default, no additional text
-is placed at the top of the main index.html.
+a <h1></h1> element.  By default, this text is empty.
 
 =item B<html_page_header> I<html> ...
 
-The I<html> is placed at the top of each HTML file that Orca creates.
-By default, no additional text is placed at the top of each HTML file.
+The I<html> is placed at the top of every HTML file that Orca creates.
+It can be HTML markup.  By default, I<html> is empty is empty so no
+additional HTML markup is added to the file.
 
 =item B<html_page_footer> I<html> ...
 
-The I<html> is placed at the bottom of each HTML file that Orca
-creates.  By default, no additional text is placed at the bottom of
-each HTML file.
+The I<html> is placed at the bottom of every HTML file that Orca
+creates.  It can be HTML markup.  By default, I<html> is empty is
+empty so no additional HTML markup is added to the file.
 
 =item B<generate_hourly_plot> I<value>
 

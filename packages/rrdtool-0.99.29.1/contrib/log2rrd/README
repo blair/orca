@@ -1,0 +1,62 @@
+			       log2rrd
+
+Usage:
+
+log2rrd.pl {mrtg logfile} {destination directory}
+
+Log2rrd is a simple tool for converting MRTG logfiles into round robin
+database (RRD) files.  The original version was written last year by
+Wrolf Courtney <wrolf@concentric.net> and Russ Wright <wright@LBL.Gov>
+with an early test version of RRDTOOL (mrtg-19980526.08).  This
+version has been modified to work with the current shared-perl release
+of RRD (RRDs).
+
+This script only moves the input/output data averages and does not
+make any effort to retain the maximum data rate info that is present
+in the mrtg logfiles.  This means that when you request maximum values
+for a given time range from your new rrd archive, it will only show
+you the averaged max values and not the original data peaks that
+occured in the averaged time period.  This may or may not be a problem
+at your site.
+
+The conversion script expects 2 arguments - the mrtg logfile to read
+and the path for the resulting rrd file.  The script will attempt to
+isolate the filename from any path specified for the mrtg input
+logfile to create the rrd output file name with the specified
+destination directory.  If no destination directory name is included,
+the rrd file will be written in the connected directory. 
+
+Note that the resulting rrd DS type is GAUGE.  With a DS type of
+counter, rrdupdate will attempt to interpret input data as a counter
+value and make a new data average for the specified time interval.
+In this case, we need to trick rrdcreate/rrdupdate into letting us
+input the data values directly because mrtg had already consolidated
+the counter data.  The script contains lines of code that can be
+uncommented to allow log2rrd to automatically call rrdtune to change
+the resulting file to use the COUNTER data type after the mrtg
+logfiles have been read in.  Since not all mrtg data files are counter
+data, I leave this option up to the user as to whether to convert
+later by hand with rrdtune or let log2rrd perform the task.
+
+Considerations for filenames and converting large numbers of files:
+
+At my own site, I have over 40 Cisco 75xx routers with lots of
+interfaces being monitored per router plus about 60 Cisco 5300
+terminal servers.  Running log2rrd for each interface individually
+would be a very painful process.  Since I am in the process of moving
+all of my mrtg datasets over to Cricket, I hacked a separate version
+of log2rrd that had more specific file name conversion code to match
+my Cricket target names.  This version of log2rrd was called up by
+another script that looped through an entire mrtg workdir and
+converted all logfiles present in that directory.  This code was far
+too specific to my site's version of mrtg logfile names and desired
+Cricket target info to be included here.  It would not be a difficult
+task to wrap this log2rrd script in a similar fashion tailored to your
+own needs.  If you have 100's or 1000's of logfiles to move, the
+effort is well worthwhile.
+
+Alan Lichty
+Internetworking Planner
+Electric Lightwave, Inc.
+(360)816-4167
+

@@ -1,13 +1,13 @@
-# Orca configuration file for Percollator files.
+# Orca configuration file for orcallator files.
 
-base_dir		@RRD_DIR@/percollator
+base_dir		@RRD_DIR@/orcallator
 state_file		orca.state
 html_dir		@HTML_DIR@
 expire_gifs		1
 
 # Find files at the following times:
-#    0:10 to pick up new percollator files for the new day.
-#    1:00 to pick up late comer percollator files for the new day.
+#    0:10 to pick up new orcallator files for the new day.
+#    1:00 to pick up late comer orcallator files for the new day.
 #    6:00 to pick up new files before the working day.
 #   12:00 to pick up new files during the working day.
 #   19:00 to pick up new files after the working day.
@@ -22,8 +22,8 @@ late_interval		interval + 30
 
 # This defines where the find the source data files and the format of those
 # files.
-files percol {
-find_files		@PERCOLLATOR_DIR@/(.*)/percol-\d{4}-\d{2}-\d{2}
+files orcallator {
+find_files		@ORCALLATOR_DIR@/(.*)/(?:(?:orcallator)|(?:percol))-\d{4}-\d{2}-\d{2}
 column_description	first_line
 date_source		column_name timestamp
 date_format		%s
@@ -60,7 +60,7 @@ html_page_footer
 
 plot {
 title			%g Average # Processes in Run Queue
-source			percol
+source			orcallator
 data			1runq
 data			5runq
 data			15runq
@@ -74,7 +74,7 @@ data_max		100
 
 plot {
 title			%g System Load
-source			percol
+source			orcallator
 data			1load
 data			5load
 data			15load
@@ -88,7 +88,7 @@ data_max		200
 
 plot {
 title			%g Number of System & Httpd Processes
-source			percol
+source			orcallator
 data			#proc
 data			#httpds
 line_type		line1
@@ -102,7 +102,7 @@ data_max		10000
 
 plot {
 title			%g CPU Usage
-source			percol
+source			orcallator
 data			usr%
 data			sys%
 data			100 - usr% - sys%
@@ -122,7 +122,7 @@ rigid_min_max		1
 
 plot {
 title			%g Web Server Hit Rate
-source			percol
+source			orcallator
 data			httpop/s
 data			http/p5s
 legend			5 min average hits/s
@@ -134,7 +134,7 @@ optional
 
 plot {
 title			%g Web Server File Size
-source			percol
+source			orcallator
 data			%to1KB
 data			%to10KB
 data			%to100KB
@@ -160,7 +160,7 @@ rigid_min_max		1
 
 plot {
 title			%g Web Server Data Transfer Rate
-source			percol
+source			orcallator
 data			httpb/s
 legend			Bytes/s
 y_legend		Bytes/s
@@ -169,7 +169,7 @@ data_min		0
 
 plot {
 title			%g Web Server HTTP Error Rate
-source			percol
+source			orcallator
 data			htErr/s
 legend			HTTP Errors/s
 y_legend		Errors/s
@@ -178,7 +178,7 @@ data_min		0
 
 plot {
 title			%g Bits Per Second: be0
-source			percol
+source			orcallator
 data			1024 * 8 * be0InKB/s
 data			1024 * 8 * be0OuKB/s
 line_type		area
@@ -191,8 +191,22 @@ optional
 }
 
 plot {
+title			%g Bits Per Second: elxl0
+source			orcallator
+data			1024 * 8 * elxl0InKB/s
+data			1024 * 8 * elxl0OuKB/s
+line_type		area
+legend			Input
+legend			Output
+y_legend		bits/s
+data_min		0
+data_max		100000000
+optional
+}
+
+plot {
 title			%g Bits Per Second: hme0
-source			percol
+source			orcallator
 data			1024 * 8 * hme0InKB/s
 data			1024 * 8 * hme0OuKB/s
 line_type		area
@@ -206,7 +220,7 @@ optional
 
 plot {
 title			%g Bits Per Second: hme1
-source			percol
+source			orcallator
 data			1024 * 8 * hme1InKB/s
 data			1024 * 8 * hme1OuKB/s
 line_type		area
@@ -220,7 +234,7 @@ optional
 
 plot {
 title			%g Bits Per Second: hme2
-source			percol
+source			orcallator
 data			1024 * 8 * hme2InKB/s
 data			1024 * 8 * hme2OuKB/s
 line_type		area
@@ -234,7 +248,7 @@ optional
 
 plot {
 title			%g Bits Per Second: le0
-source			percol
+source			orcallator
 data			1024 * 8 * le0InKB/s
 data			1024 * 8 * le0OuKB/s
 line_type		area
@@ -248,7 +262,7 @@ optional
 
 plot {
 title			%g Bits Per Second: le1
-source			percol
+source			orcallator
 data			1024 * 8 * le1InKB/s
 data			1024 * 8 * le1OuKB/s
 line_type		area
@@ -262,7 +276,7 @@ optional
 
 plot {
 title			%g Packets Per Second: $1
-source			percol
+source			orcallator
 data			(.*\d)Ipkt/s
 data			$1Opkt/s
 line_type		area
@@ -276,7 +290,7 @@ flush_regexps		1
 
 plot {
 title			%g Errors Per Second: $1
-source			percol
+source			orcallator
 data			(.*\d)IErr/s
 data			$1OErr/s
 line_type		area
@@ -289,7 +303,7 @@ flush_regexps		1
 
 plot {
 title			%g Ethernet Nocanput Rate
-source			percol
+source			orcallator
 data			(.*\d)NoCP/s
 legend			$1
 y_legend		Nocanput/s
@@ -299,7 +313,7 @@ flush_regexps		1
 
 plot {
 title			%g Ethernet Deferred Packet Rate
-source			percol
+source			orcallator
 data			(.*\d)Defr/s
 legend			$1
 y_legend		Defers/s
@@ -309,7 +323,7 @@ flush_regexps		1
 
 plot {
 title			%g Ethernet Collisions
-source			percol
+source			orcallator
 data			(.*\d)Coll%
 legend			$1
 y_legend		Percent
@@ -320,7 +334,7 @@ flush_regexps		1
 
 plot {
 title			%g TCP Bits Per Second
-source			percol
+source			orcallator
 data			1024 * 8 * tcp_InKB/s
 data			1024 * 8 * tcp_OuKB/s
 line_type		area
@@ -333,7 +347,7 @@ data_max		1000000000
 
 plot {
 title			%g TCP Segments Per Second
-source			percol
+source			orcallator
 data			tcp_Iseg/s
 data			tcp_Oseg/s
 line_type		area
@@ -346,7 +360,7 @@ data_max		20000
 
 plot {
 title			%g TCP Retransmission & Duplicate Received Percentage
-source			percol
+source			orcallator
 data			tcp_Ret%
 data			tcp_Dup%
 legend			Retransmission
@@ -358,7 +372,7 @@ data_max		200
 
 plot {
 title			%g TCP New Connection Rate
-source			percol
+source			orcallator
 data			tcp_Icn/s
 data			tcp_Ocn/s
 legend			Input - Passive
@@ -370,7 +384,7 @@ data_max		10000
 
 plot {
 title			%g TCP Number Open Connections
-source			percol
+source			orcallator
 data			tcp_estb
 legend			# Open Connections
 y_legend		Number Open TCP Connections
@@ -380,7 +394,7 @@ data_max		50000
 
 plot {
 title			%g TCP Reset Rate
-source			percol
+source			orcallator
 data			tcp_Rst/s
 legend			Number TCP Resets/s
 y_legend		Resets/s
@@ -389,7 +403,7 @@ data_min		0
 
 plot {
 title			%g TCP Attempt Fail Rate
-source			percol
+source			orcallator
 data			tcp_Atf/s
 legend			TCP Attempt Fails/s
 y_legend		Atf/s
@@ -398,7 +412,7 @@ data_min		0
 
 plot {
 title			%g TCP Listen Drop Rate
-source			percol
+source			orcallator
 data			tcp_Ldrp/s
 data			tcp_LdQ0/s
 data			tcp_HOdp/s
@@ -410,7 +424,7 @@ data_min		0
 
 plot {
 title			%g Sleeps on Mutex Rate
-source			percol
+source			orcallator
 data			smtx
 data			smtx/cpu
 legend			Sleeps on mutex
@@ -421,7 +435,7 @@ data_min		0
 
 plot {
 title			%g NFS Call Rate
-source			percol
+source			orcallator
 data			nfs_call/s
 legend			NFS Calls/s
 y_legend		Calls/s
@@ -430,7 +444,7 @@ data_min		0
 
 plot {
 title			%g NFS Timeouts & Bad Transmits Rate
-source			percol
+source			orcallator
 data			nfs_timo/s
 data			nfs_badx/s
 legend			NFS Timeouts
@@ -441,7 +455,7 @@ data_min		0
 
 plot {
 title			%g Peak & Mean Disk Busy
-source			percol
+source			orcallator
 data			disk_peak
 data			disk_mean
 line_type		line1
@@ -454,7 +468,7 @@ data_min		0
 
 plot {
 title			%g Cache Hit Percentages
-source			percol
+source			orcallator
 data			dnlc_hit%
 data			inod_hit%
 legend			DNLC
@@ -466,7 +480,7 @@ data_max		100
 
 plot {
 title			%g Cache Reference Rate
-source			percol
+source			orcallator
 data			dnlc_ref/s
 data			inod_ref/s
 line_type		line1
@@ -479,7 +493,7 @@ data_min		0
 
 plot {
 title			%g Inode Steal Rate
-source			percol
+source			orcallator
 data			inod_stl/s
 legend			Inode w/page steals/s
 y_legend		Steals/s
@@ -488,7 +502,7 @@ data_min		0
 
 plot {
 title			%g Available Swap Space
-source			percol
+source			orcallator
 data			1024 * swap_avail
 legend			Available Swap Space
 y_legend		Bytes
@@ -497,7 +511,7 @@ data_min		0
 
 plot {
 title			%g Page Residence Time
-source			percol
+source			orcallator
 data			page_rstim
 legend			Page Residence Time
 y_legend		Seconds
@@ -506,7 +520,7 @@ data_min		0
 
 plot {
 title			%g Page Usage
-source			percol
+source			orcallator
 data			pp_kernel
 data			free_pages
 data			pagestotl - pp_kernel - free_pages
@@ -529,7 +543,7 @@ color			0000ff
 
 plot {
 title			%g Pages Locked & IO
-source			percol
+source			orcallator
 data			pageslock
 data			pagesio
 legend			Locked

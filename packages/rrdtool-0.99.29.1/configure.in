@@ -1,0 +1,138 @@
+dnl This file is the master file for the configure process.
+dnl It is only edited by developers. If you are trying to compile
+dnl rrd_tool, use "sh configure" instead of this file.
+dnl
+dnl From it, config.h.in and configure are both made.
+dnl To make them, you (a developer) will need to install the latest
+dnl versions of GNU m4 and GNU autoconf. Then you run "autoheader"
+dnl in the distribution directory to make config.h.in, and
+dnl "autoconf" to make the configure script. These two files
+dnl must be shipped with the distribution; end users should not need
+dnl m4 and autoconf to be able to compile. All they need is
+dnl to run "sh configure".
+dnl
+dnl The format of this file is basically one macro to a line.
+dnl Text that is not a macro and not a comment is passed straight
+dnl through to the configure script.
+dnl
+dnl Comments are "dnl" followed by comments. It means delete
+dnl to newline.
+dnl
+dnl When you want to pass a literal bit of text to a macro as
+dnl an argument, you use square brackets. Thus, you cannot use
+dnl the bracket shorthand for /bin/test... you must use the
+dnl actual program name.
+dnl
+dnl Our tests do not cache. This is because I'm too lazy to
+dnl figure out how to use the caching macros. There's not many,
+dnl so it's not a big problem.
+dnl
+dnl 	-jra
+
+AC_INIT(src/rrd_tool.c)
+AC_CONFIG_HEADER(config.h)
+
+dnl Check for programs.
+AC_PROG_CC
+AC_PROG_CPP
+AC_PROG_INSTALL
+AC_PROG_LN_S
+AC_PROG_MAKE_SET
+AC_PROG_RANLIB
+AC_PATH_PROG(PERL, perl, no)
+
+
+dnl Checks for libraries.
+AC_CHECK_LIB(m, acos)
+
+dnl Checks for header files.
+AC_HEADER_STDC
+AC_CHECK_HEADERS(fcntl.h malloc.h unistd.h math.h sys/time.h sys/times.h sys/resource.h)
+
+dnl Checks for typedefs, structures, and compiler characteristics.
+AC_C_CONST
+AC_HEADER_TIME
+AC_STRUCT_TM
+
+dnl If CC is not set we assume gcc
+if test ${CC-gcc} = gcc; then
+  rd_cv_prog_hpcc=no
+oCFLAGS_EXTRA=$CFLAGS_EXTRA
+CFLAGS_EXTRA="$CFLAGS_EXTRA -Wall -pedantic -fPIC"
+AC_CACHE_CHECK(if we can use GCC-specific compiler options, rd_cv_gcc_opt,
+[
+AC_TRY_COMPILE( , return 0 ,
+	 rd_cv_gcc_opt=yes,
+	 rd_cv_gcc_opt=no )
+])
+if test $rd_cv_gcc_opt = no; then
+	CFLAGS_EXTRA=$oCFLAGS_EXTRA
+fi
+
+else
+AC_CACHE_CHECK(if we should use HP compiler options, rd_cv_prog_hpcc,
+[
+cat > conftest.c <<EOF
+#ifdef _HPUX_SOURCE
+  yes;
+#endif
+EOF
+if AC_TRY_COMMAND(${CC-cc} -Ae -z -E conftest.c) | egrep yes >/dev/null 2>&1
+then
+  rd_cv_prog_hpcc=yes
+else
+  rd_cv_prog_hpcc=no
+fi])
+fi
+if test $rd_cv_prog_hpcc = yes; then
+	CFLAGS_EXTRA="$CFLAGS_EXTRA -Ae -z"
+fi
+
+dnl Checks for library functions.
+AC_FUNC_STRFTIME
+AC_FUNC_VPRINTF
+
+AC_CHECK_FUNCS(mktime getrusage gettimeofday)
+
+oCFLAGS_EXTRA=$CFLAGS_EXTRA
+AC_CACHE_CHECK([if the compiler does proper IEEE math], rd_cv_ieee_works,
+[AC_TRY_RUN([int main(void){
+              double a=0.0/0.0,b=0.0,c;
+              c=a/b;if (c==a) c=a;return isnan(a/c)?0:1;
+             }],
+           [rd_cv_ieee_works=yes],[
+AC_MSG_RESULT(no it does not)
+CFLAGS_EXTRA="$CFLAGS_EXTRA -ieee"
+AC_CACHE_CHECK([if the compiler does proper IEEE math with -ieee], rd_cv_ieee_switch,
+[AC_TRY_RUN([int main(void){
+              double a=0.0/0.0,b=0.0,c;
+              c=a/b;if (c==a) c=a;return isnan(a/c)?0:1;   
+             }],
+           [rd_cv_ieee_switch=yes],[rd_cv_ieee_switch=no;
+AC_MSG_RESULT(nope)
+echo "--------------------------------------------------------------"
+echo "Your Compiler does not do propper IEEE math ... "
+echo "Please find out how to make IEEE math work with your Compiler"
+echo "And let me know (oetiker@ee.ethz.ch)"
+echo ""
+exit 1
+],:)])
+],:)])
+
+CFLAGS_EXTRA=$oCFLAGS_EXTRA
+
+if test x$rd_cv_ieee_switch = xyes; then
+	CFLAGS_EXTRA="$CFLAGS_EXTRA -ieee"
+fi
+
+AC_SUBST(CFLAGS_EXTRA)
+AC_SUBST(CFLAGS)
+
+AC_OUTPUT(Makefile src/Makefile gd1.2/Makefile doc/GNUmakefile perl-shared/examples/shared-demo.pl perl-piped/examples/piped-demo.pl, [chmod +x perl-*/examples/*.pl])
+
+AC_MSG_CHECKING(in)
+AC_MSG_RESULT(and out again)
+
+echo $ac_n "ordering CD from http://cdnow.com/gift/oetiker@ee.ethz.ch""... $ac_c" 1>&6
+sleep 3
+AC_MSG_RESULT([just kidding ;-)])

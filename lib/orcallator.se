@@ -1,5 +1,5 @@
 //
-// Percollator.se, a log generating performance monitor.
+// Orcallator.se, a log generating performance monitor.
 //
 // This program logs many different system quantities to a log file
 // for later processing.
@@ -8,11 +8,14 @@
 //
 // Portions copied from percollator.se written by Adrian Cockroft.
 //
+// Version 1.7: Mar 25, 1999	Speed up by 20% and simplify count_proc.
+// Version 1.6: Feb 23, 1999	Print pvm.user_time and system_time correctly.
+// Version 1.5: Feb 23, 1999	Always write header to a new file.
 // Version 1.4: Feb 19, 1999	Handle missing HTTP/1.x in access log.
 // Version 1.3: Feb 18, 1999	On busy machines httpops5 will be enlarged.
 // Version 1.2: Feb 18, 1999	Output data on integral multiples of interval.
 // Version 1.1:	Feb 18, 1999	Integrate Squid log processing from SE 3.1.
-// Version 1.0:	Sep 9, 1998	Initial version.
+// Version 1.0:	Sep  9, 1998	Initial version.
 //
 
 // The default sampling interval in seconds.
@@ -34,9 +37,6 @@
 #define WATCH_PAGES
 #endif
 
-// The ioctl version of the psinfo structure is needed.
-#define PSINFO_IOCTL
-
 #include <stdio.se>
 #include <stdlib.se>
 #include <unistd.se>
@@ -55,7 +55,6 @@
 #include <tcp_rules.se>
 
 #ifdef WATCH_HTTPD
-#include <fcntl.se>
 #include <proc.se>
 #include <stat.se>
 #endif
@@ -200,7 +199,6 @@ print_columns(ulong fd, string data[])
    starts new logfile each day
 */
 ulong checkoutput(tm_t now) {
-  int    exists;
   string outdir = getenv("OUTDIR");
   string outname;
   ulong  ofile;
@@ -225,16 +223,13 @@ ulong checkoutput(tm_t now) {
     }
     strftime(tm_buf, sizeof(tm_buf), "%Y-%m-%d", now);
     outname = sprintf("%s/percol-%s", outdir, tm_buf);
-    exists = access(outname, F_OK); /* see if file already exists */
     ofile = fopen(outname, "a"); /* open for append either way */
     if (ofile == 0) {
       perror("can't open output logfile");
       exit(1);
     }
-    /* if didn't exist write header */
-    if (exists == -1) {
-      print_columns(ofile, col_comment);
-    }
+    // Always write header.
+    print_columns(ofile, col_comment);
     then = now;
   }
   return ofile;
@@ -266,7 +261,7 @@ int main(int argc, string argv[])
       fprintf(stderr, "%s can use the following environmental variables:\n", program_name);
       fprintf(stderr, "   setenv WEB_LOG     /ns-home/httpd-80/logs/access - location of web server log\n");
       fprintf(stderr, "   setenv GATEWAY     some.where.com - special address to monitor\n");
-      fprintf(stderr, "   setenv OUTDIR      /ns-home/docs/percollator/logs - default stdout\n");
+      fprintf(stderr, "   setenv OUTDIR      /ns-home/docs/orcallator/logs - default stdout\n");
       fprintf(stderr, "   setenv SEARCHURL   srch.cgi - match for search scripts, default is search.cgi\n");
       fprintf(stderr, "Defines:\n");
       fprintf(stderr, "   -DWATCH_HTTPD watch httpd access log\n");
@@ -511,8 +506,8 @@ handle_cpu()
 
   // In SE 3.0 user_time and system_time are int and in SE 3.1 they are
   // double, so cast everything to double using + 0.0.
-  put_output("usr%",   sprintf("%4.0f", pvm.user_time + 0.0));
-  put_output("sys%",   sprintf("%4.0f", pvm.system_time + 0.0));
+  put_output(" usr%",  sprintf("%5.1f", pvm.user_time + 0.0));
+  put_output(" sys%",  sprintf("%5.1f", pvm.system_time + 0.0));
   put_output(" 1load", sprintf("%6.2f", tmp_kstat_misc.avenrun_1min/256.0));
   put_output(" 5load", sprintf("%6.2f", tmp_kstat_misc.avenrun_5min/256.0));
   put_output("15load", sprintf("%6.2f", tmp_kstat_misc.avenrun_15min/256.0));
@@ -1003,83 +998,23 @@ measure_httpd(long sleep_till)
 #endif
 }
 
-long count_proc(string name)
+int count_proc(string name)
 {
-  ulong      directory_pointer;
-  ulong      directory_entry;
-  dirent_t   directory_data;
-  int        process_number;
-  char       process_name[64];
-  long       num_proc;
-  int        process_fd;
-  int        err;
-#if MINOR_VERSION < 60
-  prpsinfo_t ps[1];	// format for ioctl
-#else
-  psinfo_t   ps[1];	// format changes when read used
-  ulong      pps = 0;
+  int count;
+  prpsinfo_t p;
 
-  if (pps == 0) {
-    pps = malloc(sizeof(ps));
-  }
-#endif
-
-  directory_pointer = opendir("/proc");
-  if (directory_pointer == 0) {
-    fprintf(stderr, "%s: cannot open /proc for reading.\n", program_name);
-    return 0;
-  }
-
-  rewinddir(directory_pointer);
-
-  num_proc = 0;
-
-  // Go through all processes.
-  directory_entry = readdir(directory_pointer);
-  for (; directory_entry != NULL; ) {
-    struct_fill(directory_data, directory_entry);
-    directory_entry = readdir(directory_pointer);
-
-    process_number = atoi(directory_data.d_name);
-#if MINOR_VERSION < 60
-    process_name = sprintf("/proc/%d", process_number);
-#else
-    process_name = sprintf("/proc/%d/psinfo", process_number);
-#endif
-    process_fd = open(process_name, O_RDONLY, 0);
-    if (process_fd == -1) {
-      continue;
-    }
-
-#if MINOR_VERSION < 60
-    // Read the process info and accumulate errors.
-    err += ioctl(process_fd, PIOCPSINFO, ps);
-    if (err != 0) {
-#else
-    err += read(process_fd, pps, sizeof(ps));
-    struct_fill(ps, pps);
-    if (err == 0) {
-#endif
-
-      // Process went away since the directory was opened.
-      close(process_fd);
-      continue;
-    }
-
-    close(process_fd);
-    if (ps[0].pr_fname =~ name) {
-      ++num_proc;
+  count = 0;
+  for (p=first_proc(); p.pr_pid != -1; p=next_proc()) {
+    if (p.pr_fname =~ name) {
+      count++;
     }
   }
-
-  closedir(directory_pointer);
-
-  return num_proc;
+  return count;
 }
 
 put_httpd()
 {
-  put_output("#httpds",   sprintf("%7ld",  count_proc("httpd")));
+  put_output("#httpds",   sprintf("%7d",   count_proc("httpd")));
   put_output("httpop/s",  sprintf("%8.2f", httpops/log_interval));
   put_output("http/p5s",  sprintf("%8.2f", httpops5));
   put_output("cndget/s",  sprintf("%8.2f", httpop_condgets/log_interval));

@@ -1,0 +1,38 @@
+# things that the GNU standards document suggests all makefiles
+# should have.
+SHELL = /bin/sh
+.SUFFIXES:
+.SUFFIXES: .c .o .pl .pm .pod .html .man
+
+CC=@CC@
+AR=ar
+CFLAGS_EXTRA = @CFLAGS_EXTRA@
+CFLAGS = @CFLAGS@ # -pg
+CFLAGS_ALL = $(CFLAGS) $(CFLAGS_EXTRA)
+LIBS = -L. -lgd -lm
+
+all: libgd.a gddemo giftogd webgif
+
+gddemo: gddemo.o libgd.a gd.h gdfonts.h gdfontl.h
+	$(CC) gddemo.o -o gddemo	$(LIBS)
+
+giftogd: giftogd.o libgd.a gd.h
+	$(CC) giftogd.o -o giftogd	$(LIBS) 
+
+libgd.a: gd.o gdfontt.o gdfonts.o gdfontmb.o gdfontl.o gdfontg.o \
+	gd.h gdfontt.h gdfonts.h gdfontmb.h gdfontl.h gdfontg.h
+	rm -f libgd.a
+	$(AR) rc libgd.a gd.o gdfontt.o gdfonts.o gdfontmb.o \
+		gdfontl.o gdfontg.o
+
+webgif: webgif.o libgd.a gd.h
+	$(CC) webgif.o -o webgif	$(LIBS)
+
+clean:
+	-rm -f *.o *.a gddemo giftogd 
+
+realclean:	clean
+	-rm -f Makefile
+
+.c.o:
+	$(CC) $(CFLAGS_ALL) -c $<

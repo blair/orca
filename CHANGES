@@ -1,4 +1,216 @@
+Mon May 17 16:26:17 PDT 1999
+
+	Release version 0.21.
+
+Mon May 17 15:07:33 PDT 1999
+
+	Correct a bug when a source data file cannot be loaded it should
+	not used to look up a Orca::SourceDataFile object.
+
+	Reformat all the comments in orca.pl.
+
+Thu May 13 10:47:41 PDT 1999
+
+	Orca used to delete RRD files if they had an $ORCA_RRD_VERSION
+	number newer then the required version number.	Now use them.
+	Add code to remember the Orca RRD version number so that the
+	GIF creation code works properly with RRD files with a version
+	different than $ORCA_RRD_VERSION.
+
+	Thanks to a configure file and some data from from Eric Blaise
+	<Eric.Blaise@socgen.com>, Orca can now handle plots containing
+	columns of data that do not exist in all input source data files.
+
+	In add_plots, a linear search was used to convert column
+	description names appearing in data statements to an index into
+	the column_description array.  Now use a hash table look up.
+
+Wed May 12 09:31:43 PDT 1999
+
+	Orca now cleans up all file paths in the input configuration file.
+	If more than one / are found in a row, they are replaced by one /.
+	The base_dir is only prepended to paths if the path does not
+	match ^\\?\.{0,2}/, which will match on /, ./, ../, and \./.
+
+	The paths used to find input files are now passed through
+	the following regular expressions: s:^\\./:: and s:/\\./:/:g.
+	These remove unneccessary searches through the current directory.
+
+	Perl_glob will only return found files and no other type.
+	It will also not follow any directories named `..'.
+
+	Include RRDtool 0.99.29.1 with Orca.  This includes a Makefile
+	patch and does not include a new version of RRDs.pm or librrd.
+
+	In any Makefile.in's that run config.status, they used to run
+	a make from the top level directory.  Now they only run a make
+	from the directory that required the running of config.status.
+
+Tue May 11 16:24:09 PDT 1999
+
+	In places where deep copies of data structures are made and no
+	s///'s are performed on the text form of data, use dclone that
+	comes with Storable instead of using Data::Dumper and eval.
+
+	Do not prepend base_dir to any paths if they begin with either
+	`/' or `./'.
+
+	Require and include RRDtool 0.99.29 with Orca.
+
+	Orca now includes the four Perl packages it depends upon:
+	Digest::MD5 2.07, Math::Interpolate 1.02, RRDtool 0.99.29,
+	and Storable 0.6@3.
+
+Mon May 10 10:46:36 PDT 1999
+
+	Update references to Digest::MD5 version 2.07 and require
+	RRDtool 0.99.28.
+
+Sat May  8 19:29:14 PDT 1999
+
+	Upgrade the instructions to mention Math::Interpolate 1.02
+	instead of Math::Interpolator 1.01.
+
+Thu May  6 13:58:06 PDT 1999
+
+	Orca does not normally display the daily, weekly, monthly,
+	yearly, and everything plots for all the different measurements
+	if there is only one group.  However, it is nice to see all the
+	different measurement plots in one page for a single group, so if
+	now there is only one group, then an Everything group placed at
+	the top of the main index.html file for daily, weekly, monthly,
+	and yearly overviews.
+
+	Make a comment about using gd1.3 versus gd1.2 in INSTALL when
+	building RRDtool.  Because RRDtool comes with gd1.2 and generates
+	smaller GIFs, a comment is made that there is no reason to move
+	to gd1.3.  The bottom line is that gd1.2 is preferred.
+
+	Check if the state file is empty and do not complain if it is.
+
+	Add installation instructions that to install this version
+	of Orca over an older version, a make migrate command will
+	need to be run to renames all files and directories containing
+	percollator, percol, or perc to orcallator in any of the installed
+	Orca directories.
+
+	Update orcallator.cfg to look for filenames like
+	orcallator-1999-05-06 and percol-1999-05-06.
+
+Wed May  5 10:43:23 PDT 1999
+
+	Require RRDtool 0.99.27.
+
+Mon May  3 14:51:06 PDT 1999
+
+	Rename everything percollator, perc and percol to orcallator.
+
+Fri Apr 30 16:34:20 PDT 1999
+
+	Update to install Perl 5.005_03 instead of 5.005_02.
+
+Fri Apr 23 09:31:28 PDT 1999
+
+	Require RRDtool 0.99.25.
+
+Thu Apr 22 09:21:15 PDT 1999
+
+	Require RRDtool 0.99.24.
+
+Sat Apr 17 12:06:46 PDT 1999
+
+	Change all URLs from
+	    http://www.geocities.com/ResearchTriangle/Thinktank/4996/
+	to
+	    http://www.geocities.com/~bzking/
+
+Thu Apr  8 17:03:37 PDT 1999
+
+	Require RRDtool 0.99.23.
+
+Wed Mar 31 19:07:41 PST 1999
+
+	When perl_glob cannot open a directory, return an empty
+	array and warn instead of dying.  Fix from J.R. Tietsort
+	<jrtietsort@micron.com>.
+
+	Require RRDtool 0.99.22 which contains a memory leak bug fix.
+
+Sat Mar 27 10:07:09 PST 1999
+
+	Update references to Digest::MD5 version 2.06 and require
+	RRDtool 0.99.21.
+
+Thu Mar 25 15:30:00 PST 1999
+
+	Speed up count_proc() in percollator.se by 20% using a patch
+	supplied by Rich Pettit <rpettit@resolute.com>.
+
+Sat Mar  6 11:50:57 PST 1999
+
+	Update references to Digest::MD5 version 2.04.
+
+Thu Mar  4 16:42:03 PST 1999
+
+	Require RRDtool 0.99.19.
+
+Mon Mar  1 11:01:01 PST 1999
+
+	Require RRDtool 0.99.18.
+
+Tue Feb 23 09:19:37 PST 1999
+
+	Require RRDtool 0.99.15.
+
+	Die if a unrecognized command line option is given to Orca.
+
+	Do group name substitution on the Y legend in GIFs.
+
+	Add another consolidation function, DERIVE, to an error message.
+
+	Change the user, system and idle colors in the CPU usage plot
+	as requested by Alain Swanson <amswanson@micron.com>.
+
+	Change the printing format of usr% and sys% from %4.0f to %5.1f
+	in percollator.se to work around a printing problem reported by
+	Alain Swanson <amswanson@micron.com>.  In SE 3.1 this will now
+	display an extra non-zero digit of measured precision.
+
+	Always output the header information in percollator.se, even
+	if Orca cannot handle it yet, since the number of columns may
+	change if new hardware is added to the system.
+
+Mon Feb 22 10:23:21 PST 1999
+
+	Add GIF width and height tags to img src's using the returned
+	GIF size from RRDs::graph.
+
+	Add a space between the ending " for the img src="" and the
+	following alt="" in the generated HTML.
+
+	Require RRDtool 0.99.14.
+
+	Add x86 Ethernet device plotting to percollator.cfg.in.
+
+	Remove the LAST RRA from all Orca created RRAs since it is not
+	required to get the current value from an RRA.	The current
+	value is obtained by using the LAST consolidation function on
+	the plotted data.
+
+Sun Feb 21 11:03:39 PST 1999
+
+	Make use of RRDtool 0.99.12's legend formatting.
+
+Sat Feb 20 20:13:01 PST 1999
+
+	Require RRDtool 0.99.12.
+
 Fri Feb 19 11:55:50 PST 1999
+
+	Move some </a> tags to the end of the image they were referencing
+	to remove some Netscape glitches.
+
+	Minor spelling fix and addition to CHANGES file.
 
 	Version 0.20.
 
@@ -16,8 +228,12 @@ Thu Feb 18 11:54:03 PST 1999
 	the interval.  This is useful for RRD which expects data to be
 	measured on the interval.
 
+	Fix a bug in percollator.se where it was inflating the httpops5
+	number since it was not calculating the actual time interval
+	and instead assuming a 5 second interval.
+
 	Add Squid log processing to percollator.se courtesy of Adrian
-	Cockroft of Sun Microsystems.
+	Cockcroft of Sun Microsystems.
 
 	Rename the configure --with options.  If you want to watch NCSA
 	style access logs, use --with-ncsa-log.  To watch NCSA style

@@ -1,9 +1,9 @@
+This incomplete file describes Orca's internal design.
+
 Orca::OpenFileHash
 Orca::HTMLFile
 Orca::DataFile
 Orca::SourceDataFile
-
-This file describes Orca's internal design.
 
 Orca makes use of several internal classes (objects).  They are:
 

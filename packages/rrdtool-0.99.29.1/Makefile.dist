@@ -1,0 +1,41 @@
+SHELL = /bin/sh
+.SUFFIXES:
+.SUFFIXES: .c .o .pl .pm .pod .html .man
+
+# variables we got from configure
+# (you can mess with these, if you want)
+
+###
+### Things you might NOT want to play with ... 
+###
+
+VER  = 0.99.29
+PVER = 0.99029 
+
+ARCHIVE = rrdtool-$(VER).tar.gz
+DIRNAME = rrdtool-$(VER)
+
+perl-piped/examples/%.pl.in: perl-piped/examples/%.pl
+	perl -p -e 's|^#!\s*/\S+perl\S* +|#! \@PERL\@ |' $< > $@
+
+perl-shared/examples/%.pl.in: perl-shared/examples/%.pl
+	perl -p -e 's|^#!\s*/\S+perl\S* +|#! \@PERL\@ |' $< > $@
+
+all:	dist
+
+docs:
+	(cd doc && $(MAKE))
+versync:
+	perl -i -p -e 's|VERSION\s*=\s*[\d.]+|VERSION = $(PVER)|' perl-piped/RRDp.pm perl-shared/RRDs.pm
+	perl -i -p -e 's|RRDTOOL\s+\d+\.\d+\.\d+|RRDTOOL $(VER)|' src/*.c src/*.h
+
+tar:	perl-piped/examples/piped-demo.pl.in  perl-shared/examples/shared-demo.pl.in docs versync
+
+	(cd .. ; ln -s rrdtool $(DIRNAME))
+	(cd .. ; sed -e "s/^/$(DIRNAME)\//" $(DIRNAME)/MANIFEST | xargs tar zcvf $(DIRNAME)/archive/$(ARCHIVE) --exclude="*~")
+	rm ../$(DIRNAME)
+
+dist: tar
+	scp CHANGES tardis:/home/oetiker/public_html/webtools/rrdtool/pub/
+	cat archive/$(ARCHIVE) | ssh tardis dd of=/home/oetiker/public_html/webtools/rrdtool/pub/$(ARCHIVE)
+

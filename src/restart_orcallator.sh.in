@@ -1,12 +1,12 @@
 #!/bin/sh
 
-# This stops and restarts percollator.se.
+# This stops and restarts orcallator.se.
 prefix=@prefix@
 exec_prefix=@exec_prefix@
 bindir=@bindir@
 
-# Kill any running percollators.
-$bindir/stop_percol
+# Kill any running orcallators.
+$bindir/stop_orcallator
 
-# Start the percollator.
-$bindir/start_percol
+# Start the orcallator.
+$bindir/start_orcallator

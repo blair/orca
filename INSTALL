@@ -1,92 +1,58 @@
 Outline:
-1) Install Perl 5.005_02.
-2) Install necessary Perl modules.
-   a) Install Math::IntervalSearch version 1.00 or greater.
-   b) Install Digest::MD5 version 2.00 or greater.
-   c) Install RRDs version 0.99.6 or greater.
-3) Decide where Orca's binaries, RRD, HTML, and percollator directories
+
+1) Install Perl 5.005_0[23].
+
+2) Decide where Orca's binaries, RRD, HTML, and orcallator directories
    will reside.  Make sure performance concerns are handled.
-4) Configure Orca.
-5) Install Orca.
-6) [Optional] Install percollator.
-   a) Install the SE toolkit.
-   b) Apply a patch to the SE 3.0 toolkit.
-   c) Examine Orca/percollator programs.
-   d) Run start_percol on all systems.
-   e) Edit percollator.cfg.
-   f) Run Orca.
 
-1) Install Perl 5.005_02.
+3) Configure Orca.
 
-   I have used only version version 5.005_02 of Perl with Orca.
-   Because Orca makes very heavy use of references, it may or may not
-   work with older versions of Perl.  I welcome feedback if Orca works
-   with older Perls.
+4) Make, test and install necessary Perl modules.
+   b) Install Digest::MD5 version 2.00 or greater.
+   a) Install Math::IntervalSearch version 1.00 or greater.
+   c) Install RRDs version 0.99.29 or greater.
+   d) Install Storable 0.603 or greater.
 
-   This step is too large to go into here.  The bottom line is to
-   follow the instructions at
+5) Make Orca.
+
+6) Install Orca.
+
+7) [Optional] Install orcallator.
+   a) If required, rename all percollator, percol and perc filenames to
+      orcallator.
+   b) Install the SE toolkit.
+   c) Apply a patch to the SE 3.0 toolkit.
+   d) Examine Orca/orcallator programs.
+   e) Run start_orcallator on all systems.
+   f) Edit orcallator.cfg.
+   g) Run Orca.
+
+
+
+
+1) Install Perl 5.005_0[23].
+
+   I have used only version 5.005_0[23] of Perl with Orca.  Because Orca
+   makes very heavy use of references, it may or may not work with older
+   versions of Perl.  I welcome feedback if Orca works with older Perls.
+
+   This step is too large to go into here.  The bottom line is to follow
+   the instructions at
 
       http://language.perl.com/info/software.html
 
-2) Install necessary Perl modules.
-   a) Install Math::IntervalSearch version 1.00 or greater.
-
-      Download Math::IntervalSearch from either:
-
-         ftp://ftp.gps.caltech.edu/pub/blair/Perl/Math-Interpolate-1.01.tar.gz
-         http://www.perl.com/CPAN/authors/id/B/BZ/BZAJAC/Math-Interpolate-1.01.tar.gz
-
-      % gunzip -c Math-Interpolate-1.01.tar.gz | tar xvf -
-      % cd Math-Interpolate-1.01
-      % perl Makefile.PL
-      % make
-      % make test
-      % make install
-
-   b) Install Digest::MD5 version 2.00 or greater.
-
-      Download Digest::MD5 from:
-
-         http://www.perl.com/CPAN/authors/id/GAAS/Digest-MD5-2.02.tar.gz
-
-      % gunzip -c Digest-MD5-2.02.tar.gz | tar xvf -
-      % cd Digest-MD5-2.02
-      % perl Makefile.PL
-      % make
-      % make test
-      % make install
-
-   c) Install RRDs version 0.99.6 or greater.
-
-      Download RRDs from:
-
-         http://ee-staff.ethz.ch/~oetiker/webtools/rrdtool/pub/
-
-      % gunzip -c rrdtool-?.??.?.tar.gz | tar xvf -
-      % cd rrdtool-?.??.?
-      % sh configure --verbose
-      % make                                [ To optimize: make CFLAGS=-O ]
-      % cd perl-shared
-      % perl Makefile.PL
-      % make                                [ To optimize: make OPTIMIZE=-O ]
-      % make test
-      % make install
-
-      For large installations, I recommend that RRD be compiled with
-      optimization turned on.
-
-3) Decide where Orca's binaries, RRD, HTML, and percollator directories
+2) Decide where Orca's binaries, RRD, HTML, and orcallator directories
    will reside.  Make sure performance concerns are handled.
 
    First choose the location where Orca will be installed.  By default,
    Orca will install into the following structure:
 
-   $prefix                      Prefix, set with --prefix=
-   $prefix/bin                  Binaries, set with --bindir=
-   $prefix/lib                  Libraries, set with --libdir=
-   $prefix/man                  Manual pages, set with --mandir=
-   $prefix/var/orca/rrd         RRD directory, set with --with-rrd-dir
-   $prefix/var/orca/percollator Percollator directory, set with --with-perc-dir
+   $prefix                     Prefix, set with --prefix=
+   $prefix/bin                 Binaries, set with --bindir=
+   $prefix/lib                 Libraries, set with --libdir=
+   $prefix/man                 Manual pages, set with --mandir=
+   $prefix/var/orca/rrd        RRD directory, set with --with-rrd-dir
+   $prefix/var/orca/orcallator Orcallator directory, set with --with-orcallator-dir
 
    By default $prefix is set to /usr/local.  The -- arguments shown
    above should be given to the configure script described below which
@@ -102,37 +68,37 @@ Outline:
    concerns it is more important this directory be locally stored than
    HTML directory where the resulting HTML and GIF files are written.
 
-   If you are going to use the percollator Orca addon to monitor your
+   If you are going to use the orcallator Orca addon to monitor your
    Sun Solaris systems, then you will in addition need to decide where
-   to have percollator store its data files.  By default, these data
+   to have orcallator store its data files.  By default, these data
    files are written to once every 5 minutes, so IO is not an issue.
-   The issue here is that percollator needs to run as root and all of
-   the percollator output files from all your hosts need to be written
+   The issue here is that orcallator needs to run as root and all of
+   the orcallator output files from all your hosts need to be written
    into the same NFS shared directory that Orca can read.  It is not too
-   important that the directory that percollator writes into be mounted
+   important that the directory that orcallator writes into be mounted
    locally on the machine that Orca will run on, since Orca will only
    read each file every five minutes.
 
-   If you are running percollator on a system running a web, proxy,
-   or Squid server, you can have percollator watch the logs generated
-   by these programs.  In this case, note the location of the log file
-   for the configure script.
+   If you are running orcallator on a system running a web, proxy, or
+   Squid server, you can have orcallator watch the logs generated by
+   these programs.  In this case, note the location of the log file for
+   the configure script.
 
-4) Configure Orca.
+3) Configure Orca.
 
    Now that you have decided where the RRD, HTML, and optionally the
-   percollator data files and the web server access logs, are located,
+   orcallator data files and the web server access logs, are located,
    run the configure script with the following arguments:
 
    % ./configure --prefix=ORCA_PREFIX_DIRECTORY \
                  --with-rrd-dir=RRD_DIR_LOCATION \
                  --with-html-dir=HTML_DIR_LOCATION \
-                 --with-perc-dir=PERCOLLATOR_DIR_LOCATION \
+                 --with-orcallator-dir=ORCALLATOR_DIR_LOCATION \
                  --with-TYPE-log=LOG_LOCATION
 
    If you choose nothing else, the --with-html-dir must always be used.
 
-   If you use a web, proxy, or Squid server, you can have percollator
+   If you use a web, proxy, or Squid server, you can have orcallator
    gather statistics from the log file.  Use this table to decide which
    configure option to use:
 
@@ -145,16 +111,126 @@ Outline:
    Configure will let you use only one of these --with-TYPE-log options.
 
    The configure script will find where your version of Perl and some
-   other assorted programs are located.
+   other assorted programs are located.  It will also determine if you
+   have the necessary Perl modules to run Orca.  If it does not find
+   the required modules, the modules that are included with the Orca
+   distribution will be built.
 
-5) Install Orca.
+4) Make, test and install necessary Perl modules.
 
-   Now run make and make install:
+   Orca requires the following modules at the specified version number:
+
+   Name				Required Version	Included With Orca
+   -----------------------------------------------------------------------
+   Digest::MD5 version		2.00 or greater		2.07
+   Math::IntervalSearch		1.00 or greater		1.02
+   RRDs version			0.99.29 or greater	0.99.29
+   Storable			0.603 or greater	0.603
+
+   All four of these modules are included with the Orca distribution
+   in the packages directory.  When you configured Orca in step 3),
+   configure should have determined if you need any of these modules
+   installed in the version of Perl that configure found.  configure will
+   then modify the packages/Makefile file to only build those modules
+   that need to be installed.
+
+   All of the modules except for Math::IntervalSearch require a compiler
+   and generate shared libraries by default.
+
+   To make these modules run the following command:
+
+   % make modules			[ To optimize: make modules CFLAGS=-O ]
+
+   To test if the modules are working properly, run the following command:
+
+   % make test_modules
+
+   To automatically install these modules into Perl run the following
+   command:
+
+   % make install_modules
+
+   If you want newer version of these modules, get them from the following
+   locations:
+
+   Math::IntervalSearch
+
+      ftp://ftp.gps.caltech.edu/pub/blair/Perl/Math-Interpolate-1.02.tar.gz
+      http://www.perl.com/CPAN/authors/id/B/BZ/BZAJAC/Math-Interpolate-1.02.tar.gz
+
+      % gunzip -c Math-Interpolate-1.02.tar.gz | tar xvf -
+      % cd Math-Interpolate-1.02
+      % perl Makefile.PL
+      % make
+      % make test
+      % make install
+
+   Digest::MD5
+
+      http://www.perl.com/CPAN/authors/id/GAAS/Digest-MD5-2.07.tar.gz
+
+      % gunzip -c Digest-MD5-2.07.tar.gz | tar xvf -
+      % cd Digest-MD5-2.07
+      % perl Makefile.PL
+      % make
+      % make test
+      % make install
+
+   RRDs
+
+      http://ee-staff.ethz.ch/~oetiker/webtools/rrdtool/pub/
+
+      RRDs is the Perl module that comes with RRDtool, a package written
+      by Tobias Oetiker.  RRDtool contains a copy of the gd1.2 library
+      and is installed automatically into the RRDtool shared library that
+      is used by the RRDs Perl module.  While gd1.3 exists, according
+      to its README file it generates larger GIFs.  I see no reason to
+      link RRDtool with gd1.3.
+
+      % gunzip -c rrdtool-?.??.??.tar.gz | tar xvf -
+      % cd rrdtool-?.??.??
+      % sh configure --verbose
+      % make                                [ To optimize: make CFLAGS=-O ]
+      % cd perl-shared
+      % make test
+      % make install
+
+      For large installations, I recommend that RRDs be compiled with
+      optimization turned on.
+
+5) Make Orca.
+
+   Build Orca by running the following command:
 
    % make
+
+6) Install Orca.
+
+   Between version 0.20 and 0.21 of Orca, a major name change occurred in
+   all of the installed and generated files.  Any filenames containing
+   percollator, percol, and perc had the name orcallator substituted in
+   place.  Percollator.se has been renamed to orcallator.se and its output
+   files are now named orcallator.  The default percollator.cfg has been
+   renamed to orcallator.cfg and the version of orcallator.cfg included
+   here now looks for data filenames of the form orcallator-1999-05-08
+   and percol-1999-05-8.  If you are running an Orca installation 0.20 or
+   older and want to rename all of the files and directories in your Orca
+   installation to the new scheme, then kill any running percollator.se's
+   and Orca processes.  Then run
+
+   % make migrate
+
+   This will look through the all of the directories that Orca will
+   install into and use (namely the $prefix, $exec_prefix, $bindir,
+   $libdir, $ORCALLATOR_DIR, and $RRD_DIR directories) and perform any
+   necessary file renaming.  Filenamess containing the word percent will
+   not have be modified to contain the word orcallatorent.
+
+   Now run the following command to install Orca:
+
    % make install
 
-6) [Optional] Install percollator.
+7) [Optional] Install orcallator.
    a) Install the SE toolkit.
 
       Perform the installation instructions as listed on the web page
@@ -173,7 +249,7 @@ Outline:
       % cd /opt/RICHPse
       % patch -s < THIS_DIR/patches/p_netstat_class.se.diff
 
-   c) Examine Orca/percollator programs.
+   c) Examine Orca/orcallator programs.
 
       Orca's installation scripts also installs several programs and
       configuration files necessary to have Orca monitor many different
@@ -181,29 +257,33 @@ Outline:
 
       The following tools are installed in the $prefix/bin directory:
 
-         start_percol   - start percollator on a system
-         stop_precol    - stop percollator on a system
-         restart_percol - restart percollator on a system
-         percol_column  - print selected columns from percollator output
-         percol_running - run to see if any percollators are not running
+         start_orcallator   - start orcallator on a system
+         stop_precol        - stop orcallator on a system
+         restart_orcallator - restart orcallator on a system
+         orcallator_column  - print selected columns from orcallator output
+         orcallator_running - run to see if any orcallators are not running
 
-   d) Run start_percol on all systems.
+   d) Run start_orcallator on all systems.
 
       Log in as root on all the systems you want to watch and run:
 
-      % $prefix/bin/start_percol
+      % $prefix/bin/start_orcallator
 
-   e) Edit percollator.cfg.
+      Orcallator will not generate an output data file until the first
+      update interval, which will be between 2.5 to 7.5 minutes after
+      orcallator is started.
 
-      You need to edit the installed percollator.cfg file and remove
+   e) Edit orcallator.cfg.
+
+      You need to edit the installed orcallator.cfg file and remove
       all unneeded references.  In particular, you'll want to change
       warn_email, which is the email address that receives emails when
-      percollator generated files are out of date, which may signify a
-      percollator program that has died and is no longer gathering data.
+      orcallator generated files are out of date, which may signify a
+      orcallator program that has died and is no longer gathering data.
 
    f) Run Orca.
 
       Log into the system that will run Orca and run the command:
 
       % cd $prefix
-      % ./bin/orca -v lib/percollator.cfg
+      % ./bin/orca -v lib/orcallator.cfg

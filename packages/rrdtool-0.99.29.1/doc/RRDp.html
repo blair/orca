@@ -1,0 +1,210 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>RRDp - Attach rrdtool from within a perl script via a set of pipes;
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+<!--
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#EXAMPLE">EXAMPLE</A>
+	<LI><A HREF="#SEE_ALSO">SEE ALSO</A>
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+</UL>
+-->
+<!-- INDEX END -->
+
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+RRDp - Attach rrdtool from within a perl script via a set of pipes;
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+use <STRONG>RRDp</STRONG>
+
+
+
+
+<P>
+
+<STRONG>RRDp::start</STRONG>  <EM>path to rrdtool executable</EM>
+
+
+
+
+<P>
+
+<STRONG>RRDp::cmd</STRONG>    <EM>rrdtool commandline</EM>
+
+
+
+
+<P>
+
+<CODE>$answer</CODE> = <STRONG>RRD::read</STRONG>
+
+
+
+
+<P>
+
+<CODE>$status</CODE> = <STRONG>RRD::end</STRONG>
+
+
+
+
+<P>
+
+<STRONG>$RRDp::user</STRONG>,  <STRONG>$RRDp::sys</STRONG>, <STRONG>$RRDp::real</STRONG>
+
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+With this module you can safely communicate with the rrdtool. 
+
+
+<P>
+
+After every <STRONG>RRDp::cmd</STRONG> you have to issue an <STRONG>RRDp::read</STRONG> command to get
+<STRONG>rrdtool</STRONG>s answer to your command. The answer is returned as a pointer, in order to
+speed things up. If the last command did not return any data, <STRONG>RRDp::read</STRONG> will return an undefined variable. 
+
+
+<P>
+
+If you import the PERFORMANCE variables into your namespace, you can access
+rrdtools internal performance measurements.
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_use">use RRDp
+
+</A></STRONG><DD>
+Load the RRDp::pipe module.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_RRDp">RRDp::start path to rrdtool executable
+
+</A></STRONG><DD>
+start rrdtool. The argument must be the path to the rrdtool executable
+
+
+<P>
+
+<DT><STRONG><A NAME="item_RRDp">RRDp::cmd rrdtool commandline
+
+</A></STRONG><DD>
+pass commands on to rrdtool. check the rrdtool documentation for more info
+on the rrdtool commands.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__answer">$answer = RRDp::read
+
+</A></STRONG><DD>
+read rrdtools response to your command. Note that the <CODE>$answer</CODE>
+variable will only contain a pointer to the returned data. The reason for
+this is, that rrdtool can potentially return quite excessive amounts of
+data and we don't want to copy this around in memory. So when you want to
+access the contents of <CODE>$answer</CODE> you have to use
+<CODE>$$answer</CODE> which dereferences the variable.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__status">$status = RRDp::end
+
+</A></STRONG><DD>
+terminates rrdtool and returns rrdtools status ... 
+
+
+<P>
+
+<DT><STRONG><A NAME="item__RRDp_user_">$RRDp::user,  $RRDp::sys, $RRDp::real
+
+</A></STRONG><DD>
+these variables will contain totals of the user time, system time and real
+time as seen by rrdtool. User time is the time rrdtool is running, System
+time is the time spend in system calls and real time is the total time
+rrdtool has been running.
+
+
+<P>
+
+The difference between user + system and real is the time spent waiting for
+things like the hard disk and new input from the perl script.
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="EXAMPLE">EXAMPLE
+
+</A></H1>
+<PRE> use RRDp;
+ RRDp::start &quot;/usr/local/bin/rrdtool&quot;;
+ RRDp::cmd   qw(create demo.rrd --step 100 
+               DS:in:GAUGE:100:U:U
+               RRA:AVERAGE:0.5:1:10);
+ $answer = RRDp::read;
+ print $$answer;
+ ($usertime,$systemtime,$realtime) =  ($RRDp::user,$RRDp::sys,$RRDp::real);
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SEE_ALSO">SEE ALSO
+
+</A></H1>
+For more information on how to use rrdtool, check the manpages.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHOR">AUTHOR
+
+</A></H1>
+Tobias Oetiker <A
+HREF="MAILTO:<oetiker@ee.ethz.ch>"><oetiker@ee.ethz.ch></A>
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

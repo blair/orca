@@ -1,13 +1,16 @@
+@SET_MAKE@
+
 prefix		= @prefix@
 exec_prefix	= @exec_prefix@
 libdir		= @libdir@
 MKDIR		= @MKDIR@
 INSTALL		= @INSTALL@
 
-all:	percollator.cfg orca.gif.hex rrdtool.gif.hex
+all:	orcallator.cfg orca.gif.hex rrdtool.gif.hex
 
-percollator.cfg: percollator.cfg.in
-	cd ..; ./config.status
+orcallator.cfg: orcallator.cfg.in
+	(cd ..; ./config.status)
+	$(MAKE)
 
 # Create a hex file representation of orca.gif that can be stored inside
 # orca.pl.
@@ -21,12 +24,12 @@ rrdtool.gif.hex: rrdtool.gif
 
 install: all
 	$(MKDIR) $(libdir)
-	-cp -p $(libdir)/percollator.cfg $(libdir)/percollator.cfg.`date +%Y-%m-%d-%H:%M:%S`
-	$(INSTALL) -m 0644 percollator.cfg $(libdir)
-	$(INSTALL) -m 0644 percollator.se $(libdir)
+	-cp -p $(libdir)/orcallator.cfg $(libdir)/orcallator.cfg.`date +%Y-%m-%d-%H:%M:%S`
+	$(INSTALL) -m 0644 orcallator.cfg $(libdir)
+	$(INSTALL) -m 0644 orcallator.se $(libdir)
 
 clean:
-	$(RM) percollator.cfg
+	$(RM) orcallator.cfg
 
 distclean: clean
 	$(RM) Makefile

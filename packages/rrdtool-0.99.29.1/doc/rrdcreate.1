@@ -1,0 +1,313 @@
+.rn '' }`
+''' $RCSfile$$Revision$$Date$
+'''
+''' $Log$
+'''
+.de Sh
+.br
+.if t .Sp
+.ne 5
+.PP
+\fB\\$1\fR
+.PP
+..
+.de Sp
+.if t .sp .5v
+.if n .sp
+..
+.de Ip
+.br
+.ie \\n(.$>=3 .ne \\$3
+.el .ne 3
+.IP "\\$1" \\$2
+..
+.de Vb
+.ft CW
+.nf
+.ne \\$1
+..
+.de Ve
+.ft R
+
+.fi
+..
+'''
+'''
+'''     Set up \*(-- to give an unbreakable dash;
+'''     string Tr holds user defined translation string.
+'''     Bell System Logo is used as a dummy character.
+'''
+.tr \(*W-|\(bv\*(Tr
+.ie n \{\
+.ds -- \(*W-
+.ds PI pi
+.if (\n(.H=4u)&(1m=24u) .ds -- \(*W\h'-12u'\(*W\h'-12u'-\" diablo 10 pitch
+.if (\n(.H=4u)&(1m=20u) .ds -- \(*W\h'-12u'\(*W\h'-8u'-\" diablo 12 pitch
+.ds L" ""
+.ds R" ""
+'''   \*(M", \*(S", \*(N" and \*(T" are the equivalent of
+'''   \*(L" and \*(R", except that they are used on ".xx" lines,
+'''   such as .IP and .SH, which do another additional levels of
+'''   double-quote interpretation
+.ds M" """
+.ds S" """
+.ds N" """""
+.ds T" """""
+.ds L' '
+.ds R' '
+.ds M' '
+.ds S' '
+.ds N' '
+.ds T' '
+'br\}
+.el\{\
+.ds -- \(em\|
+.tr \*(Tr
+.ds L" ``
+.ds R" ''
+.ds M" ``
+.ds S" ''
+.ds N" ``
+.ds T" ''
+.ds L' `
+.ds R' '
+.ds M' `
+.ds S' '
+.ds N' `
+.ds T' '
+.ds PI \(*p
+'br\}
+.\"	If the F register is turned on, we'll generate
+.\"	index entries out stderr for the following things:
+.\"		TH	Title 
+.\"		SH	Header
+.\"		Sh	Subsection 
+.\"		Ip	Item
+.\"		X<>	Xref  (embedded
+.\"	Of course, you have to process the output yourself
+.\"	in some meaninful fashion.
+.if \nF \{
+.de IX
+.tm Index:\\$1\t\\n%\t"\\$2"
+..
+.nr % 0
+.rr F
+.\}
+.TH RRDCREATE 1 "19990426.22" "21/Apr/99" "rrdtool"
+.UC
+.if n .hy 0
+.if n .na
+.ds C+ C\v'-.1v'\h'-1p'\s-2+\h'-1p'+\s0\v'.1v'\h'-1p'
+.de CQ          \" put $1 in typewriter font
+.ft CW
+'if n "\c
+'if t \\&\\$1\c
+'if n \\&\\$1\c
+'if n \&"
+\\&\\$2 \\$3 \\$4 \\$5 \\$6 \\$7
+'.ft R
+..
+.\" @(#)ms.acc 1.5 88/02/08 SMI; from UCB 4.2
+.	\" AM - accent mark definitions
+.bd B 3
+.	\" fudge factors for nroff and troff
+.if n \{\
+.	ds #H 0
+.	ds #V .8m
+.	ds #F .3m
+.	ds #[ \f1
+.	ds #] \fP
+.\}
+.if t \{\
+.	ds #H ((1u-(\\\\n(.fu%2u))*.13m)
+.	ds #V .6m
+.	ds #F 0
+.	ds #[ \&
+.	ds #] \&
+.\}
+.	\" simple accents for nroff and troff
+.if n \{\
+.	ds ' \&
+.	ds ` \&
+.	ds ^ \&
+.	ds , \&
+.	ds ~ ~
+.	ds ? ?
+.	ds ! !
+.	ds /
+.	ds q
+.\}
+.if t \{\
+.	ds ' \\k:\h'-(\\n(.wu*8/10-\*(#H)'\'\h"|\\n:u"
+.	ds ` \\k:\h'-(\\n(.wu*8/10-\*(#H)'\`\h'|\\n:u'
+.	ds ^ \\k:\h'-(\\n(.wu*10/11-\*(#H)'^\h'|\\n:u'
+.	ds , \\k:\h'-(\\n(.wu*8/10)',\h'|\\n:u'
+.	ds ~ \\k:\h'-(\\n(.wu-\*(#H-.1m)'~\h'|\\n:u'
+.	ds ? \s-2c\h'-\w'c'u*7/10'\u\h'\*(#H'\zi\d\s+2\h'\w'c'u*8/10'
+.	ds ! \s-2\(or\s+2\h'-\w'\(or'u'\v'-.8m'.\v'.8m'
+.	ds / \\k:\h'-(\\n(.wu*8/10-\*(#H)'\z\(sl\h'|\\n:u'
+.	ds q o\h'-\w'o'u*8/10'\s-4\v'.4m'\z\(*i\v'-.4m'\s+4\h'\w'o'u*8/10'
+.\}
+.	\" troff and (daisy-wheel) nroff accents
+.ds : \\k:\h'-(\\n(.wu*8/10-\*(#H+.1m+\*(#F)'\v'-\*(#V'\z.\h'.2m+\*(#F'.\h'|\\n:u'\v'\*(#V'
+.ds 8 \h'\*(#H'\(*b\h'-\*(#H'
+.ds v \\k:\h'-(\\n(.wu*9/10-\*(#H)'\v'-\*(#V'\*(#[\s-4v\s0\v'\*(#V'\h'|\\n:u'\*(#]
+.ds _ \\k:\h'-(\\n(.wu*9/10-\*(#H+(\*(#F*2/3))'\v'-.4m'\z\(hy\v'.4m'\h'|\\n:u'
+.ds . \\k:\h'-(\\n(.wu*8/10)'\v'\*(#V*4/10'\z.\v'-\*(#V*4/10'\h'|\\n:u'
+.ds 3 \*(#[\v'.2m'\s-2\&3\s0\v'-.2m'\*(#]
+.ds o \\k:\h'-(\\n(.wu+\w'\(de'u-\*(#H)/2u'\v'-.3n'\*(#[\z\(de\v'.3n'\h'|\\n:u'\*(#]
+.ds d- \h'\*(#H'\(pd\h'-\w'~'u'\v'-.25m'\f2\(hy\fP\v'.25m'\h'-\*(#H'
+.ds D- D\\k:\h'-\w'D'u'\v'-.11m'\z\(hy\v'.11m'\h'|\\n:u'
+.ds th \*(#[\v'.3m'\s+1I\s-1\v'-.3m'\h'-(\w'I'u*2/3)'\s-1o\s+1\*(#]
+.ds Th \*(#[\s+2I\s-2\h'-\w'I'u*3/5'\v'-.3m'o\v'.3m'\*(#]
+.ds ae a\h'-(\w'a'u*4/10)'e
+.ds Ae A\h'-(\w'A'u*4/10)'E
+.ds oe o\h'-(\w'o'u*4/10)'e
+.ds Oe O\h'-(\w'O'u*4/10)'E
+.	\" corrections for vroff
+.if v .ds ~ \\k:\h'-(\\n(.wu*9/10-\*(#H)'\s-2\u~\d\s+2\h'|\\n:u'
+.if v .ds ^ \\k:\h'-(\\n(.wu*10/11-\*(#H)'\v'-.4m'^\v'.4m'\h'|\\n:u'
+.	\" for low resolution devices (crt and lpr)
+.if \n(.H>23 .if \n(.V>19 \
+\{\
+.	ds : e
+.	ds 8 ss
+.	ds v \h'-1'\o'\(aa\(ga'
+.	ds _ \h'-1'^
+.	ds . \h'-1'.
+.	ds 3 3
+.	ds o a
+.	ds d- d\h'-1'\(ga
+.	ds D- D\h'-1'\(hy
+.	ds th \o'bp'
+.	ds Th \o'LP'
+.	ds ae ae
+.	ds Ae AE
+.	ds oe oe
+.	ds Oe OE
+.\}
+.rm #[ #] #H #V #F C
+.SH "NAME"
+rrdtool create \- Set up a new Round Robin Database
+.SH "SYNOPSIS"
+\fBrrdtool\fR \fBcreate\fR \fIfilename\fR 
+[\fB--start\fR|\fB\-b\fR\ \fIstart\ time\fR] 
+[\fB--step\fR|\fB\-s\fR\ \fIstep\fR] 
+[\fBDS:\fR\fIds-name\fR\fB:\fR\fIDST\fR\fB:\fR\fIheartbeat\fR\fB:\fR\fImin\fR\fB:\fR\fImax\fR]
+[\fBRRA:\fR\fICF\fR\fB:\fR\fIxff\fR\fB:\fR\fIsteps\fR\fB:\fR\fIrows\fR]
+.SH "DESCRIPTION"
+The create function of the rrd tool lets you set up new
+Round Robin Database (\fBRRD\fR) files. 
+The file is created at its final, full size and filled
+with \fI*UNKNOWN*\fR data.
+.Ip "\fIfilename\fR" 8
+The name of the \fB\s-1RRD\s0\fR you want to create. \fB\s-1RRD\s0\fR files should end
+with the extension \fI.rrd\fR. However, \fBrrdtool\fR will accept any
+filename.
+.Ip "\fB--start\fR|\fB\-b\fR \fIstart time\fR (default: current time)" 8
+Specifies the time in seconds since 1970-01-01 \s-1UTC\s0 when the first
+value should be added to the \fB\s-1RRD\s0\fR. \fBrrdtool\fR will not accept
+any data timed before or at the time specified.
+.Sp
+Negative input is treated as current time minus the specified number
+of seconds. See also \s-1AT\s0\-\s-1STYLE\s0 \s-1TIME\s0 \s-1SPECIFICATION\s0 section in the
+\fIrrdfetch\fR documentation for alternative ways to specify time.
+.Ip "\fB--step\fR|\fB\-s\fR \fIstep\fR (default: 300 seconds)" 8
+Specifies the base interval in seconds with which data will be fed
+into the \fB\s-1RRD\s0\fR.
+.Ip "\fB\s-1DS\s0:\fR\fIds-name\fR\fB:\fR\fI\s-1DST\s0\fR\fB:\fR\fIheartbeat\fR\fB:\fR\fImin\fR\fB:\fR\fImax\fR" 8
+A single \fB\s-1RRD\s0\fR can accept input from several data sources (\fB\s-1DS\s0\fR).
+(e.g. Incoming and Outgoing traffic on a specific communication
+line). With the \fB\s-1DS\s0\fR configuration option you must define some basic
+properties of each data source you want to use to feed the \fB\s-1RRD\s0\fR.
+.Sp
+\fIds-name\fR is the name you will use to reference this particular data
+source from an \fB\s-1RRD\s0\fR. A \fIds-name\fR must be 1 to 19 characters long in
+the characters [a-zA\-Z0-9_].
+.Sp
+\fI\s-1DST\s0\fR defines the Data Source Type. It can be one of the following:
+\fB\s-1GAUGE\s0\fR this is for things like temperatures or number of people in a
+room. \fB\s-1COUNTER\s0\fR is for continuous incrementing counters like the
+InOctets counter in a router. The \fB\s-1COUNTER\s0\fR data source assumes that
+the counter never decreases, except when a counter overflows.  The update
+function takes the overflow into account.  The counter is stored as a
+per-second rate. \fB\s-1DERIVE\s0\fR will store the
+the derivative of the line going from the last to the current value of the
+data source. This can be useful for gauges,
+for example, to measure the rate of people
+entering or leaving a room. \fB\s-1ABSOLUTE\s0\fR is for counters which get reset upon reading.
+.Sp
+\fIheartbeat\fR defines the maximum number of seconds that may pass
+between two updates of this data source before the value of the 
+data source is assumed to be \fI*\s-1UNKNOWN\s0*\fR.
+.Sp
+\fImin\fR and \fImax\fR are optional entries defining the expected range of
+the data supplied by this data source. If \fImin\fR and/or \fImax\fR are
+defined, any value outside the defined range will be regarded as
+\fI*\s-1UNKNOWN\s0*\fR. If you do not know or care about min and max, set them
+to U for unknown. Note that min and max always refere to the processed values
+of the \s-1DS\s0. For a traffic-\fB\s-1COUNTER\s0\fR type \s-1DS\s0 this would be the max and min
+data-rate expected from the device.
+.Ip "\fB\s-1RRA\s0:\fR\fI\s-1CF\s0\fR\fB:\fR\fIxff\fR\fB:\fR\fIsteps\fR\fB:\fR\fIrows\fR" 8
+The purpose of an \fB\s-1RRD\s0\fR is to store data in the round robin archives
+(\fB\s-1RRA\s0\fR). An archive consists of a number of data values from all the
+defined data-sources (\fB\s-1DS\s0\fR) and is defined with an \fB\s-1RRA\s0\fR line.
+.Sp
+When data is entered into an \fB\s-1RRD\s0\fR, it is first fit into time slots of
+the length defined with the \fB\-s\fR option becoming a \fIprimary data point\fR.
+.Sp
+The data is also consolidated with the consolidation function (\fI\s-1CF\s0\fR)
+of the archive. The following consolidation functions are defined:
+\fB\s-1AVERAGE\s0\fR, \fB\s-1MIN\s0\fR, \fB\s-1MAX\s0\fR, \fB\s-1LAST\s0\fR.
+.Sp
+\fIxff\fR The xfiles factor defines what part of a consolidation interval may
+be made up from \fI*\s-1UNKNOWN\s0*\fR data while the consolidated value is sill
+regarded as known.
+.Sp
+\fIsteps\fR defines how many of these \fIprimary data points\fR are used to
+build a \fIconsolidated data point\fR which then goes into the archive.
+.Sp
+\fIrows\fR defines how many generations of data values are kept in an \fB\s-1RRA\s0\fR.
+.SH "EXAMPLE"
+\f(CWrrdtool create temperature.rrd --step 300 DS:temp:GAUGE:600:-273:5000
+RRA:AVERAGE:0.5:1:1200 RRA:MIN:0.5:12:2400 RRA:MAX:0.5:12:2400
+RRA:AVERAGE:0.5:12:2400\fR
+.PP
+This sets up an \fBRRD\fR called \fItemperature.rrd\fR which accepts one
+temperature value every 300 seconds. If no new data is supplied for
+more than 600 seconds, the temperature becomes \fI*UNKNOWN*\fR.  The
+minimum acceptable value is \-273 and the maximum is 5000.
+.PP
+A few archives areas are also defined. The first stores the
+temperatures supplied for 100 hours (1200 * 300 seconds = 100
+hours). The second RRA stores the minimum temperature recorded over
+every hour (12 * 300 seconds = 1 hour), for 100 days (2400 hours). The
+third and the fourth RRA's do the same with the for the maximum and
+average temperature, respectively.
+.SH "AUTHOR"
+Tobias Oetiker <oetiker@ee.ethz.ch>
+
+.rn }` ''
+.IX Title "RRDCREATE 1"
+.IX Name "rrdtool create - Set up a new Round Robin Database"
+
+.IX Header "NAME"
+
+.IX Header "SYNOPSIS"
+
+.IX Header "DESCRIPTION"
+
+.IX Item "\fIfilename\fR"
+
+.IX Item "\fB--start\fR|\fB\-b\fR \fIstart time\fR (default: current time)"
+
+.IX Item "\fB--step\fR|\fB\-s\fR \fIstep\fR (default: 300 seconds)"
+
+.IX Item "\fB\s-1DS\s0:\fR\fIds-name\fR\fB:\fR\fI\s-1DST\s0\fR\fB:\fR\fIheartbeat\fR\fB:\fR\fImin\fR\fB:\fR\fImax\fR"
+
+.IX Item "\fB\s-1RRA\s0:\fR\fI\s-1CF\s0\fR\fB:\fR\fIxff\fR\fB:\fR\fIsteps\fR\fB:\fR\fIrows\fR"
+
+.IX Header "EXAMPLE"
+
+.IX Header "AUTHOR"
+

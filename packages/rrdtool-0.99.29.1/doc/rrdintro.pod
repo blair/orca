@@ -1,0 +1,1391 @@
+
+From alex@slot.hollandcasino.nl Tue May  4 23:16:13 1999
+Date: Sun, 2 May 1999 15:03:21 +0200 (MET DST)
+From: Alex van den Bogaerdt <alex@slot.hollandcasino.nl>
+To: Tobias Oetiker <oetiker@ee.ethz.ch>
+Subject: Corrected document
+
+Hi Tobi,
+
+Here are the two files again. I implemented the changes you suggested
+and made some minor changes myself.
+
+We both agree that a native English speaker should correct it before
+it goes online and do so for the same reason. I know that some parts may
+sound odd. I think it may be wise to have two or even more people look
+at it, at least one beginner and one experienced RRDtool user.
+
+You offered to convert it into the POD format, I suggest you do this
+and then ask some people to look it over.
+
+I'm still looking for a document I once read about color usage. It
+described a set of colors that are safe to use in an HTML document.
+You once suggested to look at /usr/X11/lib/X11/rgb.txt but this contains
+over 500 different colors (so: after removing descriptive labels and
+going trough sort -u) and I know for sure that the document I talk about
+describes about 240 different colors. I think it will be a valuable
+addition to both MRTG and RRDtool.
+
+Regards,
+Alex
+
+#!/bin/sh
+# This is RRDbeginnersGuide, a shell archive (produced by GNU sharutils 4.2)
+# To extract the files from this archive, save it to some FILE, remove
+# everything before the `!/bin/sh' line above, then type `sh FILE'.
+#
+# Made on 1999-05-02 14:44 MET DST by <alex@ergens.op.Het.Net>.
+# Source directory was `/mnt/sdb1/RrdDummy/workdir'.
+#
+# Existing files will *not* be overwritten unless `-c' is specified.
+# This format requires very little intelligence at unshar time.
+# "if test", "echo", "mkdir", and "sed" may be needed.
+#
+# This shar contains:
+# length mode       name
+# ------ ---------- ------------------------------------------
+#  47151 -rw-r--r-- RRDbeginner
+#  12288 -rw-r--r-- binhex
+#
+echo=echo
+if mkdir _sh06095; then
+  $echo 'x -' 'creating lock directory'
+else
+  $echo 'failed to create lock directory'
+  exit 1
+fi
+# ============= RRDbeginner ==============
+if test -f 'RRDbeginner' && test "$first_param" != -c; then
+  $echo 'x -' SKIPPING 'RRDbeginner' '(file already exists)'
+else
+  $echo 'x -' extracting 'RRDbeginner' '(text)'
+  sed 's/^X//' << 'SHAR_EOF' > 'RRDbeginner' &&
+XNot so technical explanation of RRDtool (c) by Alex van den Bogaerdt
+X
+XRRDtool (c) 1999 by Tobias Oetiker
+X
+XRRDtool is written by Tobias Oetiker <oetiker@ee.ethz.ch> with
+Xcontributions from many people all around the world. This document is
+Xwritten by Alex van den Bogaerdt <alex@ergens.op.het.net> to help you
+Xunderstand what RRDtool is and what it can do for you.
+X
+XThe documentation provided with RRDtool can be too technical for some
+Xpeople and here we help you to understand the basics in order to
+Xprepare you to read the documentation yourself. It also explains the
+Xgeneral things about statistics with a focus on networking.
+X
+XThis document may not be redistributed by any means without prior
+Xwritten permission from the author.
+XPermission to distribute copies of this document for non-commercial
+Xpurposes is hereby granted provided that the document is kept intact
+Xincluding this copyright message and disclamer, and provided that
+Xit comes together with the documentation for RRDtool.
+X
+XVersion: may 1999.
+X
+XPlease make sure you have a reasonable recent copy. If you do and you
+Xfeel this document contains errors or is incomplete, please mail me
+Xwith a description of the error/missing part, and why you think so.
+XThis will help me to improve it. Your help is appreciated.
+XPlease note that I will ignore request like
+X"my copy is from may 1999, could you mail me a more recent one ?"
+XIf there is a newer version, it will come with the RRDtool release.
+X
+XChange history:
+X199903xx: Alex van den Bogaerdt
+X          Initial draft
+X19990502: Alex van den Bogaerdt
+X          Made some textual improvements as suggested by Tobias Oetiker
+X199905xx: Tobias Oetiker
+X          Converted document to POD format
+X
+X ============================== do not cut here ===============================
+X
+X0 IMPORTANT
+X
+XWe first have to do some uninteresting reading folks, don't skip this
+Xpart! Later on, in the examples, you need to know the basics.
+X
+X1 What is RRDtool ?
+X
+XRRDtool means Round Robin Database tool.
+XRound robin is a technique that works with a fixed amount of data, and a
+Xpointer to the current element. Think of a circle with some dots plotted
+Xon the edge, these dots are the places where data can be stored. Draw an
+Xarrow from the center of the circle to one of the dots, this is the pointer.
+XWhen the current data is read or written, the pointer moves to the next
+Xelement. As we are on a circle there is no beginning nor an end, you can
+Xgo on and on. After a while, all the available places will be used and
+Xthe process automatically reuses old locations.
+XRRDtool works with with Round Robin Databases (RRDs). It stores and retrieves
+Xdata from them.
+X
+X2 What data can be put into an RDD ?
+X
+XYou name it, it will probably fit. You should be able to measure some value
+Xat several points in time and provide this to RRDtool. If you can do this,
+XRRDtool will probably be able to store it.
+X
+XMany examples talk about SNMP which is an acronym for
+XSimple Network Management Protocol. The "simple" is about the protocol,
+Xit does not mean it is simple to manage a network. After working your
+Xway through this document, you will know enough to be able to understand
+Xwhat people are talking about. For now, just assume SNMP is a way to
+Xtalk to devices and ask those devices about counters they keep.
+XIt is the value from those counters that are kept in the RRD.
+X
+X3 What can I do with this tool ?
+X
+XRRDtool originated from MRTG (multi router traffic grapher) which itself
+Xcame from a tiny little script to monitor the performance of a connection
+Xto the Internet. Since then, MRTG has also been used for several other
+Xpurposes including temperature, speed, voltage, number of printouts and
+Xmany other things. Most likely you will start to use the RRDtool to store
+Xand process data collected via SNMP. The data will most likely be bytes
+X(or bits) transfered from and to a network or a computer.
+XRRDtool lets you create a database, store data in it, retrieve that data
+Xand create graphs in GIF format for display on a web browser. Those GIF
+Ximages are dependant on the data you collected and could be, for instance,
+Xan overview of the average network usage, or rather the peaks that occurred.
+XIt can also be used to display tidal waves, solar radiation, power
+Xconsumption, number of visitors at an exibition, noise levels near an
+Xairport, temperature on your favorite holiday location, temperature in the
+Xfridge and whatever you imagination can come up with. You need a sensor to
+Xmeasure the data and be able to feed the numbers to RRDtool. Many devices
+Xhave such a sensor.
+X
+X4 What if I still have problems after reading this document ?
+X
+XMore exact, after re-reading this document :)
+XIt all depends on the kind of problems you have. If you are unable to
+Xcompile the sources and you have a fairly common OS, it will probably
+Xnot be the fault of RRDtool. There may be precompiled versions around
+Xon the Internet. If they come from trusted sources, get one of those.
+XIf on the other hand the program works but does not give you the
+Xexpected results, it will be a problem with configuring it. Review
+Xyour configuration and compare it with the examples that follow.
+X
+XThere is a mailing list and an archive of it. Read the list for a few
+Xweeks and search the archive. It is considered rude to just ask
+Xa question without reading the list, your problem may already have been
+Xsolved for somebody else and you will be helped without writing a new
+Xa message at all ... This is true for most, if not all, mailing lists
+Xand not only for this particular list! Look in the documentation that
+Xcame with RRDtool for the location and usage of the list.
+X
+XI suggest you take a moment to subscribe to the mailing list right now
+Xby sending an email to <rrdtool-users-request@list.ee.ethz.ch> with a
+Xsubject of "subscribe". If you ever want to leave this list, you write
+Xan email to the same address but now with a subject of "unsubscribe".
+X
+X5 How will you help me ?
+X
+XBy giving you some detailed descriptions with detailed examples. 
+XIt is assumed that following the instructions in the order presented
+Xwill build up enough knowledge of the program to experiment for yourself.
+XIf it doesn't work the first time, don't give up. Reread the stuff that
+Xyou did understand, you may have missed something.
+XBy following the examples you get some hands-on experience and, even
+Xmore important, some background information of how it works.
+X
+XYou will need to know something about hexadecimal numbers. If you don't
+Xthen start with reading "binhex" before you continue here.
+X
+XIn my opinion the best way to learn something is to actually do it.
+XWhy not start right now. We will create a database, put some values in
+Xit and extract this data again. It is expected that you get the same
+Xresults when you try these examples yourself so do that.
+XWe will start with some easy stuff and compare a car with a router,
+Xor compare kilometers (miles if you wish) with bits and bytes. It's
+Xall the same: Some number over some time.
+X
+XAssume we have a device that transfers bytes to and from the Internet.
+XThis device keeps a counter that starts at zero when it is turned on,
+Xincreasing with every byte that is transfered. This counter will have
+Xa maximum value, if that value is reached and an extra byte is counted,
+Xthe counter starts all over at zero. This is the same as many counters
+Xin the world such as the mileage counter in a car.
+XMost discussions about networking talk about bits per second so lets
+Xget used to that right away. Assume a byte is eight bits and start to
+Xthink in bits not bytes. The counter however still counts bytes !
+XIn the SNMP world most of the counters are 32 bits. That means they are
+Xcounting from 0 to 4294967295. We will use these values in the examples.
+XThe device, when asked, returns the current value of the counter. We
+Xknow the time that has passes since we last asked so we now know how
+Xmany bytes have been transfered ***on average*** per second. This is
+Xnot very hard to calculate. First in words, then in calculi:
+X  1) Take the current counter, subtract the previous value from it.
+X  2) Do the same with the current time and the previous time.
+X  3) Divide the outcome of (1) by the outcome of (2), the result is
+X     the amount of bytes per second. Multiply by eight to get the
+X     number of bits per second (bps).
+X  bps = (counter_now - counter_before) / (time_now - time_before) * 8
+X
+XFor some people it may help to translate this to a automobile example:
+XDo not try this example, and if you do, don't blame me for the results.
+X
+XPeople who are not used to think in kilometers per hour can translate
+Xmost into miles per hour by dividing km by 1.6 (close enough).
+XI will use the following abbreviations:
+XM:    meter
+XKM:   kilometer (= 1000 meters).
+XH:    hour
+XS:    second
+XKM/H: kilometers per hour
+XM/S:  meters per second
+X
+XYou're driving a car. At 12:05 you read the counter in the dashboard
+Xand it tells you that the car has moved 12345 KM until that moment.
+XAt 12:10 you look again, it reads 12357 KM. This means you have
+Xtraveled 12 KM in five minutes. A scientist would translate that
+Xinto meters per second and this makes a nice comparison towards the
+Xproblem of (bytes per five minutes) versus (bits per second).
+X
+XWe traveled 12 kilometers which is 12000 meters. We did that in five
+Xminutes which translates into 300 seconds. Our speed is 12000M / 300S
+Xequals 40 M/S. 
+X
+XWe could also calculate the speed in KM/H: twelve times five minutes
+Xis an hour so we have to multiply 12 KM by 12 to get 144 KM/H.
+XFor our native English speaking friends: this is ninety MPH and
+Xtherefore not recommended to try for yourself where I live :)
+X
+XRemember: these numbers are averages and there is no way to figure out
+Xfrom the numbers we got that you drove at a constant speed.
+X
+XI hope you understand that there is no difference in calculating M/S or
+Xbps, only the way we collect the data is different. Even the K from kilo
+Xis the same as in networking terms k also means 1000.
+X
+XWe will now create a database where we can keep all these interesting
+Xnumbers. The method used to start the program may differ slightly from
+XOS to OS but I assume you can figure it out if it works different on
+Xyour OS. Make sure you do not overwrite any file on your system when
+Xexecuting the following command (so: first look if it's safe!) and type
+Xthe whole line as one long line (I had to split it for readability)
+Xand skip all of the '\' characters.
+X
+X   rrdtool create test.rrd             \
+X            --start 920804400          \
+X            DS:speed:COUNTER:600:U:U   \
+X            RRA:AVERAGE:0.5:1:24       \
+X            RRA:AVERAGE:0.5:6:10 
+X
+X (So enter: rrdtool create test.rrd --start 920804400 DS ...)
+X
+XWhat has been created ?
+XWe created the round robin database called test (test.rrd)
+Xwhich starts at noon the day I started (7th of march, 1999) writing
+Xthis document. It holds one data source (DS) named "speed" that gets
+Xbuilt from a counter. This counter is read every five minutes (default)
+XIn the same database two round robin archives (RRAs) are kept, one
+Xaverages the data every time it is read (so: there's nothing to average)
+Xand keeps 24 samples (24 times 5 minutes is 2 hours). The other averages
+X6 values (half hour) and contains 10 of such averages (so: 5 hours)
+XThe remaining options will be discussed later on.
+XChances are that you are not in the same part of the world as I am.
+XThis means your time zone is different. In all examples where I talk
+Xabout time, the hours may be wrong for you. This has little effect on
+Xthe results of the examples, just correct the hours while reading.
+X
+XWe now have to fill our database with some numbers. We'll pretend to
+Xhave read the following numbers:
+X
+X12:05	12345 KM
+X12:10	12357 KM
+X12:15	12363 KM
+X12:20	12363 KM
+X12:25	12363 KM
+X12:30	12373 KM
+X12:35	12383 KM
+X12:40	12393 KM
+X12:45	12399 KM
+X12:50	12405 KM
+X12:55	12411 KM
+X13:00	12415 KM
+X13:05	12420 KM
+X13:10	12422 KM
+X13:15	12423 KM
+X
+XWe fill the database as follows:
+X
+X   rrdtool update test.rrd 920804700:12345 920805000:12357 920805300:12363
+X   rrdtool update test.rrd 920805600:12363 920805900:12363 920806200:12373
+X   rrdtool update test.rrd 920806500:12383 920806800:12393 920807100:12399
+X   rrdtool update test.rrd 920807400:12405 920807700:12411 920808000:12415
+X   rrdtool update test.rrd 920808300:12420 920808600:12422 920808900:12423
+X
+XThis reads: update our test database with the following numbers
+X    time 920804700, value 12345
+X    time 920805000, value 12357
+X   etcetera.
+X
+XAs you can see, it is possible to feed more than one value into the
+Xdatabase in one command. I had to stop at three for readability but
+Xthe real maximum will be OS dependent.
+X
+XThe time value may look strange to you, it is written in seconds since
+Xthe first of January, 1970, midnight. Don't worry about this yet, just
+Xnotice that there is a difference of 300 in between all values.
+X
+XIt is time to do some graphics now:
+X
+X   rrdtool graph speed.gif                            \
+X      --start 920804400 --end 920808000               \
+X      DEF:myspeed=test.rrd:speed:AVERAGE              \
+X      LINE2:myspeed#FF0000
+X
+XThis will create speed.gif which starts at 12:00 and ends at 13:00.
+XThere is a definition of variable myspeed, it is the data from RRA
+X"speed" out of database "test.rrd". The line drawn is 2 pixels high,
+Xand comes from variable myspeed. The color is red.
+XYou'll notice that the start of the graph is not at 12:00 but at 12:05
+Xand this is because we have insufficient data to tell the average before
+Xthat time. This will only happen when you miss some samples, this will
+Xnot happen a lot, hopefully.
+X
+XIf this has worked: Congratulations. If not, check what went wrong.
+X
+X
+XThe colors are built up from red, green and blue. For each of the
+Xcomponents, you specify how much to use in hexadecimal where 00 means
+Xnot included and FF means fully included.
+XThe color white is a mixture of red, green and blue: FFFFFF
+XThe color black is all colors off: 000000
+X(Please, no discussions if black and white can be called colors)
+X
+X   red    #FF0000
+X   green  #00FF00
+X   blue   #0000FF
+X   purple #FF00FF     (mixed red with blue)
+X   gray   #555555     (one third of all components)
+X
+X
+X
+XThe GIF you just created can be displayed using a web browser or other
+Xsoftware you like. I can not provide you with an example of that, there
+Xare too many different setups, possibilities etc.
+X
+XWhen looking at the image, you notice that the horizontal axis displays
+X12:10, 12:20, 12:30, 12:40 and 12:50. The two remaining times (12:00 and
+X13:00) would not be displayed nicely so they are skipped.
+XThe vertical axis displays the range we entered. We provided kilometers
+Xand when divided by 300 seconds, we get very small numbers. To be exact,
+Xthe first value was 12 (12357-12345) and divided by 300 this makes 0.04
+XRRDtool displays this as 40 m which means 40 mili (so: NOT meters).
+XWhat we did wrong was that we should have measured in meters, this would
+Xhave been (12357000-12345000)/300 = 12000/300 = 40.
+X
+XLet's correct that. We could recreate our database and store the correct
+Xdata but there is another way: do some calculations while creating the
+Xgif file !
+X
+X   rrdtool graph speed2.gif                           \
+X      --start 920804400 --end 920808000               \
+X      --vertical-label m/s                            \
+X      DEF:myspeed=test.rrd:speed:AVERAGE              \
+X      CDEF:realspeed=myspeed,1000,*                   \
+X      LINE2:realspeed#FF0000
+X
+XAfter viewing this GIF, you notice the "m" has disappeared. This it what
+Xthe correct result would be. Also, a label has been added to the image.
+XApart from the things mentioned above, the GIF should be the same.
+X
+XThe calculations are done with the CDEF part. What it says is: take the
+Xdata source myspeed and the number 1000, multiply those. The calculations
+Xare done using Reverse Polish Notation. It is an easy way of performing
+Xcalculations after you understand it. You will, eventually but for now
+Xassume it is correct what I write and just keep to the examples in this
+Xfile. Read the documentation that came with RRDtool (look in rrdgraph.doc)
+Xwhen you're ready for it.
+X
+XHang on! If we can multiply values with 1000, it should also be possible
+Xto display kilometers per hour from the same data !
+XWhat do we need to do ? If we have meters per second, we can make this
+Xmeters per hour by multiplying the value with 3600 (there go 3600 seconds
+Xin one hour). To get kilometers per hour, we need to divide by 1000.
+XWe end up with: value * 3600 / 1000 = value * 3.6 . Remember we also have
+Xto correct our mistake, so it is value * 3600 for us.
+X
+XNow lets create this GIF, and add some more magic ...
+X
+X   rrdtool graph speed3.gif                           \
+X      --start 920804400 --end 920808000               \
+X      --vertical-label km/h                           \
+X      DEF:myspeed=test.rrd:speed:AVERAGE              \
+X      CDEF:kmh=myspeed,3600,*                         \
+X      CDEF:fast=0,kmh,kmh,100,GT,IF                   \
+X      CDEF:good=kmh,0,kmh,100,GT,IF                   \
+X      HRULE:100#0000FF:"Maximum allowed"              \
+X      AREA:good#00FF00:"Good speed"                   \
+X      AREA:fast#FF0000:"Too fast"
+X
+XThis looks much better. Speed in KM/H and even an extra line with the
+Xmaximum allowed speed (on the road I travel at). I also changed the
+Xcolors used to display speed and changed it from a line into an area.
+X
+XThe calculations are more complex now. For the "good" speed they are:
+X- Check if kmh is greater than 100    ( kmh,100 ) GT
+X- If so, return 0, else kmh           ( kmh,0, (( kmh,100 ) GT ) IF
+XFor the other speed:
+X- Check if kmh is greater than 100    ( kmh,100 ) GT
+X- If so, return kmh, else return 0    ( 0,kmh, (( kmh,100) GT ) IF
+X
+X
+XI like to believe there are virtually no limits about what RRDtool
+Xcan do. I will not explain how it works, but look at the following
+XGIF:
+X
+X   rrdtool graph speed4.gif                           \
+X      --start 920804400 --end 920808000               \
+X      --vertical-label km/h                           \
+X      DEF:myspeed=test.rrd:speed:AVERAGE              \
+X      CDEF:kmh=myspeed,3600,*                         \
+X      CDEF:fast=0,100,kmh,100,GT,IF                   \
+X      CDEF:over=0,kmh,100,-,kmh,100,GT,IF             \
+X      CDEF:good=kmh,0,kmh,100,GT,IF                   \
+X      HRULE:100#0000FF:"Maximum allowed"              \
+X      AREA:good#00FF00:"Good speed"                   \
+X      AREA:fast#550000:"Too fast"                     \
+X      STACK:over#FF0000:"Over speed"
+X
+XLet's create a quick and dirty HTML page to view three GIFs:
+X
+X   <HTML><HEAD><TITLE>Speed</TITLE></HEAD><BODY>
+X   <IMG src="speed2.gif" alt="Speed in meters per second">
+X   <BR>
+X   <IMG src="speed3.gif" alt="Speed in kilometers per hour">
+X   <BR>
+X   <IMG src="speed4.gif" alt="Traveled too fast?">
+X   </BODY></HTML>
+X
+XName the file "speed.html" or similar, and view it.
+X
+XNow, all you have to do is measure the values regularly and update the
+Xdatabase. Every time you create these three GIFs and reload the page
+Xand the GIFs (better reread this last three words!) you know how fast
+Xyou traveled.
+X
+XYou already looked at the "update" tool. It took one or more parameters
+Xin the form of "<time>:<value>". You'll be glad to know that you can
+Xget the current time by filling in a "N" as the time.
+XIf you wish, you can also use the "time" function in perl.
+XThe shortest example in this doc :)
+X
+X   perl -e 'print time, "\n" '
+X
+XHow you can run a program on regular intervals is OS specific, so I just
+Xgive you an example script in a sort of pseudo code:
+X(Do not try this with our test database, it is used in further examples)
+X
+X   Get the value, put it in variable "$speed"
+X   rrdtool update speed.rrd N:$speed
+X
+XThis is all. Run this script every five minutes. When you need to know
+Xwhat the graphics look like, run the examples above. You could put them
+Xin a script. After running that script, view index.html
+X
+XI can imagine very few people will be able to get real data from their
+Xcar every five minutes, all other people will have to settle for some
+Xother kind of counter. You could measure the number of pages printed by
+Xthe laser-jet printer, the coffee made by the coffee machine, a device
+Xthat counts the electricity used, whatever. Just as long as it is an
+Xincrementing counter that you can measure regularly, you can graph it
+Xagainst time as we did. Most people will use the counter that keeps track
+Xof octets (bytes) transfered by a routing device so we have to do just
+Xthat. We will start with a description of how to collect data.
+XSome people will make a remark that there are tools who can do this data
+Xcollection for you. They are right! However, I feel it is important that
+Xyou understand they are not necessary. If you have to look why things
+Xwent wrong, you need to know how the stuff works.
+X
+XOne tool used in the example has been talked about very briefly in the
+Xbeginning of this document, it is called SNMP. It is a way of talking to
+Xequipment. The tool I use below is called "snmpget" and this is how it
+Xworks:
+X
+X   snmpget device password OID
+X
+XFor device you substitute the name of your device, for password you
+Xuse the "community" as it is called. For most devices "public" will do
+Xbut this can be disabled, altered or protected for privacy and security
+Xreasons. You will need to find this out as there is no way I can tell
+Xwhat you ( ...your device... ) are keeping a secret for me.
+X
+XThen there is this third parameter, called OID.
+XWhen you start to learn about SNMP it looks very confusing. It isn't
+Xall that difficult when you look at the Management Information Base
+Xor in short: the MIB. It is an up-side-down tree, with a single node
+Xas the root and from there a number of branches. These branches end
+Xup in another node, they branch out etc. All the branches have a name
+Xand they form the path that we follow all the way down. The branches
+Xthat we follow are named: iso, org, dod, internet, mgmt and mib-2.
+XThese names can also be written down as numbers and are 1 3 6 1 2 1.
+X
+X   iso.org.dod.internet.mgmt.mib-2 (1.3.6.1.2.1)
+X
+XFrom there, we are especially interested in the branch "interfaces"
+Xwhich has number 2 (so: 1.3.6.1.2.1.2 or 1.3.6.1.2.1.interfaces).
+X
+XThe SNMP programs that I know can take above path as a default, so
+XI could walk to interfaces without writing it in full. To do that,
+Xthe path has to be written as interfaces, without a leading dot.
+XI could also use the long form, then I need to start with a dot.
+X
+XI can intermix numbers and names as I like.  1.3.6.1.2.1 is the same
+Xas iso.org.dod.1.2.1 and 1.3.6.internet.2.mib-2
+XFor interfaces I could write "interfaces", 2, or a long version by
+Xprefixing it with ".1.3.6.1.2.1.". Just try what works for you and
+Xdo read the manual for snmpget.
+X
+XFirst, we have to get some SNMP program. First look if there is a
+Xpre-compiled package available for your OS. This is the preferred way.
+XIf not, you will have to get yourself the sources and compile those.
+XThe Internet is full of sources, programs etc. Find information using
+Xa search engine or whatever you prefer. You are on your own here, sorry.
+X
+XRight, you got the program. First try to collect some data that is
+Xavailable on most systems. Remember: there is a short name for the
+Xpart of the tree that interests us most in the world we live in !
+XI will use the short version as I think this document is large enough
+Xas it is. If that doesn't work for you, prefix with .1.3.6.1.2.1 and
+Xtry again. Also, Read The Fine Manual. Skip the parts you cannot
+Xunderstand yet, you should be able to find out how to start the
+Xprogram and use it.
+X
+X   snmpget myrouter public system.sysdescr.0
+X
+XThe device should answer with a description of itself, perhaps empty.
+XUntil you got a valid answer from a device, perhaps using a different
+X"password", or a different device, there is no point in continuing.
+X
+X   snmpget myrouter public interfaces.ifnumber.0
+X
+XHopefully you get a number as a result, the number of interfaces.
+XIf so, you can carry on and try a different program called "snmpwalk".
+X
+X   snmpwalk myrouter public interfaces.iftable.ifentry.ifdescr
+X
+XIf it returns with a list of interfaces, you're almost there.
+XHere's an example:
+X   [user@host /home/alex]$ snmpwalk cisco public 2.2.1.2
+X
+X   interfaces.ifTable.ifEntry.ifDescr.1 = "BRI0: B-Channel 1"
+X   interfaces.ifTable.ifEntry.ifDescr.2 = "BRI0: B-Channel 2"
+X   interfaces.ifTable.ifEntry.ifDescr.3 = "BRI0" Hex: 42 52 49 30
+X   interfaces.ifTable.ifEntry.ifDescr.4 = "Ethernet0"
+X   interfaces.ifTable.ifEntry.ifDescr.5 = "Loopback0"
+X
+XOn this cisco equipment, I would like to monitor the "Ethernet0"
+Xinterface and see that it is number four. I try:
+X
+X   [user@host /home/alex]$ snmpget cisco public 2.2.1.10.4 2.2.1.16.4
+X
+X   interfaces.ifTable.ifEntry.ifInOctets.4 = 2290729126
+X   interfaces.ifTable.ifEntry.ifOutOctets.4 = 1256486519
+X
+XSo now I have two OIDs to monitor and they are (in full, this time):
+X   1.3.6.1.2.1.2.2.10
+Xand
+X   1.3.6.1.2.1.2.2.16
+Xboth with an interface number of 4.
+X
+XDon't get fooled, this wasn't my first try. It took some time for me too
+Xto understand what all these numbers mean, it does help a lot when they
+Xget translated into descriptive text... At least, when people are talking
+Xabout MIBs and OIDs you know what it's all about.
+XDo not forget the interface number (0 if it is not interface dependent)
+Xand try snmpwalk if you don't get an answer from snmpget.
+X
+XIf you understand above part, and get numbers from your device, it is
+Xtime to continue with the following. If not, then go back.
+X
+XLet the fun begin. First, create a new database. It contains data from
+Xtwo counters, called input and output. The data is put into archives
+Xthat average it. They take 1, 6, 24 or 288 samples at a time.
+XThey also go into archives that keep the maximum numbers. This will be
+Xexplained later on. The time in-between samples is 300 seconds, a good
+Xstarting point, which is the same as five minutes.
+X
+X1 sample averaged stays 1 period of 5 minutes
+X6 samples averaged become one average on 30 minutes
+X24 samples averaged become one average on 2 hours
+X288 samples averaged become one average on 1 day
+X
+XThere are 600 samples of five minutes, together just over two days
+XThere are 600 samples of 30 minutes, almost two weeks
+XThere are 600 samples of 2 hours, 50 hour or almost two months
+XThere are 732 samples of 1 day, just over two year
+X
+XFor people used to MRTG that even have read the manuals, these numbers
+Xshould look familiar...
+X
+X   rrdtool create myrouter.rrd         \
+X            DS:input:COUNTER:600:U:U   \
+X            DS:output:COUNTER:600:U:U  \
+X            RRA:AVERAGE:0.5:1:600      \
+X            RRA:AVERAGE:0.5:6:600      \
+X            RRA:AVERAGE:0.5:24:600     \
+X            RRA:AVERAGE:0.5:288:732    \
+X            RRA:MAX:0.5:1:600          \
+X            RRA:MAX:0.5:6:600          \
+X            RRA:MAX:0.5:24:600         \
+X            RRA:MAX:0.5:288:732 
+X
+XNext thing to do is collect data and store it. Here is an example.
+XIt is written partially in pseudo code so you will have to find out what
+Xto do exactly on your OS to make it work.
+X
+X   while not the end of the universe
+X   do
+X      get result of
+X         snmpget router community 2.2.1.10.4
+X      into variable $in
+X      get result of
+X         snmpget router community 2.2.1.16.4
+X      into variable $out
+X
+X      rrdtool update myrouter.rrd N:$in:$out
+X
+X      wait for 5 minutes
+X   done
+X
+XThen, after collecting data for a day, try to create an image using:
+X
+X   rrdtool graph myrouter-day.gif --start -86400 \
+X            DEF:inoctets=myrouter.rrd:input:AVERAGE \
+X            DEF:outoctets=myrouter.rrd:output:AVERAGE \
+X            AREA:inoctets#00FF00:"In traffic" \
+X            LINE1:outoctets#0000FF:"Out traffic"
+X
+XThis should produce a picture with one day worth of traffic.
+XOne day is 24 hours of 60 minutes of 60 seconds: 24*60*60=86400, we
+Xstart at now minus 86400 seconds. We DEFine inoctets and outoctets
+Xas the average values from the database myrouter.rrd and draw an area
+Xfor the "in" traffic and a line for the "out" traffic.
+X
+XView the image and keep logging for a few more days.
+XIf you like, you could try the examples from the test database and
+Xsee if you can play around with the options and calculations.
+XSuggestion: 
+XDisplay in bytes per second and in bits per second. Make the ethernet
+Xgraphics go red if they are over four megabit per second.
+X
+X
+XA few paragraphs back I mentioned the possibility to keep the maximum
+Xvalues instead of the average values. Lets go into this a bit more.
+X
+XRecall all the stuff about the speed of the car. Suppose we drove at 144
+XKM/H during 5 minutes and then were stopped by the police for 25 minutes.
+XAt the end of the lecture we would take our laptop and create+view the
+Ximage taken from the database. If we would look at the second RRA we did
+Xcreate, we would have the average from 6 samples. The samples measured
+Xwould be 144+0+0+0+0+0=144, divided by 30 minutes, corrected for the
+Xerror by 1000, translated into KM/H, with a result of 24 KM/H.
+XI would still get a ticket but not for speeding anymore :)
+X
+XObviously, in this case, we shouldn't look at the averages. In some
+Xcases they are handy. If you want to know how much KM you had traveled,
+Xthe picture would be the right one to look at. On the other hand, for
+Xthe speed that we traveled at, the maximum number seen is much more
+Xvaluable. (later we will see more types)
+X
+XIt is the same for data. If you want to know the amount, look at the
+Xaverages. If you want to know the rate, look at the maxima.
+XOver time, they will grow apart more and more. In the last database
+Xwe have created, there are two archives that keep data per day. The
+Xarchive that keeps averages will show low numbers, the archive that
+Xshows maxima will have higher numbers.
+XFor my car this would translate in averages per day of 96/24=4 KM/H
+X(as I travel about 94 kilometers on a day) during week days, and
+Xmaxima of 120 KM/H on weekdays (my top speed that I reach every day).
+X
+XBig difference. Do not look at the second graph to estimate the
+Xdistances that I travel and do not look at the first graph to
+Xestimate my speed. This will work if the samples are close together,
+Xas they are in five minutes, but not if you average.
+X
+XOn some days, I go for a long ride. If I go across Europe and travel
+Xfor over 12 hours, the first graph will rise to about 60 KM/H. The
+Xsecond one will show 180 KM/H. This means that I traveled a distance
+Xof 60 KM/H times 24 H = 1440 KM. I did this with a higher speed and
+Xa maximum around 180 KM/H. This doesn't mean that I traveled for 8
+Xhours at a constant speed of 180 KM/H !
+XThis is a real example: go with the flow through Germany and stop
+Xa few times for gas and coffee. Drive slowly through Austria and the
+XNetherlands. Be careful in the mountains and villages. If you would
+Xlook at the graphs created from the five-minute averages you would
+Xget a totally different picture. You would see the same values on the
+Xaverage and maximum graphs (provided I measured every 300 seconds).
+XYou would be able to see when I stopped, when I was in top gear, when
+XI drove over fast motor-ways etc. The granularity of the data is much
+Xhigher, so you can see more. However, this takes 12 samples per hour,
+Xor 288 values per day, so it would be too much to keep for a long
+Xperiod of time. Therefore we average it, eventually to one value per
+Xday. From this one value, we cannot see much detail.
+X
+XMake sure you understand the last few paragraphs. There is no value
+Xin only a line and a few axises, you need to know what they mean and
+Xinterpret the data in a good way. This is true for all data.
+X
+XThe biggest mistake you can make is to use the collected data for
+Xsomething that it is not suitable for. You would be better off if
+Xyou would not have the graphics at all in that case.
+X
+X
+XLet's review what you now should know.
+XYou now know how to create a database. You can put the numbers in it,
+Xget them out again by creating an image, do math on the data from the
+Xdatabase and view the outcome instead of the raw data.
+XYou know about the difference between averages and maxima, and when
+Xto use which (or at least you have an idea).
+X
+XRRDtool can do more than what we have learned until know. Before you
+Xcontinue with the rest of this doc, I recommend that you reread from
+Xthe start and try some modifications on the examples. Make sure you
+Xfully understand everything. It will be worth the effort and helps
+Xyou not only with the rest of this doc but also in your day to day
+Xmonitoring long after you read this introduction.
+X
+X
+X
+X
+X
+X
+XAll right, you feel like continuing. Welcome back and get ready
+Xfor an increased speed in the examples and explanation.
+X
+XYou know that in order to view a counter over time, you have to
+Xtake two numbers and divide the difference of them between the
+Xtime lapsed. This makes sense for the examples I gave you but there
+Xare other possibilities. For instance, I'm able to retrieve the
+Xtemperature from my router in three places namely the inlet, the
+Xso called hot-spot and the exhaust. If I would take the difference of
+Xtwo samples and divide that by 300 (seconds) there would not be very
+Xmuch to display ... If there would be anything to display it would
+Xbe the fluctuations in the temperature and if they produce noticeable
+Xresults when divided by 300, I'd better look for a new computer room.
+X
+XSo, what can we do ?
+XRRDtool can also store the values you measure directly as they are
+X(this is not entirely true but close enough). The graphs we make look
+Xmuch better, they will show a value that is rather constant. I know
+Xwhen the router is busy (it works -> it uses more electricity -> it
+Xgenerates more heat -> the temperature rises). I know when the doors
+Xare left open (the room is cooled -> the warm air from the rest of
+Xthe building flows into the computer room -> the inlet temperature
+Xrises) etc. The data type we use when creating the database before
+Xwas counter, we now have a different data type and thus a different
+Xname for it. It is called GAUGE. There are more such data types:
+X - COUNTER   we already know this one
+X - GAUGE     we just learned this one
+X - DERIVE
+X - ABSOLUTE
+X
+XThe two new types are derive and absolute. Absolute can be used like
+Xcounter with one difference: RRDtool assumes the counter is reset when
+Xit's read. That is: its delta is known without calculation by RRDtool
+Xwhereas RRDtool needs to calculate it for the counter type.
+XExample: our first example (12345, 12357, 12363, 12363) would read:
+Xunknown, 12, 6, 0. The rest of the calculations stay the same.
+XThe other one, derive, is like counter. Unlike counter, it can also
+Xdecrease so it can have a negative delta. Again, the rest of the
+Xcalculations stay the same.
+X
+XLet's try them all:
+X
+X   rrdtool create all.rrd --start 978300900 \
+X            DS:a:COUNTER:600:U:U \
+X            DS:b:GAUGE:600:U:U \
+X            DS:c:DERIVE:600:U:U \
+X            DS:d:ABSOLUTE:600:U:U \
+X            RRA:AVERAGE:0.5:1:10
+X   rrdtool update all.rrd \
+X            978301200:300:1:600:300    \
+X            978301500:600:3:1200:600   \
+X            978301800:900:5:1800:900   \
+X            978302100:1200:3:2400:1200 \
+X            978302400:1500:1:2400:1500 \
+X            978302700:1800:2:1800:1800 \
+X            978303000:2100:4:0:2100    \
+X            978303300:2400:6:600:2400  \
+X            978303600:2700:4:600:2700  \
+X            978303900:3000:2:1200:3000
+X   rrdtool graph all1.gif -s 978300600 -e 978304200 -h 400 \
+X            DEF:linea=all.rrd:a:AVERAGE LINE3:linea#FF0000:"Line A" \
+X            DEF:lineb=all.rrd:b:AVERAGE LINE3:lineb#00FF00:"Line B" \
+X            DEF:linec=all.rrd:c:AVERAGE LINE3:linec#0000FF:"Line C" \
+X            DEF:lined=all.rrd:d:AVERAGE LINE3:lined#000000:"Line D"
+X
+XWhat do we expect ?
+X - Line A is a counter so it should continuously increment and RRDtool
+X   should calculate the differences. Also, RRDtool needs to divide the
+X   difference by the amount of time lapsed. This should end up as a
+X   straight line at 1 (the deltas are 300, the time is 300).
+X - Line B is of type gauge. These are "real" values so they should match
+X   what we put in: a sort of a wave.
+X - Line C is derive. It should be a counter that can decrease. It does
+X   so between 2400 and 0, with 1800 in-between.
+X - Line D is of type absolute. This is like counter but it works on
+X   values without calculating the difference. The numbers are the same
+X   and as you can see (hopefully) this has a different result.
+X
+XThis translates in the following values, starting at 23:10 and ending
+Xat 00:10 the next day (where U means unknown/unplotted):
+X          
+X - Line A:  u  u  1  1  1  1  1  1  1  1  1  u
+X - Line B:  u  1  3  5  3  1  2  4  6  4  2  u
+X - Line C:  u  u  2  2  2  0 -2 -6 -2  0  2  u
+X - Line D:  u  1  2  3  4  5  6  7  8  9 10  u
+X
+XIf your GIF shows all this, you know you have typed the data correct,
+Xthe RRDtool executable is working properly, your viewer doesn't fool you
+Xand you successfully entered the year 2000 :)
+XYou could try the same example four times, each time with only one of
+Xthe lines.
+X
+XLet's go over the data again:
+X- Line A: 300,600,900 and so on. The counter delta is a constant 300 and
+X  so it the time delta. A number divided by itself is always 1 (except
+X  when dividing by zero which is undefined/illegal).
+X  Why is it that the first point is unknown ? We do know what we put into
+X  the database ? True ! But we didn't have a value to calculate the delta
+X  from so we don't know where we started. It would be wrong to assume we
+X  started at zero so we don't !
+X- Line B: There is nothing to calculate. The numbers are as is.
+X- Line C: Again, the start-out value is unknown. The same story is valid
+X  like for line A. In this case the deltas are not constant so the line
+X  is not. If we would put the same numbers in the database as we did for
+X  line A, we would have gotten the same line. Unlike type counter, this
+X  type can decrease and why there is a difference I hope to show you later
+X  on.
+X- Line D: Here the device calculates the deltas. Therefore we DO know the
+X  first delta and it is plotted. We had the same input as with line A but
+X  the meaning of this input is different. Therefore the line is different.
+X  In this case the deltas increase each time with 300. The time delta
+X  stays at a constant 300 and therefore the division of the two gives
+X  increasing results.
+X
+XThere are a few more basics to show. Some important options are still to
+Xbe covered and we haven't look at counter wraps yet. First the counter wrap:
+XIn our car we notice that our counter shows 999987. We travel 20 KM and
+Xthe counter should go to 1000007. Unfortunately, there are only six digits
+Xon our counter so it really shows 000007. If we would plot that on a type
+XDERIVE, it would mean that the counter was set back 999980 KM. It wasn't,
+Xand there has to be some protection for this. This protection is only
+Xavailable for type COUNTER which should be used for this kind of counter
+Xanyways. How does it work ? Type counter should never decrease and
+Xtherefore RRDtool must assume it wrapped if it does decrease !
+XIf the delta is negative, this can be compensated for by adding the
+Xmaximum value of the counter + 1. For our car this would be:
+X
+XDelta = 7 - 999987 = -999980    (instead of 1000007-999987=20)
+XReal delta = -999980 + 999999 + 1 = 20
+X
+XAt the moment of writing this document, RRDtool knows of counters that
+Xare either 32 bits or 64 bits of size. These counters can handle the
+Xfollowing different values:
+X - 32 bits: 0 ..           4294967295
+X - 64 bits: 0 .. 18446744073709551615
+XIf these numbers look strange to you, you would like to view them in
+Xtheir hexadecimal form:
+X - 32 bits: 0 ..         FFFFFFFF
+X - 64 bits: 0 .. FFFFFFFFFFFFFFFF
+XRRDtool handles both counters the same. If an overflow would occur and
+Xthe delta would be negative, RRDtool first adds the maximum of a small
+Xcounter + 1 to the delta. If the delta is still negative, it had to be
+Xthe large counter that wrapped. Add the maximum possible value of the
+Xlarge counter + 1 and subtract the falsely added small value.
+XThere is a risk in this: suppose the large counter wrapped while adding
+Xa huge delta, it could happen in theory that adding the smaller value
+Xwould make the delta positive. In this unlikely case the results would
+Xnot be correct. The increase should be nearly as high as the maximum
+Xcounter value for that to happen so chances are you would have several
+Xother problems as well and this particular problem would not even be
+Xworth thinking about. Even though I did include an example of it so you
+Xcan judge that for yourself.
+X
+XThe next section gives you some numerical examples for counter-wraps.
+XTry to do the calculations yourself or just believe me if your calculator
+Xcan't handle the numbers :)
+X
+XCorrection numbers: 
+X- 32 bits: (4294967295+1) =                                 4294967296
+X- 64 bits: (18446744073709551615+1)-correction1 = 18446744069414584320
+X
+XBefore:        4294967200
+XIncrease:             100
+XShould become: 4294967300
+XBut really is:          4
+XDelta:        -4294967196
+XCorrection1:  -4294967196 +4294967296 = 100
+X
+XBefore:        18446744073709551000
+XIncrease:                       800
+XShould become: 18446744073709551800
+XBut really is:                  184
+XDelta:        -18446744073709550816
+XCorrection1:  -18446744073709550816 +4294967296 = -18446744069414583520
+XCorrection2:  -18446744069414583520 +18446744069414584320 = 800
+X
+XBefore:        18446744073709551615 ( maximum value )
+XIncrease:      18446744069414584320 ( absurd increase, minimum for
+XShould become: 36893488143124135935             this example to work )
+XBut really is: 18446744069414584319
+XDelta:                  -4294967296
+XCorrection1:  -4294967296 + 4294967296 = 0
+X(not negative -> no correction2)
+X
+XBefore:        18446744073709551615 ( maximum value )
+XIncrease:      18446744069414584319 ( one less increase )
+XShould become: 36893488143124135934
+XBut really is: 18446744069414584318
+XDelta:                  -4294967297
+XCorrection1:  -4294967297 +4294967296 = -1
+XCorrection2:  -1 +18446744069414584320 = 18446744069414584319
+X
+X
+XAs you can see from the last two examples, you need strange numbers
+Xfor RRDtool to fail (provided it's bug free of course) so this should
+Xnot happen. However, SNMP or whatever method you choose to collect the
+Xdata might also fail and it is not uncommon to get wrong numbers
+Xoccasionally. We can't prevent all errors but there are some things we
+Xcould do. RRDtool create takes two special parameters for this. They define
+Xthe minimum and maximum allowed value. Until now, we made them "U"
+Xfrom Unknown. You may (not: must) provide values for one or both of them
+Xand if RRDtool receives values that are outside these limits, it will ignore
+Xthem. For a thermometer in degrees Celsius, the absolute minimum is
+Xjust under -273. For my router, I can assume this minimum is much higher
+Xso I would say it is 10. The maximum temperature for my router I would
+Xstate as 80. Any higher and the device would be out of order.
+XFor my car, I would never expect negative numbers and also I would not
+Xexpect numbers to be higher than 230. Anything else, and there must have
+Xbeen an error. Remember: the opposite is not true, if the numbers pass
+Xthis check it doesn't mean that they are correct. Always judge the
+Xgraph with a healthy doses of paranoia if it looks weird.
+X
+XOne important feature of RRDtool has not been explained yet:
+XIt is virtually impossible to collect the data and feed it into RRDtool
+Xon exact intervals. RRDtool therefore interpolates the data so it is on
+Xexact intervals. If you do not know what this means or how it works,
+Xthen here's the help you seek:
+X
+XSuppose a counter increases with exactly one for every second. You want
+Xto measure it in 300 seconds intervals. You should retrieve values
+Xthat are exactly 300 apart. However, due to various circumstances you
+Xare a few seconds late and the interval is 303. The delta will also be
+X303 in that case. Obviously RRDtool should not put 303 in the database
+Xand make you believe that the counter increased 303 in 300 seconds.
+XThis is where RRDtool interpolates: it alters the 303 value as if it
+Xwould have been stored earlier and it will be 300 in 300 seconds.
+XNext time you are at exactly the right time. This means that the current
+Xinterval is 297 seconds and also the counter increased with 297. Again
+XRRDtool alters the value and stores 300 as it should be.
+X
+X      in the RDD                 in real
+X
+Xtime+000:   0 delta="U"   time+000:    0 delta="U"
+Xtime+300: 300 delta=300   time+300:  300 delta=300
+Xtime+600: 600 delta=300   time+603:  603 delta=303
+Xtime+900: 900 delta=300   time+900:  900 delta=297
+X
+XLet's create two identical databases. I've chosen time 920805000
+Xto 920805900 as this goes very well with the example numbers.
+X
+X   rrdtool create seconds1.rrd   \
+X      --start 920804700          \
+X      DS:seconds:COUNTER:600:U:U \
+X      RRA:AVERAGE:0.5:1:24
+X
+X   for Unix: cp seconds1.rrd seconds2.rrd
+X   for Dos:  copy seconds1.rrd seconds2.rrd
+X   for vms:  how would I know :)
+X
+X   rrdtool update seconds1.rrd \
+X      920805000:000 920805300:300 920805600:600 920805900:900
+X   rrdtool update seconds2.rrd \
+X      920805000:000 920805300:300 920805603:603 920805900:900
+X
+X   rrdtool graph seconds1.gif                       \
+X      --start 920804700 --end 920806200             \
+X      --height 200                                  \
+X      --upper-limit 1.05 --lower-limit 0.95 --rigid \
+X      DEF:seconds=seconds1.rrd:seconds:AVERAGE      \
+X      CDEF:unknown=seconds,UN                       \
+X      LINE2:seconds#0000FF                          \
+X      AREA:unknown#FF0000
+X   rrdtool graph seconds2.gif                       \
+X      --start 920804700 --end 920806200             \
+X      --height 200                                  \
+X      --upper-limit 1.05 --lower-limit 0.95 --rigid \
+X      DEF:seconds=seconds2.rrd:seconds:AVERAGE      \
+X      CDEF:unknown=seconds,UN                       \
+X      LINE2:seconds#0000FF                          \
+X      AREA:unknown#FF0000
+X
+XBoth graphs should show the same.
+X
+X
+X
+XIt's time to wrap up this document. You now know all the basics to be
+Xable to work with RRDtool and to read the documentation available.
+XThere is plenty more to discover about RRDtool and you will find more and
+Xmore uses for the program. You could create easy graphics using just the
+Xexamples provided and using only RRDtool. You could also use the front
+Xends that are available.
+X
+XRemember to subscribe to the mailing-list. Even if you are not answering
+Xthe mails that come by, it helps both you and the rest. A lot of the stuff
+Xthat I know about MRTG (and therefore about RRDtool) I've learned while
+Xjust reading the list without posting to it. I did not need to ask the
+Xbasic questions as they are answered in the FAQ (so: read that too) and
+Xin various mails by other users.
+XWith thousands of users all over the world, there will always be people
+Xwho ask questions that you can answer because you read this and other
+Xdocumentation and they didn't.
+X
+XI hope you enjoyed the examples and their descriptions. If you do, help
+Xother people by pointing them to this document when they are asking
+Xbasic questions. They will not only get their answer but at the same
+Xtime learn a whole lot more.
+X
+XAlex van den Bogaerdt
+SHAR_EOF
+  : || $echo 'restore of' 'RRDbeginner' 'failed'
+fi
+# ============= binhex ==============
+if test -f 'binhex' && test "$first_param" != -c; then
+  $echo 'x -' SKIPPING 'binhex' '(file already exists)'
+else
+  $echo 'x -' extracting 'binhex' '(text)'
+  sed 's/^X//' << 'SHAR_EOF' > 'binhex' &&
+XMost people use the decimal numbering system. This system uses ten
+Xsymbols to represent numbers. When those ten symbols are used up, they
+Xstart all over again and increment the position just before this. The
+Xdigit 0 is only shown if it is the only symbol in the sequence, or if
+Xit is not the first one.
+XIf this sounds as crypto to you, this is what I've said in numbers:
+X     0
+X     1
+X     2
+X     3
+X     4
+X     5
+X     6
+X     7
+X     8
+X     9
+X    10
+X    11
+X    12
+X    13
+Xand so on.
+X
+XEach time the digit nine should be incremented, it is reset to 0 and the
+Xposition before is incremented. Then number 9 can be seen as "00009" and
+Xwhen we should increment 9, we reset it to zero and increment the digit
+Xjust before the 9 so the number becomes "00010". For zero's we write a 
+Xspace if it is not the only digit (so: number 0) and if it is the first
+Xdigit: "00010" -> " 0010" -> "  010" -> "   10". It is not "   1 ".
+X
+XThis was pretty basic, you already knew this. Why did I tell it ?
+XWell, computers do not represent numbers with 10 different digits. They
+Xknow of only two different symbols, being 0 and 1. Apply the same rules
+Xto this set of digits and you get the binary numbering system:
+X     0
+X     1
+X    10
+X    11
+X   100
+X   101
+X   110
+X   111
+X  1000
+X  1001
+X  1010
+X  1011
+X  1100
+X  1101
+Xand so on.
+X
+XIf you count the number of rows, you'll see that these are again 14
+Xdifferent numbers. The numbers are the same and mean the same. It is
+Xonly a different representation. This means that you have to know the
+Xrepresentation used, or as it is called the numbering system or base.
+XNormally if we do not speak about the numbering system used, we're
+Xusing the decimal system. If we are talking about another numbering
+Xsystem, we'll have to make that clear. There are a few wide-spread
+Xmethods to do so. One common form is to write 1010(2) which means that
+Xyou wrote down a number in the binary form. It is the number ten.
+XIf you would write 1010 it means the number one thousand and ten.
+X
+XIn books, another form is most used. It uses subscript (little chars,
+Xmore or less in between two rows). You can leave out the parentheses
+Xin that case and write down the number in normal characters followed
+Xwith a little two just behind it.
+X
+XThe numbering system used is also called the base. We talk of the number
+X1100 base 2, the number 12 base 10.
+X
+XFor the binary system, is is common to write leading zero's. The numbers
+Xare written down in series of four, eight or sixteen depending on the
+Xcontext.
+X
+XWe can use the binary form when talking to computers (...programming...)
+Xbut the numbers will have large representations. The number 65535 would
+Xbe written down as 1111111111111111(2) which is 16 times the digit 1.
+XThis is difficult and prone to errors. Therefore we normally would use
+Xanother base, called hexadecimal. It uses 16 different symbols. First
+Xthe symbols from the decimal system are used, thereafter we continue
+Xwith the alfabetic characters. We get 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, A,
+XB, C, D, E and F. This system is choosen because the hexadecimal form
+Xcan be converted into the binary system very easy (and back).
+X
+XThere is yet another system in use, called the octal system. This was
+Xmore common in the old days but not anymore. You will find it in use
+Xon some places so get used to it. The same story applies, but now with
+Xonly eight different symbols.
+X
+XBinary      (2)
+XOctal       (8)
+XDecimal     (10)
+XHexadecimal (16)
+X
+X(2)    (8) (10) (16)
+X00000   0    0    0
+X00001   1    1    1
+X00010   2    2    2
+X00011   3    3    3
+X00100   4    4    4
+X00101   5    5    5
+X00110   6    6    6
+X00111   7    7    7
+X01000  10    8    8
+X01001  11    9    9
+X01010  12   10    A
+X01011  13   11    B
+X01100  14   12    C
+X01101  15   13    D
+X01110  16   14    E
+X01111  17   15    F
+X10000  20   16   10
+X10001  21   17   11
+X10010  22   18   12
+X10011  23   19   13
+X10100  24   20   14
+X10101  25   21   15
+X
+XMost computers used nowadays are using bytes of eight bits. This means
+Xthat they store eight bits at a time. You can see why the octal system
+Xis not the most preferred for that: You'd need three digits to represent
+Xthe eight bits and this means that you'd have to use one complete digit
+Xto represent only two bits (2+3+3=8). This is a waste. For hexadecimal
+Xdigits, you need only two digits which are used completely:
+X
+X(2)      (8)  (10) (16)
+X11111111 377  255   FF
+X
+XYou can see why binary and hexadecimal can be converted quickly:
+XFor each hexadecimal digit there are exactly four binary digits.
+XTake a binary number. Each time take four digits from the right and make
+Xa hexadecimal digit from it (see the table above). Stop when there are
+Xno more digits.
+XOther way around: Take a hexadecimal number. For each digit, write down
+Xits binary equivalent.
+X
+XComputers (or rather the parsers running on them) would have a hard time
+Xconverting a number like 1234(16). Therefore hexadecimal numbers get a
+Xprefix. This prefix depends on the language you're writing in. Some of
+Xthe prefixes are "0x" for C, "$" for pascal, "#" for HTML.
+XIt is common to assume that if a number starts with a zero, it is octal.
+XIt does not matter what is used as long as you know what it is.
+XI will use "0x" for hexadecimal, "%" for binary and "0" for octal.
+XThe following numbers are all the same, just the way they are written is
+Xdifferent:  021  0x11  17  %00010001
+X
+XTo do arithmetics and conversions you need to understand one more thing.
+XIt is something you already know but perhaps you do not "see" it yet:
+X
+XIf you write down 1234, (so it is decimal) you are talking about the
+Xnumber one thousand, two hundred and thirty four. In sort of a formula:
+X
+X1 * 1000 = 1000
+X2 *  100 =  200
+X3 *   10 =   30
+X4 *    1 =    4
+X
+XThis can also be written as:
+X1 * 10^3
+X2 * 10^2
+X3 * 10^1
+X4 * 10^0
+Xwhere ^ means "to the power of".
+X
+XWe are using the base 10, and the positions 0,1,2 and 3.
+XThe right-most position should NOT be multiplied with 10. The second
+Xfrom the right should be multiplied one time with 10. The third from
+Xthe right is multiplied with 10 two times. This continues for whatever
+Xpositions are used.
+X
+XIt is the same in all other representations:
+X
+X0x1234 will be
+X1 * 16^3
+X2 * 16^2
+X3 * 16^1
+X4 * 16^0
+X
+X01234 would be
+X1 * 8^3
+X2 * 8^2
+X3 * 8^1
+X4 * 8^0
+X
+XThis example can not be done for binary as that system can only use two
+Xsymbols. Another example:
+X
+X%1010 would be
+X1 * 2^3
+X0 * 2^2
+X1 * 2^1
+X0 * 2^0
+XIt would have been more easy to convert it to its hexadecimal form and
+Xjust translate %1010 into 0xA. After a while you get used to it. You will
+Xnot need to do any calculations anymore but just know that 0xA means 10.
+X
+XTo convert a decimal number into a hexadecimal one you could use the next
+Xmethod. It will take some time to be able to do the estimates but it will
+Xbe more and more easy when you use the system more frequent. Another way
+Xis presented to you thereafter.
+X
+XFirst you will need to know how many positions will be used in the other
+Xsystem. To do so, you need to know the maximum numbers. Well, that's not
+Xso hard as it looks. In decimal, the maximum number that you can form 
+Xwith two digits is "99". The maximum for three: "999". The next number
+Xwould need an extra position. Reverse this idea and you will see that
+Xthe number can be found by taking 10^3 (10*10*10 is 1000) minus 1 or
+X10^2 minus one.
+X
+XThis can be done for hexadecimal too:
+X16^4 = 0x10000 = 65536
+X16^3 =  0x1000 =  4096
+X16^2 =   0x100 =   256
+X16^1 =    0x10 =    16
+X
+XIf a number is smaller than 65536 it will thus fit in four positions.
+XIf the number is bigger than 4095, you will need to use position 4.
+XHow many times can you take 4096 from the number without going below
+Xzero is the first digit you write down. This will always be a number
+Xfrom 1 to 15 (0x1 to 0xF). Do the same for the other positions.
+X
+XNumber is 41029. It is smaller than 16^4 but bigger than 16^3-1. This
+Xmeans that we have to use four positions.
+XWe can subtract 16^3 from 41029 ten times without going below zero.
+XThe leftmost digit will be "A" so we have 0xA????.
+XThe number is reduced to 41029 - 10*4096 = 41029-40960 = 69.
+X69 is smaller than 16^3 but not bigger than 16^2-1. The second digit
+Xis therefore "0" and we know 0xA0??.
+X69 is smaller than 16^2 and bigger than 16^1-1. We can subtract 16^1
+X(which is just plain 16) four times and write down "4" to get 0xA04?.
+XTake 64 from 69 (69 - 4*16) and the last digit is 5 --> 0xA045.
+X
+XThe other method builds the number from the right. Take again 41029.
+XDivide by 16 and do not use fractions (only whole numbers).
+X41029 / 16 is 2564 with a remainder of 5. Write down 5.
+X2564 / 16 is 160 with a remainder of 4. Write the 4 before the 5.
+X160 / 16 is 10 with no remainder. Prepend 45 with 0.
+X10 / 16 is below one. End here and prepend 0xA. End up with 0xA045.
+X
+XWhich method to use is up to you. Use whatever works for you. Personally
+XI use them both without being able to tell what method I use in each
+Xcase, it just depends on the number, I think. Fact is, some numbers
+Xwill occur frequently while programming, if the number is close then
+XI will use the first method (like 32770, translate into 32768 + 2 and
+Xjust know that it is 0x8000 + 0x2 = 0x8002).
+X
+X
+XFor binary the same approach can be used. The base is 2 and not 16,
+Xand the number of positions will grow rapidly. Using the second method
+Xhas the advantage that you can see very simple if you should write down
+Xa zero or a one: if you divide by two the remainder will be zero if it
+Xwas an even number and one if it was an odd number:
+X41029 / 2 = 20514 remainder 1
+X20514 / 2 = 10257 remainder 0
+X10257 / 2 =  5128 remainder 1
+X 5128 / 2 =  2564 remainder 0
+X 2564 / 2 =  1282 remainder 0
+X 1282 / 2 =   641 remainder 0
+X  641 / 2 =   320 remainder 1
+X  320 / 2 =   160 remainder 0
+X  160 / 2 =    80 remainder 0
+X   80 / 2 =    40 remainder 0
+X   40 / 2 =    20 remainder 0
+X   20 / 2 =    10 remainder 0
+X   10 / 2 =     5 remainder 0
+X    5 / 2 =     2 remainder 1
+X    2 / 2 =     1 remainder 0
+X    1 / 2 below 0 remainder 1
+XWrite down the results from right to left: %1010000001000101
+XGroup by four:
+X%1010000001000101
+X%101000000100 0101
+X%10100000 0100 0101
+X%1010 0000 0100 0101
+XConvert into hexadecimal: 0xA045
+XGroup %1010000001000101 by three and convert into octal:
+X%1010000001000101
+X%1010000001000 101
+X%1010000001 000 101
+X%1010000 001 000 101
+X%1010 000 001 000 101
+X%1 010 000 001 000 101
+X%001 010 000 001 000 101
+X   1   2   0   1   0   5 --> 0120105
+X
+XSo: %1010000001000101 = 0120105 = 0xA045 = 41029
+XOr: 1010000001000101(2) = 120105(8) = A045(16) = 41029(10)
+XOr: 1010000001000101(2) = 120105(8) = A045(16) = 41029
+X
+X
+XAt first while adding numbers, you'll convert them to their decimal
+Xform and then back into their original form after doing the addition.
+XIf you use the other numbering system often, you will see that you'll
+Xbe able to do arithmetics in the base that is used.
+XIn any representation it is the same, add the numbers on the right,
+Xwrite down the rightmost digit from the result, remember the other
+Xdigits and use them in the next round. Continue with the second digits
+Xfrom the right and so on:
+X
+X    %1010 + %0111 --> 10 + 7 --> 17 --> %00010001
+Xwill become
+X    %1010
+X    %0111 +
+X     ||||
+X     |||+-- add 0 + 1, result is 1, nothing to remember
+X     ||+--- add 1 + 1, result is %10, write down 0 and remember 1
+X     |+---- add 0 + 1 + 1(remembered), result = 0, remember 1
+X     +----- add 1 + 0 + 1(remembered), result = 0, remember 1
+X            nothing to add, 1 remembered, result = 1
+X----------
+X   %10001 is the result, I like to write it as %00010001
+X
+XFor low values, try to do the calculations yourself, check them with
+Xa calculator. The more you do the calculations yourself, the more you
+Xfind that you didn't make mistakes. In the end, you'll do calcula in
+Xother bases as easy as you do in decimal.
+X
+XWhen the numbers get bigger, you'll have to realise that a computer is
+Xnot called a computer just to have a nice name. There are many different
+Xcalculators available. Use them. For unix you could use "bc" which is
+Xcalled so as it is short for Binary Calculator. It calculates not only
+Xin decimal, but in all bases you'll ever use (among them Binary).
+X
+XFor people on Windows:
+XStart the calculator (start->programs->accessories->calculator)
+Xand if necessary click view->scientific. You now have a scientific
+Xcalculator and can compute in binary or hexadecimal.
+SHAR_EOF
+  : || $echo 'restore of' 'binhex' 'failed'
+fi
+rm -fr _sh06095
+exit 0

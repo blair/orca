@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# This script runs percollator.se with the proper options for your site.
+# This script runs orcallator.se with the proper options for your site.
 
 # Define program locations that will be needed.
 prefix=@prefix@
@@ -25,8 +25,8 @@ OUTDIR=$PERCOLLATOR_DIR/$uname
 # Export the environmental variables.
 export OUTDIR WEB_LOG
 
-# Check if percollator is already running.
-pids=`/usr/ucb/ps auxww | $AWK '/percollator.se/ && !/awk/ {print $2}'`
+# Check if orcallator is already running.
+pids=`/usr/ucb/ps auxww | $AWK '/orcallator.se/ && !/awk/ {print $2}'`
 if test "$pids" != ""; then
   echo "Percollator already running.  Exiting."
   exit 1
@@ -53,11 +53,11 @@ fi
 
 # Now start the logging.
 echo "Starting logging"
-$SE $LE_PATCH -DWATCH_OS $WATCH_HTTPD $libdir/percollator.se &
+$SE $LE_PATCH -DWATCH_OS $WATCH_HTTPD $libdir/orcallator.se &
 
-# Write the PID of percollator to a file to make killing easier.
+# Write the PID of orcallator to a file to make killing easier.
 pid=$!
-echo $pid > $OUTDIR/percollator.pid
+echo $pid > $OUTDIR/orcallator.pid
 
-# Sleep for a couple of seconds to allow any percollator warnings to appear.
+# Sleep for a couple of seconds to allow any orcallator warnings to appear.
 sleep 5

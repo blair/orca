@@ -1,0 +1,45 @@
+New in version 0.21.
+ 1) Every file containing the words percollator, percol and perc has
+    been renamed to contain the word orcallator.  A new make target named
+    migrate will change all filenames in an installed Orca directory to
+    the new names.  This `make migrate' should only be run after killing
+    any running percollator.se's and Orca processes and before installing
+    this version of Orca.
+ 2) Orca now includes Digest::MD5 2.07, Math::Interpolate 1.02, RRDs
+    0.99029, and Storable 0.603 in packages/ to make installation easier.
+    The configure script now determines if you have the requisite version
+    of these packages installed in your Perl and will modify the Makefiles
+    to build the necessary modules.
+ 3) Orca now displays the daily, weekly, monthly, yearly plots of all
+    measurements even if there is only one group.  Orca used to not make
+    the web pages showing the different measurements all on one page if
+    there was only one group.
+ 4) Add GIF width and height tags to img src's using the returned GIF
+    size from RRDs::graph to speed with page rendering.
+ 5) Some minor HTML fixes to have the pages look cleaner for Netscape
+    browsers.
+ 6) Make use of RRDtool 0.99.12's legend formatting to clean up the GIF
+    legends and to store the minimum and maximum values of a data stream.
+ 7) Remove the LAST RRA from all Orca created RRAs since it is not
+    required to get the current value from an RRA.  This requires
+    rebuilding all RRDs.
+ 8) Add x86 Ethernet device (elxl*) plotting to orcallator.cfg.in.
+ 9) Do group name substitution on the Y legend in GIFs.
+10) Orca used to delete RRD files even if they are created with new
+    versions or Orca.  Now the RRD file is used if it is at least as
+    new as the version a particular version of Orca needs.
+11) Orca now dies if an unrecognized command line option is given.
+12) Speed up the count_proc() routine in orcallator.se by 20%.
+13) Perl_glob does not die if it cannot open a directory.  It will
+    also not follow directories named .. if they happen to match
+    a regular expression.  It also only returns files matching the
+    regular expressions.
+14) Change all references from
+    http://www.geocities.com/ResearchTriangle/Thinktank/4996/
+    to
+    http://www.geocities.com/~bzking/
+15) Speed up Orca by using Storable to do deep clones of objects
+    instead of using Data::Dumper and eval.
+16) Replace some linear search by a hash lookup to speed up Orca.
+17) Fix some bugs in orcallator.se.
+18) Clean up some error messages.

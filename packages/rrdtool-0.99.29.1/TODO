@@ -1,0 +1,9 @@
+let the user define the base resolution of the
+graph independantly of the pixle resolution. If it is smaller than one
+pixle it will simply be ignored
+
+do not fail if the same DEF gets stacked twice 
+im->gdes[ii].p_data = im->gdes[vidx].p_data;
+is a bad idea ... 
+
+get 1.0 out ...

@@ -1,0 +1,54 @@
+# things that the GNU standards document suggests all makefiles
+# should have.
+SHELL = /bin/sh
+.SUFFIXES:
+.SUFFIXES: .c .o .pl .pm .pod .html .man
+
+# variables we got from configure
+# (you can mess with these, if you want)
+
+CC = @CC@
+AR = ar
+CFLAGS_EXTRA = @CFLAGS_EXTRA@
+CFLAGS = @CFLAGS@
+CFLAGS_ALL = $(CFLAGS) $(CFLAGS_EXTRA) -I.. -I../gd1.2 -DHAVE_CONFIG_H \
+                 -DWANT_AT_STYLE_TIMESPEC
+LDFLAGS = @LDFLAGS@
+LIBS = -L../gd1.2 -lgd @LIBS@
+LIBS_DEPEND = ../gd1.2/libgd.a
+
+###
+### Things you might NOT want to play with ... 
+###
+
+HEADERS = rrd_tool.h rrd_format.h getopt.h parsetime.h
+
+SRCLIB = rrd_fetch.c rrd_create.c rrd_dump.c rrd_graph.c rrd_tune.c\
+	rrd_open.c rrd_diff.c rrd_last.c rrd_update.c rrd_format.c rrd_error.c\
+	getopt.c getopt1.c parsetime.c
+
+SRC = $(SRCLIB) rrd_tool.c
+
+OBJ = $(SRC:.c=.o)
+OBJLIB = $(SRCLIB:.c=.o)
+
+all: rrdtool librrd.a
+
+rrdtool: $(OBJ) $(LIBS_DEPEND)
+	$(CC) -o rrdtool $(OBJ) $(LDFLAGS) $(LIBS)
+
+librrd.a: $(OBJLIB)
+	$(AR) rc librrd.a $(OBJLIB)
+	@RANLIB@ librrd.a
+
+rrdtool.pure: $(OBJ) $(LIBS_DEPEND)
+	purify $(CC) -o rrdtool.pure $(OBJ) $(LDFLAGS) $(LIBS)
+
+clean:  
+	-rm *.o *.a
+
+realclean: clean
+	-rm rrdtool rrdtool.pure
+
+.c.o:	$(HEADERS)
+	$(CC) $(CFLAGS_ALL) -c $<

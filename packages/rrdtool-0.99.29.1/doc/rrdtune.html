@@ -1,0 +1,159 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>tune - Modify some basic properties of a Round Robin Database
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+<!--
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#EXAMPLE">EXAMPLE</A>
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+</UL>
+-->
+<!-- INDEX END -->
+
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+rrdtool tune - Modify some basic properties of a Round Robin Database
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<STRONG>rrdtool</STRONG>  <STRONG>tune</STRONG>  <EM>filename</EM> 
+ 
+[<STRONG>--heartbeat</STRONG>|<STRONG>-h</STRONG>&nbsp;<EM>ds-name</EM>:<EM>heartbeat</EM>] 
+ 
+[<STRONG>--minimum</STRONG>|<STRONG>-i</STRONG>&nbsp;<EM>ds-name</EM>:<EM>min</EM>]
+
+[<STRONG>--maximum</STRONG>|<STRONG>-a</STRONG>&nbsp;<EM>ds-name</EM>:<EM>max</EM>]
+
+[<STRONG>--data-source-type</STRONG>|<STRONG>-d</STRONG>&nbsp;<EM>ds-name</EM>:<EM>DST</EM>]
+
+[<STRONG>--data-source-rename</STRONG>|<STRONG>-r</STRONG>&nbsp;<EM>old-name</EM>:<EM>new-name</EM>]
+
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+The tune option allows you to alter some of the basic configuration values
+stored in the header area of a Round Robin Database (<STRONG>RRD</STRONG>). All these tunable parameters together decide when data fed into an 
+<STRONG>RRD</STRONG> is to be regarded as invalid. Invalid data is entered into the database as
+*UNKNOWN*.
+
+
+<P>
+
+The main application of the <STRONG>tune</STRONG> function is to relax the validation rules on an <STRONG>RRD</STRONG>. This allows to fill a new <STRONG>RRD</STRONG> with data available in larger intervals than what you would normally want
+to permit.
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_filename">filename
+
+</A></STRONG><DD>
+The name of the <STRONG>RRD</STRONG> you want to tune.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__heartbeat_h">--heartbeat|-h ds-name:heartbeat
+
+</A></STRONG><DD>
+modify the <EM>heartbeat</EM> of a data source. By setting this to a high value the rrd will accept
+things like one value per day ...
+
+
+<P>
+
+<DT><STRONG><A NAME="item__minimum_i">--minimum|-i ds-name:min
+
+</A></STRONG><DD>
+alter the minimum value acceptable as input from the data source. Setting <EM>min</EM> to 'U' will disable this limit.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__maximum_a">--maximum|-a ds-name:max
+
+</A></STRONG><DD>
+alter the maximum value acceptable as input from the data source. Setting <EM>max</EM> to 'U' will disable this limit.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__data_source_type_d">--data-source-type|-d ds-name:DST
+
+</A></STRONG><DD>
+alter the type <STRONG>DST</STRONG> of a data source.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__data_source_rename_r">[--data-source-rename|-r old-name:new-name]
+
+</A></STRONG><DD>
+rename a data source
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="EXAMPLE">EXAMPLE
+
+</A></H1>
+<CODE>rrdtool tune data.rrd -h in:100000 -h in:100000 -h in:100000</CODE>
+
+
+
+
+<P>
+
+Set the minimum required heartbeat for data sources 'in', 'out' and
+'through' to 10000 seconds which is a little over one day in data.rrd. This
+would allow to feed old data from mrtg-2.0 right into rrdtool without
+generating *UNKNOWN* entries.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHOR">AUTHOR
+
+</A></H1>
+Tobias Oetiker <A
+HREF="MAILTO:<oetiker@ee.ethz.ch>"><oetiker@ee.ethz.ch></A>
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

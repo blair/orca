@@ -1,0 +1,53 @@
+I would like to thank to following people for helping to
+bring mrtg 3.0 into existence.
+
+Planning and Inspiration
+
+	Daniel Wesemann
+	Krister Karlson
+	Simon Leinen
+
+Debugging and code contributions
+
+	Jeff R. Allen <jeff.allen@acm.org> (autoconfigure, portability)  
+	Philippe.Simonet <Philippe.Simonet@swisscom.com> (NT porting)
+	Wrolf Courtney <wrolf@concentric.net> (HP-UX)
+	Dan Dunn <dandunn@computer.org>
+	Russ Wright <wright@LBL.Gov>
+	Simon Leinen <simon@switch.ch>
+	Jost.Krieger <Jost.Krieger@ruhr-uni-bochum.de>
+	Blair Zajac <bzajac@geostaff.com>
+	Andrew Turner <turner@mint.net> (LAST and TOTAL consolidators)
+	Andreas Kroomaa <andre@ml.ee>
+        Oleg Cherevko <olwi@icyb.kiev.ua>
+	Otmar Lendl <O.Lendl@Austria.EU.net> (core dump fix)
+        Tom Crawley <Tom.Crawley@hi.riotinto.com.au> (GCC&HP configuration)
+        Jeremy Fischer <jeremy@pobox.com> (Makefile changes & RPM builds)
+        Alan Lichty <alan_lichty@eli.net>
+        Steen Linden <Steen.Linden@ebone.net>
+
+Documentation
+
+        Russ Wright <rwwright@home.com>
+        Wrolf Courtney <wrolf@concentric.net>      
+        Amos Shapira <amos@gezernet.co.il>
+        Kai Siering <kai.siering@mediaways.net>
+	Alex van den Bogaerdt <alex@ergens.op.het.net>
+	Alan Lichty <alan_lichty@eli.net>
+
+Further I would like to note, that rrdtool would not exist without
+the following free software products:
+
+	Perl by Larry Wall
+	gd library by Thomas Boutell
+	SNMP Perl-Module by Simon Leinen
+
+	and last but not least
+	
+	Linux by Linus Torvalds	
+
+I would also like to thank the Department of Electrical Engineering
+at the Swiss Federal Institute of Technology who allow me to
+use their network resources to publish rrdtool ...
+
+Tobias Oetiker <oetiker@ee.ethz.ch>

@@ -1,14 +1,18 @@
+@SET_MAKE@
+
 prefix		= @prefix@
 exec_prefix	= @exec_prefix@
 bindir		= @bindir@
 MKDIR		= @MKDIR@
 INSTALL		= @INSTALL@
 PERL_HEAD	= @PERL_HEAD@
-PERL_SCRIPTS	= percol_running orca percol_column
-SHELL_SCRIPTS	= restart_percol stop_percol start_percol
+ORCALLATOR_DIR	= @ORCALLATOR_DIR@
+RRD_DIR		= @RRD_DIR@
+PERL_SCRIPTS	= orcallator_running orca orcallator_column
+SHELL_SCRIPTS	= restart_orcallator stop_orcallator start_orcallator
 TARGETS		= $(PERL_SCRIPTS) $(SHELL_SCRIPTS)
 
-all:		$(TARGETS)
+all:		$(TARGETS) migrate_to_orcallator
 
 install: all
 		$(MKDIR) $(bindir)
@@ -17,11 +21,14 @@ install: all
 			$(INSTALL) $$file $(bindir);		\
 		done
 
+migrate:	migrate_to_orcallator
+		./migrate_to_orcallator $(prefix) $(exec_prefix) $(bindir) $(libdir) $(ORCALLATOR_DIR) $(RRD_DIR)
+
 clean:
 		$(RM) $(TARGETS)
 
 distclean:	clean
-		$(RM) *.sh percol_running.pl Makefile
+		$(RM) *.sh orcallator_running.pl Makefile
 
 .SUFFIXES:	.pl .sh
 
@@ -33,5 +40,22 @@ distclean:	clean
 		cp $< $@
 		chmod 0755 $@
 
-percol_running.pl: percol_running.pl.in
-		cd ..; ./config.status
+Makefile:	Makefile.in
+		(cd ..; ./config.status)
+		$(MAKE)
+
+orcallator_running.pl:		orcallator_running.pl.in
+		(cd ..; ./config.status)
+		$(MAKE)
+
+restart_orcallator.sh:		restart_orcallator.sh.in
+		(cd ..; ./config.status)
+		$(MAKE)
+
+start_orcallator.sh:		start_orcallator.sh.in
+		(cd ..; ./config.status)
+		$(MAKE)
+
+stop_orcallator.sh:		stop_orcallator.sh.in
+		(cd ..; ./config.status)
+		$(MAKE)

@@ -1,36 +1,57 @@
-SUBDIRS 	= lib src docs
-PREFIX		= @prefix@
-PERCOLLATOR_DIR	= @PERCOLLATOR_DIR@
-RRD_DIR		= @RRD_DIR@
+@SET_MAKE@
 
-all:	configure
-	@for dir in $(SUBDIRS); do			\
-		echo "cd $$dir; $(MAKE)";		\
-		(cd $$dir; $(MAKE));			\
+SUBDIRS 	= packages lib src docs
+PREFIX		= @prefix@
+ORCALLATOR_DIR	= @ORCALLATOR_DIR@
+RRD_DIR		= @RRD_DIR@
+CFLAGS		= @CFLAGS@
+
+all:	configure Makefile
+	@for dir in $(SUBDIRS); do				\
+		echo "cd $$dir && $(MAKE) CFLAGS=$(CFLAGS)";	\
+		(cd $$dir && $(MAKE) CFLAGS="$(CFLAGS)");	\
 	done
+
+test:
+	(cd packages; $(MAKE) CFLAGS="$(CFLAGS)" test)
+
+migrate:
+	(cd src; $(MAKE) migrate)
 
 install:
-	./config/mkinstalldirs $(PERCOLLATOR_DIR)
+	./config/mkinstalldirs $(ORCALLATOR_DIR)
 	./config/mkinstalldirs $(RRD_DIR)
 	@for dir in $(SUBDIRS); do			\
-		echo "cd $$dir; $(MAKE) install";	\
-		(cd $$dir; $(MAKE) install);		\
+		echo "cd $$dir && $(MAKE) install";	\
+		(cd $$dir && $(MAKE) install);		\
 	done
+
+modules:
+	(cd packages && $(MAKE) CFLAGS="$(CFLAGS)" modules)
+
+test_modules:
+	(cd packages && $(MAKE) CFLAGS="$(CFLAGS)" test_modules)
+
+install_modules:
+	(cd packages && $(MAKE) CFLAGS="$(CFLAGS)" install_modules)
 
 clean:
 	@for dir in $(SUBDIRS); do			\
-		echo "cd $$dir; $(MAKE) clean";		\
-		(cd $$dir; $(MAKE) clean);		\
+		echo "cd $$dir && $(MAKE) clean";	\
+		(cd $$dir && $(MAKE) clean);		\
 	done
 
 distclean:
 	@for dir in $(SUBDIRS); do			\
-		echo "cd $$dir; $(MAKE) distclean";	\
-		(cd $$dir; $(MAKE) distclean);		\
+		echo "cd $$dir && $(MAKE) distclean";	\
+		(cd $$dir && $(MAKE) distclean);	\
 	done
 	$(RM) config/PerlHead1 config/PerlHead2
 	$(RM) config.cache config.log config.status Makefile
 
 configure: configure.in
 	autoconf
+	./config.status
+
+Makefile: Makefile.in
 	./config.status

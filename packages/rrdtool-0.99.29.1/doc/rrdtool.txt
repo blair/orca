@@ -1,0 +1,264 @@
+
+
+
+RRDTOOL(1)                   rrdtool                   RRDTOOL(1)
+
+
+NNNNAAAAMMMMEEEE
+       rrdtool - round robin database tool
+
+SSSSYYYYNNNNOOOOPPPPSSSSIIIISSSS
+       rrrrrrrrddddttttoooooooollll ---- | _f_u_n_c_t_i_o_n
+
+DDDDEEEESSSSCCCCRRRRIIIIPPPPTTTTIIIIOOOONNNN
+       OOOOVVVVEEEERRRRVVVVIIIIEEEEWWWW
+
+       It is pretty easy to gather status information from all
+       sorts of things, ranging from the temperature in your
+       office to the number of octets which have passed through
+       the FDDI interface of your router. But it is not so
+       trivial to store this data in a efficient and systematic
+       manner. This is where rrrrrrrrddddttttoooooooollll kicks in. It lets you _l_o_g
+       _a_n_d _a_n_a_l_y_z_e the data you gather from all kinds of data-
+       sources (DDDDSSSS). The data analysis part of rrdtool is based
+       on the ability to quickly generate graphical
+       representations of the data values collected over a
+       definable time period.
+
+       In this man page you will find general information on the
+       design and functionality of the Round Robin Database Tool
+       (rrdtool). For a more detailed description of how to use
+       the individual functions of the rrrrrrrrddddttttoooooooollll check the
+       corresponding man page.
+
+       FFFFUUUUNNNNCCCCTTTTIIIIOOOONNNNSSSS
+
+       While the man pages talk of command line switches you have
+       to set in order to make rrrrrrrrddddttttoooooooollll work it is important to
+       note that the rrrrrrrrddddttttoooooooollll can be 'remote controlled' through a
+       set of pipes. This saves a considerable amount of startup
+       time when you plan to make rrrrrrrrddddttttoooooooollll do a lot of things
+       quickly. Check the section on the section on _R_e_m_o_t_e
+       _C_o_n_t_r_o_l further down.
+
+       ccccrrrreeeeaaaatttteeee  Set up a new Round Robin Database (RRD). Check
+               rrdcreate
+
+       uuuuppppddddaaaatttteeee  Store new data values into an RRD. Check rrdupdate
+
+       ggggrrrraaaapppphhhh   Create a graph from data stored in one or several
+               RRD. Apart from generating graphs, data can also
+               be extracted to stdout. Check rrdgraph
+
+       dddduuuummmmpppp    Dump the contents of an RRD in plain ASCII. This
+               is manly used for debugging. Check rrddump
+
+       ffffeeeettttcccchhhh   Get data for a certain time period from a RRD. The
+               graph function uses fetch to retrieve its data
+               from an rrd. Check rrdfetch
+
+
+
+
+
+12/Feb/99                  19990426.22                          1
+
+
+
+
+
+RRDTOOL(1)                   rrdtool                   RRDTOOL(1)
+
+
+       ttttuuuunnnneeee    Alter setup of an RRD
+
+       llllaaaasssstttt    Find last update time of an RRD
+
+       HHHHOOOOWWWW DDDDOOOOEEEESSSS RRRRRRRRDDDDTTTTOOOOOOOOLLLL WWWWOOOORRRRKKKK????
+
+
+       Data acquisition
+               When monitoring the state of a system, it is
+               convenient to have the data available at a
+               constant interval. Unfortunately you may not
+               always be able to fetch data at exactly the time
+               you want to. Therefore rrrrrrrrddddttttoooooooollll lets you update the
+               logfile at any time you want. It will
+               automatically interpolate the value of the data-
+               source (DDDDSSSS) at the latest official time-slot and
+               write this value to the log. The value you have
+               supplied is stored as well and is also taken into
+               account when interpolating the next log entry.
+
+       Consolidation
+               You may log data at a 1 minute interval, but you
+               are also be interested to know the development of
+               the data over the last year. You could do this by
+               simply storing the data in 1 minute interval, for
+               one year. While this would take considerable disk
+               space it would also take a lot of time to analyze
+               the data when you wanted to create a graph
+               covering the whole year. rrrrrrrrddddttttoooooooollll offers a solution
+               to this of this problem through its data
+               consolidation feature. When setting up an Round
+               Robin Database (RRRRRRRRDDDD), you can define at which
+               interval this consolidation should occur, and what
+               consolidation function (CCCCFFFF) (average, minimum,
+               maximum, total, last) should be used to build the
+               consolidated values (see rrdcreate). You can
+               define any number of different consolidation
+               setups within one RRRRRRRRDDDD. They will all be maintained
+               on the fly when new data is loaded into the RRRRRRRRDDDD.
+
+       Round Robin Archives
+               Data values of the same consolidation setup are
+               stored into Round Robin Archives (RRRRRRRRAAAA). This is a
+               very efficient manner to store data for a certain
+               amount of time, while using a known amount of
+               storage space.
+
+               It works like this: If you want to store 1000
+               values in 5 minute interval, rrrrrrrrddddttttoooooooollll will allocate
+               space for 1000 data values and a header area. In
+               the header it will store a pointer telling which
+               one of the values in the storage area was last
+               written to. New values are written to the Round
+               Robin Archive in a ...  you guess it ... round
+
+
+
+12/Feb/99                  19990426.22                          2
+
+
+
+
+
+RRDTOOL(1)                   rrdtool                   RRDTOOL(1)
+
+
+               robin manner. This automatically limits the
+               history to the last 1000 values. Because you can
+               define several RRRRRRRRAAAAs within a single RRRRRRRRDDDD, you can
+               setup another one, storing 750 data values at a 2
+               hour interval and thus keeping a log for the last
+               two months although at a lower resolution.
+
+               The use of RRRRRRRRAAAAs guarantees that the RRRRRRRRDDDD does not
+               grow over time and that old data is automatically
+               eliminated. By using the consolidation feature,
+               you can still keep data for a very long time,
+               while gradually reducing the resolution of the
+               data along the time axis. Using different
+               consolidation functions (CCCCFFFF) allows you to store
+               exactly the type of information that actually
+               interests you. (Maximum one minute traffic on the
+               LAN, minimum temperature of the wine cellar, total
+               minutes down time ...)
+
+       Unknown Data
+               As mentioned earlier, the RRRRRRRRDDDD stores data at a
+               constant interval. Now it may happen that no new
+               data is available when a value has to be written
+               to the RRRRRRRRDDDD. Data acquisition may not be possible
+               for one reason or an other. The rrrrrrrrddddttttoooooooollll handles
+               these situations by storing an _*_U_N_K_N_O_W_N_* value
+               into the database. The value '_*_U_N_K_N_O_W_N_*' is
+               supported through all the functions of the
+               database. When consolidating the amount of
+               _*_U_N_K_N_O_W_N_* data is accumulated and when a new
+               consolidated value is ready to be written to its
+               Round Robin Archive (RRRRRRRRAAAA) a validity check is
+               performed to make sure that the percentage of
+               unknown data in the new value is below a
+               configurable level. If so, an _*_U_N_K_N_O_W_N_* value will
+               be written to the RRRRRRRRAAAA.
+
+       Graphing
+               The rrrrrrrrddddttttoooooooollll also allows one to generate reports in
+               numerical and graphical form based on the data
+               stored in one or several RRRRRRRRDDDDs. The graphing
+               feature is fully configurable. Size, color and
+               contents of the graph can be defined freely. Check
+               rrdgraph for more information on this.
+
+       RRRREEEEMMMMOOOOTTTTEEEE CCCCOOOONNNNTTTTRRRROOOOLLLL
+
+       When you start rrrrrrrrddddttttoooooooollll with the command line option '----',
+       it waits for input via standard in. With this feature you
+       can improve performance by attaching rrrrrrrrddddttttoooooooollll to another
+       process (mrtg is one example) through a set of pipes. Over
+       the pipes rrrrrrrrddddttttoooooooollll accepts the same arguments as on the
+       command line. When a command is completed, rrdtool will
+       print the string  'OK', followed by timing information of
+
+
+
+12/Feb/99                  19990426.22                          3
+
+
+
+
+
+RRDTOOL(1)                   rrdtool                   RRDTOOL(1)
+
+
+       the form uuuu::::_u_s_e_r_t_i_m_e ssss::::_s_y_s_t_e_m_t_i_m_e both values are running
+       totals of seconds since rrdtool was started. If an error
+       occurs, a line of the form 'ERROR: _D_e_s_c_r_i_p_t_i_o_n _o_f _e_r_r_o_r'
+       will be printed. rrrrrrrrddddttttoooooooollll will not abort if possible, but
+       follow the ERROR line with an OK line.
+
+SSSSEEEEEEEE AAAALLLLSSSSOOOO
+       rrdcreate, rrdupdate, rrdgraph, rrddump, rrdfetch,
+       rrdtune, rrdlast
+
+BBBBUUUUGGGGSSSS
+       There must be plenty ... this is alpha code ;-) ...
+
+AAAAUUUUTTTTHHHHOOOORRRR
+       Tobias Oetiker <oetiker@ee.ethz.ch>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+12/Feb/99                  19990426.22                          4
+
+

@@ -1,0 +1,150 @@
+                         Storable 0.6
+               Copyright (c) 1995-1998, Raphael Manfredi
+
+------------------------------------------------------------------------
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the Artistic License, a copy of which can be
+    found with perl.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    Artistic License for more details.
+------------------------------------------------------------------------
+
+       *** This is beta software -- use at your own risks ***
+
+The Storable extension brings persistency to your data.
+
+You may recursively store to disk any data structure, no matter
+how complex and circular it is, provided it contains only SCALAR,
+ARRAY, HASH and references to those items, blessed or not.
+
+At a later stage, or in another program, you may retrieve data from
+the stored file and recreate the same hiearchy in memory. If you
+had blessed references, the retrieved references are blessed into
+the same package, so you must make sure you have access to the
+same perl class than the one used to create the relevant objects.
+
+For instance:
+
+	use Storable;
+
+	$scalar = 'scalar';
+	$hash{$scalar} = 'value';
+	$ref = \%hash;
+	@array = ('first', undef, $scalar, $ref, \$ref);
+
+	&show(\@array);
+
+	store(\@array, 'store');
+	$root = retrieve('store');
+
+	print '-' x 10, "\n";
+	&show($root) if ref($root) eq 'ARRAY';
+
+	sub show {
+		my ($aref) = @_;
+		foreach $i (@{$aref}) {
+			unless (defined $i) {
+				print "undef\n";
+				next;
+			}
+			print "$i";
+			print " ($$i)" if ref($i) eq 'SCALAR';
+			print "\n";
+		}
+	}
+
+
+when run on my machine produces:
+
+	first
+	undef
+	scalar
+	HASH(0x4001eec0)
+	SCALAR(0x4001ee60)
+	----------
+	first
+	undef
+	scalar
+	HASH(0x40021fd4)
+	SCALAR(0x40017008)
+
+You can see that items are retrieved in memory at some other place,
+but the topology of the retrieved data is the same as the original.
+
+I had first written Storable in Perl, but the results were disappointing,
+because it took almost 20 seconds to store 200K worth of data. By having
+the heart of Storable in C, I can store the same amount of data in about
+0.6 seconds. To retrieve the same data, it takes roughly 1.0 seconds,
+because you have to allocate objects in memory whereas storing merely
+traverses structures.
+
+More accurately, using Benchmark, I get (for a 236802 byte long stored
+file):
+
+	  Machine       Time to store       Time to retrieve
+	                 (cpu + sys)           (cpu + sys)
+	HP 9000/712         0.61 s                1.02 s
+	HP 9000/856         0.33 s                0.39 s
+
+To store/retrieve the "Magic: The Gathering" (MTG) database (1.9 Mb) in
+native format:
+
+	  Machine       Time to store       Time to retrieve
+	                 (cpu + sys)           (cpu + sys)
+	HP 9000/712         1.95 s                2.19 s
+
+That's roughly 1Mb/s for store and 0.86Mb/s for retrieve.
+
+NOTE: The above figures were valid for Storable-0.5 and earlier. No
+similar benchmarking have been made with Storable-0.6 and higher,
+which use a different binary image.
+
+Comparison of Storable-0.5@9 and Storable-0.6@3 on a version of
+Tom Christiansen's MTG database (1.8 Mb in native 0.5 format, 1.6 Mb
+only in 0.6 format) gives:
+
+    Version    Storable Image   "store"    "nstore"   "retrieve"
+                 Size in Mb     in Kb/s     in Kb/s     in Kb/s
+
+	 0.5@9          1.817         801         701         692
+	 0.6@3          1.526         880         851         870
+
+Kb/s rates refer to the size of the Storable image. Since the image
+is shorter with version 0.6, we must normalize the results to compare
+relative speed correctly, and therefore measure the overall time it
+takes to store/retrieve the same database. We get:
+
+    Version    Storable Image   "store"    "nstore"   "retrieve"
+                 Size in Mb     in secs     in secs     in secs
+
+	 0.5@9          1.817         2.32        2.65        2.69
+	 0.6@3          1.526         1.78        1.84        1.80
+
+Notice the important gain at retrieval time, due to the fact that we
+now use an array instead of a hash table to keep track of retrieved
+objects. I have no explaination for the relative speed-up of nstore
+operations other than the fact that less tests for "netorder" are made.
+
+To compile this extension, run:
+
+	perl Makefile.PL [PERL_SRC=...where you put perl sources...]
+	make
+	make install
+
+There is an embeded POD manual page in Storable.pm.
+
+Raphael Manfredi <Raphael_Manfredi@grenoble.hp.com>
+
+Thanks to:
+
+	Jarkko Hietaniemi <jhi@iki.fi>
+	Ulrich Pfeifer <pfeifer@charly.informatik.uni-dortmund.de>
+	Benjamin A. Holzman <benjamin.a.holzman@bender.com>
+	Andrew Ford <A.Ford@ford-mason.co.uk>
+	Gisle Aas <gisle@aas.no>
+	Jeff Gresham <gresham_jeffrey@jpmorgan.com>
+
+for their contributions.

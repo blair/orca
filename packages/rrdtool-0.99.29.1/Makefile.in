@@ -1,0 +1,53 @@
+# things that the GNU standards document suggests all makefiles
+# should have.
+SHELL = /bin/sh
+@SET_MAKE@
+INSTALL = @INSTALL@
+PREFIX = @prefix@
+CFLAGS = @CFLAGS@
+
+.SUFFIXES:
+.SUFFIXES: .c .o .pl .pm .pod .html .man
+
+all:
+	(cd gd1.2 && $(MAKE) CFLAGS="$(CFLAGS)" libgd.a)
+	(cd src && $(MAKE) CFLAGS="$(CFLAGS)")
+	$(MAKE) perl-piped perl-shared
+	(cd doc && $(MAKE))
+
+perl-piped: perl-piped/Makefile
+	(cd perl-piped && $(MAKE) OPTIMIZE="$(CFLAGS)")
+
+perl-shared: perl-shared/Makefile
+	(cd perl-shared && $(MAKE) OPTIMIZE="$(CFLAGS)")
+
+
+perl-piped/Makefile: perl-piped/Makefile.PL
+	(cd perl-piped && @PERL@ Makefile.PL)
+
+perl-shared/Makefile: perl-shared/Makefile.PL
+	(cd perl-shared && @PERL@ Makefile.PL)
+
+clean:
+	(cd gd1.2 && $(MAKE) clean)
+	(cd src && $(MAKE) clean)
+
+distclean realclean:
+	(cd gd1.2 && $(MAKE) realclean)
+	(cd src && $(MAKE) realclean)
+	@if test -f perl-shared/Makefile; then \
+		echo '(cd perl-shared; $(MAKE) clean)' ; \
+		(cd perl-shared; $(MAKE) clean); \
+	fi
+	@if test -f perl-piped/Makefile; then \
+		echo '(cd perl-piped; $(MAKE) clean)' ; \
+		(cd perl; $(MAKE) clean); \
+	fi
+	-rm -f config.cache config.h config.log config.status Makefile
+
+install: all
+	(cd perl-piped && $(MAKE) install)
+	(cd perl-shared && $(MAKE) install)
+	$(INSTALL) -m 755 -o root -g root src/rrdtool $(PREFIX)/bin
+	$(INSTALL) -m 644 -o root -g root doc/*.3 $(PREFIX)/man/man3
+	$(INSTALL) -m 644 -o root -g root doc/*.1 $(PREFIX)/man/man1

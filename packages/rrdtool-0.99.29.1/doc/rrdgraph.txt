@@ -1,0 +1,528 @@
+
+
+
+RRDGRAPH(1)                  rrdtool                  RRDGRAPH(1)
+
+
+NNNNAAAAMMMMEEEE
+       rrdtool graph - Create a graph based on data from one or
+       several RRD
+
+SSSSYYYYNNNNOOOOPPPPSSSSIIIISSSS
+       rrrrrrrrddddttttoooooooollll ggggrrrraaaapppphhhh _f_i_l_e_n_a_m_e [----ssss|--------ssssttttaaaarrrrtttt _s_e_c_o_n_d_s]
+       [----eeee|--------eeeennnndddd _s_e_c_o_n_d_s] [----xxxx|--------xxxx----ggggrrrriiiidddd _x_-_a_x_i_s _g_r_i_d _a_n_d _l_a_b_e_l]
+       [----yyyy|--------yyyy----ggggrrrriiiidddd _y_-_a_x_i_s _g_r_i_d _a_n_d _l_a_b_e_l]
+       [----vvvv|--------vvvveeeerrrrttttiiiiccccaaaallll----llllaaaabbbbeeeellll _t_e_x_t] [----wwww|--------wwwwiiiiddddtttthhhh _p_i_x_e_l_s]
+       [----hhhh|--------hhhheeeeiiiigggghhhhtttt _p_i_x_e_l_s] [----iiii|--------iiiinnnntttteeeerrrrllllaaaacccceeeedddd] [----oooo|--------llllooooggggaaaarrrriiiitttthhhhmmmmiiiicccc]
+       [----uuuu|--------uuuuppppppppeeeerrrr----lllliiiimmmmiiiitttt _v_a_l_u_e] [----llll|--------lllloooowwwweeeerrrr----lllliiiimmmmiiiitttt _v_a_l_u_e]
+       [----rrrr|--------rrrriiiiggggiiiidddd] [----bbbb|--------bbbbaaaasssseeee _v_a_l_u_e]
+       [----cccc|--------ccccoooolllloooorrrr _C_O_L_O_R_T_A_G####_r_r_g_g_b_b] [----tttt|--------ttttiiiittttlllleeee _t_i_t_l_e]
+       [DDDDEEEEFFFF::::_v_n_a_m_e====_r_r_d::::_d_s_-_n_a_m_e::::_C_F] [CCCCDDDDEEEEFFFF::::_v_n_a_m_e====_r_p_n_-_e_x_p_r_e_s_s_i_o_n]
+       [PPPPRRRRIIIINNNNTTTT::::_v_n_a_m_e::::_C_F::::_f_o_r_m_a_t] [GGGGPPPPRRRRIIIINNNNTTTT::::_v_n_a_m_e::::_C_F::::_f_o_r_m_a_t]
+       [CCCCOOOOMMMMMMMMEEEENNNNTTTT::::_t_e_x_t] [HHHHRRRRUUUULLLLEEEE::::_v_a_l_u_e####_r_r_g_g_b_b[::::_l_e_g_e_n_d]]
+       [VVVVRRRRUUUULLLLEEEE::::_t_i_m_e####_r_r_g_g_b_b[::::_l_e_g_e_n_d]]
+       [LLLLIIIINNNNEEEE{1111|2222|3333}::::_v_n_a_m_e[####_r_r_g_g_b_b[::::_l_e_g_e_n_d]]]
+       [AAAARRRREEEEAAAA::::_v_n_a_m_e[####_r_r_g_g_b_b[::::_l_e_g_e_n_d]]]
+       [SSSSTTTTAAAACCCCKKKK::::_v_n_a_m_e[####_r_r_g_g_b_b[::::_l_e_g_e_n_d]]]
+
+DDDDEEEESSSSCCCCRRRRIIIIPPPPTTTTIIIIOOOONNNN
+       The ggggrrrraaaapppphhhh functions main purpose is to create graphical
+       representations of the data stored in one or several RRRRRRRRDDDDs.
+       Apart from generating graphs, it can also extract
+       numerical reports.
+
+       _f_i_l_e_n_a_m_e
+               The name of the graph to generate. Since rrrrrrrrddddttttoooooooollll
+               outputs GIF's, it's recommended that the filename
+               end in _._g_i_f.  rrrrrrrrddddttttoooooooollll does not enforce this,
+               however. If the  _f_i_l_e_n_a_m_e is et to '-' the gif
+               file will be written to standard out. All other
+               output will get supressd.
+
+               If no graph functions are called, the graph will
+               not be created.
+
+       ----ssss|--------ssssttttaaaarrrrtttt _s_e_c_o_n_d_s (default -24*3600)
+               The time when the graph should begin. Time in
+               seconds since epoch (1970-01-01) is required.
+               Negative numbers are relative to the end time. By
+               default one day worth of data will be graphed.
+               See also AT-STYLE TIME SPECIFICATION section in
+               the _r_r_d_f_e_t_c_h documentation for alternative ways to
+               specify start time.
+
+       ----eeee|--------eeeennnndddd _s_e_c_o_n_d_s (default current time)
+               The time when the graph should end. Time in
+               seconds since epoch.  See also AT-STYLE TIME
+               SPECIFICATION section in the _r_r_d_f_e_t_c_h
+               documentation for alternative ways to specify end
+               time.
+
+
+
+
+4/May/99                   19990504.23                          1
+
+
+
+
+
+RRDGRAPH(1)                  rrdtool                  RRDGRAPH(1)
+
+
+       ----xxxx|--------xxxx----ggggrrrriiiidddd _x_-_a_x_i_s _g_r_i_d _a_n_d _l_a_b_e_l (default autoconfigure)
+               The x-axis label is quite complex to configure. So
+               if you don't have very special needs, you can
+               relay on the autoconfiguration to get this right.
+
+               The x-axis label is configured, using the
+               following format:
+
+               _G_T_M::::_G_S_T::::_M_T_M::::_M_S_T::::_L_T_M:_L_S_T::::_L_P_R::::_L_F_M
+
+               You have to configure three elements making up the
+               x-axis labels and grid. The base grid (_G_?_?), the
+               major grid (_M_?_?) and the labels (_L_?_?). The
+               configuration is based on the idea that you first
+               specify a well known amount of time (_?_T_M) and then
+               say how many times it has to pass between each
+               grid line or label (_?_S_T). For the label you have
+               to define two additional items: The precision of
+               the label in seconds (_L_P_R) and the strftime format
+               used to generate the text of the label (_L_F_M).
+
+               The _?_T_M elements must be one of the following
+               keywords: SSSSEEEECCCCOOOONNNNDDDD, MMMMIIIINNNNUUUUTTTTEEEE, HHHHOOOOUUUURRRR, DDDDAAAAYYYY, WWWWEEEEEEEEKKKK, MMMMOOOONNNNTTTTHHHH
+               or YYYYEEEEAAAARRRR.
+
+               If you wanted a graph with a base grid every 10
+               minutes and a major one every hour, with labels
+               every hour you would use the following x-axis
+               definition.
+
+               MINUTE:10:HOUR:1:HOUR:1:0:%X
+
+               The precision in this example is 0 because the %X
+               format is exact. If the label was the name of the
+               day, we would have had a precision of 24 hours,
+               because when you say something like 'Monday' you
+               mean the whole day and not Monday morning 00:00.
+               Thus the label should be positioned at noon. By
+               defining a precision of 24 hours or rather 86400
+               seconds, you make sure that this happens.
+
+       ----yyyy--------yyyy----ggggrrrriiiidddd _g_r_i_d _s_t_e_p:_l_a_b_e_l _f_a_c_t_o_r (default autoconfigure)
+               Makes vertical grid lines appear at _g_r_i_d _s_t_e_p
+               interval. Every _l_a_b_e_l _f_a_c_t_o_r gridstep, a major
+               grid line is printed, along with label showing the
+               value of the grid line.
+
+       ----vvvv|--------vvvveeeerrrrttttiiiiccccaaaallll----llllaaaabbbbeeeellll _t_e_x_t
+               vertical label on the left side of the graph. This
+               is normally used to specify the units used.
+
+       ----wwww|--------wwwwiiiiddddtttthhhh _p_i_x_e_l_s (default 400 pixel)
+               Width of the drawing area within the graph. This
+               affects the size of the gif.
+
+
+
+4/May/99                   19990504.23                          2
+
+
+
+
+
+RRDGRAPH(1)                  rrdtool                  RRDGRAPH(1)
+
+
+       ----hhhh|--------hhhheeeeiiiigggghhhhtttt _p_i_x_e_l_s (default 100 pixel)
+               Width of the drawing area within the graph. This
+               affects the size of the gif.
+
+       ----iiii|--------iiiinnnntttteeeerrrrllllaaaacccceeeedddd (default: false)
+               If you set this option, then the resulting GIF
+               will be interlaced.  Most web browsers display
+               these incrementally as they load. If you do not
+               use this option, the GIFs default to being
+               progressive scanned. The only effect of this
+               option is to control the format of the GIF on
+               disk. It makes no changes to the layout or
+               contents of the graph.
+
+       ----uuuu|--------uuuuppppppppeeeerrrr----lllliiiimmmmiiiitttt _v_a_l_u_e (default autoconfigure)
+               The maximum value to be graphed. By default This
+               will be autoconfigured from the data you select
+               with the graphing functions.
+
+       ----llll|--------lllloooowwwweeeerrrr----lllliiiimmmmiiiitttt _v_a_l_u_e (default autoconfigure)
+               The minimum value to be graphed. By default This
+               will be autoconfigured from the data you select
+               with the graphing functions.
+
+       ----rrrr|--------rrrriiiiggggiiiidddd
+               rigid boundaries mode.  Normally rrdgraph will
+               automatically expand the lower and upper limit if
+               the graph contains a value outside the valid
+               range. With the r option you can disable this
+               behavior
+
+       ----bbbb|--------bbbbaaaasssseeee _v_a_l_u_e
+               if you are graphing memmory (and NOT network
+               traffic) this switch should be set to 1024 so that
+               one Kb is 1024 byte. For traffic measurement, 1
+               kb/s is 1000 b/s.
+
+       ----oooo|--------llllooooggggaaaarrrriiiitttthhhhmmmmiiiicccc
+               logarithmic y-axis scaling
+
+       ----cccc|--------ccccoooolllloooorrrr _C_O_L_O_R_T_A_G####_r_r_g_g_b_b (default colors)
+               override the colors for the standard elements of
+               the graph. The _C_O_L_O_R_T_A_G must be one of the
+               following symbolic names: BBBBAAAACCCCKKKK ground, CCCCAAAANNNNVVVVAAAASSSS,
+               SSSSHHHHAAAADDDDEEEEAAAA left/top border, SSSSHHHHAAAADDDDEEEEBBBB right/bottom
+               border, GGGGRRRRIIIIDDDD, MMMMGGGGRRRRIIIIDDDD major grid, FFFFOOOONNNNTTTT, FFFFRRRRAAAAMMMMEEEE and
+               axis of the graph or AAAARRRRRRRROOOOWWWW. This option can be
+               called multiple times to set several colors.
+
+       ----tttt|--------ttttiiiittttlllleeee _t_e_x_t (default no title)
+               Define a title to be written into the graph
+
+       DDDDEEEEFFFF::::_v_n_a_m_e====_r_r_d::::_d_s_-_n_a_m_e::::_C_F
+               Define virtual name for a data source. This name
+
+
+
+4/May/99                   19990504.23                          3
+
+
+
+
+
+RRDGRAPH(1)                  rrdtool                  RRDGRAPH(1)
+
+
+               can then be used in the functions explained below.
+               The DEF call automatically chooses an RRRRRRRRAAAA which
+               provides data in a resolution appropriate for the
+               size of the graph to be drawn.  Ideally this means
+               that one data point from the RRRRRRRRAAAA should be
+               represented by one pixel in the graph.  If the
+               resolution of the RRRRRRRRAAAA is higher than the
+               resolution of the graph, the data in the RRA will
+               be consolidated according to the consolidation
+               function (_C_F) chosen.
+
+       CCCCDDDDEEEEFFFF::::_v_n_a_m_e====_r_p_n_-_e_x_p_r_e_s_s_i_o_n
+               Create a new virtual data source by evaluating a
+               mathematical expression, specified in Reverse
+               Polish Notation (RPN). If you have ever used a
+               traditional HP calculator you already know RPN.
+               The idea behind RPN notation is, that you have a
+               stack and push your data onto this stack. When
+               ever you execute an operation, it takes as many
+               data values from the stack as needed. The pushing
+               of data is implicit, so when ever you specify a
+               number or a variable, it gets pushed
+               automatically.
+
+               If this is all a big load of incomprehensible
+               words for you, maybe an example helps (a more
+               complete explanation is given in [1]): The
+               expression vname+3/2 becomes vname,3,2,/,+ in RPN.
+               First the three values get pushed onto the stack
+               (which now contains (the current value of) vname,
+               a 3 and a 2).  Then the / operator pops two values
+               from the stack (3 and 2), divides the first
+               argument by the second (3/2) and pushes the result
+               (1.5) back onto the stack. Then the + operator
+               pops two values (vname and 1.5) from the stack;
+               both values are added up and the result gets
+               pushes back onto the stack. In the end there is
+               only one value left on the stack: The result of
+               the expression.
+
+               The _r_p_n_-_e_x_p_r_e_s_s_i_o_n in the CCCCDDDDEEEEFFFF function takes
+               both, constant values as well as _v_n_a_m_e variables.
+               The following operators can be used on these
+               values:
+
+       +, -, *, /      pops two values from the stack applies the
+                       selected operator and pushes the result
+                       back onto the stack.
+
+       SIN, COS, LOG, EXP
+                       pops one value from the stack, applies the
+                       selected function and pushes the result
+                       back onto the stack.
+
+
+
+
+4/May/99                   19990504.23                          4
+
+
+
+
+
+RRDGRAPH(1)                  rrdtool                  RRDGRAPH(1)
+
+
+       LT, LE, GT, GE, EQ
+                       pops two values from the stack, compares
+                       them according to the selected condition
+                       and pushes either 1 back onto the stack if
+                       the condition is true and 0 if the
+                       condition was not true.
+
+       IF              pops three values from the stack. If the
+                       last value is not 0, the second value will
+                       be pushed back onto the stack, otherwise
+                       the first value is pushed back.
+
+                       If the stack contains the values A, B, C,
+                       D, E are presently on the stack, the IF
+                       operator will pop the values E D and C of
+                       the stack. It will look at C and if it is
+                       not 0 it will push D back onto the stack,
+                       otherwise E will be sent back to the
+                       stack.
+
+       UN              Pops one value of the stack, if it is
+                       _*_U_N_K_N_O_W_N_*, 1 will be pushed back otherwise
+                       0.
+
+                       Please note that you may only use _v_n_a_m_e
+                       variables that you previously defined by
+                       either DDDDEEEEFFFF or CCCCDDDDEEEEFFFF. Furthermore, as of
+                       this writing (version 0.99.25), you must
+                       use at least one _v_n_a_m_e per expression,
+                       that is "CDEF:fourtytwo=2,40,+" will yield
+                       an error message but not a _v_n_a_m_e fourtytwo
+                       that's always equal to 42.
+
+       PPPPRRRRIIIINNNNTTTT::::_v_n_a_m_e::::_C_F::::_f_o_r_m_a_t
+               Calculate the chosen consolidation function _C_F
+               over the data-source variable _v_n_a_m_e and printf the
+               result to stdout using _f_o_r_m_a_t.
+
+       GGGGPPPPRRRRIIIINNNNTTTT::::_v_n_a_m_e::::_C_F::::_f_o_r_m_a_t
+               Same as PPPPRRRRIIIINNNNTTTT but the result is printed into the
+               graph below the legend.
+
+       CCCCOOOOMMMMMMMMEEEENNNNTTTT::::_t_e_x_t
+               Like GGGGPPPPRRRRIIIINNNNTTTT but the _t_e_x_t is simply printed into
+               the graph.
+
+       HHHHRRRRUUUULLLLEEEE::::_v_a_l_u_e####_r_r_g_g_b_b[::::_l_e_g_e_n_d]
+               Draw a horizontal rule into the graph and
+               optionally add a legend
+
+       VVVVRRRRUUUULLLLEEEE::::_t_i_m_e####_r_r_g_g_b_b[::::_l_e_g_e_n_d]
+               Draw a vertical rule into the graph and optionally
+               add a legend
+
+
+
+
+4/May/99                   19990504.23                          5
+
+
+
+
+
+RRDGRAPH(1)                  rrdtool                  RRDGRAPH(1)
+
+
+       LLLLIIIINNNNEEEE{1111|2222|3333}::::_v_n_a_m_e[####_r_r_g_g_b_b[::::_l_e_g_e_n_d]]
+               Plot for the requested data, using the color
+               specified. Write a legend into the graph. The 3
+               possible keywords LLLLIIIINNNNEEEE1111, LLLLIIIINNNNEEEE2222, and LLLLIIIINNNNEEEE3333 generate
+               increasingly wide lines. If no color is defined,
+               the drawing is done 'blind' this is useful in
+               connection with the SSSSTTTTAAAACCCCKKKK function when you want
+               to ADD the values of two data-sources without
+               showing it in the graph.
+
+       AAAARRRREEEEAAAA:_v_n_a_m_e[####_r_r_g_g_b_b[::::_l_e_g_e_n_d]]
+               Does the same as LLLLIIIINNNNEEEE????, but the area between 0 and
+               the graph will be filled with the color specified.
+
+       SSSSTTTTAAAACCCCKKKK:_v_n_a_m_e[####_r_r_g_g_b_b[::::_l_e_g_e_n_d]]
+               Does the same as LLLLIIIINNNNEEEE????, but the graph gets stacked
+               on top of the previous LLLLIIIINNNNEEEE????, AAAARRRREEEEAAAA or SSSSTTTTAAAACCCCKKKK graph.
+               Depending on the type of the previous graph, the
+               SSSSTTTTAAAACCCCKKKK will be either a LLLLIIIINNNNEEEE???? or an AAAARRRREEEEAAAA.  This
+               obviously implies that the first SSSSTTTTAAAACCCCKKKK must be
+               preceeded by an AAAARRRREEEEAAAA or LLLLIIIINNNNEEEE???? -- you need
+               something to stack something onto in the first
+               place ;)
+
+NNNNOOOOTTTTEEEE
+       In a ':' in a _l_e_g_e_n_d argument will mark the end of the
+       legend. To enter a ':' into a legend, the colon must be
+       escaped with a backslash '\:'.  Beware, that many
+       environments look for backslashes themselves, so it may be
+       necessary to write two backslashes so that one is passed
+       onto rrd_graph.
+
+NNNNOOOOTTTTEEEE 2222
+       The text printed below the actual graph can be formated by
+       appending special escaped charactes at the end of a text.
+       When ever such a character occurs, all pending text is
+       pushed onto the grah acording to the character specified.
+
+       Valid characters are: jjjj for justified, llll for left aligned,
+       rrrr for right aligned and cccc for centered. In the next
+       section there is an example showing how to use centered
+       formating.
+
+       A special case is COMMENT:\s this inserts some additional
+       vertical space before placing the next row of legends.
+
+NNNNOOOOTTTTEEEE 3333
+       Whenever rrd_graph gets called, it prints a line telling
+       the size of the gif it has just created to STDOUT. This
+       line looks like this: XSIZExYSIZE.
+
+EEEEXXXXAAAAMMMMPPPPLLLLEEEE
+
+
+
+
+
+4/May/99                   19990504.23                          6
+
+
+
+
+
+RRDGRAPH(1)                  rrdtool                  RRDGRAPH(1)
+
+
+         rrdtool graph demo.gif --title="Demo Graph" \
+                 DEF:cel=demo.rrd:exhaust:AVERAGE \
+                 "CDEF:far=cel,32,-,0.55555,*" \
+                 LINE2:cel#00a000:"D. Celsius" \
+                 LINE2:far#ff0000:"D. Fahrenheit\c"
+
+
+AAAAUUUUTTTTHHHHOOOORRRR
+       Tobias Oetiker <oetiker@ee.ethz.ch>
+
+RRRREEEEFFFFEEEERRRREEEENNNNCCCCEEEESSSS
+       [1] http://www.dotpoint.com/xnumber/rpn_or_adl.htm
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+4/May/99                   19990504.23                          7
+
+
+
+
+
+RRDGRAPH(1)                  rrdtool                  RRDGRAPH(1)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+4/May/99                   19990504.23                          8
+
+

@@ -1,0 +1,526 @@
+.rn '' }`
+''' $RCSfile$$Revision$$Date$
+'''
+''' $Log$
+'''
+.de Sh
+.br
+.if t .Sp
+.ne 5
+.PP
+\fB\\$1\fR
+.PP
+..
+.de Sp
+.if t .sp .5v
+.if n .sp
+..
+.de Ip
+.br
+.ie \\n(.$>=3 .ne \\$3
+.el .ne 3
+.IP "\\$1" \\$2
+..
+.de Vb
+.ft CW
+.nf
+.ne \\$1
+..
+.de Ve
+.ft R
+
+.fi
+..
+'''
+'''
+'''     Set up \*(-- to give an unbreakable dash;
+'''     string Tr holds user defined translation string.
+'''     Bell System Logo is used as a dummy character.
+'''
+.tr \(*W-|\(bv\*(Tr
+.ie n \{\
+.ds -- \(*W-
+.ds PI pi
+.if (\n(.H=4u)&(1m=24u) .ds -- \(*W\h'-12u'\(*W\h'-12u'-\" diablo 10 pitch
+.if (\n(.H=4u)&(1m=20u) .ds -- \(*W\h'-12u'\(*W\h'-8u'-\" diablo 12 pitch
+.ds L" ""
+.ds R" ""
+'''   \*(M", \*(S", \*(N" and \*(T" are the equivalent of
+'''   \*(L" and \*(R", except that they are used on ".xx" lines,
+'''   such as .IP and .SH, which do another additional levels of
+'''   double-quote interpretation
+.ds M" """
+.ds S" """
+.ds N" """""
+.ds T" """""
+.ds L' '
+.ds R' '
+.ds M' '
+.ds S' '
+.ds N' '
+.ds T' '
+'br\}
+.el\{\
+.ds -- \(em\|
+.tr \*(Tr
+.ds L" ``
+.ds R" ''
+.ds M" ``
+.ds S" ''
+.ds N" ``
+.ds T" ''
+.ds L' `
+.ds R' '
+.ds M' `
+.ds S' '
+.ds N' `
+.ds T' '
+.ds PI \(*p
+'br\}
+.\"	If the F register is turned on, we'll generate
+.\"	index entries out stderr for the following things:
+.\"		TH	Title 
+.\"		SH	Header
+.\"		Sh	Subsection 
+.\"		Ip	Item
+.\"		X<>	Xref  (embedded
+.\"	Of course, you have to process the output yourself
+.\"	in some meaninful fashion.
+.if \nF \{
+.de IX
+.tm Index:\\$1\t\\n%\t"\\$2"
+..
+.nr % 0
+.rr F
+.\}
+.TH RRDGRAPH 1 "19990504.23" "4/May/99" "rrdtool"
+.UC
+.if n .hy 0
+.if n .na
+.ds C+ C\v'-.1v'\h'-1p'\s-2+\h'-1p'+\s0\v'.1v'\h'-1p'
+.de CQ          \" put $1 in typewriter font
+.ft CW
+'if n "\c
+'if t \\&\\$1\c
+'if n \\&\\$1\c
+'if n \&"
+\\&\\$2 \\$3 \\$4 \\$5 \\$6 \\$7
+'.ft R
+..
+.\" @(#)ms.acc 1.5 88/02/08 SMI; from UCB 4.2
+.	\" AM - accent mark definitions
+.bd B 3
+.	\" fudge factors for nroff and troff
+.if n \{\
+.	ds #H 0
+.	ds #V .8m
+.	ds #F .3m
+.	ds #[ \f1
+.	ds #] \fP
+.\}
+.if t \{\
+.	ds #H ((1u-(\\\\n(.fu%2u))*.13m)
+.	ds #V .6m
+.	ds #F 0
+.	ds #[ \&
+.	ds #] \&
+.\}
+.	\" simple accents for nroff and troff
+.if n \{\
+.	ds ' \&
+.	ds ` \&
+.	ds ^ \&
+.	ds , \&
+.	ds ~ ~
+.	ds ? ?
+.	ds ! !
+.	ds /
+.	ds q
+.\}
+.if t \{\
+.	ds ' \\k:\h'-(\\n(.wu*8/10-\*(#H)'\'\h"|\\n:u"
+.	ds ` \\k:\h'-(\\n(.wu*8/10-\*(#H)'\`\h'|\\n:u'
+.	ds ^ \\k:\h'-(\\n(.wu*10/11-\*(#H)'^\h'|\\n:u'
+.	ds , \\k:\h'-(\\n(.wu*8/10)',\h'|\\n:u'
+.	ds ~ \\k:\h'-(\\n(.wu-\*(#H-.1m)'~\h'|\\n:u'
+.	ds ? \s-2c\h'-\w'c'u*7/10'\u\h'\*(#H'\zi\d\s+2\h'\w'c'u*8/10'
+.	ds ! \s-2\(or\s+2\h'-\w'\(or'u'\v'-.8m'.\v'.8m'
+.	ds / \\k:\h'-(\\n(.wu*8/10-\*(#H)'\z\(sl\h'|\\n:u'
+.	ds q o\h'-\w'o'u*8/10'\s-4\v'.4m'\z\(*i\v'-.4m'\s+4\h'\w'o'u*8/10'
+.\}
+.	\" troff and (daisy-wheel) nroff accents
+.ds : \\k:\h'-(\\n(.wu*8/10-\*(#H+.1m+\*(#F)'\v'-\*(#V'\z.\h'.2m+\*(#F'.\h'|\\n:u'\v'\*(#V'
+.ds 8 \h'\*(#H'\(*b\h'-\*(#H'
+.ds v \\k:\h'-(\\n(.wu*9/10-\*(#H)'\v'-\*(#V'\*(#[\s-4v\s0\v'\*(#V'\h'|\\n:u'\*(#]
+.ds _ \\k:\h'-(\\n(.wu*9/10-\*(#H+(\*(#F*2/3))'\v'-.4m'\z\(hy\v'.4m'\h'|\\n:u'
+.ds . \\k:\h'-(\\n(.wu*8/10)'\v'\*(#V*4/10'\z.\v'-\*(#V*4/10'\h'|\\n:u'
+.ds 3 \*(#[\v'.2m'\s-2\&3\s0\v'-.2m'\*(#]
+.ds o \\k:\h'-(\\n(.wu+\w'\(de'u-\*(#H)/2u'\v'-.3n'\*(#[\z\(de\v'.3n'\h'|\\n:u'\*(#]
+.ds d- \h'\*(#H'\(pd\h'-\w'~'u'\v'-.25m'\f2\(hy\fP\v'.25m'\h'-\*(#H'
+.ds D- D\\k:\h'-\w'D'u'\v'-.11m'\z\(hy\v'.11m'\h'|\\n:u'
+.ds th \*(#[\v'.3m'\s+1I\s-1\v'-.3m'\h'-(\w'I'u*2/3)'\s-1o\s+1\*(#]
+.ds Th \*(#[\s+2I\s-2\h'-\w'I'u*3/5'\v'-.3m'o\v'.3m'\*(#]
+.ds ae a\h'-(\w'a'u*4/10)'e
+.ds Ae A\h'-(\w'A'u*4/10)'E
+.ds oe o\h'-(\w'o'u*4/10)'e
+.ds Oe O\h'-(\w'O'u*4/10)'E
+.	\" corrections for vroff
+.if v .ds ~ \\k:\h'-(\\n(.wu*9/10-\*(#H)'\s-2\u~\d\s+2\h'|\\n:u'
+.if v .ds ^ \\k:\h'-(\\n(.wu*10/11-\*(#H)'\v'-.4m'^\v'.4m'\h'|\\n:u'
+.	\" for low resolution devices (crt and lpr)
+.if \n(.H>23 .if \n(.V>19 \
+\{\
+.	ds : e
+.	ds 8 ss
+.	ds v \h'-1'\o'\(aa\(ga'
+.	ds _ \h'-1'^
+.	ds . \h'-1'.
+.	ds 3 3
+.	ds o a
+.	ds d- d\h'-1'\(ga
+.	ds D- D\h'-1'\(hy
+.	ds th \o'bp'
+.	ds Th \o'LP'
+.	ds ae ae
+.	ds Ae AE
+.	ds oe oe
+.	ds Oe OE
+.\}
+.rm #[ #] #H #V #F C
+.SH "NAME"
+rrdtool graph \- Create a graph based on data from one or several RRD
+.SH "SYNOPSIS"
+\fBrrdtool\fR \fBgraph\fR \fIfilename\fR 
+[\fB\-s\fR|\fB--start\fR\ \fIseconds\fR] 
+[\fB\-e\fR|\fB--end\fR\ \fIseconds\fR]
+[\fB\-x\fR|\fB--x-grid\fR\ \fIx-axis\ grid\ and\ label\fR]
+[\fB\-y\fR|\fB--y-grid\fR\ \fIy-axis\ grid\ and\ label\fR]
+[\fB\-v\fR|\fB--vertical-label\fR\ \fItext\fR]
+[\fB\-w\fR|\fB--width\fR\ \fIpixels\fR]
+[\fB\-h\fR|\fB--height\fR\ \fIpixels\fR] 
+[\fB\-i\fR|\fB--interlaced\fR] 
+[\fB\-o\fR|\fB--logarithmic\fR]
+[\fB\-u\fR|\fB--upper-limit\fR\ \fIvalue\fR] 
+[\fB\-l\fR|\fB--lower-limit\fR\ \fIvalue\fR]
+[\fB\-r\fR|\fB--rigid\fR]
+[\fB\-b\fR|\fB--base\fR\ \fIvalue\fR]
+[\fB\-c\fR|\fB--color\fR\ \fICOLORTAG\fR\fB#\fR\fIrrggbb\fR]
+[\fB\-t\fR|\fB--title\fR\ \fItitle\fR]
+[\fBDEF:\fR\fIvname\fR\fB=\fR\fIrrd\fR\fB:\fR\fIds-name\fR\fB:\fR\fICF\fR]
+[\fBCDEF:\fR\fIvname\fR\fB=\fR\fIrpn-expression\fR]
+[\fBPRINT:\fR\fIvname\fR\fB:\fR\fICF\fR\fB:\fR\fIformat\fR]
+[\fBGPRINT:\fR\fIvname\fR\fB:\fR\fICF\fR\fB:\fR\fIformat\fR]
+[\fBCOMMENT:\fR\fItext\fR]
+[\fBHRULE:\fR\fIvalue\fR\fB#\fR\fIrrggbb\fR[\fB:\fR\fIlegend\fR]]
+[\fBVRULE:\fR\fItime\fR\fB#\fR\fIrrggbb\fR[\fB:\fR\fIlegend\fR]]
+[\fBLINE\fR{\fB1\fR|\fB2\fR|\fB3\fR}\fB:\fR\fIvname\fR[\fB#\fR\fIrrggbb\fR[\fB:\fR\fIlegend\fR]]]
+[\fBAREA:\fR\fIvname\fR[\fB#\fR\fIrrggbb\fR[\fB:\fR\fIlegend\fR]]]
+[\fBSTACK:\fR\fIvname\fR[\fB#\fR\fIrrggbb\fR[\fB:\fR\fIlegend\fR]]]
+.SH "DESCRIPTION"
+The \fBgraph\fR functions main purpose is to create graphical
+representations of the data stored in one or several \fBRRD\fRs. Apart
+from generating graphs, it can also extract numerical reports.
+.Ip "\fIfilename\fR " 8
+The name of the graph to generate. Since \fBrrdtool\fR outputs
+\s-1GIF\s0's, it's recommended that the filename end in \fI.gif\fR.
+\fBrrdtool\fR does not enforce this, however. If the  \fIfilename\fR
+is et to \*(L'\-\*(R' the gif file will be written to standard out. All
+other output will get supressd.
+.Sp
+If no graph functions are called, the graph will not be created.
+.Ip "\fB\-s\fR|\fB--start\fR \fIseconds\fR (default \-24*3600)" 8
+The time when the graph should begin. Time in seconds since
+epoch (1970-01-01) is required. Negative numbers are relative to the
+end time. By default one day worth of data will be graphed.
+See also \s-1AT\s0\-\s-1STYLE\s0 \s-1TIME\s0 \s-1SPECIFICATION\s0 section in the \fIrrdfetch\fR
+documentation for alternative ways to specify start time.
+.Ip "\fB\-e\fR|\fB--end\fR \fIseconds\fR (default current time)" 8
+The time when the graph should end. Time in seconds since epoch.
+See also \s-1AT\s0\-\s-1STYLE\s0 \s-1TIME\s0 \s-1SPECIFICATION\s0 section in the \fIrrdfetch\fR
+documentation for alternative ways to specify end time.
+.Ip "\fB\-x\fR|\fB--x-grid\fR \fIx-axis grid and label\fR (default autoconfigure)" 8
+The x-axis label is quite complex to configure. So if you don't have
+very special needs, you can relay on the autoconfiguration to get this
+right.
+.Sp
+The x-axis label is configured, using the following format:
+.Sp
+\fI\s-1GTM\s0\fR\fB:\fR\fI\s-1GST\s0\fR\fB:\fR\fI\s-1MTM\s0\fR\fB:\fR\fI\s-1MST\s0\fR\fB:\fR\fI\s-1LTM\s0\fR:\fI\s-1LST\s0\fR\fB:\fR\fI\s-1LPR\s0\fR\fB:\fR\fI\s-1LFM\s0\fR
+.Sp
+You have to configure three elements making up the x-axis labels and
+grid. The base grid (\fIG??\fR), the major grid (\fIM??\fR) and the labels
+(\fIL??\fR). The configuration is based on the idea that you first
+specify a well known amount of time (\fI?\s-1TM\s0\fR) and then say how many
+times it has to pass between each grid line or label (\fI?\s-1ST\s0\fR). For the
+label you have to define two additional items: The precision of the
+label in seconds (\fI\s-1LPR\s0\fR) and the strftime format used to generate the
+text of the label (\fI\s-1LFM\s0\fR).
+.Sp
+The \fI?\s-1TM\s0\fR elements must be one of the following keywords: \fB\s-1SECOND\s0\fR,
+\fB\s-1MINUTE\s0\fR, \fB\s-1HOUR\s0\fR, \fB\s-1DAY\s0\fR, \fB\s-1WEEK\s0\fR, \fB\s-1MONTH\s0\fR or \fB\s-1YEAR\s0\fR.
+.Sp
+If you wanted a graph with a base grid every 10 minutes and a major
+one every hour, with labels every hour you would use the following
+x-axis definition.
+.Sp
+\f(CWMINUTE:10:HOUR:1:HOUR:1:0:%X\fR
+.Sp
+The precision in this example is 0 because the \f(CW%X\fR format is exact. If
+the label was the name of the day, we would have had a precision of 24
+hours, because when you say something like \*(L'Monday\*(R' you mean the whole
+day and not Monday morning 00:00. Thus the label should be positioned
+at noon. By defining a precision of 24 hours or rather 86400 seconds,
+you make sure that this happens.
+.Ip "\fB\-y\fR\fB--y-grid\fR \fIgrid step\fR:\fIlabel factor\fR (default autoconfigure)" 8
+Makes vertical grid lines appear at \fIgrid step\fR interval. Every
+\fIlabel factor\fR gridstep, a major grid line is printed, along with
+label showing the value of the grid line.
+.Ip "\fB\-v\fR|\fB--vertical-label\fR \fItext\fR" 8
+vertical label on the left side of the graph. This is normally used to
+specify the units used.
+.Ip "\fB\-w\fR|\fB--width\fR \fIpixels\fR (default 400 pixel)" 8
+Width of the drawing area within the graph. This affects the size of the
+gif.
+.Ip "\fB\-h\fR|\fB--height\fR \fIpixels\fR (default 100 pixel)" 8
+Width of the drawing area within the graph. This affects the size of the
+gif.
+.Ip "\fB\-i\fR|\fB--interlaced\fR (default: false)" 8
+If you set this option, then the resulting \s-1GIF\s0 will be interlaced.
+Most web browsers display these incrementally as they load. If
+you do not use this option, the GIFs default to being progressive
+scanned. The only effect of this option is to control the format
+of the \s-1GIF\s0 on disk. It makes no changes to the layout or contents
+of the graph.
+.Ip "\fB\-u\fR|\fB--upper-limit\fR \fIvalue\fR (default autoconfigure)" 8
+The maximum value to be graphed. By default This will be
+autoconfigured from the data you select with the graphing functions.
+.Ip "\fB\-l\fR|\fB--lower-limit\fR \fIvalue\fR (default autoconfigure)" 8
+The minimum value to be graphed. By default This will be
+autoconfigured from the data you select with the graphing functions.
+.Ip "\fB\-r\fR|\fB--rigid\fR" 8
+rigid boundaries mode.  Normally rrdgraph will automatically expand the
+lower and upper limit if the graph contains a value outside the valid
+range. With the r option you can disable this behavior
+.Ip "\fB\-b\fR|\fB--base\fR \fIvalue\fR" 8
+if you are graphing memmory (and \s-1NOT\s0 network traffic) this switch
+should be set to 1024 so that one Kb is 1024 byte. For traffic
+measurement, 1 kb/s is 1000 b/s.
+.Ip "\fB\-o\fR|\fB--logarithmic\fR" 8
+logarithmic y-axis scaling
+.Ip "\fB\-c\fR|\fB--color\fR \fI\s-1COLORTAG\s0\fR\fB#\fR\fIrrggbb\fR (default colors)" 8
+override the colors for the standard elements of the graph. The \fI\s-1COLORTAG\s0\fR
+must be one of the following symbolic names: \fB\s-1BACK\s0\fR ground, \fB\s-1CANVAS\s0\fR,
+\fB\s-1SHADEA\s0\fR left/top border, \fB\s-1SHADEB\s0\fR right/bottom border, \fB\s-1GRID\s0\fR, \fB\s-1MGRID\s0\fR
+major grid, \fB\s-1FONT\s0\fR, \fB\s-1FRAME\s0\fR and axis of the graph or \fB\s-1ARROW\s0\fR. This option
+can be called multiple times to set several colors.
+.Ip "\fB\-t\fR|\fB--title\fR \fItext\fR (default no title)" 8
+Define a title to be written into the graph
+.Ip "\fB\s-1DEF\s0:\fR\fIvname\fR\fB=\fR\fIrrd\fR\fB:\fR\fIds-name\fR\fB:\fR\fI\s-1CF\s0\fR" 8
+Define virtual name for a data source. This name can then be used
+in the functions explained below. The
+\s-1DEF\s0 call automatically chooses an \fB\s-1RRA\s0\fR which provides data in a
+resolution appropriate for the size of the graph to be drawn.  Ideally
+this means that one data point from the \fB\s-1RRA\s0\fR should be represented
+by one pixel in the graph.  If the resolution of the \fB\s-1RRA\s0\fR is higher
+than the resolution of the graph, the data in the \s-1RRA\s0 will be
+consolidated according to the consolidation function (\fI\s-1CF\s0\fR) chosen.
+.Ip "\fB\s-1CDEF\s0:\fR\fIvname\fR\fB=\fR\fIrpn-expression\fR" 8
+Create a new virtual data source by evaluating a mathematical expression,
+specified in Reverse Polish Notation (\s-1RPN\s0). If you have ever used a traditional
+\s-1HP\s0 calculator you already know \s-1RPN\s0. The idea behind \s-1RPN\s0 notation is, 
+that you have a stack and push your data onto this stack. When ever
+you execute an operation, it takes as many data values from the stack
+as needed. The pushing of data is implicit, so when ever you specify a number
+or a variable, it gets pushed automatically. 
+.Sp
+If this is all a big load of 
+incomprehensible words for you, maybe an example helps (a more
+complete explanation is given in [1]):
+The expression 
+vname+3/2 becomes vname,3,2,/,+ in \s-1RPN\s0. First the three values get
+pushed onto the stack (which now contains (the current value of)
+vname, a 3 and a 2).
+Then the / operator pops two values from the stack (3 and 2), divides
+the first argument by the second (3/2) and pushes the result (1.5)
+back onto the stack. Then the + operator pops two values (vname and
+1.5) from the stack; both values are added up and the result gets
+pushes back onto the stack. In the end there is only one value left on
+the stack: The result of the expression.
+.Sp
+The \fIrpn-expression\fR in the \fB\s-1CDEF\s0\fR function takes both, constant values
+as well as \fIvname\fR variables. The following operators can be used on these
+values: 
+.Ip "+, \-, *, /" 16
+pops two values from the stack applies the selected operator and pushes 
+the result back onto the stack.
+.Ip "\s-1SIN\s0, \s-1COS\s0, \s-1LOG\s0, \s-1EXP\s0" 16
+pops one value from the stack, applies the selected function and pushes
+the result back onto the stack.
+.Ip "\s-1LT\s0, \s-1LE\s0, \s-1GT\s0, \s-1GE\s0, \s-1EQ\s0" 16
+pops two values from the stack, compares them according to the selected
+condition and pushes either 1 back onto the stack if the condition is true
+and 0 if the condition was not true.
+.Ip "\s-1IF\s0" 16
+pops three values from the stack. If the last value is not 0, the
+second value will be pushed back onto the stack, otherwise the
+first value is pushed back.
+.Sp
+If the stack contains the values A, B, C, D, E are presently on the
+stack, the \s-1IF\s0 operator will pop the values E D and C of the stack. It will
+look at C and if it is not 0 it will push D back onto the stack, otherwise
+E will be sent back to the stack.
+.Ip "\s-1UN\s0" 16
+Pops one value of the stack, if it is \fI*\s-1UNKNOWN\s0*\fR, 1 will be pushed
+back otherwise 0.
+.Sp
+Please note that you may only use \fIvname\fR variables that you
+previously defined by either \fB\s-1DEF\s0\fR or \fB\s-1CDEF\s0\fR. Furthermore, as of
+this writing (version 0.99.25), you must use at least one \fIvname\fR
+per expression, that is \*(L"\s-1CDEF:\s0fourtytwo=2,40,+\*(R" will yield an error
+message but not a \fIvname\fR fourtytwo that's always equal to 42.
+.Ip "\fB\s-1PRINT\s0:\fR\fIvname\fR\fB:\fR\fI\s-1CF\s0\fR\fB:\fR\fIformat\fR" 8
+Calculate the chosen consolidation function \fI\s-1CF\s0\fR over the data-source
+variable \fIvname\fR and \f(CWprintf\fR the
+result to stdout using \fIformat\fR. 
+.Ip "\fB\s-1GPRINT\s0:\fR\fIvname\fR\fB:\fR\fI\s-1CF\s0\fR\fB:\fR\fIformat\fR" 8
+Same as \fB\s-1PRINT\s0\fR but the result is printed into the graph below the legend.
+.Ip "\fB\s-1COMMENT\s0:\fR\fItext\fR" 8
+Like \fB\s-1GPRINT\s0\fR but the \fItext\fR is simply printed into the graph.
+.Ip "\fB\s-1HRULE\s0:\fR\fIvalue\fR\fB#\fR\fIrrggbb\fR[\fB:\fR\fIlegend\fR]" 8
+Draw a horizontal rule into the graph and optionally add a legend
+.Ip "\fB\s-1VRULE\s0:\fR\fItime\fR\fB#\fR\fIrrggbb\fR[\fB:\fR\fIlegend\fR]" 8
+Draw a vertical rule into the graph and optionally add a legend
+.Ip "\fB\s-1LINE\s0\fR{\fB1\fR|\fB2\fR|\fB3\fR}\fB:\fR\fIvname\fR[\fB#\fR\fIrrggbb\fR[\fB:\fR\fIlegend\fR]]" 8
+Plot for the requested data, using the color specified. Write a legend
+into the graph. The 3 possible keywords \fB\s-1LINE1\s0\fR, \fB\s-1LINE2\s0\fR, and \fB\s-1LINE3\s0\fR 
+generate increasingly wide lines. If no color is defined, 
+the drawing is done \*(L'blind\*(R' this is useful in connection with the 
+\fB\s-1STACK\s0\fR function when you want to \s-1ADD\s0 the values of two 
+data-sources without showing it in the graph.
+.Ip "\fB\s-1AREA\s0\fR:\fIvname\fR[\fB#\fR\fIrrggbb\fR[\fB:\fR\fIlegend\fR]]" 8
+Does the same as \fB\s-1LINE\s0?\fR, but the area between 0 and 
+the graph will be filled with the color specified.
+.Ip "\fB\s-1STACK\s0\fR:\fIvname\fR[\fB#\fR\fIrrggbb\fR[\fB:\fR\fIlegend\fR]]" 8
+Does the same as \fB\s-1LINE\s0?\fR, but the graph gets stacked on top of the previous
+\fB\s-1LINE\s0?\fR, \fB\s-1AREA\s0\fR or \fB\s-1STACK\s0\fR graph. Depending on the type of the
+previous graph, the \fB\s-1STACK\s0\fR will be either a \fB\s-1LINE\s0?\fR or an \fB\s-1AREA\s0\fR.
+This obviously implies that the first \fB\s-1STACK\s0\fR must be preceeded by an
+\fB\s-1AREA\s0\fR or \fB\s-1LINE\s0?\fR -- you need something to stack something onto in
+the first place ;) 
+.SH "NOTE"
+In a \*(L':\*(R' in a \fIlegend\fR argument will mark the end of the legend. To
+enter a \*(L':\*(R' into a legend, the colon must be escaped with a backslash \*(L'\e:\*(R'.
+Beware, that many environments look for backslashes themselves, so it may
+be necessary to write two backslashes so that one is passed onto rrd_graph.
+.SH "NOTE 2"
+The text printed below the actual graph can be formated by appending special
+escaped charactes at the end of a text. When ever such a character occurs,
+all pending text is pushed onto the grah acording to the character specified.
+.PP
+Valid characters are: \fBj\fR for justified, \fBl\fR for left aligned, \fBr\fR
+for right aligned and \fBc\fR for centered. In the next section there is an example
+showing how to use centered formating. 
+.PP
+A special case is COMMENT:\es this inserts some additional vertical space before
+placing the next row of legends. 
+.SH "NOTE 3"
+Whenever rrd_graph gets called, it prints a line telling the size of
+the gif it has just created to STDOUT. This line looks like this: XSIZExYSIZE.
+.SH "EXAMPLE"
+.PP
+.Vb 5
+\&  rrdtool graph demo.gif --title="Demo Graph" \e
+\&          DEF:cel=demo.rrd:exhaust:AVERAGE \e
+\&          "CDEF:far=cel,32,-,0.55555,*" \e
+\&          LINE2:cel#00a000:"D. Celsius" \e
+\&          LINE2:far#ff0000:"D. Fahrenheit\ec"
+.Ve
+.SH "AUTHOR"
+Tobias Oetiker <oetiker@ee.ethz.ch>
+.SH "REFERENCES"
+[1] http://www.dotpoint.com/xnumber/rpn_or_adl.htm
+
+.rn }` ''
+.IX Title "RRDGRAPH 1"
+.IX Name "rrdtool graph - Create a graph based on data from one or several RRD"
+
+.IX Header "NAME"
+
+.IX Header "SYNOPSIS"
+
+.IX Header "DESCRIPTION"
+
+.IX Item "\fIfilename\fR "
+
+.IX Item "\fB\-s\fR|\fB--start\fR \fIseconds\fR (default \-24*3600)"
+
+.IX Item "\fB\-e\fR|\fB--end\fR \fIseconds\fR (default current time)"
+
+.IX Item "\fB\-x\fR|\fB--x-grid\fR \fIx-axis grid and label\fR (default autoconfigure)"
+
+.IX Item "\fB\-y\fR\fB--y-grid\fR \fIgrid step\fR:\fIlabel factor\fR (default autoconfigure)"
+
+.IX Item "\fB\-v\fR|\fB--vertical-label\fR \fItext\fR"
+
+.IX Item "\fB\-w\fR|\fB--width\fR \fIpixels\fR (default 400 pixel)"
+
+.IX Item "\fB\-h\fR|\fB--height\fR \fIpixels\fR (default 100 pixel)"
+
+.IX Item "\fB\-i\fR|\fB--interlaced\fR (default: false)"
+
+.IX Item "\fB\-u\fR|\fB--upper-limit\fR \fIvalue\fR (default autoconfigure)"
+
+.IX Item "\fB\-l\fR|\fB--lower-limit\fR \fIvalue\fR (default autoconfigure)"
+
+.IX Item "\fB\-r\fR|\fB--rigid\fR"
+
+.IX Item "\fB\-b\fR|\fB--base\fR \fIvalue\fR"
+
+.IX Item "\fB\-o\fR|\fB--logarithmic\fR"
+
+.IX Item "\fB\-c\fR|\fB--color\fR \fI\s-1COLORTAG\s0\fR\fB#\fR\fIrrggbb\fR (default colors)"
+
+.IX Item "\fB\-t\fR|\fB--title\fR \fItext\fR (default no title)"
+
+.IX Item "\fB\s-1DEF\s0:\fR\fIvname\fR\fB=\fR\fIrrd\fR\fB:\fR\fIds-name\fR\fB:\fR\fI\s-1CF\s0\fR"
+
+.IX Item "\fB\s-1CDEF\s0:\fR\fIvname\fR\fB=\fR\fIrpn-expression\fR"
+
+.IX Item "+, \-, *, /"
+
+.IX Item "\s-1SIN\s0, \s-1COS\s0, \s-1LOG\s0, \s-1EXP\s0"
+
+.IX Item "\s-1LT\s0, \s-1LE\s0, \s-1GT\s0, \s-1GE\s0, \s-1EQ\s0"
+
+.IX Item "\s-1IF\s0"
+
+.IX Item "\s-1UN\s0"
+
+.IX Item "\fB\s-1PRINT\s0:\fR\fIvname\fR\fB:\fR\fI\s-1CF\s0\fR\fB:\fR\fIformat\fR"
+
+.IX Item "\fB\s-1GPRINT\s0:\fR\fIvname\fR\fB:\fR\fI\s-1CF\s0\fR\fB:\fR\fIformat\fR"
+
+.IX Item "\fB\s-1COMMENT\s0:\fR\fItext\fR"
+
+.IX Item "\fB\s-1HRULE\s0:\fR\fIvalue\fR\fB#\fR\fIrrggbb\fR[\fB:\fR\fIlegend\fR]"
+
+.IX Item "\fB\s-1VRULE\s0:\fR\fItime\fR\fB#\fR\fIrrggbb\fR[\fB:\fR\fIlegend\fR]"
+
+.IX Item "\fB\s-1LINE\s0\fR{\fB1\fR|\fB2\fR|\fB3\fR}\fB:\fR\fIvname\fR[\fB#\fR\fIrrggbb\fR[\fB:\fR\fIlegend\fR]]"
+
+.IX Item "\fB\s-1AREA\s0\fR:\fIvname\fR[\fB#\fR\fIrrggbb\fR[\fB:\fR\fIlegend\fR]]"
+
+.IX Item "\fB\s-1STACK\s0\fR:\fIvname\fR[\fB#\fR\fIrrggbb\fR[\fB:\fR\fIlegend\fR]]"
+
+.IX Header "NOTE"
+
+.IX Header "NOTE 2"
+
+.IX Header "NOTE 3"
+
+.IX Header "EXAMPLE"
+
+.IX Header "AUTHOR"
+
+.IX Header "REFERENCES"
+

@@ -1,4 +1,4 @@
-# percol_column: display selected columns from percollator output.
+# orcallator_column: display selected columns from orcallator output.
 #
 # Copyright (C) 1998, 1999 Blair Zajac and GeoCities, Inc.
 

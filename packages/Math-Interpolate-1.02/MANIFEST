@@ -1,0 +1,8 @@
+CHANGES
+MANIFEST
+Makefile.PL
+README
+lib/Math/IntervalSearch.pm
+lib/Math/Interpolate.pm
+t/01interval.t
+t/02interp.t

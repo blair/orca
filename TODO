@@ -2,7 +2,7 @@ Orca:
 	Come up with a better error scheme than using warn() for some
 		errors and the email warn for others.
 	Do something better if the number of columns changes in a single
-		percollator file.
+		orcallator file.
 	Have a scheme were at any point of time a data file may add or
 		change the number of columns of data and column names.
 	Lock file.
@@ -13,7 +13,7 @@ Orca:
 	Make plots from multiple files sets: delete source files_key and put
 		it into data.
 	Update HTML files if a new file is found with a new group.
-	Update percollator.cfg.in for caching and proxy stuff.
+	Update orcallator.cfg.in for caching and proxy stuff.
 
-percollator.se:
+orcallator.se:
 	Better documentation.

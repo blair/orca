@@ -1,0 +1,31 @@
+Thu Apr  8 10:20:30 PDT 1999 <blair@geostaff.com> (Blair Zajac)
+
+	Have ok() in t/*.t return the success or failure of the
+	test instead of the number of tests performed.
+
+	Release 1.02.
+
+Mon Dec 28 12:35:33 PST 1998 <bzajac@geostaff.com> Blair Zajac
+
+	Add some more documentation for Math::IntervalSearch.
+
+	Update all email addresses from bzajac@geocities.com to
+	bzajac@geostaff.com.
+
+	Version 1.01.
+
+Wed Nov 18 09:01:13 PST 1998 <bzajac@geostaff.com> Blair Zajac
+
+	Change name of interval to interval_search.
+
+	Change "return;" of interval_search to "return -1;" when an
+	empty array is passed in.
+
+	Spell check the documentation.
+
+	Version 1.00.
+	
+Wed Aug  5 13:58:40 PDT 1998 <blair@geostaff.com> Blair Zajac
+
+	Version 0.01.
+	First version copied from the Borp source tree.

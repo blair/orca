@@ -1,0 +1,77 @@
+Round Robin Database Tools
+==========================
+
+It is pretty easy to gather status information from all sorts of things,
+ranging from the temperature in your office to the number of octets which
+have passed through the FDDI interface of your router. But it is not so
+trivial to store this data in a efficient and systematic manner. This is
+where rrdtool kicks in. It lets you log and analyze the data you gather from
+all kinds of data- sources (DS). The data analysis part of rrdtool is based
+on the ability to quickly generate graphical representations of the data
+values collected over a definable time period.
+
+
+To compile:
+-----------
+
+		sh configure
+		make
+
+	(Please report configure/compilation problems to
+	 the developers list, so I can make it better. -jra)
+	
+	Please note that you should get perl-5.004 for things to work
+
+	Win32 users:
+	------------
+
+	Win32 things are controlled by the #define WIN32.
+	If your compiler doesn't define that, you should add it to
+	the compile line.	-jeff (jeff.allen@acm.org)
+
+
+Perl bindings:
+--------------
+The package contains two sets of Perl bindings.
+
+a) perl-piped which uses teh rrdtool through a set of pipes
+b) perl-shared which builds a shared library from rrdtool
+
+Both bindings get built by the toplevel make. Additionally
+you might want to:
+
+make test
+make install
+
+There is an example script in each of the directories. The example
+scrips work even when you don't intall the perl extensions.
+
+To learn:
+---------
+
+Read the documentation in the doc directory. Start of with
+rrdtool. All documents are available as html and as ascii text.  
+
+If you want to know about the format of the logfiles check
+src/rrd_format.h there are a lot of comments in there ...
+
+To Contribute:
+--------------
+
+Contributed feature and bug patches are most welcome. But please
+send complete patches. A complete patch patches the CODE as well
+as the CHANGES, CONTRIBUTORS and the POD files.
+
+If you want to keep in touch, make sure you subscribe to the
+mrtg-developers mailinglist by sending a message with the subject
+'subscribe' to mrtg-developers-request@list.ee.ethz.ch
+
+The latest Version:
+-------------------
+
+Is available from http://ee-staff.ethz.ch/~oetiker/webtools/rrdtool/
+
+
+Tobias Oetiker <oetiker@ee.ethz.ch>
+
+

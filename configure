@@ -12,17 +12,17 @@ ac_help=
 ac_default_prefix=/usr/local
 # Any additions from configure.in:
 ac_help="$ac_help
-   --with-rrd-dir=DIR     directory were the RRD data files are stored"
+   --with-rrd-dir=DIR         directory were the RRD data files are stored"
 ac_help="$ac_help
-   --with-html-dir=DIR    location of the root output HTML directory"
+   --with-html-dir=DIR        location of the root output HTML directory"
 ac_help="$ac_help
-   --with-perc-dir=DIR    directory were percollator output is stored"
+   --with-orcallator-dir=DIR  directory were orcallator output is stored"
 ac_help="$ac_help
-   --with-ncsa-log=FILE   location of the NCSA style web server access log"
+   --with-ncsa-log=FILE       location of the NCSA style web server access log"
 ac_help="$ac_help
-   --with-proxy-log=FILE  location of the proxy NCSA style web server access log"
+   --with-proxy-log=FILE      location of the proxy NCSA web server access log"
 ac_help="$ac_help
-   --with-squid-log=FILE  location of the Squid file"
+   --with-squid-log=FILE      location of the Squid file log file"
 
 # Initialize some variables set by options.
 # The variables have the same names as the options, with
@@ -642,10 +642,26 @@ test "$host_alias" != "$target_alias" &&
   program_prefix=${target_alias}-
 
 
+# Remember the command line arguments to configure for use when
+# configure is run again.
+CONFIGURE_COMMAND_LINE=${1+"$@"}
+
+
+# Define the directories containing packages that Orca makes use of here.
+# The path packages gets added where necessary.
+DIGEST_MD5_DIR=Digest-MD5-2.07
+MATH_INTERPOLATE_DIR=Math-Interpolate-1.02
+RRDTOOL_DIR=rrdtool-0.99.29.1
+STORABLE_DIR=Storable-0.6@3
+
+
+
+
+
 # Minimum Autoconf version required.
 
 
-# Define the directories where the source percollator and RRD data files
+# Define the directories where the source orcallator and RRD data files
 # will be installed.
 # Check whether --with-rrd-dir or --without-rrd-dir was given.
 if test "${with_rrd_dir+set}" = set; then
@@ -690,27 +706,27 @@ fi
 
 
 
-# Check whether --with-perc-dir or --without-perc-dir was given.
-if test "${with_perc_dir+set}" = set; then
-  withval="$with_perc_dir"
+# Check whether --with-orcallator-dir or --without-orcallator-dir was given.
+if test "${with_orcallator_dir+set}" = set; then
+  withval="$with_orcallator_dir"
   
     case "$withval" in
       "" | y | ye | yes | n | no)
-         { echo "configure: error: *** You must supply an argument to the --with-perc-dir option." 1>&2; exit 1; }
+         { echo "configure: error: *** You must supply an argument to the --with-orcallator-dir option." 1>&2; exit 1; }
          ;;
-      *) PERCOLLATOR_DIR="$withval"
+      *) ORCALLATOR_DIR="$withval"
          ;;
     esac
   
 else
-  : ${PERCOLLATOR_DIR=$localstatedir/orca/percollator}
+  : ${ORCALLATOR_DIR=$localstatedir/orca/orcallator}
 
 fi
 
-PERCOLLATOR_DIR=`(
+ORCALLATOR_DIR=`(
     test "x$prefix" = xNONE && prefix=$ac_default_prefix
     test "x$exec_prefix" = xNONE && exec_prefix=${prefix}
-    eval echo "$PERCOLLATOR_DIR"
+    eval echo "$ORCALLATOR_DIR"
 )`
 
 
@@ -782,6 +798,258 @@ fi
 
 
 
+# To get a default CFLAGS for this build, check for a C compiler.  This
+# is also needed to be ready to compile any Perl modules.
+# Extract the first word of "gcc", so it can be a program name with args.
+set dummy gcc; ac_word=$2
+echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
+echo "configure:807: checking for $ac_word" >&5
+if eval "test \"`echo '$''{'ac_cv_prog_CC'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  if test -n "$CC"; then
+  ac_cv_prog_CC="$CC" # Let the user override the test.
+else
+  IFS="${IFS= 	}"; ac_save_ifs="$IFS"; IFS=":"
+  ac_dummy="$PATH"
+  for ac_dir in $ac_dummy; do
+    test -z "$ac_dir" && ac_dir=.
+    if test -f $ac_dir/$ac_word; then
+      ac_cv_prog_CC="gcc"
+      break
+    fi
+  done
+  IFS="$ac_save_ifs"
+fi
+fi
+CC="$ac_cv_prog_CC"
+if test -n "$CC"; then
+  echo "$ac_t""$CC" 1>&6
+else
+  echo "$ac_t""no" 1>&6
+fi
+
+if test -z "$CC"; then
+  # Extract the first word of "cc", so it can be a program name with args.
+set dummy cc; ac_word=$2
+echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
+echo "configure:837: checking for $ac_word" >&5
+if eval "test \"`echo '$''{'ac_cv_prog_CC'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  if test -n "$CC"; then
+  ac_cv_prog_CC="$CC" # Let the user override the test.
+else
+  IFS="${IFS= 	}"; ac_save_ifs="$IFS"; IFS=":"
+  ac_prog_rejected=no
+  ac_dummy="$PATH"
+  for ac_dir in $ac_dummy; do
+    test -z "$ac_dir" && ac_dir=.
+    if test -f $ac_dir/$ac_word; then
+      if test "$ac_dir/$ac_word" = "/usr/ucb/cc"; then
+        ac_prog_rejected=yes
+	continue
+      fi
+      ac_cv_prog_CC="cc"
+      break
+    fi
+  done
+  IFS="$ac_save_ifs"
+if test $ac_prog_rejected = yes; then
+  # We found a bogon in the path, so make sure we never use it.
+  set dummy $ac_cv_prog_CC
+  shift
+  if test $# -gt 0; then
+    # We chose a different compiler from the bogus one.
+    # However, it has the same basename, so the bogon will be chosen
+    # first if we set CC to just the basename; use the full file name.
+    shift
+    set dummy "$ac_dir/$ac_word" "$@"
+    shift
+    ac_cv_prog_CC="$@"
+  fi
+fi
+fi
+fi
+CC="$ac_cv_prog_CC"
+if test -n "$CC"; then
+  echo "$ac_t""$CC" 1>&6
+else
+  echo "$ac_t""no" 1>&6
+fi
+
+  if test -z "$CC"; then
+    case "`uname -s`" in
+    *win32* | *WIN32*)
+      # Extract the first word of "cl", so it can be a program name with args.
+set dummy cl; ac_word=$2
+echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
+echo "configure:888: checking for $ac_word" >&5
+if eval "test \"`echo '$''{'ac_cv_prog_CC'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  if test -n "$CC"; then
+  ac_cv_prog_CC="$CC" # Let the user override the test.
+else
+  IFS="${IFS= 	}"; ac_save_ifs="$IFS"; IFS=":"
+  ac_dummy="$PATH"
+  for ac_dir in $ac_dummy; do
+    test -z "$ac_dir" && ac_dir=.
+    if test -f $ac_dir/$ac_word; then
+      ac_cv_prog_CC="cl"
+      break
+    fi
+  done
+  IFS="$ac_save_ifs"
+fi
+fi
+CC="$ac_cv_prog_CC"
+if test -n "$CC"; then
+  echo "$ac_t""$CC" 1>&6
+else
+  echo "$ac_t""no" 1>&6
+fi
+ ;;
+    esac
+  fi
+  test -z "$CC" && { echo "configure: error: no acceptable cc found in \$PATH" 1>&2; exit 1; }
+fi
+
+echo $ac_n "checking whether the C compiler ($CC $CFLAGS $LDFLAGS) works""... $ac_c" 1>&6
+echo "configure:920: checking whether the C compiler ($CC $CFLAGS $LDFLAGS) works" >&5
+
+ac_ext=c
+# CFLAGS is not in ac_cpp because -g, -O, etc. are not valid cpp options.
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='${CC-cc} -c $CFLAGS $CPPFLAGS conftest.$ac_ext 1>&5'
+ac_link='${CC-cc} -o conftest${ac_exeext} $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS 1>&5'
+cross_compiling=$ac_cv_prog_cc_cross
+
+cat > conftest.$ac_ext << EOF
+
+#line 931 "configure"
+#include "confdefs.h"
+
+main(){return(0);}
+EOF
+if { (eval echo configure:936: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+  ac_cv_prog_cc_works=yes
+  # If we can't run a trivial program, we are probably using a cross compiler.
+  if (./conftest; exit) 2>/dev/null; then
+    ac_cv_prog_cc_cross=no
+  else
+    ac_cv_prog_cc_cross=yes
+  fi
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  ac_cv_prog_cc_works=no
+fi
+rm -fr conftest*
+ac_ext=c
+# CFLAGS is not in ac_cpp because -g, -O, etc. are not valid cpp options.
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='${CC-cc} -c $CFLAGS $CPPFLAGS conftest.$ac_ext 1>&5'
+ac_link='${CC-cc} -o conftest${ac_exeext} $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS 1>&5'
+cross_compiling=$ac_cv_prog_cc_cross
+
+echo "$ac_t""$ac_cv_prog_cc_works" 1>&6
+if test $ac_cv_prog_cc_works = no; then
+  { echo "configure: error: installation or configuration problem: C compiler cannot create executables." 1>&2; exit 1; }
+fi
+echo $ac_n "checking whether the C compiler ($CC $CFLAGS $LDFLAGS) is a cross-compiler""... $ac_c" 1>&6
+echo "configure:962: checking whether the C compiler ($CC $CFLAGS $LDFLAGS) is a cross-compiler" >&5
+echo "$ac_t""$ac_cv_prog_cc_cross" 1>&6
+cross_compiling=$ac_cv_prog_cc_cross
+
+echo $ac_n "checking whether we are using GNU C""... $ac_c" 1>&6
+echo "configure:967: checking whether we are using GNU C" >&5
+if eval "test \"`echo '$''{'ac_cv_prog_gcc'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  cat > conftest.c <<EOF
+#ifdef __GNUC__
+  yes;
+#endif
+EOF
+if { ac_try='${CC-cc} -E conftest.c'; { (eval echo configure:976: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; } | egrep yes >/dev/null 2>&1; then
+  ac_cv_prog_gcc=yes
+else
+  ac_cv_prog_gcc=no
+fi
+fi
+
+echo "$ac_t""$ac_cv_prog_gcc" 1>&6
+
+if test $ac_cv_prog_gcc = yes; then
+  GCC=yes
+else
+  GCC=
+fi
+
+ac_test_CFLAGS="${CFLAGS+set}"
+ac_save_CFLAGS="$CFLAGS"
+CFLAGS=
+echo $ac_n "checking whether ${CC-cc} accepts -g""... $ac_c" 1>&6
+echo "configure:995: checking whether ${CC-cc} accepts -g" >&5
+if eval "test \"`echo '$''{'ac_cv_prog_cc_g'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  echo 'void f(){}' > conftest.c
+if test -z "`${CC-cc} -g -c conftest.c 2>&1`"; then
+  ac_cv_prog_cc_g=yes
+else
+  ac_cv_prog_cc_g=no
+fi
+rm -f conftest*
+
+fi
+
+echo "$ac_t""$ac_cv_prog_cc_g" 1>&6
+if test "$ac_test_CFLAGS" = set; then
+  CFLAGS="$ac_save_CFLAGS"
+elif test $ac_cv_prog_cc_g = yes; then
+  if test "$GCC" = yes; then
+    CFLAGS="-g -O2"
+  else
+    CFLAGS="-g"
+  fi
+else
+  if test "$GCC" = yes; then
+    CFLAGS="-O2"
+  else
+    CFLAGS=
+  fi
+fi
+
+
+echo $ac_n "checking whether ${MAKE-make} sets \${MAKE}""... $ac_c" 1>&6
+echo "configure:1028: checking whether ${MAKE-make} sets \${MAKE}" >&5
+set dummy ${MAKE-make}; ac_make=`echo "$2" | sed 'y%./+-%__p_%'`
+if eval "test \"`echo '$''{'ac_cv_prog_make_${ac_make}_set'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  cat > conftestmake <<\EOF
+all:
+	@echo 'ac_maketemp="${MAKE}"'
+EOF
+# GNU make sometimes prints "make[1]: Entering...", which would confuse us.
+eval `${MAKE-make} -f conftestmake 2>/dev/null | grep temp=`
+if test -n "$ac_maketemp"; then
+  eval ac_cv_prog_make_${ac_make}_set=yes
+else
+  eval ac_cv_prog_make_${ac_make}_set=no
+fi
+rm -f conftestmake
+fi
+if eval "test \"`echo '$ac_cv_prog_make_'${ac_make}_set`\" = yes"; then
+  echo "$ac_t""yes" 1>&6
+  SET_MAKE=
+else
+  echo "$ac_t""no" 1>&6
+  SET_MAKE="MAKE=${MAKE-make}"
+fi
+
 if test "$program_transform_name" = s,x,x,; then
   program_transform_name=
 else
@@ -806,7 +1074,7 @@ do
 # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:810: checking for $ac_word" >&5
+echo "configure:1078: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_path_AWK'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -844,7 +1112,7 @@ done
 # Extract the first word of "cut", so it can be a program name with args.
 set dummy cut; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:848: checking for $ac_word" >&5
+echo "configure:1116: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_path_CUT'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -880,7 +1148,7 @@ fi
 # Extract the first word of "expr", so it can be a program name with args.
 set dummy expr; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:884: checking for $ac_word" >&5
+echo "configure:1152: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_path_EXPR'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -916,7 +1184,7 @@ fi
 # Extract the first word of "se", so it can be a program name with args.
 set dummy se; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:920: checking for $ac_word" >&5
+echo "configure:1188: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_path_SE'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -951,7 +1219,7 @@ fi
 # Extract the first word of "uname", so it can be a program name with args.
 set dummy uname; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:955: checking for $ac_word" >&5
+echo "configure:1223: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_path_UNAME'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -985,13 +1253,15 @@ else
 fi
 
 
-# Include the file that defined BORP_PERL_RUN.
+# Include the file that defines BORP_PERL_RUN.
+
+
 
 
 # Extract the first word of "perl", so it can be a program name with args.
 set dummy perl; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:995: checking for $ac_word" >&5
+echo "configure:1265: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_path_PERL'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -1024,11 +1294,12 @@ else
   echo "$ac_t""no" 1>&6
 fi
 
-if test "x$PERL" != "xNOT_FOUND"; then
-  PERL="$PERL -w"
+if test "x$PERL" = "xNOT_FOUND"; then
+  { echo "configure: error: *** Perl not found.  Please install Perl.  See INSTALL how to do this." 1>&2; exit 1; }
+else
   
   echo $ac_n "checking if '$PERL' will run Perl scripts""... $ac_c" 1>&6
-echo "configure:1032: checking if '$PERL' will run Perl scripts" >&5
+echo "configure:1303: checking if '$PERL' will run Perl scripts" >&5
   rm -f conftest.BZ
   cat > conftest.BZ <<EOF
 #!$PERL
@@ -1045,10 +1316,110 @@ EOF
   fi
   rm -f conftest.BZ
 
-else
-  PERLHEAD=PerlHead2
 fi
 PERL_HEAD="../config/$PERL_HEAD"
+
+
+# Check for necessary Perl modules.
+
+  echo $ac_n "checking if Perl module Digest::MD5 version 2.00 is installed""... $ac_c" 1>&6
+echo "configure:1327: checking if Perl module Digest::MD5 version 2.00 is installed" >&5
+  if $PERL ./config/check_for_perl_mod Digest::MD5 2.00; then
+    borp_cv_perl_digest_md5=yes
+    
+  else
+    borp_cv_perl_digest_md5=no
+    
+  fi
+  echo "$ac_t""$borp_cv_perl_digest_md5" 1>&6
+
+if test "$borp_cv_perl_digest_md5" = no; then
+  MAKE_DIGEST_MD5=make_digest_md5
+  TEST_DIGEST_MD5=test_digest_md5
+  INSTALL_DIGEST_MD5=install_digest_md5
+  CLEAN_DIGEST_MD5=clean_digest_md5
+  DISTCLEAN_DIGEST_MD5=distclean_digest_md5
+fi
+
+
+
+
+
+
+
+  echo $ac_n "checking if Perl module Math::Interpolate version 1.00 is installed""... $ac_c" 1>&6
+echo "configure:1352: checking if Perl module Math::Interpolate version 1.00 is installed" >&5
+  if $PERL ./config/check_for_perl_mod Math::Interpolate 1.00; then
+    borp_cv_perl_math_interpolate=yes
+    
+  else
+    borp_cv_perl_math_interpolate=no
+    
+  fi
+  echo "$ac_t""$borp_cv_perl_math_interpolate" 1>&6
+
+if test "$borp_cv_perl_math_interpolate" = no; then
+  MAKE_MATH_INTERPOLATE=make_math_interpolate
+  TEST_MATH_INTERPOLATE=test_math_interpolate
+  INSTALL_MATH_INTERPOLATE=install_math_interpolate
+  CLEAN_MATH_INTERPOLATE=clean_math_interpolate
+  DISTCLEAN_MATH_INTERPOLATE=distclean_math_interpolate
+fi
+
+
+
+
+
+
+
+  echo $ac_n "checking if Perl module RRDs version 0.99029 is installed""... $ac_c" 1>&6
+echo "configure:1377: checking if Perl module RRDs version 0.99029 is installed" >&5
+  if $PERL ./config/check_for_perl_mod RRDs 0.99029; then
+    borp_cv_perl_rdds=yes
+    
+  else
+    borp_cv_perl_rdds=no
+    
+  fi
+  echo "$ac_t""$borp_cv_perl_rdds" 1>&6
+
+if test "$borp_cv_perl_rdds" = no; then
+  MAKE_RRDTOOL=make_rrdtool
+  TEST_RRDTOOL=test_rrdtool
+  INSTALL_RRDTOOL=install_rrdtool
+  CLEAN_RRDTOOL=clean_rrdtool
+  DISTCLEAN_RRDTOOL=distclean_rrdtool
+fi
+
+
+
+
+
+
+
+  echo $ac_n "checking if Perl module Storable version 0.603 is installed""... $ac_c" 1>&6
+echo "configure:1402: checking if Perl module Storable version 0.603 is installed" >&5
+  if $PERL ./config/check_for_perl_mod Storable 0.603; then
+    borp_cv_perl_storable=yes
+    
+  else
+    borp_cv_perl_storable=no
+    
+  fi
+  echo "$ac_t""$borp_cv_perl_storable" 1>&6
+
+if test "$borp_cv_perl_storable" = no; then
+  MAKE_STORABLE=make_storable
+  TEST_STORABLE=test_storable
+  INSTALL_STORABLE=install_storable
+  CLEAN_STORABLE=clean_storable
+  DISTCLEAN_STORABLE=distclean_storable
+fi
+
+
+
+
+
 
 
 # Define the INSTALL and MKDIR variables to point to the scripts in
@@ -1176,12 +1547,13 @@ ac_given_srcdir=$srcdir
 
 trap 'rm -fr `echo "config/PerlHead1
 	  config/PerlHead2
-	  src/percol_running.pl
-	  src/restart_percol.sh
-	  src/start_percol.sh
-	  src/stop_percol.sh
+	  packages/Makefile
+	  src/orcallator_running.pl
+	  src/restart_orcallator.sh
+	  src/start_orcallator.sh
+	  src/stop_orcallator.sh
 	  src/Makefile
-	  lib/percollator.cfg
+	  lib/orcallator.cfg
 	  lib/Makefile
 	  docs/Makefile
 	  Makefile" | sed "s/:[^ ]*//g"` conftest*; exit 1' 1 2 15
@@ -1231,11 +1603,18 @@ s%@build_alias@%$build_alias%g
 s%@build_cpu@%$build_cpu%g
 s%@build_vendor@%$build_vendor%g
 s%@build_os@%$build_os%g
+s%@CONFIGURE_COMMAND_LINE@%$CONFIGURE_COMMAND_LINE%g
+s%@DIGEST_MD5_DIR@%$DIGEST_MD5_DIR%g
+s%@MATH_INTERPOLATE_DIR@%$MATH_INTERPOLATE_DIR%g
+s%@RRDTOOL_DIR@%$RRDTOOL_DIR%g
+s%@STORABLE_DIR@%$STORABLE_DIR%g
 s%@RRD_DIR@%$RRD_DIR%g
 s%@HTML_DIR@%$HTML_DIR%g
-s%@PERCOLLATOR_DIR@%$PERCOLLATOR_DIR%g
+s%@ORCALLATOR_DIR@%$ORCALLATOR_DIR%g
 s%@WATCH_HTTPD@%$WATCH_HTTPD%g
 s%@WEB_LOG@%$WEB_LOG%g
+s%@CC@%$CC%g
+s%@SET_MAKE@%$SET_MAKE%g
 s%@AWK@%$AWK%g
 s%@CUT@%$CUT%g
 s%@EXPR@%$EXPR%g
@@ -1243,6 +1622,26 @@ s%@SE@%$SE%g
 s%@UNAME@%$UNAME%g
 s%@PERL@%$PERL%g
 s%@PERL_HEAD@%$PERL_HEAD%g
+s%@MAKE_DIGEST_MD5@%$MAKE_DIGEST_MD5%g
+s%@TEST_DIGEST_MD5@%$TEST_DIGEST_MD5%g
+s%@INSTALL_DIGEST_MD5@%$INSTALL_DIGEST_MD5%g
+s%@CLEAN_DIGEST_MD5@%$CLEAN_DIGEST_MD5%g
+s%@DISTCLEAN_DIGEST_MD5@%$DISTCLEAN_DIGEST_MD5%g
+s%@MAKE_MATH_INTERPOLATE@%$MAKE_MATH_INTERPOLATE%g
+s%@TEST_MATH_INTERPOLATE@%$TEST_MATH_INTERPOLATE%g
+s%@INSTALL_MATH_INTERPOLATE@%$INSTALL_MATH_INTERPOLATE%g
+s%@CLEAN_MATH_INTERPOLATE@%$CLEAN_MATH_INTERPOLATE%g
+s%@DISTCLEAN_MATH_INTERPOLATE@%$DISTCLEAN_MATH_INTERPOLATE%g
+s%@MAKE_RRDTOOL@%$MAKE_RRDTOOL%g
+s%@TEST_RRDTOOL@%$TEST_RRDTOOL%g
+s%@INSTALL_RRDTOOL@%$INSTALL_RRDTOOL%g
+s%@CLEAN_RRDTOOL@%$CLEAN_RRDTOOL%g
+s%@DISTCLEAN_RRDTOOL@%$DISTCLEAN_RRDTOOL%g
+s%@MAKE_STORABLE@%$MAKE_STORABLE%g
+s%@TEST_STORABLE@%$TEST_STORABLE%g
+s%@INSTALL_STORABLE@%$INSTALL_STORABLE%g
+s%@CLEAN_STORABLE@%$CLEAN_STORABLE%g
+s%@DISTCLEAN_STORABLE@%$DISTCLEAN_STORABLE%g
 s%@INSTALL@%$INSTALL%g
 s%@MKDIR@%$MKDIR%g
 
@@ -1288,12 +1687,13 @@ cat >> $CONFIG_STATUS <<EOF
 
 CONFIG_FILES=\${CONFIG_FILES-"config/PerlHead1
 	  config/PerlHead2
-	  src/percol_running.pl
-	  src/restart_percol.sh
-	  src/start_percol.sh
-	  src/stop_percol.sh
+	  packages/Makefile
+	  src/orcallator_running.pl
+	  src/restart_orcallator.sh
+	  src/start_orcallator.sh
+	  src/stop_orcallator.sh
 	  src/Makefile
-	  lib/percollator.cfg
+	  lib/orcallator.cfg
 	  lib/Makefile
 	  docs/Makefile
 	  Makefile"}
@@ -1362,6 +1762,15 @@ chmod +x $CONFIG_STATUS
 rm -fr confdefs* $ac_clean_files
 test "$no_create" = yes || ${CONFIG_SHELL-/bin/sh} $CONFIG_STATUS || exit 1
 
+
+if test "$borp_cv_perl_rdds" != "yes"; then
+  echo ""
+  echo "Running configure in packages/$RRDTOOL_DIR to create RRDtool and RRDs.pm."
+  echo ""
+  echo "(cd packages/$RRDTOOL_DIR; ./configure $CONFIGURE_COMMAND_LINE --cache-file=../../config.cache)"
+  echo ""
+  (cd packages/$RRDTOOL_DIR; ./configure $CONFIGURE_COMMAND_LINE --cache-file=../../config.cache)
+fi
 
 if test -z "$WEB_LOG"; then
   echo "configure: warning: *** Unless you use a --with-*-log option you will not gather WWW log data." 1>&2

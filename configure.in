@@ -5,13 +5,29 @@ AC_INIT(src/orca.pl)
 AC_CONFIG_AUX_DIR(config)
 AC_CANONICAL_SYSTEM
 
+# Remember the command line arguments to configure for use when
+# configure is run again.
+CONFIGURE_COMMAND_LINE=${1+"$@"}
+AC_SUBST(CONFIGURE_COMMAND_LINE)
+
+# Define the directories containing packages that Orca makes use of here.
+# The path packages gets added where necessary.
+DIGEST_MD5_DIR=Digest-MD5-2.07
+MATH_INTERPOLATE_DIR=Math-Interpolate-1.02
+RRDTOOL_DIR=rrdtool-0.99.29.1
+STORABLE_DIR=Storable-0.6@3
+AC_SUBST(DIGEST_MD5_DIR)
+AC_SUBST(MATH_INTERPOLATE_DIR)
+AC_SUBST(RRDTOOL_DIR)
+AC_SUBST(STORABLE_DIR)
+
 # Minimum Autoconf version required.
 AC_PREREQ(2.13)
 
-# Define the directories where the source percollator and RRD data files
+# Define the directories where the source orcallator and RRD data files
 # will be installed.
 AC_ARG_WITH(rrd-dir,
-  [   --with-rrd-dir=DIR     directory were the RRD data files are stored],
+  [   --with-rrd-dir=DIR         directory were the RRD data files are stored],
   [
     case "$withval" in
       "" | y | ye | yes | n | no)
@@ -31,7 +47,7 @@ RRD_DIR=`(
 AC_SUBST(RRD_DIR)
 
 AC_ARG_WITH(html-dir,
-  [   --with-html-dir=DIR    location of the root output HTML directory],
+  [   --with-html-dir=DIR        location of the root output HTML directory],
   [
     case "$withval" in
       "" | y | ye | yes | n | no)
@@ -45,30 +61,30 @@ AC_ARG_WITH(html-dir,
 )
 AC_SUBST(HTML_DIR)
 
-AC_ARG_WITH(perc-dir,
-  [   --with-perc-dir=DIR    directory were percollator output is stored],
+AC_ARG_WITH(orcallator-dir,
+  [   --with-orcallator-dir=DIR  directory were orcallator output is stored],
   [
     case "$withval" in
       "" | y | ye | yes | n | no)
-         AC_MSG_ERROR([*** You must supply an argument to the --with-perc-dir option.])
+         AC_MSG_ERROR([*** You must supply an argument to the --with-orcallator-dir option.])
          ;;
-      *) PERCOLLATOR_DIR="$withval"
+      *) ORCALLATOR_DIR="$withval"
          ;;
     esac
   ],
-  : ${PERCOLLATOR_DIR=$localstatedir/orca/percollator}
+  : ${ORCALLATOR_DIR=$localstatedir/orca/orcallator}
 )
-PERCOLLATOR_DIR=`(
+ORCALLATOR_DIR=`(
     test "x$prefix" = xNONE && prefix=$ac_default_prefix
     test "x$exec_prefix" = xNONE && exec_prefix=${prefix}
-    eval echo "$PERCOLLATOR_DIR"
+    eval echo "$ORCALLATOR_DIR"
 )`
-AC_SUBST(PERCOLLATOR_DIR)
+AC_SUBST(ORCALLATOR_DIR)
 
 WATCH_HTTPD=
 NCSA_LOG=
 AC_ARG_WITH(ncsa-log,
-  [   --with-ncsa-log=FILE   location of the NCSA style web server access log],
+  [   --with-ncsa-log=FILE       location of the NCSA style web server access log],
   [
     case "$withval" in
       "" | y | ye | yes | n | no)
@@ -84,7 +100,7 @@ AC_ARG_WITH(ncsa-log,
 
 PROXY_LOG=
 AC_ARG_WITH(proxy-log,
-  [   --with-proxy-log=FILE  location of the proxy NCSA style web server access log],
+  [   --with-proxy-log=FILE      location of the proxy NCSA web server access log],
   [
     if test "$NCSA_LOG"; then
       AC_MSG_ERROR([*** You cannot use both --with-ncsa-log and --with-proxy-log.])
@@ -102,7 +118,7 @@ AC_ARG_WITH(proxy-log,
 )
 
 AC_ARG_WITH(squid-log,
-  [   --with-squid-log=FILE  location of the Squid file],
+  [   --with-squid-log=FILE      location of the Squid file log file],
   [
     if test "$NCSA_LOG"; then
       AC_MSG_ERROR([*** You cannot use both --with-ncsa-log and --with-squid-log.])
@@ -124,6 +140,11 @@ AC_ARG_WITH(squid-log,
 AC_SUBST(WATCH_HTTPD)
 AC_SUBST(WEB_LOG)
 
+# To get a default CFLAGS for this build, check for a C compiler.  This
+# is also needed to be ready to compile any Perl modules.
+AC_PROG_CC
+
+AC_PROG_MAKE_SET
 AC_ARG_PROGRAM
 AC_PATH_PROGS(AWK,mawk gawk nawk awk)
 AC_PATH_PROG(CUT, cut, cut)
@@ -131,17 +152,74 @@ AC_PATH_PROG(EXPR, expr, expr)
 AC_PATH_PROG(SE, se,,/opt/RICHPse/bin:$PATH)
 AC_PATH_PROG(UNAME, uname, uname)
 
-# Include the file that defined BORP_PERL_RUN.
+# Include the file that defines BORP_PERL_RUN.
 sinclude(config/acinclude.m4)
 AC_PATH_PROG(PERL, perl, NOT_FOUND)
-if test "x$PERL" != "xNOT_FOUND"; then
-  PERL="$PERL -w"
-  BORP_PERL_RUN($PERL, PERL_HEAD=PerlHead1, PERL_HEAD=PerlHead2)
+if test "x$PERL" = "xNOT_FOUND"; then
+  AC_MSG_ERROR([*** Perl not found.  Please install Perl.  See INSTALL how to do this.])
 else
-  PERLHEAD=PerlHead2
+  BORP_PERL_RUN($PERL, PERL_HEAD=PerlHead1, PERL_HEAD=PerlHead2)
 fi
 PERL_HEAD="../config/$PERL_HEAD"
 AC_SUBST(PERL_HEAD)
+
+# Check for necessary Perl modules.
+BORP_PERL_MODULE(borp_cv_perl_digest_md5, $PERL, Digest::MD5, 2.00)
+if test "$borp_cv_perl_digest_md5" = no; then
+  MAKE_DIGEST_MD5=make_digest_md5
+  TEST_DIGEST_MD5=test_digest_md5
+  INSTALL_DIGEST_MD5=install_digest_md5
+  CLEAN_DIGEST_MD5=clean_digest_md5
+  DISTCLEAN_DIGEST_MD5=distclean_digest_md5
+fi
+AC_SUBST(MAKE_DIGEST_MD5)
+AC_SUBST(TEST_DIGEST_MD5)
+AC_SUBST(INSTALL_DIGEST_MD5)
+AC_SUBST(CLEAN_DIGEST_MD5)
+AC_SUBST(DISTCLEAN_DIGEST_MD5)
+
+BORP_PERL_MODULE(borp_cv_perl_math_interpolate, $PERL, Math::Interpolate, 1.00)
+if test "$borp_cv_perl_math_interpolate" = no; then
+  MAKE_MATH_INTERPOLATE=make_math_interpolate
+  TEST_MATH_INTERPOLATE=test_math_interpolate
+  INSTALL_MATH_INTERPOLATE=install_math_interpolate
+  CLEAN_MATH_INTERPOLATE=clean_math_interpolate
+  DISTCLEAN_MATH_INTERPOLATE=distclean_math_interpolate
+fi
+AC_SUBST(MAKE_MATH_INTERPOLATE)
+AC_SUBST(TEST_MATH_INTERPOLATE)
+AC_SUBST(INSTALL_MATH_INTERPOLATE)
+AC_SUBST(CLEAN_MATH_INTERPOLATE)
+AC_SUBST(DISTCLEAN_MATH_INTERPOLATE)
+
+BORP_PERL_MODULE(borp_cv_perl_rdds, $PERL, RRDs, 0.99029)
+if test "$borp_cv_perl_rdds" = no; then
+  MAKE_RRDTOOL=make_rrdtool
+  TEST_RRDTOOL=test_rrdtool
+  INSTALL_RRDTOOL=install_rrdtool
+  CLEAN_RRDTOOL=clean_rrdtool
+  DISTCLEAN_RRDTOOL=distclean_rrdtool
+fi
+AC_SUBST(MAKE_RRDTOOL)
+AC_SUBST(TEST_RRDTOOL)
+AC_SUBST(INSTALL_RRDTOOL)
+AC_SUBST(CLEAN_RRDTOOL)
+AC_SUBST(DISTCLEAN_RRDTOOL)
+
+BORP_PERL_MODULE(borp_cv_perl_storable, $PERL, Storable, 0.603)
+if test "$borp_cv_perl_storable" = no; then
+  MAKE_STORABLE=make_storable
+  TEST_STORABLE=test_storable
+  INSTALL_STORABLE=install_storable
+  CLEAN_STORABLE=clean_storable
+  DISTCLEAN_STORABLE=distclean_storable
+fi
+AC_SUBST(MAKE_STORABLE)
+AC_SUBST(TEST_STORABLE)
+AC_SUBST(INSTALL_STORABLE)
+AC_SUBST(CLEAN_STORABLE)
+AC_SUBST(DISTCLEAN_STORABLE)
+
 
 # Define the INSTALL and MKDIR variables to point to the scripts in
 # the config directory.
@@ -156,15 +234,25 @@ AC_SUBST(MKDIR)
 #--------------------------------------------------------------------
 AC_OUTPUT(config/PerlHead1
 	  config/PerlHead2
-	  src/percol_running.pl
-	  src/restart_percol.sh
-	  src/start_percol.sh
-	  src/stop_percol.sh
+	  packages/Makefile
+	  src/orcallator_running.pl
+	  src/restart_orcallator.sh
+	  src/start_orcallator.sh
+	  src/stop_orcallator.sh
 	  src/Makefile
-	  lib/percollator.cfg
+	  lib/orcallator.cfg
 	  lib/Makefile
 	  docs/Makefile
 	  Makefile)
+
+if test "$borp_cv_perl_rdds" != "yes"; then
+  echo ""
+  echo "Running configure in packages/$RRDTOOL_DIR to create RRDtool and RRDs.pm."
+  echo ""
+  echo "(cd packages/$RRDTOOL_DIR; ./configure $CONFIGURE_COMMAND_LINE --cache-file=../../config.cache)"
+  echo ""
+  (cd packages/$RRDTOOL_DIR; ./configure $CONFIGURE_COMMAND_LINE --cache-file=../../config.cache)
+fi
 
 if test -z "$WEB_LOG"; then
   AC_MSG_WARN([*** Unless you use a --with-*-log option you will not gather WWW log data.])

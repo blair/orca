@@ -1,0 +1,31 @@
+use strict;
+
+my $verbose = 0;
+
+# Subroutine to check for installed modules.
+sub check_version
+{
+  my ($pkg, $wanted) = @_;
+
+  local($|) = 1;
+  print "Checking for $pkg..." if $verbose;
+
+  eval { my $p; ($p = $pkg . ".pm") =~ s#::#/#g; require $p; };
+
+  no strict 'refs';
+
+  my $vstr = ${"${pkg}::VERSION"} ? "found v" . ${"${pkg}::VERSION"}
+                                 : "not found";
+  my $vnum = ${"${pkg}::VERSION"} || 0;
+
+  if ($verbose) {
+    print $vnum >= $wanted ? "ok\n" : " " . $vstr . "\n";
+  }
+
+  $vnum >= $wanted;
+}
+
+die "usage: $0 package_name version" unless @ARGV == 2;
+
+# Return 0 if the necessary version was found, 1 otherwise.
+exit(!check_version(@ARGV));

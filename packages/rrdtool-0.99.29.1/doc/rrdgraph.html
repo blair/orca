@@ -1,0 +1,594 @@
+    <HTML> 
+	<HEAD> 
+	    <TITLE>graph - Create a graph based on data from one or several RRD
+
+</TITLE> 
+	</HEAD>
+
+	<BODY>
+
+<!-- INDEX BEGIN -->
+<!--
+
+<UL>
+
+	<LI><A HREF="#NAME">NAME</A>
+	<LI><A HREF="#SYNOPSIS">SYNOPSIS</A>
+	<LI><A HREF="#DESCRIPTION">DESCRIPTION</A>
+	<LI><A HREF="#NOTE">NOTE</A>
+	<LI><A HREF="#NOTE_2">NOTE 2</A>
+	<LI><A HREF="#NOTE_3">NOTE 3</A>
+	<LI><A HREF="#EXAMPLE">EXAMPLE</A>
+	<LI><A HREF="#AUTHOR">AUTHOR</A>
+	<LI><A HREF="#REFERENCES">REFERENCES</A>
+</UL>
+-->
+<!-- INDEX END -->
+
+<P>
+<H1><A NAME="NAME">NAME
+
+</A></H1>
+rrdtool graph - Create a graph based on data from one or several RRD
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="SYNOPSIS">SYNOPSIS
+
+</A></H1>
+<STRONG>rrdtool</STRONG>  <STRONG>graph</STRONG>  <EM>filename</EM> 
+ 
+[<STRONG>-s</STRONG>|<STRONG>--start</STRONG>&nbsp;<EM>seconds</EM>] 
+ 
+[<STRONG>-e</STRONG>|<STRONG>--end</STRONG>&nbsp;<EM>seconds</EM>]
+
+[<STRONG>-x</STRONG>|<STRONG>--x-grid</STRONG>&nbsp;<EM>x-axis&nbsp;grid&nbsp;and&nbsp;label</EM>]
+
+[<STRONG>-y</STRONG>|<STRONG>--y-grid</STRONG>&nbsp;<EM>y-axis&nbsp;grid&nbsp;and&nbsp;label</EM>]
+
+[<STRONG>-v</STRONG>|<STRONG>--vertical-label</STRONG>&nbsp;<EM>text</EM>]
+
+[<STRONG>-w</STRONG>|<STRONG>--width</STRONG>&nbsp;<EM>pixels</EM>]
+
+[<STRONG>-h</STRONG>|<STRONG>--height</STRONG>&nbsp;<EM>pixels</EM>] 
+ 
+[<STRONG>-i</STRONG>|<STRONG>--interlaced</STRONG>] 
+ 
+[<STRONG>-o</STRONG>|<STRONG>--logarithmic</STRONG>]
+
+[<STRONG>-u</STRONG>|<STRONG>--upper-limit</STRONG>&nbsp;<EM>value</EM>] 
+ 
+[<STRONG>-l</STRONG>|<STRONG>--lower-limit</STRONG>&nbsp;<EM>value</EM>]
+
+[<STRONG>-r</STRONG>|<STRONG>--rigid</STRONG>]
+
+[<STRONG>-b</STRONG>|<STRONG>--base</STRONG>&nbsp;<EM>value</EM>]
+
+[<STRONG>-c</STRONG>|<STRONG>--color</STRONG>&nbsp;<EM>COLORTAG</EM><STRONG>#</STRONG><EM>rrggbb</EM>]
+
+[<STRONG>-t</STRONG>|<STRONG>--title</STRONG>&nbsp;<EM>title</EM>]
+
+[<STRONG>DEF:</STRONG><EM>vname</EM><STRONG>=</STRONG><EM>rrd</EM><STRONG>:</STRONG><EM>ds-name</EM><STRONG>:</STRONG><EM>CF</EM>]
+
+[<STRONG>CDEF:</STRONG><EM>vname</EM><STRONG>=</STRONG><EM>rpn-expression</EM>]
+
+[<STRONG>PRINT:</STRONG><EM>vname</EM><STRONG>:</STRONG><EM>CF</EM><STRONG>:</STRONG><EM>format</EM>]
+
+[<STRONG>GPRINT:</STRONG><EM>vname</EM><STRONG>:</STRONG><EM>CF</EM><STRONG>:</STRONG><EM>format</EM>]
+
+[<STRONG>COMMENT:</STRONG><EM>text</EM>]
+
+[<STRONG>HRULE:</STRONG><EM>value</EM><STRONG>#</STRONG><EM>rrggbb</EM>[<STRONG>:</STRONG><EM>legend</EM>]]
+
+[<STRONG>VRULE:</STRONG><EM>time</EM><STRONG>#</STRONG><EM>rrggbb</EM>[<STRONG>:</STRONG><EM>legend</EM>]]
+
+[<STRONG>LINE</STRONG>{<STRONG>1</STRONG>|<STRONG>2</STRONG>|<STRONG>3</STRONG>}<STRONG>:</STRONG><EM>vname</EM>[<STRONG>#</STRONG><EM>rrggbb</EM>[<STRONG>:</STRONG><EM>legend</EM>]]]
+
+[<STRONG>AREA:</STRONG><EM>vname</EM>[<STRONG>#</STRONG><EM>rrggbb</EM>[<STRONG>:</STRONG><EM>legend</EM>]]]
+
+[<STRONG>STACK:</STRONG><EM>vname</EM>[<STRONG>#</STRONG><EM>rrggbb</EM>[<STRONG>:</STRONG><EM>legend</EM>]]]
+
+
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="DESCRIPTION">DESCRIPTION
+
+</A></H1>
+The <STRONG>graph</STRONG> functions main purpose is to create graphical representations of the data
+stored in one or several <STRONG>RRD</STRONG>s. Apart from generating graphs, it can also extract numerical reports.
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item_filename">filename 
+
+</A></STRONG><DD>
+The name of the graph to generate. Since <STRONG>rrdtool</STRONG> outputs GIF's, it's recommended that the filename end in <EM>.gif</EM>.
+<STRONG>rrdtool</STRONG> does not enforce this, however. If the  <EM>filename</EM>
+is et to '-' the gif file will be written to standard out. All other output
+will get supressd.
+
+
+<P>
+
+If no graph functions are called, the graph will not be created.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__s_start">-s|--start seconds (default -24*3600)
+
+</A></STRONG><DD>
+The time when the graph should begin. Time in seconds since epoch
+(1970-01-01) is required. Negative numbers are relative to the end time. By
+default one day worth of data will be graphed. See also AT-STYLE TIME
+SPECIFICATION section in the <EM>rrdfetch</EM>
+documentation for alternative ways to specify start time.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__e_end">-e|--end seconds (default current time)
+
+</A></STRONG><DD>
+The time when the graph should end. Time in seconds since epoch. See also
+AT-STYLE TIME SPECIFICATION section in the <EM>rrdfetch</EM>
+documentation for alternative ways to specify end time.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__x_x_grid">-x|--x-grid x-axis grid and label (default autoconfigure)
+
+</A></STRONG><DD>
+The x-axis label is quite complex to configure. So if you don't have very
+special needs, you can relay on the autoconfiguration to get this right.
+
+
+<P>
+
+The x-axis label is configured, using the following format:
+
+
+<P>
+
+<EM>GTM</EM><STRONG>:</STRONG><EM>GST</EM><STRONG>:</STRONG><EM>MTM</EM><STRONG>:</STRONG><EM>MST</EM><STRONG>:</STRONG><EM>LTM</EM>:<EM>LST</EM><STRONG>:</STRONG><EM>LPR</EM><STRONG>:</STRONG><EM>LFM</EM>
+
+
+
+
+<P>
+
+You have to configure three elements making up the x-axis labels and grid.
+The base grid (<EM>G??</EM>), the major grid (<EM>M??</EM>) and the labels (<EM>L??</EM>). The configuration is based on the idea that you first specify a well
+known amount of time (<EM>?TM</EM>) and then say how many times it has to pass between each grid line or
+label (<EM>?ST</EM>). For the label you have to define two additional items: The precision of
+the label in seconds (<EM>LPR</EM>) and the strftime format used to generate the text of the label (<EM>LFM</EM>).
+
+
+<P>
+
+The <EM>?TM</EM> elements must be one of the following keywords: <STRONG>SECOND</STRONG>,
+<STRONG>MINUTE</STRONG>, <STRONG>HOUR</STRONG>, <STRONG>DAY</STRONG>, <STRONG>WEEK</STRONG>, <STRONG>MONTH</STRONG> or <STRONG>YEAR</STRONG>.
+
+
+<P>
+
+If you wanted a graph with a base grid every 10 minutes and a major one
+every hour, with labels every hour you would use the following x-axis
+definition.
+
+
+<P>
+
+<CODE>MINUTE:10:HOUR:1:HOUR:1:0:%X</CODE>
+
+
+
+
+<P>
+
+The precision in this example is 0 because the <CODE>%X</CODE> format is
+exact. If the label was the name of the day, we would have had a precision
+of 24 hours, because when you say something like 'Monday' you mean the
+whole day and not Monday morning 00:00. Thus the label should be positioned
+at noon. By defining a precision of 24 hours or rather 86400 seconds, you
+make sure that this happens.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__y_y_grid">-y--y-grid grid step:label factor (default autoconfigure)
+
+</A></STRONG><DD>
+Makes vertical grid lines appear at <EM>grid step</EM> interval. Every
+<EM>label factor</EM> gridstep, a major grid line is printed, along with label showing the value
+of the grid line.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__v_vertical_label">-v|--vertical-label text
+
+</A></STRONG><DD>
+vertical label on the left side of the graph. This is normally used to
+specify the units used.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__w_width">-w|--width pixels (default 400 pixel)
+
+</A></STRONG><DD>
+Width of the drawing area within the graph. This affects the size of the
+gif.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__h_height">-h|--height pixels (default 100 pixel)
+
+</A></STRONG><DD>
+Width of the drawing area within the graph. This affects the size of the
+gif.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__i_interlaced">-i|--interlaced (default: false)
+
+</A></STRONG><DD>
+If you set this option, then the resulting GIF will be interlaced. Most web
+browsers display these incrementally as they load. If you do not use this
+option, the GIFs default to being progressive scanned. The only effect of
+this option is to control the format of the GIF on disk. It makes no
+changes to the layout or contents of the graph.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__u_upper_limit">-u|--upper-limit value (default autoconfigure)
+
+</A></STRONG><DD>
+The maximum value to be graphed. By default This will be autoconfigured
+from the data you select with the graphing functions.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__l_lower_limit">-l|--lower-limit value (default autoconfigure)
+
+</A></STRONG><DD>
+The minimum value to be graphed. By default This will be autoconfigured
+from the data you select with the graphing functions.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__r_rigid">-r|--rigid
+
+</A></STRONG><DD>
+rigid boundaries mode. Normally rrdgraph will automatically expand the
+lower and upper limit if the graph contains a value outside the valid
+range. With the r option you can disable this behavior
+
+
+<P>
+
+<DT><STRONG><A NAME="item__b_base">-b|--base value
+
+</A></STRONG><DD>
+if you are graphing memmory (and NOT network traffic) this switch should be
+set to 1024 so that one Kb is 1024 byte. For traffic measurement, 1 kb/s is
+1000 b/s.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__o_logarithmic">-o|--logarithmic
+
+</A></STRONG><DD>
+logarithmic y-axis scaling
+
+
+<P>
+
+<DT><STRONG><A NAME="item__c_color">-c|--color COLORTAG#rrggbb (default colors)
+
+</A></STRONG><DD>
+override the colors for the standard elements of the graph. The <EM>COLORTAG</EM>
+must be one of the following symbolic names: <STRONG>BACK</STRONG> ground, <STRONG>CANVAS</STRONG>,
+<STRONG>SHADEA</STRONG> left/top border, <STRONG>SHADEB</STRONG> right/bottom border, <STRONG>GRID</STRONG>, <STRONG>MGRID</STRONG>
+major grid, <STRONG>FONT</STRONG>, <STRONG>FRAME</STRONG> and axis of the graph or <STRONG>ARROW</STRONG>. This option can be called multiple times to set several colors.
+
+
+<P>
+
+<DT><STRONG><A NAME="item__t_title">-t|--title text (default no title)
+
+</A></STRONG><DD>
+Define a title to be written into the graph
+
+
+<P>
+
+<DT><STRONG><A NAME="item_DEF">DEF:vname=rrd:ds-name:CF
+
+</A></STRONG><DD>
+Define virtual name for a data source. This name can then be used in the
+functions explained below. The DEF call automatically chooses an <STRONG>RRA</STRONG> which provides data in a resolution appropriate for the size of the graph
+to be drawn. Ideally this means that one data point from the <STRONG>RRA</STRONG> should be represented by one pixel in the graph. If the resolution of the <STRONG>RRA</STRONG> is higher than the resolution of the graph, the data in the RRA will be
+consolidated according to the consolidation function (<EM>CF</EM>) chosen.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_CDEF">CDEF:vname=rpn-expression
+
+</A></STRONG><DD>
+Create a new virtual data source by evaluating a mathematical expression,
+specified in Reverse Polish Notation (RPN). If you have ever used a
+traditional HP calculator you already know RPN. The idea behind RPN
+notation is, that you have a stack and push your data onto this stack. When
+ever you execute an operation, it takes as many data values from the stack
+as needed. The pushing of data is implicit, so when ever you specify a
+number or a variable, it gets pushed automatically. 
+
+
+<P>
+
+If this is all a big load of incomprehensible words for you, maybe an
+example helps (a more complete explanation is given in [1]): The expression
+vname+3/2 becomes vname,3,2,/,+ in RPN. First the three values get pushed
+onto the stack (which now contains (the current value of) vname, a 3 and a
+2). Then the / operator pops two values from the stack (3 and 2), divides
+the first argument by the second (3/2) and pushes the result (1.5) back
+onto the stack. Then the + operator pops two values (vname and 1.5) from
+the stack; both values are added up and the result gets pushes back onto
+the stack. In the end there is only one value left on the stack: The result
+of the expression.
+
+
+<P>
+
+The <EM>rpn-expression</EM> in the <STRONG>CDEF</STRONG> function takes both, constant values as well as <EM>vname</EM> variables. The following operators can be used on these values: 
+
+
+<P>
+
+<DL>
+<DT><STRONG><A NAME="item__">+, -, *, /
+
+</A></STRONG><DD>
+pops two values from the stack applies the selected operator and pushes the
+result back onto the stack.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_SIN">SIN, COS, LOG, EXP
+
+</A></STRONG><DD>
+pops one value from the stack, applies the selected function and pushes the
+result back onto the stack.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_LT">LT, LE, GT, GE, EQ
+
+</A></STRONG><DD>
+pops two values from the stack, compares them according to the selected
+condition and pushes either 1 back onto the stack if the condition is true
+and 0 if the condition was not true.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_IF">IF
+
+</A></STRONG><DD>
+pops three values from the stack. If the last value is not 0, the second
+value will be pushed back onto the stack, otherwise the first value is
+pushed back.
+
+
+<P>
+
+If the stack contains the values A, B, C, D, E are presently on the stack,
+the IF operator will pop the values E D and C of the stack. It will look at
+C and if it is not 0 it will push D back onto the stack, otherwise E will
+be sent back to the stack.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_UN">UN
+
+</A></STRONG><DD>
+Pops one value of the stack, if it is <EM>*UNKNOWN*</EM>, 1 will be pushed back otherwise 0.
+
+
+<P>
+
+</DL>
+Please note that you may only use <EM>vname</EM> variables that you previously defined by either <STRONG>DEF</STRONG> or <STRONG>CDEF</STRONG>. Furthermore, as of this writing (version 0.99.25), you must use at least
+one <EM>vname</EM>
+per expression, that is ``CDEF:fourtytwo=2,40,+'' will yield an error
+message but not a <EM>vname</EM> fourtytwo that's always equal to 42.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_PRINT">PRINT:vname:CF:format
+
+</A></STRONG><DD>
+Calculate the chosen consolidation function <EM>CF</EM> over the data-source variable <EM>vname</EM> and <CODE>printf</CODE> the result to stdout using <EM>format</EM>. 
+
+
+<P>
+
+<DT><STRONG><A NAME="item_GPRINT">GPRINT:vname:CF:format
+
+</A></STRONG><DD>
+Same as <STRONG>PRINT</STRONG> but the result is printed into the graph below the legend.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_COMMENT">COMMENT:text
+
+</A></STRONG><DD>
+Like <STRONG>GPRINT</STRONG> but the <EM>text</EM> is simply printed into the graph.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_HRULE">HRULE:value#rrggbb[:legend]
+
+</A></STRONG><DD>
+Draw a horizontal rule into the graph and optionally add a legend
+
+
+<P>
+
+<DT><STRONG><A NAME="item_VRULE">VRULE:time#rrggbb[:legend]
+
+</A></STRONG><DD>
+Draw a vertical rule into the graph and optionally add a legend
+
+
+<P>
+
+<DT><STRONG><A NAME="item_LINE">LINE{1|2|3}:vname[#rrggbb[:legend]]
+
+</A></STRONG><DD>
+Plot for the requested data, using the color specified. Write a legend into
+the graph. The 3 possible keywords <STRONG>LINE1</STRONG>, <STRONG>LINE2</STRONG>, and <STRONG>LINE3</STRONG> 
+generate increasingly wide lines. If no color is defined, the drawing is
+done 'blind' this is useful in connection with the 
+<STRONG>STACK</STRONG> function when you want to ADD the values of two data-sources without
+showing it in the graph.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_AREA">AREA:vname[#rrggbb[:legend]]
+
+</A></STRONG><DD>
+Does the same as <STRONG>LINE?</STRONG>, but the area between 0 and the graph will be filled with the color
+specified.
+
+
+<P>
+
+<DT><STRONG><A NAME="item_STACK">STACK:vname[#rrggbb[:legend]]
+
+</A></STRONG><DD>
+Does the same as <STRONG>LINE?</STRONG>, but the graph gets stacked on top of the previous
+<STRONG>LINE?</STRONG>, <STRONG>AREA</STRONG> or <STRONG>STACK</STRONG> graph. Depending on the type of the previous graph, the <STRONG>STACK</STRONG> will be either a <STRONG>LINE?</STRONG> or an <STRONG>AREA</STRONG>. This obviously implies that the first <STRONG>STACK</STRONG> must be preceeded by an
+<STRONG>AREA</STRONG> or <STRONG>LINE?</STRONG> -- you need something to stack something onto in the first place ;) 
+
+
+<P>
+
+</DL>
+<P>
+<HR>
+<H1><A NAME="NOTE">NOTE
+
+</A></H1>
+In a ':' in a <EM>legend</EM> argument will mark the end of the legend. To enter a ':' into a legend, the
+colon must be escaped with a backslash '\:'. Beware, that many environments
+look for backslashes themselves, so it may be necessary to write two
+backslashes so that one is passed onto rrd_graph.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="NOTE_2">NOTE 2
+
+</A></H1>
+The text printed below the actual graph can be formated by appending
+special escaped charactes at the end of a text. When ever such a character
+occurs, all pending text is pushed onto the grah acording to the character
+specified.
+
+
+<P>
+
+Valid characters are: <STRONG>j</STRONG> for justified, <STRONG>l</STRONG> for left aligned, <STRONG>r</STRONG>
+for right aligned and <STRONG>c</STRONG> for centered. In the next section there is an example showing how to use
+centered formating. 
+
+
+<P>
+
+A special case is COMMENT:\s this inserts some additional vertical space
+before placing the next row of legends. 
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="NOTE_3">NOTE 3
+
+</A></H1>
+Whenever rrd_graph gets called, it prints a line telling the size of the
+gif it has just created to STDOUT. This line looks like this: XSIZExYSIZE.
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="EXAMPLE">EXAMPLE
+
+</A></H1>
+<PRE>  rrdtool graph demo.gif --title=&quot;Demo Graph&quot; \
+          DEF:cel=demo.rrd:exhaust:AVERAGE \
+          &quot;CDEF:far=cel,32,-,0.55555,*&quot; \
+          LINE2:cel#00a000:&quot;D. Celsius&quot; \
+          LINE2:far#ff0000:&quot;D. Fahrenheit\c&quot;
+</PRE>
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="AUTHOR">AUTHOR
+
+</A></H1>
+Tobias Oetiker <A
+HREF="MAILTO:<oetiker@ee.ethz.ch>"><oetiker@ee.ethz.ch></A>
+
+
+<P>
+
+<P>
+<HR>
+<H1><A NAME="REFERENCES">REFERENCES
+
+</A></H1>
+[1] <A
+HREF="http://www.dotpoint.com/xnumber/rpn_or_adl.htm">http://www.dotpoint.com/xnumber/rpn_or_adl.htm</A>
+
+
+
+<P>
+
+</DL>
+    </BODY>
+
+    </HTML>

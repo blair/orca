@@ -1,0 +1,573 @@
+.rn '' }`
+''' $RCSfile$$Revision$$Date$
+'''
+''' $Log$
+'''
+.de Sh
+.br
+.if t .Sp
+.ne 5
+.PP
+\fB\\$1\fR
+.PP
+..
+.de Sp
+.if t .sp .5v
+.if n .sp
+..
+.de Ip
+.br
+.ie \\n(.$>=3 .ne \\$3
+.el .ne 3
+.IP "\\$1" \\$2
+..
+.de Vb
+.ft CW
+.nf
+.ne \\$1
+..
+.de Ve
+.ft R
+
+.fi
+..
+'''
+'''
+'''     Set up \*(-- to give an unbreakable dash;
+'''     string Tr holds user defined translation string.
+'''     Bell System Logo is used as a dummy character.
+'''
+.tr \(*W-|\(bv\*(Tr
+.ie n \{\
+.ds -- \(*W-
+.ds PI pi
+.if (\n(.H=4u)&(1m=24u) .ds -- \(*W\h'-12u'\(*W\h'-12u'-\" diablo 10 pitch
+.if (\n(.H=4u)&(1m=20u) .ds -- \(*W\h'-12u'\(*W\h'-8u'-\" diablo 12 pitch
+.ds L" ""
+.ds R" ""
+'''   \*(M", \*(S", \*(N" and \*(T" are the equivalent of
+'''   \*(L" and \*(R", except that they are used on ".xx" lines,
+'''   such as .IP and .SH, which do another additional levels of
+'''   double-quote interpretation
+.ds M" """
+.ds S" """
+.ds N" """""
+.ds T" """""
+.ds L' '
+.ds R' '
+.ds M' '
+.ds S' '
+.ds N' '
+.ds T' '
+'br\}
+.el\{\
+.ds -- \(em\|
+.tr \*(Tr
+.ds L" ``
+.ds R" ''
+.ds M" ``
+.ds S" ''
+.ds N" ``
+.ds T" ''
+.ds L' `
+.ds R' '
+.ds M' `
+.ds S' '
+.ds N' `
+.ds T' '
+.ds PI \(*p
+'br\}
+.\"	If the F register is turned on, we'll generate
+.\"	index entries out stderr for the following things:
+.\"		TH	Title 
+.\"		SH	Header
+.\"		Sh	Subsection 
+.\"		Ip	Item
+.\"		X<>	Xref  (embedded
+.\"	Of course, you have to process the output yourself
+.\"	in some meaninful fashion.
+.if \nF \{
+.de IX
+.tm Index:\\$1\t\\n%\t"\\$2"
+..
+.nr % 0
+.rr F
+.\}
+.TH BIN_DEC_HEX 1 "19990504.23" "4/May/99" "rrdtool"
+.UC
+.if n .hy 0
+.if n .na
+.ds C+ C\v'-.1v'\h'-1p'\s-2+\h'-1p'+\s0\v'.1v'\h'-1p'
+.de CQ          \" put $1 in typewriter font
+.ft CW
+'if n "\c
+'if t \\&\\$1\c
+'if n \\&\\$1\c
+'if n \&"
+\\&\\$2 \\$3 \\$4 \\$5 \\$6 \\$7
+'.ft R
+..
+.\" @(#)ms.acc 1.5 88/02/08 SMI; from UCB 4.2
+.	\" AM - accent mark definitions
+.bd B 3
+.	\" fudge factors for nroff and troff
+.if n \{\
+.	ds #H 0
+.	ds #V .8m
+.	ds #F .3m
+.	ds #[ \f1
+.	ds #] \fP
+.\}
+.if t \{\
+.	ds #H ((1u-(\\\\n(.fu%2u))*.13m)
+.	ds #V .6m
+.	ds #F 0
+.	ds #[ \&
+.	ds #] \&
+.\}
+.	\" simple accents for nroff and troff
+.if n \{\
+.	ds ' \&
+.	ds ` \&
+.	ds ^ \&
+.	ds , \&
+.	ds ~ ~
+.	ds ? ?
+.	ds ! !
+.	ds /
+.	ds q
+.\}
+.if t \{\
+.	ds ' \\k:\h'-(\\n(.wu*8/10-\*(#H)'\'\h"|\\n:u"
+.	ds ` \\k:\h'-(\\n(.wu*8/10-\*(#H)'\`\h'|\\n:u'
+.	ds ^ \\k:\h'-(\\n(.wu*10/11-\*(#H)'^\h'|\\n:u'
+.	ds , \\k:\h'-(\\n(.wu*8/10)',\h'|\\n:u'
+.	ds ~ \\k:\h'-(\\n(.wu-\*(#H-.1m)'~\h'|\\n:u'
+.	ds ? \s-2c\h'-\w'c'u*7/10'\u\h'\*(#H'\zi\d\s+2\h'\w'c'u*8/10'
+.	ds ! \s-2\(or\s+2\h'-\w'\(or'u'\v'-.8m'.\v'.8m'
+.	ds / \\k:\h'-(\\n(.wu*8/10-\*(#H)'\z\(sl\h'|\\n:u'
+.	ds q o\h'-\w'o'u*8/10'\s-4\v'.4m'\z\(*i\v'-.4m'\s+4\h'\w'o'u*8/10'
+.\}
+.	\" troff and (daisy-wheel) nroff accents
+.ds : \\k:\h'-(\\n(.wu*8/10-\*(#H+.1m+\*(#F)'\v'-\*(#V'\z.\h'.2m+\*(#F'.\h'|\\n:u'\v'\*(#V'
+.ds 8 \h'\*(#H'\(*b\h'-\*(#H'
+.ds v \\k:\h'-(\\n(.wu*9/10-\*(#H)'\v'-\*(#V'\*(#[\s-4v\s0\v'\*(#V'\h'|\\n:u'\*(#]
+.ds _ \\k:\h'-(\\n(.wu*9/10-\*(#H+(\*(#F*2/3))'\v'-.4m'\z\(hy\v'.4m'\h'|\\n:u'
+.ds . \\k:\h'-(\\n(.wu*8/10)'\v'\*(#V*4/10'\z.\v'-\*(#V*4/10'\h'|\\n:u'
+.ds 3 \*(#[\v'.2m'\s-2\&3\s0\v'-.2m'\*(#]
+.ds o \\k:\h'-(\\n(.wu+\w'\(de'u-\*(#H)/2u'\v'-.3n'\*(#[\z\(de\v'.3n'\h'|\\n:u'\*(#]
+.ds d- \h'\*(#H'\(pd\h'-\w'~'u'\v'-.25m'\f2\(hy\fP\v'.25m'\h'-\*(#H'
+.ds D- D\\k:\h'-\w'D'u'\v'-.11m'\z\(hy\v'.11m'\h'|\\n:u'
+.ds th \*(#[\v'.3m'\s+1I\s-1\v'-.3m'\h'-(\w'I'u*2/3)'\s-1o\s+1\*(#]
+.ds Th \*(#[\s+2I\s-2\h'-\w'I'u*3/5'\v'-.3m'o\v'.3m'\*(#]
+.ds ae a\h'-(\w'a'u*4/10)'e
+.ds Ae A\h'-(\w'A'u*4/10)'E
+.ds oe o\h'-(\w'o'u*4/10)'e
+.ds Oe O\h'-(\w'O'u*4/10)'E
+.	\" corrections for vroff
+.if v .ds ~ \\k:\h'-(\\n(.wu*9/10-\*(#H)'\s-2\u~\d\s+2\h'|\\n:u'
+.if v .ds ^ \\k:\h'-(\\n(.wu*10/11-\*(#H)'\v'-.4m'^\v'.4m'\h'|\\n:u'
+.	\" for low resolution devices (crt and lpr)
+.if \n(.H>23 .if \n(.V>19 \
+\{\
+.	ds : e
+.	ds 8 ss
+.	ds v \h'-1'\o'\(aa\(ga'
+.	ds _ \h'-1'^
+.	ds . \h'-1'.
+.	ds 3 3
+.	ds o a
+.	ds d- d\h'-1'\(ga
+.	ds D- D\h'-1'\(hy
+.	ds th \o'bp'
+.	ds Th \o'LP'
+.	ds ae ae
+.	ds Ae AE
+.	ds oe oe
+.	ds Oe OE
+.\}
+.rm #[ #] #H #V #F C
+.SH "NAME"
+Binary Decimal Hexadecimal \- How does it wok
+.SH "DESCRIPTION"
+Most people use the decimal numbering system. This system uses ten
+symbols to represent numbers. When those ten symbols are used up, they
+start all over again and increment the position just before this. The
+digit 0 is only shown if it is the only symbol in the sequence, or if
+it is not the first one.
+.PP
+If this sounds as crypto to you, this is what I've said in numbers:
+.PP
+.Vb 14
+\&     0
+\&     1
+\&     2
+\&     3
+\&     4
+\&     5
+\&     6
+\&     7
+\&     8
+\&     9
+\&    10
+\&    11
+\&    12
+\&    13
+.Ve
+and so on.
+.PP
+Each time the digit nine should be incremented, it is reset to 0 and the
+position before is incremented. Then number 9 can be seen as \*(L"00009\*(R" and
+when we should increment 9, we reset it to zero and increment the digit
+just before the 9 so the number becomes \*(L"00010\*(R". For zero's we write a 
+space if it is not the only digit (so: number 0) and if it is the first
+digit: \*(L"00010\*(R" \-> \*(L" 0010\*(R" \-> \*(L"  010\*(R" \-> \*(L"   10\*(R". It is not \*(L"   1 \*(L".
+.PP
+This was pretty basic, you already knew this. Why did I tell it ?
+Well, computers do not represent numbers with 10 different digits. They
+know of only two different symbols, being 0 and 1. Apply the same rules
+to this set of digits and you get the binary numbering system:
+.PP
+.Vb 14
+\&     0
+\&     1
+\&    10
+\&    11
+\&   100
+\&   101
+\&   110
+\&   111
+\&  1000
+\&  1001
+\&  1010
+\&  1011
+\&  1100
+\&  1101
+.Ve
+and so on.
+.PP
+If you count the number of rows, you'll see that these are again 14
+different numbers. The numbers are the same and mean the same. It is
+only a different representation. This means that you have to know the
+representation used, or as it is called the numbering system or base.
+Normally if we do not speak about the numbering system used, we're
+using the decimal system. If we are talking about another numbering
+system, we'll have to make that clear. There are a few wide-spread
+methods to do so. One common form is to write \fI1010\fR\|(2) which means that
+you wrote down a number in the binary form. It is the number ten.
+If you would write 1010 it means the number one thousand and ten.
+.PP
+In books, another form is most used. It uses subscript (little chars,
+more or less in between two rows). You can leave out the parentheses
+in that case and write down the number in normal characters followed
+with a little two just behind it.
+.PP
+The numbering system used is also called the base. We talk of the number
+1100 base 2, the number 12 base 10.
+.PP
+For the binary system, is is common to write leading zero's. The numbers
+are written down in series of four, eight or sixteen depending on the
+context.
+.PP
+We can use the binary form when talking to computers (...programming...)
+but the numbers will have large representations. The number 65535 would
+be written down as \fI1111111111111111\fR\|(2) which is 16 times the digit 1.
+This is difficult and prone to errors. Therefore we normally would use
+another base, called hexadecimal. It uses 16 different symbols. First
+the symbols from the decimal system are used, thereafter we continue
+with the alfabetic characters. We get 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, A,
+B, C, D, E and F. This system is choosen because the hexadecimal form
+can be converted into the binary system very easy (and back).
+.PP
+There is yet another system in use, called the octal system. This was
+more common in the old days but not anymore. You will find it in use
+on some places so get used to it. The same story applies, but now with
+only eight different symbols.
+.PP
+.Vb 4
+\& Binary      (2)
+\& Octal       (8)
+\& Decimal     (10)
+\& Hexadecimal (16)
+.Ve
+.Vb 23
+\& (2)    (8) (10) (16)
+\& 00000   0    0    0
+\& 00001   1    1    1
+\& 00010   2    2    2 
+\& 00011   3    3    3
+\& 00100   4    4    4
+\& 00101   5    5    5
+\& 00110   6    6    6
+\& 00111   7    7    7
+\& 01000  10    8    8
+\& 01001  11    9    9
+\& 01010  12   10    A
+\& 01011  13   11    B
+\& 01100  14   12    C
+\& 01101  15   13    D
+\& 01110  16   14    E
+\& 01111  17   15    F
+\& 10000  20   16   10
+\& 10001  21   17   11
+\& 10010  22   18   12
+\& 10011  23   19   13
+\& 10100  24   20   14
+\& 10101  25   21   15
+.Ve
+Most computers used nowadays are using bytes of eight bits. This means
+that they store eight bits at a time. You can see why the octal system
+is not the most preferred for that: You'd need three digits to represent
+the eight bits and this means that you'd have to use one complete digit
+to represent only two bits (2+3+3=8). This is a waste. For hexadecimal
+digits, you need only two digits which are used completely:
+.PP
+.Vb 2
+\& (2)      (8)  (10) (16)
+\& 11111111 377  255   FF
+.Ve
+You can see why binary and hexadecimal can be converted quickly:
+For each hexadecimal digit there are exactly four binary digits.
+Take a binary number. Each time take four digits from the right and make
+a hexadecimal digit from it (see the table above). Stop when there are
+no more digits.
+Other way around: Take a hexadecimal number. For each digit, write down
+its binary equivalent.
+.PP
+Computers (or rather the parsers running on them) would have a hard time
+converting a number like \fI1234\fR\|(16). Therefore hexadecimal numbers get a
+prefix. This prefix depends on the language you're writing in. Some of
+the prefixes are \*(L"0x\*(R" for C, \*(L"$\*(R" for pascal, \*(L"#\*(R" for HTML.
+It is common to assume that if a number starts with a zero, it is octal.
+It does not matter what is used as long as you know what it is.
+I will use \*(L"0x\*(R" for hexadecimal, \*(L"%\*(R" for binary and \*(L"0\*(R" for octal.
+The following numbers are all the same, just the way they are written is
+different:  021  0x11  17  \f(CW%00010001\fR
+.PP
+To do arithmetics and conversions you need to understand one more thing.
+It is something you already know but perhaps you do not \*(L"see\*(R" it yet:
+.PP
+If you write down 1234, (so it is decimal) you are talking about the
+number one thousand, two hundred and thirty four. In sort of a formula:
+.PP
+.Vb 4
+\& 1 * 1000 = 1000
+\& 2 *  100 =  200
+\& 3 *   10 =   30
+\& 4 *    1 =    4
+.Ve
+This can also be written as:
+.PP
+.Vb 4
+\& 1 * 10^3
+\& 2 * 10^2
+\& 3 * 10^1
+\& 4 * 10^0
+.Ve
+where ^ means \*(L"to the power of\*(R".
+.PP
+We are using the base 10, and the positions 0,1,2 and 3.
+The right-most position should NOT be multiplied with 10. The second
+from the right should be multiplied one time with 10. The third from
+the right is multiplied with 10 two times. This continues for whatever
+positions are used.
+.PP
+It is the same in all other representations:
+.PP
+0x1234 will be
+.PP
+.Vb 4
+\& 1 * 16^3
+\& 2 * 16^2
+\& 3 * 16^1
+\& 4 * 16^0
+.Ve
+01234 would be
+.PP
+.Vb 4
+\& 1 * 8^3
+\& 2 * 8^2
+\& 3 * 8^1
+\& 4 * 8^0
+.Ve
+This example can not be done for binary as that system can only use two
+symbols. Another example:
+.PP
+%1010 would be
+.PP
+.Vb 4
+\& 1 * 2^3
+\& 0 * 2^2
+\& 1 * 2^1
+\& 0 * 2^0
+.Ve
+It would have been more easy to convert it to its hexadecimal form and
+just translate \f(CW%1010\fR into 0xA. After a while you get used to it. You will
+not need to do any calculations anymore but just know that 0xA means 10.
+.PP
+To convert a decimal number into a hexadecimal one you could use the next
+method. It will take some time to be able to do the estimates but it will
+be more and more easy when you use the system more frequent. Another way
+is presented to you thereafter.
+.PP
+First you will need to know how many positions will be used in the other
+system. To do so, you need to know the maximum numbers. Well, that's not
+so hard as it looks. In decimal, the maximum number that you can form 
+with two digits is \*(L"99\*(R". The maximum for three: \*(L"999\*(R". The next number
+would need an extra position. Reverse this idea and you will see that
+the number can be found by taking 10^3 (10*10*10 is 1000) minus 1 or
+10^2 minus one.
+.PP
+This can be done for hexadecimal too:
+.PP
+.Vb 4
+\& 16^4 = 0x10000 = 65536
+\& 16^3 =  0x1000 =  4096
+\& 16^2 =   0x100 =   256
+\& 16^1 =    0x10 =    16
+.Ve
+If a number is smaller than 65536 it will thus fit in four positions.
+If the number is bigger than 4095, you will need to use position 4.
+How many times can you take 4096 from the number without going below
+zero is the first digit you write down. This will always be a number
+from 1 to 15 (0x1 to 0xF). Do the same for the other positions.
+.PP
+Number is 41029. It is smaller than 16^4 but bigger than 16^3-1. This
+means that we have to use four positions.
+We can subtract 16^3 from 41029 ten times without going below zero.
+The leftmost digit will be \*(L"A\*(R" so we have 0xA????.
+The number is reduced to 41029 \- 10*4096 = 41029-40960 = 69.
+69 is smaller than 16^3 but not bigger than 16^2-1. The second digit
+is therefore \*(L"0\*(R" and we know 0xA0??.
+69 is smaller than 16^2 and bigger than 16^1-1. We can subtract 16^1
+(which is just plain 16) four times and write down \*(L"4\*(R" to get 0xA04?.
+Take 64 from 69 (69 \- 4*16) and the last digit is 5 --> 0xA045.
+.PP
+The other method builds the number from the right. Take again 41029.
+Divide by 16 and do not use fractions (only whole numbers).
+.PP
+.Vb 4
+\& 41029 / 16 is 2564 with a remainder of 5. Write down 5.
+\& 2564 / 16 is 160 with a remainder of 4. Write the 4 before the 5.
+\& 160 / 16 is 10 with no remainder. Prepend 45 with 0.
+\& 10 / 16 is below one. End here and prepend 0xA. End up with 0xA045.
+.Ve
+Which method to use is up to you. Use whatever works for you. Personally
+I use them both without being able to tell what method I use in each
+case, it just depends on the number, I think. Fact is, some numbers
+will occur frequently while programming, if the number is close then
+I will use the first method (like 32770, translate into 32768 + 2 and
+just know that it is 0x8000 + 0x2 = 0x8002).
+.PP
+For binary the same approach can be used. The base is 2 and not 16,
+and the number of positions will grow rapidly. Using the second method
+has the advantage that you can see very simple if you should write down
+a zero or a one: if you divide by two the remainder will be zero if it
+was an even number and one if it was an odd number:
+ 
+ 41029 / 2 = 20514 remainder 1
+ 20514 / 2 = 10257 remainder 0
+ 10257 / 2 =  5128 remainder 1
+  5128 / 2 =  2564 remainder 0
+  2564 / 2 =  1282 remainder 0
+  1282 / 2 =   641 remainder 0
+   641 / 2 =   320 remainder 1
+   320 / 2 =   160 remainder 0
+   160 / 2 =    80 remainder 0
+    80 / 2 =    40 remainder 0
+    40 / 2 =    20 remainder 0
+    20 / 2 =    10 remainder 0
+    10 / 2 =     5 remainder 0
+     5 / 2 =     2 remainder 1
+     2 / 2 =     1 remainder 0
+     1 / 2 below 0 remainder 1
+.PP
+Write down the results from right to left: \f(CW%1010000001000101\fR
+.PP
+Group by four:
+.PP
+.Vb 4
+\& %1010000001000101
+\& %101000000100 0101
+\& %10100000 0100 0101
+\& %1010 0000 0100 0101
+.Ve
+Convert into hexadecimal: 0xA045
+.PP
+Group \f(CW%1010000001000101\fR by three and convert into octal:
+.PP
+.Vb 8
+\& %1010000001000101
+\& %1010000001000 101
+\& %1010000001 000 101
+\& %1010000 001 000 101
+\& %1010 000 001 000 101
+\& %1 010 000 001 000 101
+\& %001 010 000 001 000 101
+\&    1   2   0   1   0   5 --> 0120105
+.Ve
+.Vb 3
+\& So: %1010000001000101 = 0120105 = 0xA045 = 41029
+\& Or: 1010000001000101(2) = 120105(8) = A045(16) = 41029(10)
+\& Or: 1010000001000101(2) = 120105(8) = A045(16) = 41029
+.Ve
+At first while adding numbers, you'll convert them to their decimal
+form and then back into their original form after doing the addition.
+If you use the other numbering system often, you will see that you'll
+be able to do arithmetics in the base that is used.
+In any representation it is the same, add the numbers on the right,
+write down the rightmost digit from the result, remember the other
+digits and use them in the next round. Continue with the second digits
+from the right and so on:
+.PP
+.Vb 1
+\&    %1010 + %0111 --> 10 + 7 --> 17 --> %00010001
+.Ve
+will become
+.PP
+.Vb 10
+\&    %1010
+\&    %0111 +
+\&     ||||
+\&     |||+-- add 0 + 1, result is 1, nothing to remember
+\&     ||+--- add 1 + 1, result is %10, write down 0 and remember 1
+\&     |+---- add 0 + 1 + 1(remembered), result = 0, remember 1
+\&     +----- add 1 + 0 + 1(remembered), result = 0, remember 1
+\&            nothing to add, 1 remembered, result = 1
+\& --------
+\&   %10001 is the result, I like to write it as %00010001
+.Ve
+For low values, try to do the calculations yourself, check them with
+a calculator. The more you do the calculations yourself, the more you
+find that you didn't make mistakes. In the end, you'll do calcula in
+other bases as easy as you do in decimal.
+.PP
+When the numbers get bigger, you'll have to realise that a computer is
+not called a computer just to have a nice name. There are many different
+calculators available. Use them. For unix you could use \*(L"bc\*(R" which is
+called so as it is short for Binary Calculator. It calculates not only
+in decimal, but in all bases you'll ever use (among them Binary).
+.PP
+For people on Windows:
+Start the calculator (start->programs->accessories->calculator)
+and if necessary click view->scientific. You now have a scientific
+calculator and can compute in binary or hexadecimal.
+.SH "AUTHOR"
+I hope you enjoyed the examples and their descriptions. If you do, help
+other people by pointing them to this document when they are asking
+basic questions. They will not only get their answer but at the same
+time learn a whole lot more.
+.PP
+Alex van den Bogaerdt 
+<alex@ergens.op.het.net>
+
+.rn }` ''
+.IX Title "BIN_DEC_HEX 1"
+.IX Name "Binary Decimal Hexadecimal - How does it wok"
+
+.IX Header "NAME"
+
+.IX Header "DESCRIPTION"
+
+.IX Header "AUTHOR"
+

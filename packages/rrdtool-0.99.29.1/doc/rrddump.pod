@@ -1,0 +1,30 @@
+=head1 NAME
+
+rrdtool dump - dump the contents of an B<RRD> in human readable form
+
+=head1 SYNOPSIS
+
+B<rrdtool> B<dump> I<filename> [B<--full>|B<-f>] 
+
+=head1 DESCRIPTION
+
+The B<dump> function prints the contents of an B<RRD> in human
+readable form.
+
+=over 8
+
+=item I<filename>
+
+The name of the B<RRD> you want to dump.
+
+=item B<--full>|B<-f> 
+
+By default only the headers of the B<RRD> are printed. With this
+option you get the actual data as well.
+
+=back
+
+=head1 AUTHOR
+
+Tobias Oetiker <oetiker@ee.ethz.ch>
+

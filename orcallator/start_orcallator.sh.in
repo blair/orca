@@ -18,6 +18,14 @@ SE=@SE@
 # orcallator.se should read.
 WEB_LOG=@WEB_LOG@
 
+# WEB_SERVER contains a regular expression used to find the number of
+# running non-secure web server processes on the system.
+WEB_SERVER=httpd
+
+# WEB_SERVER_SECURE contains a regular expression used to find the
+# number of running secure web server processes on the system.
+WEB_SERVER_SECURE=httpsd
+
 # WATCH_WEB contains the command line options to SE to tell
 # orcallator.se the format of the web server logs.
 WATCH_WEB="-DWATCH_WEB"               # For NCSA style access log
@@ -65,7 +73,7 @@ fi
 OUTDIR=$ORCALLATOR_DIR/$uname
 
 # Export the environmental variables.
-export COMPRESSOR OUTDIR WEB_LOG
+export COMPRESSOR OUTDIR WEB_LOG WEB_SERVER WEB_SERVER_SECURE
 
 # Check if orcallator is already running.
 pids=`/usr/ucb/ps auxww | $AWK '/orcallator.se/ && !/awk/ {print $2}'`

@@ -8,6 +8,19 @@
 //
 // Portions copied from percollator.se written by Adrian Cockroft.
 //
+// Version 1.35:   Aug 11, 2002	Add a new measurement, the number of secure web
+//				server processes on the system using the
+//				column name #httpsds.  If the environmental
+//				variable WEB_SERVER_SECURE is defined, use its
+//				value as the regular expression to match on
+//				process names.  If WEB_SERVER_SECURE is not
+//				defined, then count the number of httpsd's.
+//				Increase the maximum number of disks that can
+//				be monitored using the RAWDISK code from 512 to
+//				1024 by increasing MAX_RAWDISKS from 512 to
+//				1024.  Reformat and modify the usage message to
+//				fit the new WEB_SERVER_SECURE environmental
+//				variable.
 // Version 1.34:   Jul 14, 2002	Support for SE version 3.3.  Break
 //				compatibility with SE version 3.1, which was
 //				released in April 1999, and older SE versions.
@@ -481,10 +494,11 @@ ks_rfs_proc_v3	tmp_rfsproccnt_v3;
 
 // Variables for handling the httpd access log.
 #ifdef WATCH_WEB
-string		www_search_url       = getenv("SEARCHURL");
-string		www_server_proc_name = getenv("WEB_SERVER");
-string		www_log_filename     = getenv("WEB_LOG");
-string		www_gateway          = getenv("GATEWAY");
+string		www_search_url              = getenv("SEARCHURL");
+string		www_server_proc_name        = getenv("WEB_SERVER");
+string		www_server_secure_proc_name = getenv("WEB_SERVER_SECURE");
+string		www_log_filename            = getenv("WEB_LOG");
+string		www_gateway                 = getenv("GATEWAY");
 ulong		www_log_fp;
 uint		www_gatelen;
 stat_t		www_log_stat[1];
@@ -579,7 +593,7 @@ struct RawDisk {
 };
 
 // Define global for tracking raw disk data.
-#define MAX_RAWDISKS	512
+#define MAX_RAWDISKS	1024
 RawDisk			RAW_disk[MAX_RAWDISKS];
 int			RAW_disk_map=0;
 int			RAW_disk_count=0;
@@ -662,7 +676,7 @@ raw_disk_update() {
   ulong       time_void;
   char        short_name[8];
 
-  gettimeofday(time_update,time_void);
+  gettimeofday(time_update, time_void);
   update = time_update[0].tv_sec + (time_update[0].tv_usec / 1000000.0);
   delta  = update - RAW_disk_lastupdate;
   RAW_disk_lastupdate = update;
@@ -992,12 +1006,13 @@ int main(int argc, string argv[])
       fprintf(stderr, "usage: se [-Defines] %s [interval]\n", program_name);
       fprintf(stderr, "The default interval is %d seconds.\n", SAMPLE_INTERVAL);
       fprintf(stderr, "%s uses the following environmental variables:\n", program_name);
-      fprintf(stderr, "   OUTDIR       directory to write log files, output to stdout if not set\n");
-      fprintf(stderr, "   WEB_SERVER   string to search for number of web servers, i.e. httpd\n");
-      fprintf(stderr, "   WEB_LOG      location of web server access log, i.e. /httpd/logs/access\n");
-      fprintf(stderr, "   GATEWAY      special address to monitor, i.e. some.where.com\n");
-      fprintf(stderr, "   SEARCHURL    match for search scripts, default is search.cgi\n");
-      fprintf(stderr, "   COMPRESSOR   compress previous days logs with this command, i.e. \"gzip -9\"\n");
+      fprintf(stderr, "   OUTDIR            directory to write log files, output to stdout if not set\n");
+      fprintf(stderr, "   WEB_SERVER        regex to match web server's name (def = httpd)\n");
+      fprintf(stderr, "   WEB_SERVER_SECURE regex to match secure web server's name (def = httpsd)\n");
+      fprintf(stderr, "   WEB_LOG           location of web server access log (/httpd/logs/access)\n");
+      fprintf(stderr, "   GATEWAY           special web address to monitor (some.where.com)\n");
+      fprintf(stderr, "   SEARCHURL         regex for search scripts (def = search.cgi)\n");
+      fprintf(stderr, "   COMPRESSOR        compress log files with this command (\"bzip2 -9\")\n");
       fprintf(stderr, "Add these defines to enable monitoring of specific subsystems:\n");
       fprintf(stderr, "   -DWATCH_WEB        watch web server access logs\n");
       fprintf(stderr, "   -DWATCH_PROXY      use WEB_LOG as a NCSA style proxy log\n");
@@ -1102,6 +1117,11 @@ initialize()
 
   if (www_server_proc_name == nil || www_server_proc_name == "") {
     www_server_proc_name = "httpd";
+  }
+
+  if (www_server_secure_proc_name == nil ||
+      www_server_secure_proc_name == "") {
+    www_server_secure_proc_name = "httpsd";
   }
 
   if (www_gateway == nil || www_gateway == "" ) {
@@ -2265,23 +2285,45 @@ measure_web(long sleep_till)
 #endif
 }
 
-int count_proc(string name)
+// Functions in SE cannot return an array, so to work around this, have
+// count_procs place it's results in a global array.
+#define MAX_COUNT_PROC_REGEXS 2
+int count_procs_results[MAX_COUNT_PROC_REGEXS];
+count_procs(int number_regexs, string regexs[])
 {
-  int      count;
   psinfo_t p;
+  int      i;
 
-  count = 0;
+  if (number_regexs > MAX_COUNT_PROC_REGEXS) {
+    fprintf(stderr, "%s: too many regular expressions (%d).  Increase MAX_COUNT_PROC_REGEXS.\n",
+            program_name, number_regexs);
+    exit(1);
+  }
+
+  for (i=0; i<number_regexs; ++i) {
+    count_procs_results[i] = 0;
+  }
+
   for (p=first_proc(); p.pr_pid != -1; p=next_proc()) {
-    if (p.pr_fname =~ name) {
-      count++;
+    for (i=0; i<number_regexs; ++i) {
+      if (p.pr_fname =~ regexs[i]) {
+        ++count_procs_results[i];
+      }
     }
   }
-  return count;
 }
 
 put_httpd()
 {
-  put_output("#httpds",    sprintf("%7d",   count_proc(www_server_proc_name)));
+  string proc_regexs[2];
+
+  proc_regexs[0] = www_server_proc_name;
+  proc_regexs[1] = www_server_secure_proc_name;
+
+  count_procs(sizeof(proc_regexs)/sizeof(proc_regexs[0]), proc_regexs);
+
+  put_output("#httpds",    sprintf("%7d",   count_procs_results[0]));
+  put_output("#httpsds",   sprintf("%8d",   count_procs_results[1]));
   put_output("httpop/s",   sprintf("%8.2f", httpops/www_interval));
   put_output("http/p5s",   sprintf("%8.2f", httpops5));
   put_output("cndget/s",   sprintf("%8.2f", httpop_condgets/www_interval));

@@ -19,8 +19,8 @@ AC_SUBST(RRD_CONFIGURE_COMMAND_LINE)
 # Set this to yes to have configure always build all of the required
 # Perl Orca modules.  This is used to test the build more than
 # anything else.
-ALWAYS_BUILD_PERL_MODULES=yes
-ALWAYS_BUILD_PERL_MODULES=
+# ALWAYS_BUILD_PERL_MODULES=yes
+# ALWAYS_BUILD_PERL_MODULES=
 
 # Define the directories containing packages that Orca makes use of here.
 # The directory name packages where these packages are distributed with
@@ -180,6 +180,21 @@ AC_ARG_WITH(squid-log,
 )
 AC_SUBST(WATCH_WEB)
 AC_SUBST(WEB_LOG)
+
+AC_ARG_WITH(warn-email,
+  [  --with-warn-email=ADDR  email address to send warnings to [[root@localhost]]],
+  [
+    case "$withval" in
+      "" | y | ye | yes | n | no)
+         AC_MSG_ERROR([*** You must supply an argument to the --with-warn-email option.])
+         ;;
+      *) WARN_EMAIL="$withval"
+         ;;
+    esac
+  ],
+  : ${WARN_EMAIL=root@localhost}
+)
+AC_SUBST(WARN_EMAIL)
 
 # To get a default CFLAGS for this build, check for a C compiler.  This
 # is also needed to be ready to compile any Perl modules.

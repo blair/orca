@@ -38,7 +38,7 @@ find_times		0:10 1:00 6:00 12:00 19:00
 # being updated constantly stops being updated.  For mathematical
 # expressions use the word `interval' to get the interval number for
 # the data source.
-warn_email		root@localhost
+warn_email		@WARN_EMAIL@
 late_interval		interval + 30
 
 # These parameters specify which plots to generate.

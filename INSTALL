@@ -96,32 +96,50 @@ Outline:
 
  3) Configure Orca.
 
-    Now that you have decided where the RRD, HTML, and optionally the
-    orcallator data files and the web server access logs, are located,
-    run the configure script with the following arguments:
+    --prefix=DIR
+    --with-var-dir=DIR
+    --with-rrd-dir=DIR
+    --with-html-dir=DIR
 
-    % ./configure --prefix=ORCA_PREFIX_DIRECTORY    \
-                  --with-var-dir=VAR_DIR_LOCATION   \
-                  --with-rrd-dir=RRD_DIR_LOCATION   \
-                  --with-html-dir=HTML_DIR_LOCATION \
-                  --with-TYPE-log=LOG_LOCATION
+       Now that you have decided where the RRD, HTML, and optionally
+       the orcallator data files and the web server access logs, are
+       located, the configure script can be passed the following
+       arguments:
 
-    If you choose nothing else, the --with-html-dir must always be
-    used, otherwise configure will fail.
+          --prefix=ORCA_PREFIX_DIRECTORY
+          --with-var-dir=VAR_DIR_LOCATION
+          --with-rrd-dir=RRD_DIR_LOCATION
+          --with-html-dir=HTML_DIR_LOCATION
 
-    If you use a web, proxy, or Squid server, you can have orcallator
-    gather statistics from the log file.  Use this table to decide
-    which configure option to use.  Note that the Apache and NCSA
-    servers use the Common Log Format.
+       If you choose nothing else, the --with-html-dir must always be
+       used, otherwise configure will fail.
 
-    Log Type                                   Configure Option
-    ----------------------------------------------------------------
-    Common Log Format                          --with-ncsa-log=FILE
-    Common Log Format with Proxy Information   --with-proxy-log=FILE
-    Squid Log Format                           --with-squid-log=FILE
+    --with-ncsa-log=LOG_FILENAME
+    --with-proxy-log=LOG_FILENAME
+    --with-squid-log=LOG_FILENAME
 
-    Configure will let you use only one of these --with-TYPE-log
-    options.
+       If you use a web, proxy, or Squid server, you can have
+       orcallator gather statistics from the log file.  Use this table
+       to determine the appropriate configure command line option to
+       use.  LOG_FILENAME should be the location of the log file to
+       monitor.  Note that Apache and NCSA servers use the Common Log
+       Format.
+
+       Log Type                                   Configure Option
+       -----------------------------------------------------------
+       Common Log Format                          --with-ncsa-log
+       Common Log Format with Proxy Information   --with-proxy-log
+       Squid Log Format                           --with-squid-log
+
+       Configure will let you use only one of these options.
+
+    --with-warn-email
+
+       Orca has a `warn_email' configuration setting which is set to
+       an email address where Orca should send its warning messages.
+       By default this address is `root@localhost'.  You can use this
+       configure option to change the default email address to use in
+       the Orca configuration scripts in this distribution.
 
     The configure script will find where your version of Perl and some
     other assorted programs are located.  It will also determine if

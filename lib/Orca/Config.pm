@@ -225,9 +225,6 @@ sub get_color {
   $cc_default_colors[$_[0] % @cc_default_colors];
 }
 
-# Increment this count for each error in the configuration file.
-my $number_errors = 0;
-
 # This variable stores the anonymous subroutine that compares FIDs
 # when a group in the configuration files does not contain a
 # filename_compare parameter.
@@ -293,7 +290,7 @@ sub compile_late_interval {
 # set, use the last set value.
 sub fill_append_elements {
   unless (@_ == 3) {
-    die "Orca::Config::fill_append_elements $INCORRECT_NUMBER_OF_ARGS";
+    confess "Orca::Config::fill_append_elements $INCORRECT_NUMBER_OF_ARGS";
   }
 
   my ($array_ref, $number_datas, $default_value) = @_;
@@ -309,7 +306,15 @@ sub fill_append_elements {
 }
 
 sub check_config {
+  unless (@_ == 1) {
+    confess "$0: Orca::Config::check_config $INCORRECT_NUMBER_OF_ARGS";
+  }
+
   my $config_filename = shift;
+
+  # This counter is incremented for each error in the configuration
+  # file.
+  my $number_errors = 0;
 
   # Check that the required version of Orca is being used.
   if (defined $config_global{require}) {
@@ -323,13 +328,13 @@ sub check_config {
       }
       if ($require_version !~ /^\d+(?:\.\d*)?$/ and
           $require_version !~ /^\.\d+$/) {
-        ++$number_errors;
         warn "$0: error: 'require' second argument '$require_version' is not ",
              "a number in '$config_filename'.\n";
-      } elsif ($ORCA_VERSION < $require_version) {
         ++$number_errors;
+      } elsif ($ORCA_VERSION < $require_version) {
         warn "$0: Orca version $ORCA_VERSION less than required version ",
              "$require_version specified in '$config_filename'.\n";
+        ++$number_errors;
       }
     } else {
       warn "$0: error: 'require' needs two arguments in '$config_filename'.\n";
@@ -358,11 +363,10 @@ sub check_config {
     }
   }
 
-  # Quit now if there were any required options that were not set
+  # Exit now if there were any required options that were not set
   # since use of then will cause uninitialized warnings.
   if ($required_error) {
-    die "$0: loading configuration file '$config_filename' got ",
-        "$number_errors error(s).\n";
+    return $number_errors;
   }
 
   # Check if the html_dir and rrd_dir directories exist.
@@ -450,8 +454,8 @@ sub check_config {
     if ($config_global{"$pre_plot_type$type$post_plot_type"}) {
       my $data_ref = $CONST_IMAGE_PLOT_INFO{$type};
       unless ($data_ref) {
-        die "$0: internal error: \$CONST_IMAGE_PLOT_INFO{$type} is ",
-            "undefined.\n";
+        confess "$0: internal error: \$CONST_IMAGE_PLOT_INFO{$type} is ",
+                "undefined.\n";
       }
       push(@IMAGE_PLOT_TYPES, $type);
       push(@IMAGE_PDP_COUNTS, $data_ref->[0]);
@@ -492,11 +496,10 @@ sub check_config {
       }
     }
 
-    # Quit now if there were any required options that were not set
+    # Exit now if there were any required options that were not set
     # since use of then will cause uninitialized warnings.
     if ($required_error) {
-      die "$0: loading configuration file '$config_filename' got ",
-          "$number_errors error(s).\n";
+      return $number_errors;
     }
 
     # Set any optional group parameters to '' if it isn't defined in
@@ -692,11 +695,10 @@ sub check_config {
       }
     }
 
-    # Quit now if there were any required options that were not set
+    # Exit now if there were any required options that were not set
     # since use of then will cause uninitialized warnings.
     if ($required_error) {
-      die "$0: loading configuration file '$config_filename' got ",
-          "$number_errors error(s).\n";
+      return $number_errors;
     }
 
     # Create an array for each plot that will have a list of images that
@@ -839,12 +841,7 @@ sub check_config {
     }
   }
 
-  if ($number_errors) {
-    die "$0: loading configuration file '$config_filename' got ",
-        "$number_errors error(s).\n";
-  }
-
-  1;
+  $number_errors;
 }
 
 sub _trim_path {
@@ -868,6 +865,10 @@ sub _trim_path {
 sub process_config_line {
   my ($config_filename, $line_number, $line) = @_;
 
+  # This counter is incremented for each error in the configuration
+  # file.
+  my $number_errors = 0;
+
   # Take the line and split it and make the first element lowercase.
   my @line = split(' ', $line);
   my $key  = lc(shift(@line));
@@ -883,7 +884,7 @@ sub process_config_line {
         warn "$0: warning: option '$key' needs arguments in ",
              "'$config_filename' line $line_number.\n";
         ++$number_errors;
-        return;
+        return $number_errors;
       }
     }
   }
@@ -938,14 +939,14 @@ sub process_config_line {
     if ($key eq '}') {
       ++$$index_ref;
       $$index_ref = "-$$index_ref";
-      return;
+      return $number_errors;
     }
 
     unless ($pcl_elements_ref->{$key}) {
       warn "$0: warning: directive '$key' unknown for $label at line ",
            "$line_number in '$config_filename'.\n";
       ++$number_errors;
-      return;
+      return $number_errors;
     }
 
     # Handle those elements that can just append.
@@ -958,14 +959,14 @@ sub process_config_line {
       } else {
         push(@{$config_plots[$pcl_plot_index]{$key}}, $value);
       }
-      return;
+      return $number_errors;
     }
 
     if (defined $config_ref->[$$index_ref]{$key}) {
       warn "$0: warning: '$key' for $label already defined at line ",
            "$line_number in '$config_filename'.\n";
       ++$number_errors;
-      return;
+      return $number_errors;
     }
 
     if ($pcl_keep_as_array_ref->{$key}) {
@@ -973,7 +974,7 @@ sub process_config_line {
     } else {
       $config_ref->[$$index_ref]{$key} = $value;
     }
-    return;
+    return $number_errors;
   }
 
   # At this point the line is either a global option or the
@@ -984,14 +985,16 @@ sub process_config_line {
     } else {
       $config_global{$key} = $value;
     }
-    return;
+    return $number_errors;
   }
 
   # At this point a group or a plot is being defined.
   if ($key eq 'group') {
     unless (@line) {
-      die "$0: error: group needs a group name followed by { at ",
-          "line $line_number in '$config_filename'.\n"
+      warn "$0: error: group needs a group name followed by { at ",
+           "line $line_number in '$config_filename'.\n";
+      ++$number_errors;
+      return $number_errors;
     }
     $pcl_group_index =~ s:^-::;
     $pcl_group_name =  shift(@line);
@@ -1013,7 +1016,7 @@ sub process_config_line {
     $config_groups[$pcl_group_index]{index}      = $pcl_group_index;
     $config_groups_names[$pcl_group_index]       = $pcl_group_name;
     $pcl_group_name_to_index{$pcl_group_name}    = $pcl_group_index;
-    return;
+    return $number_errors;
   }
 
   # Take care of plots to make.  Include in each plot its index.
@@ -1027,19 +1030,28 @@ sub process_config_line {
            "at line $line_number in '$config_filename'.\n";
       ++$number_errors;
     }
-    return;
+    return $number_errors;
   }
 
   warn "$0: warning: unknown directive '$key' at line $line_number in ",
        "'$config_filename'.\n";
   ++$number_errors;
+
+  $number_errors;
 }
 
 sub load_config {
   my $config_filename = shift;
 
-  open(CONFIG, $config_filename) or
-    die "$0: error: cannot open '$config_filename' for reading: $!\n";
+  # This counter is incremented for each error in the configuration
+  # file.
+  my $number_errors = 0;
+
+  unless (open(CONFIG, $config_filename)) {
+    warn "$0: error: cannot open '$config_filename' for reading: $!\n";
+    ++$number_errors;
+    return $number_errors;
+  }
 
   # These values hold the information from the config file.
   my %options;
@@ -1065,7 +1077,9 @@ sub load_config {
 
     # Process the previously read complete line.
     if ($complete_line) {
-      process_config_line($config_filename, $line_number, $complete_line);
+      $number_errors += process_config_line($config_filename,
+                                            $line_number,
+                                            $complete_line);
     }
 
     # Now save this read line.
@@ -1076,13 +1090,15 @@ sub load_config {
   # If there is any remaining text, then process it as a complete
   # line.
   if ($complete_line) {
-    process_config_line($config_filename, $line_number, $complete_line);
+    $number_errors += process_config_line($config_filename,
+                                          $line_number,
+                                          $complete_line);
   }
 
   close(CONFIG) or
     warn "$0: error in closing '$config_filename': $!\n";
 
-  check_config($config_filename);
+  $number_errors + check_config($config_filename);
 }
 
 1;

@@ -118,7 +118,10 @@ my $config_filename = shift;
 unless (-r $config_filename) {
   die "$0: no configuration file '$config_filename' to read.\n";
 }
-load_config($config_filename);
+if (my $number_errors = load_config($config_filename)) {
+  die "$0: loading configuration file '$config_filename' got ",
+      "$number_errors error(s).\n";
+}
 
 # Set two variables that are used by the code that ensures that only
 # one Orca process is using a particular configuration file at a

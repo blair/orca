@@ -4,7 +4,7 @@ dnl modules and rerun configure.  We do not want to remember if
 dnl the module is not installed.
 dnl BORP_PERL_MODULE(DEFINE, PATH_TO_PERL, MODULE_NAME, MODULE_VERSION,
 dnl    [ACTION_IF_FOUND, [ACTION_IF_NOT_FOUND]]
-AC_DEFUN(BORP_PERL_MODULE, [
+AC_DEFUN([BORP_PERL_MODULE], [
   AC_MSG_CHECKING([if Perl module $3 version $4 is installed])
   if $2 ./config/check_for_perl_mod $3 $4; then
     $1=yes
@@ -20,7 +20,7 @@ dnl Check if the whole path to Perl can be placed on the #! line
 dnl of a shell script.  Some systems have length restrictions
 dnl so some paths to programs may be too long.
 dnl BORP_PERL_RUN(PATH_TO_SHELL [, ACTION-IF-WORKS [, ACTION-IF_NOT]])
-AC_DEFUN(BORP_PERL_RUN, [
+AC_DEFUN([BORP_PERL_RUN], [
   AC_MSG_CHECKING([if '$1' will run Perl scripts])
   rm -f conftest.BZ
   cat > conftest.BZ <<EOF

@@ -308,18 +308,20 @@ long            squid_client_http;
 // overcome limitation of GLOBAL_disk[] array populated in live_rules.se.
 struct io_dev_info_t {
   // Exposed interface that matches kstat.
-  string        long_name;
-  string        short_name;
-  string        dev_class;
+  string        long_name;      // Long device name (cXtXdX, /dev/rmtXX)
+  string        short_name;     // Short device name (sdXX, stXX)
+  string        dev_class;      // Device class (disk, tape)
   double        reads;
   double        kreads;
   double        writes;
   double        kwrites;
-  double        avg_wait;
-  double        avg_serv;
-  double        service;
+  double        avg_wait;       // Wait queue length
+  double        avg_run;        // Active queue length
+  double        avg_wait_time;  // Wait time in ms
+  double        avg_serv_time;  // Active service time in ms
+  double        service;        // Response time (avg_wait_time+avg_serv_time)
   double        wait_percent;
-  double        run_percent;
+  double        run_percent;    // a.k.a utilization
 
   // Hidden internal registers to track sys_kstats counters.
   int           _number;        // kstat disk #
@@ -434,14 +436,17 @@ orca_io_info_update() {
         ORCA_io_dev_info[iodev].writes =(kio.writes-ORCA_io_dev_info[iodev]._writes)    /hz_etime;
         ORCA_io_dev_info[iodev].kwrites=(kio.nwritten-ORCA_io_dev_info[iodev]._nwritten)/big_etime;
 
-        read_writes = elapsed_etime * (ORCA_io_dev_info[iodev].reads + ORCA_io_dev_info[iodev].writes) / 1024.0;
+        ORCA_io_dev_info[iodev].avg_wait=(kio.wlentime-ORCA_io_dev_info[iodev]._wlentime)/elapsed_etime;
+        ORCA_io_dev_info[iodev].avg_run =(kio.rlentime-ORCA_io_dev_info[iodev]._rlentime)/elapsed_etime;
+
+        read_writes = (ORCA_io_dev_info[iodev].reads + ORCA_io_dev_info[iodev].writes) / 1000.0;
         if (read_writes > 0) {
-          ORCA_io_dev_info[iodev].avg_wait = (kio.wlentime - ORCA_io_dev_info[iodev]._wlentime) / read_writes;
-          ORCA_io_dev_info[iodev].avg_serv = (kio.rlentime - ORCA_io_dev_info[iodev]._rlentime) / read_writes;
-          ORCA_io_dev_info[iodev].service  = ORCA_io_dev_info[iodev].avg_wait + ORCA_io_dev_info[iodev].avg_serv;
+          ORCA_io_dev_info[iodev].avg_wait_time = ORCA_io_dev_info[iodev].avg_wait / read_writes;
+          ORCA_io_dev_info[iodev].avg_serv_time = ORCA_io_dev_info[iodev].avg_run  / read_writes;
+          ORCA_io_dev_info[iodev].service  = ORCA_io_dev_info[iodev].avg_wait_time + ORCA_io_dev_info[iodev].avg_serv_time;
         } else {
-          ORCA_io_dev_info[iodev].avg_wait = 0.0;
-          ORCA_io_dev_info[iodev].avg_serv = 0.0;
+          ORCA_io_dev_info[iodev].avg_wait_time = 0.0;
+          ORCA_io_dev_info[iodev].avg_serv_time = 0.0;
           ORCA_io_dev_info[iodev].service  = 0.0;
         }
 

@@ -5,25 +5,25 @@ exec_prefix=@exec_prefix@
 bindir=@bindir@
 
 case "$1" in
-'start')
-	if [ -x $bindir/start_orca_services ]; then
-		umask 022
-		$bindir/start_orca_services
-	else
-		echo "$0: $bindir/start_orca_services does not exist or is not executable."
-	fi
-	;;
+  start)
+    if [ -x $bindir/start_orca_services ]; then
+      umask 022
+      $bindir/start_orca_services
+    else
+      echo "$0: $bindir/start_orca_services does not exist or is not executable."
+    fi
+    ;;
 
-'stop')
-	if [ -x $bindir/stop_orca_services ]; then
-		$bindir/stop_orca_services
-	fi
-	;;
+  stop)
+    if [ -x $bindir/stop_orca_services ]; then
+      $bindir/stop_orca_services
+    fi
+    ;;
 
-*)
-	echo "Usage: $0 { start | stop }"
-	exit 1
-	;;
-
+  *)
+    echo "usage: $0 {start|stop}"
+    exit 1
+    ;;
 esac
+
 exit 0

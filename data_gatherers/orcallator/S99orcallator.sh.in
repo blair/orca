@@ -8,25 +8,25 @@ start_orcallator="$bindir/start_orcallator"
 stop_orcallator="$bindir/stop_orcallator"
 
 case "$1" in
-'start')
+  start)
     if [ -x $start_orcallator ]; then
-        umask 022
-        $start_orcallator
+      umask 022
+      $start_orcallator
     else
-        echo "$0: $start_orcallator does not exist or is not executable."
+      echo "$0: $start_orcallator does not exist or is not executable."
     fi
     ;;
 
-'stop')
+  stop)
     if [ -x $stop_orcallator ]; then
-        $stop_orcallator
+      $stop_orcallator
     fi
     ;;
 
-*)
-    echo "Usage: $0 { start | stop }"
+  *)
+    echo "usage: $0 {start|stop}"
     exit 1
     ;;
-
 esac
+
 exit 0

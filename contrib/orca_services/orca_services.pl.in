@@ -1,6 +1,6 @@
 ##
 ##
-## OrcaServices.pl, a log generating services usage monitor
+## Orca_services.pl, a log generating services usage monitor
 ##
 ##
 
@@ -133,11 +133,11 @@ my $def_dns_logfile = "/var/log/named";
 my $def_smtp_logfile = "/var/log/syslog";
 my $def_merit_radius_logfile = "/usr/local/etc/raddb/logfile";
 my $def_pop_logfile = "/var/log/ipop3d.log";
-my $def_outputdir = "/var/orca/orcaservices";
+my $def_outputdir = "@VAR_DIR@/orca_services";
 my $def_pid  = "$def_outputdir/${progname}.pid";
-my $def_compress = "/usr/local/bin/gzip -9";
+my $def_compress = "@COMPRESSOR@";
 
-my $def_radius_auth = "/usr/local/lib/orcaservices.DB.$nodename";
+my $def_radius_auth = "/usr/local/lib/orca_services.DB.$nodename";
 
 my $def_mailq = "on";
 
@@ -466,7 +466,7 @@ sub init_radius {
 ##    $mon++;
 
 
-##    $BASE_ACCUM_radius_DB="/var/orca/orcaservices/$nodename";
+##    $BASE_ACCUM_radius_DB="/var/orca/orca_services/$nodename";
 ##    $ACCUM_radius_DB= "$BASE_ACCUM_radius_DB/radiatorRadiusAccum.$year$mon.txt";
 ##    `$TOUCH $ACCUM_radius_DB`;
 

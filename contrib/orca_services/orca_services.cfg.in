@@ -25,8 +25,8 @@ html_dir		@HTML_DIR@/orca_services
 expire_images		1
 
 # Find files at the following times:
-#    0:10 to pick up new orcallator files for the new day.
-#    1:00 to pick up late comer orcallator files for the new day.
+#    0:10 to pick up new orca_services files for the new day.
+#    1:00 to pick up late comer orca_services files for the new day.
 #    6:00 to pick up new files before the working day.
 #   12:00 to pick up new files during the working day.
 #   19:00 to pick up new files after the working day.
@@ -39,12 +39,23 @@ find_times		0:10 1:00 6:00 12:00 19:00
 warn_email		root@localhost
 late_interval		interval + 30
 
-#
-# ATTENTION: hardcoded /var/orca/orca_services/ in find_files
-# you might need to change this to your values
-#
+# This defines where the find the source data files and the format of
+# those files.  Notes about the fields:
+# find_files
+#   You'll notice that all but the first () has the form (?:...).
+#   This tells Perl to match the expression but not save the matched
+#   text in the $1, $2, variables.  Orca uses the matched text to
+#   generate a subgroup name, which is used to place files into
+#   different subgroups.  Here, only the hostname should be used to
+#   generate a subgroup name, hence all the (?:...) for matching
+#   anything else.
+# interval
+#   The interval here must match the interval used by orca_services to
+#   record data.  Do not change this, as it has an effect on the
+#   generated RRD data files.
+
 group orca_services {
-find_files		/var/orca/orca_services/(.*)/(?:(?:orca_services)|(?:percol))-\d{4}-\d{2}-\d{2}(?:\.(?:Z|gz|bz2))?
+find_files		@VAR_DIR@/orca_services/(.*)/(?:(?:orca_services)|(?:percol))-\d{4}-\d{2}-\d{2}(?:\.(?:Z|gz|bz2))?
 column_description	first_line
 date_source		column_name timestamp
 date_format		%s

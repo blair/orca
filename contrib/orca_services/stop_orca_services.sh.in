@@ -2,17 +2,17 @@
 
 AWK=@AWK@
 
-# Kill any running orcallators.
-pids=`/usr/ucb/ps auxww | $AWK '/orcaservices.pl/ && !/awk/ {print $2}'`
+# Kill any running orca_services.
+pids=`/usr/ucb/ps auxww | $AWK '/orca_services.pl/ && !/awk/ {print $2}'`
 if test "$pids" != ""; then
   echo "Killing pids $pids."
   kill -HUP $pids
   sleep 1
-  pids=`/usr/ucb/ps auxww | $AWK '/orcaservices.pl/ && !/awk/ {print $2}'`
+  pids=`/usr/ucb/ps auxww | $AWK '/orca_services.pl/ && !/awk/ {print $2}'`
   if test "$pids" != ""; then
     kill -TERM $pids
     sleep 1
-    pids=`/usr/ucb/ps auxww | $AWK '/orcaservices.pl/ && !/awk/ {print $2}'`
+    pids=`/usr/ucb/ps auxww | $AWK '/orca_services.pl/ && !/awk/ {print $2}'`
     if test "$pids" != ""; then
       kill -9 $pids
       sleep 1

@@ -1091,8 +1091,8 @@ RRDTOOL_DIR=rrdtool-1.0.40
 RRDTOOL_VER=1.000401
 STORABLE_DIR=Storable-2.06
 STORABLE_VER=2.06
-TIME_HIRES_DIR=Time-HiRes-1.38
-TIME_HIRES_VER=1.38
+TIME_HIRES_DIR=Time-HiRes-1.39
+TIME_HIRES_VER=1.39
 
 # Get the current working directory and the config directory.
 cwd=`pwd`

@@ -8,7 +8,23 @@
 //
 // Portions copied from percollator.se written by Adrian Cockroft.
 //
-// Version 1.30b1:  Oct 8, 2001	Changed method used by raw_disk_map to detect
+// Version 1.30b2: Oct 12, 2001	Output eleven new columns named State_* where
+//				each column represents numerically the state
+//				of one of the system's substates as they appear
+//				in the DNnsrkcmdit output.  The character * is
+//				replaced with the same character that appears
+//				in the DNnsrkcmdit string to represent the
+//				particular subsystem.  This can be used to
+//				create a single plot that shows how all of the
+//				subsystems are performing.  The mapping between
+//				successive states is exponential, so that as
+//				the subsystems get in worse conditions, the
+//				plots will show higher values.  Patch
+//				contributed by Rusty Carruth
+//				<rcarruth@tempe.tt.slb.com>.  Make all of the
+//				live_rule.se live and temporary variable names
+//				consistent.
+// Version 1.30b1: Oct  8, 2001	Changed method used by raw_disk_map to detect
 //				the end of GLOBAL_disk_info to looking for the
 //				first short disk name.  This works for SCSI
 //				disks and looking for fd or st devices which
@@ -343,39 +359,38 @@
 
 // Put all rules here so they can be accessed by the handle functions.
 lr_cpu_t	lr_cpu$cpu;
-lr_cpu_t	tmp_lrcpu;
+lr_cpu_t	tmp_lr_cpu;
 lr_mutex_t	lr_mutex$m;
-#ifdef WATCH_MUTEX 
-lr_mutex_t	tmp_mutex;
-#endif
+lr_mutex_t	tmp_lr_mutex;
 lr_net_t	lr_net$nr;
-lr_net_t	tmp_nr;
+lr_net_t	tmp_lr_net;
 lr_tcp_t	lr_tcp$tcp;
-lr_tcp_t	tmp_lrtcp;
+lr_tcp_t	tmp_lr_tcp;
+lr_rpcclient_t	lr_rpcclient$r;
+lr_rpcclient_t	tmp_lr_rpcclient;
+lr_disk_t	lr_disk$dr;
+lr_disk_t	tmp_lr_disk;
+lr_dnlc_t	lr_dnlc$dnlc;
+lr_dnlc_t	tmp_lr_dnlc;
+lr_inode_t	lr_inode$inode;
+lr_inode_t	tmp_lr_inode;
+lr_ram_t	lr_ram$ram;
+lr_ram_t	tmp_lr_ram;
+lr_swapspace_t	lr_swapspace$s;
+lr_swapspace_t	tmp_lr_swapspace;
+lr_kmem_t	lr_kmem$kmem;
+lr_kmem_t	tmp_lr_kmem;
+
+ks_system_misc	kstat$misc;
+ks_system_misc	tmp_kstat_misc;
 #ifdef WATCH_TCP
 tcp		tcp$tcp;
 tcp		tmp_tcp;
 #endif
-lr_rpcclient_t	lr_rpcclient$r;
-lr_rpcclient_t	tmp_lrpcc;
-lr_disk_t	lr_disk$dr;
-lr_disk_t	tmp_dr;
-lr_dnlc_t	lr_dnlc$dnlc;
-lr_dnlc_t	tmp_lrdnlc;
-lr_inode_t	lr_inode$inode;
-lr_inode_t	tmp_lrinode;
-lr_ram_t	lr_ram$ram;
-lr_ram_t	tmp_lrram;
 #ifdef WATCH_PAGES
 ks_system_pages kstat$pages;
 ks_system_pages tmp_kstat_pages;
 #endif
-lr_swapspace_t	lr_swapspace$s;
-lr_swapspace_t	tmp_lrswap;
-lr_kmem_t	lr_kmem$kmem;
-lr_kmem_t	tmp_lrkmem;
-ks_system_misc	kstat$misc;
-ks_system_misc	tmp_kstat_misc;
 
 // Put application globals here.
 string		nodename;			// Name of this machine.
@@ -1088,30 +1103,29 @@ initialize()
 // Measure the system statistics all at once.
 _measure_os()
 {
-  tmp_lrcpu         = lr_cpu$cpu;
-#ifdef WATCH_MUTEX 
-  tmp_mutex         = lr_mutex$m;
-#endif
-  tmp_nr            = lr_net$nr;
-  tmp_lrtcp         = lr_tcp$tcp;
-#ifdef WATCH_TCP
-  tmp_tcp           = tcp$tcp;
-#endif
-  tmp_lrpcc         = lr_rpcclient$r;
-  tmp_dr            = lr_disk$dr;
-  tmp_lrdnlc        = lr_dnlc$dnlc;
-  tmp_lrinode       = lr_inode$inode;
-  tmp_lrram         = lr_ram$ram;
-#ifdef WATCH_PAGES
-  tmp_kstat_pages   = kstat$pages;
-#endif
-  tmp_lrswap        = lr_swapspace$s;
-  tmp_lrkmem        = lr_kmem$kmem;
+  tmp_lr_cpu        = lr_cpu$cpu;
+  tmp_lr_mutex      = lr_mutex$m;
+  tmp_lr_net        = lr_net$nr;
+  tmp_lr_tcp        = lr_tcp$tcp;
+  tmp_lr_rpcclient  = lr_rpcclient$r;
+  tmp_lr_disk       = lr_disk$dr;
+  tmp_lr_dnlc       = lr_dnlc$dnlc;
+  tmp_lr_inode      = lr_inode$inode;
+  tmp_lr_ram        = lr_ram$ram;
+  tmp_lr_swapspace  = lr_swapspace$s;
+  tmp_lr_kmem       = lr_kmem$kmem;
+
   tmp_kstat_misc    = kstat$misc;
 #ifdef WATCH_NFS_SERVER
   tmp_nfs           = kstat$nfs;
   tmp_rfsproccnt_v2 = kstat$rfsproccnt_v2;
   tmp_rfsproccnt_v3 = kstat$rfsproccnt_v3;
+#endif
+#ifdef WATCH_PAGES
+  tmp_kstat_pages   = kstat$pages;
+#endif
+#ifdef WATCH_TCP
+  tmp_tcp           = tcp$tcp;
 #endif
 
 #ifdef USE_RAWDISK
@@ -1196,7 +1210,7 @@ measure_os(long now, tm_t tm_now)
 }
 
 /*
- * State as a character
+ * State as a character.
  */
 char state_char(int state) {
   switch(state) {
@@ -1210,32 +1224,79 @@ char state_char(int state) {
   }
 }
 
+/*
+ * State as a digit.
+ */
+int state_digit(int state) {
+  switch(state) {
+    case ST_WHITE: return  0; /* OK states are zero. */
+    case ST_BLUE:  return  1;
+    case ST_GREEN: return  2;
+    case ST_AMBER: return  4; /* Bad states have a non-zero value. */
+    case ST_RED:   return  8;
+    case ST_BLACK: return 16;
+    default:       return -1; /* Invalid state. */
+  }
+}
+
 measure_misc(long now, tm_t tm_now)
 {
-  long   uptime;
-  char   states[12];
-  char   tm_buf[16];
+  char states[12];
+  char tm_buf[16];
+  int  statetmp;
 
-  uptime = now - boot_time;
   states = "wwwwwwwwwww";
   strftime(tm_buf, sizeof(tm_buf), "%T", tm_now);
 
-  states[0] = state_char(lr_disk$dr.state);
-  states[1] = state_char(lr_net$nr.state);
-  states[2] = state_char(lr_rpcclient$r.state);
-  states[3] = state_char(lr_swapspace$s.state);
-  states[4] = state_char(lr_ram$ram.state);
-  states[5] = state_char(lr_kmem$kmem.state);
-  states[6] = state_char(lr_cpu$cpu.state);
-  states[7] = state_char(lr_mutex$m.state);
-  states[8] = state_char(lr_dnlc$dnlc.state);
-  states[9] = state_char(lr_inode$inode.state);
-  states[10]= state_char(lr_tcp$tcp.state);
+  put_output("timestamp ", sprintf("%10d", now));
+  put_output("locltime",   tm_buf);
+  put_output("  uptime",   sprintf("%8d", now - boot_time));
 
-  put_output(" timestamp",  sprintf("%10d", now));
-  put_output("locltime",    tm_buf);
+  statetmp  = tmp_lr_disk.state;
+  states[0] = state_char(statetmp);
+  put_output("State_D", sprintf("%7d", state_digit(statetmp)));
+
+  statetmp  = tmp_lr_net.state;
+  states[1] = state_char(statetmp);
+  put_output("State_N", sprintf("%7d", state_digit(statetmp)));
+
+  statetmp  = tmp_lr_rpcclient.state;
+  states[2] = state_char(statetmp);
+  put_output("State_n", sprintf("%7d", state_digit(statetmp)));
+
+  statetmp  = tmp_lr_swapspace.state;
+  states[3] = state_char(statetmp);
+  put_output("State_s", sprintf("%7d", state_digit(statetmp)));
+
+  statetmp  = tmp_lr_ram.state;
+  states[4] = state_char(statetmp);
+  put_output("State_r", sprintf("%7d", state_digit(statetmp)));
+
+  statetmp  = tmp_lr_kmem.state;
+  states[5] = state_char(statetmp);
+  put_output("State_k", sprintf("%7d", state_digit(statetmp)));
+
+  statetmp  = tmp_lr_cpu.state;
+  states[6] = state_char(statetmp);
+  put_output("State_c", sprintf("%7d", state_digit(statetmp)));
+
+  statetmp  = tmp_lr_mutex.state;
+  states[7] = state_char(statetmp);
+  put_output("State_m", sprintf("%7d", state_digit(statetmp)));
+
+  statetmp  = tmp_lr_dnlc.state;
+  states[8] = state_char(statetmp);
+  put_output("State_d", sprintf("%7d", state_digit(statetmp)));
+
+  statetmp  = tmp_lr_inode.state;
+  states[9] = state_char(statetmp);
+  put_output("State_i", sprintf("%7d", state_digit(statetmp)));
+
+  statetmp   = tmp_lr_tcp.state;
+  states[10] = state_char(statetmp);
+  put_output("State_t", sprintf("%7d", state_digit(statetmp)));
+
   put_output("DNnsrkcmdit", states);
-  put_output("  uptime",    sprintf("%8d", uptime));
 }
 
 sleep_till_and_count_new_processes(long sleep_till)
@@ -1337,8 +1398,8 @@ measure_cpu()
 #ifdef WATCH_MUTEX
 measure_mutex()
 {
-  put_output(" smtx",    sprintf("%5d", tmp_mutex.smtx));
-  put_output("smtx/cpu", sprintf("%8d", tmp_mutex.smtx/GLOBAL_pvm_ncpus));
+  put_output(" smtx",    sprintf("%5d", tmp_lr_mutex.smtx));
+  put_output("smtx/cpu", sprintf("%8d", tmp_lr_mutex.smtx/GLOBAL_pvm_ncpus));
 }
 #endif
 
@@ -1350,29 +1411,29 @@ measure_net()
   int i;
 
   current_count = 0;
-  for (i=0; i<tmp_nr.net_count; ++i) {
+  for (i=0; i<tmp_lr_net.net_count; ++i) {
     // Skip unused interfaces.
 //  if (GLOBAL_net[i].up == 0) {
 //    continue;
 //  }
     current_count++;
-    put_output(sprintf("%5sIpkt/s", tmp_nr.names[i]),
+    put_output(sprintf("%5sIpkt/s", tmp_lr_net.names[i]),
 	       sprintf("%11.3f", GLOBAL_net[i].ipackets));
-    put_output(sprintf("%5sOpkt/s", tmp_nr.names[i]),
+    put_output(sprintf("%5sOpkt/s", tmp_lr_net.names[i]),
 	       sprintf("%11.3f", GLOBAL_net[i].opackets));
-    put_output(sprintf("%5sInKB/s", tmp_nr.names[i]),
+    put_output(sprintf("%5sInKB/s", tmp_lr_net.names[i]),
 	       sprintf("%11.3f", GLOBAL_net[i].ioctets/1024.0));
-    put_output(sprintf("%5sOuKB/s", tmp_nr.names[i]),
+    put_output(sprintf("%5sOuKB/s", tmp_lr_net.names[i]),
 	       sprintf("%11.3f", GLOBAL_net[i].ooctets/1024.0));
-    put_output(sprintf("%5sIErr/s", tmp_nr.names[i]),
+    put_output(sprintf("%5sIErr/s", tmp_lr_net.names[i]),
 	       sprintf("%11.3f", GLOBAL_net[i].ierrors));
-    put_output(sprintf("%5sOErr/s", tmp_nr.names[i]),
+    put_output(sprintf("%5sOErr/s", tmp_lr_net.names[i]),
 	       sprintf("%11.3f", GLOBAL_net[i].oerrors));
-    put_output(sprintf("%5sColl%%", tmp_nr.names[i]),
+    put_output(sprintf("%5sColl%%", tmp_lr_net.names[i]),
 	       sprintf("%10.3f", GLOBAL_net[i].collpercent));
-    put_output(sprintf("%5sNoCP/s", tmp_nr.names[i]),
+    put_output(sprintf("%5sNoCP/s", tmp_lr_net.names[i]),
 	       sprintf("%11.3f", GLOBAL_net[i].nocanput));
-    put_output(sprintf("%5sDefr/s", tmp_nr.names[i]),
+    put_output(sprintf("%5sDefr/s", tmp_lr_net.names[i]),
 	       sprintf("%11.3f", GLOBAL_net[i].defer));
   }
 
@@ -1407,9 +1468,9 @@ measure_tcp()
 #ifdef WATCH_NFS_CLIENT
 measure_nfs_client()
 {
-  put_output("nfs_call/s", sprintf("%10.3f", tmp_lrpcc.calls));
-  put_output("nfs_timo/s", sprintf("%10.3f", tmp_lrpcc.timeouts));
-  put_output("nfs_badx/s", sprintf("%10.3f", tmp_lrpcc.badxids));
+  put_output("nfs_call/s", sprintf("%10.3f", tmp_lr_rpcclient.calls));
+  put_output("nfs_timo/s", sprintf("%10.3f", tmp_lr_rpcclient.timeouts));
+  put_output("nfs_badx/s", sprintf("%10.3f", tmp_lr_rpcclient.badxids));
 }
 #endif
 
@@ -1647,17 +1708,17 @@ measure_disk()
 #ifdef WATCH_DNLC
 measure_dnlc()
 {
-  put_output("dnlc_ref/s", sprintf("%10.3f", tmp_lrdnlc.refrate));
-  put_output("dnlc_hit%",  sprintf("%9.3f",  tmp_lrdnlc.hitrate));
+  put_output("dnlc_ref/s", sprintf("%10.3f", tmp_lr_dnlc.refrate));
+  put_output("dnlc_hit%",  sprintf("%9.3f",  tmp_lr_dnlc.hitrate));
 }
 #endif
 
 #ifdef WATCH_INODE
 measure_inode()
 {
-  put_output("inod_ref/s", sprintf("%10.3f", tmp_lrinode.refrate));
-  put_output("inod_hit%",  sprintf("%9.3f",  tmp_lrinode.hitrate));
-  put_output("inod_stl/s", sprintf("%10.3f", tmp_lrinode.iprate));
+  put_output("inod_ref/s", sprintf("%10.3f", tmp_lr_inode.refrate));
+  put_output("inod_hit%",  sprintf("%9.3f",  tmp_lr_inode.hitrate));
+  put_output("inod_stl/s", sprintf("%10.3f", tmp_lr_inode.iprate));
 }
 #endif
 
@@ -1665,7 +1726,7 @@ measure_inode()
 measure_ram()
 {
   put_output("swap_avail", sprintf("%10ld", GLOBAL_pvm[0].swap_avail));
-  put_output("page_rstim", sprintf("%10d",  tmp_lrram.restime));
+  put_output("page_rstim", sprintf("%10d",  tmp_lr_ram.restime));
   put_output("  freememK", sprintf("%10d",  GLOBAL_pvm[0].freemem));
   put_output("free_pages", sprintf("%10d",  (GLOBAL_pvm[0].freemem*1024)/page_size));
 }

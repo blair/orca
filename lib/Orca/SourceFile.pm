@@ -21,7 +21,7 @@ use Orca::Config        qw(%config_global
                            @config_groups
                            @config_groups_names
                            @config_plots
-                           get_color);
+                           data_index_to_color);
 use Orca::OldState      qw($orca_old_state);
 use Orca::DataFile      qw(ORCA_DATAFILE_LAST_INDEX);
 use Orca::OpenFileHash  qw($open_file_cache);
@@ -436,7 +436,8 @@ sub add_plots {
             $plot->{data_type}[$new_data_index-1];
         }
         unless (defined $plot->{color}[$new_data_index]) {
-          $plot->{color}[$new_data_index] = get_color($new_data_index);
+          $plot->{color}[$new_data_index] =
+            data_index_to_color($new_data_index);
         }
         unless (defined $plot->{legend}[$new_data_index]) {
           $plot->{legend}[$new_data_index] = $original_legend;

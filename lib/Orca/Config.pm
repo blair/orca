@@ -34,7 +34,7 @@ $VERSION = substr q$Revision: 0.01 $, 10;
 
 # Export the main subroutine to load configuration data and a subroutine
 # to get a color indexed by an integer.
-push(@EXPORT_OK, qw(load_config get_color));
+push(@EXPORT_OK, qw(data_index_to_color load_config));
 
 # The following array and hashes hold the contents of the
 # configuration file.
@@ -228,7 +228,7 @@ my @cc_default_colors          =   ('00ff00',   # Green
                                     'c7eaff',   # Ice blue
                                     'd3ff52');  # Gatorade green
 
-sub get_color {
+sub data_index_to_color {
   $cc_default_colors[$_[0] % @cc_default_colors];
 }
 
@@ -825,7 +825,7 @@ sub check_config {
     # Set the colors of any data not defined.
     $plot->{color} = [] unless defined $plot->{color};
     for (my $k=@{$plot->{color}}; $k<$number_datas; ++$k) {
-      $plot->{color}[$k] = get_color($k);
+      $plot->{color}[$k] = data_index_to_color($k);
     }
 
     # Check each line type setting.  Use the last line_type to set any

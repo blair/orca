@@ -180,11 +180,11 @@ orcallator.cfg and start_orcallator files.
     WATCH_MUTEX defined.
 
  8) In orcallator.se, add three parameters that vmstat outputs to the
-    output files that orcallator.se generates, #runque, vmstat's `r'
+    output files that orcallator.se generates, #runque, vmstat's 'r'
     column, which is the number of processes in the run queue waiting
-    to run on a CPU, #waiting, vmstat's `b' column, which is the
+    to run on a CPU, #waiting, vmstat's 'b' column, which is the
     number of processes blocked for resourceses (I/O, paging), and
-    #swpque, vmstat's `w', the number of proceses runnable but swapped
+    #swpque, vmstat's 'w', the number of proceses runnable but swapped
     out.  In orcallator.cfg.in add a new plot titled "Processes in Run
     Queue/Waiting/Swapped" to plot the new measurements.
 

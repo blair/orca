@@ -91,20 +91,20 @@ command to check out Orca HEAD:
 
    % svn co http://svn.orcaware.com:8000/repos/trunk/orca/
 
-This will create a directory named `orca' in the current working
+This will create a directory named 'orca' in the current working
 directory.
 
-You will then need to create the `configure' script by running:
+You will then need to create the 'configure' script by running:
 
    % cd orca
    % ./autogen.sh
 
 Running this will check if you have the proper version of autoconf on
-your system and build `configure'.
+your system and build 'configure'.
 
-At this point, you will have the `configure' script in the `orca'
+At this point, you will have the 'configure' script in the 'orca'
 directory and you can configure and build Orca normally as described
-in the `INSTALL' file.
+in the 'INSTALL' file.
 
 
 What to read
@@ -179,7 +179,7 @@ good example of how it's done: each section starts with a page break,
 and immediately after the page break comes the title of the section.
 
 This helps out people who use the Emacs page commands, such as
-`pages-directory' and `narrow-to-page'.  Such people are not as scarce
+'pages-directory' and 'narrow-to-page'.  Such people are not as scarce
 as you might think, and if you'd like to become one of them, then type
 C-x C-p C-h in Emacs sometime.
 
@@ -243,7 +243,7 @@ this is bad:
    * twirl.h: Fix indentation.
 
 Later on, when someone is trying to figure out what happened to
-`twirling_baton_fast', they may not find it if they just search for
+'twirling_baton_fast', they may not find it if they just search for
 "_fast".  A better entry would be:
 
    * twirl.c 
@@ -254,7 +254,7 @@ Later on, when someone is trying to figure out what happened to
 
    * twirl.h: Fix indentation.
 
-The wildcard is okay in the description for `handle_parser_warning',
+The wildcard is okay in the description for 'handle_parser_warning',
 but only because the two structures were mentioned by full name
 elsewhere in the log entry.
 
@@ -287,17 +287,17 @@ should consider carefully whether your text doesn't actually belong in
 a comment, alongside the code it explains.  Here's an example of doing
 it right:
 
-   (consume_count): If `count' is unreasonable, return 0 and don't
+   (consume_count): If 'count' is unreasonable, return 0 and don't
    advance input pointer.
 
-And then, in `consume_count' in `cplus-dem.c':
+And then, in 'consume_count' in 'cplus-dem.c':
 
    while (isdigit ((unsigned char)**type))
      {
        count *= 10;
        count += **type - '0';
        /* A sanity check.  Otherwise a symbol like
-         `_Utf390_1__1_9223372036854775807__9223372036854775'
+         '_Utf390_1__1_9223372036854775807__9223372036854775'
          can cause this function to return a negative value.
          In this case we just consume until the end of the string.  */
       if (count > strlen (*type))
@@ -340,7 +340,7 @@ how others have been writing their log entries.)
 Patch submission guidelines
 ===========================
 
-Mail patches to `orca-dev@orcaware.com', with a subject line that
+Mail patches to 'orca-dev@orcaware.com', with a subject line that
 contains the word "PATCH" in all uppercase, for example
 
    Subject: [PATCH] fix for Orca images

@@ -136,9 +136,9 @@ Outline:
 
     --with-warn-email
 
-       Orca has a `warn_email' configuration setting which is set to
+       Orca has a 'warn_email' configuration setting which is set to
        an email address where Orca should send its warning messages.
-       By default this address is `root@localhost'.  You can use this
+       By default this address is 'root@localhost'.  You can use this
        configure option to change the default email address to use in
        the Orca configuration scripts in this distribution.
 

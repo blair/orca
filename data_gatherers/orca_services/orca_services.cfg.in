@@ -39,6 +39,14 @@ find_times		0:10 1:00 6:00 12:00 19:00
 warn_email		root@localhost
 late_interval		interval + 30
 
+# These parameters specify which plots to generate.
+generate_hourly_plot	1
+generate_daily_plot	1
+generate_weekly_plot	1
+generate_monthly_plot	1
+generate_quarterly_plot	1
+generate_yearly_plot	1
+
 # This defines where the find the source data files and the format of
 # those files.  Notes about the fields:
 # find_files
@@ -53,9 +61,8 @@ late_interval		interval + 30
 #   The interval here must match the interval used by orca_services to
 #   record data.  Do not change this, as it has an effect on the
 #   generated RRD data files.
-
 group orca_services {
-find_files		@VAR_DIR@/orca_services/(.*)/(?:(?:orca_services)|(?:percol))-\d{4}-\d{2}-\d{2}(?:\.(?:Z|gz|bz2))?
+find_files		@VAR_DIR@/orca_services/(.*)/(?:(?:orca_services)|(?:orcaservices))-\d{4}-\d{2}-\d{2}(?:-\d{3,})?(?:\.(?:Z|gz|bz2))?
 column_description	first_line
 date_source		column_name timestamp
 interval		300
@@ -75,17 +82,12 @@ filename_compare	sub {
 #
 # ATTENTION: change this to your values
 #
-html_top_title		Services Status
+html_top_title		Orca_services Status
 
 #
 # ATTENTION: change this to your values
 #
-html_page_header
-  <a href="http://www.kpnQwest.pt/">
-    <img border=0 alt="kpnQwest Portugal"
-     src="http://www.kpnqwest.pt/images/kqlogopt_mini.gif"
-     width=101 height=61></a>
-  <spacer type=vertical size=4>
+html_page_header <h3>Put your site's logo here.</h3>
 
 html_page_footer
   <spacer type=vertical size=20>
@@ -117,6 +119,36 @@ y_legend		Number of Messages
 data_min		0
 data_max		U
 href			http://o-s.kpnqwest.pt/orca_services.html#SMTP_Messages_in_5_minutes
+}
+
+plot {
+title			%g SMTP Virus & Spam in 5 minutes
+source			orca_services
+data			smtp_virus
+data			smtp_spam
+legend			Virus (5m)
+legend			Spam Messages (5m)
+y_legend		Number of Messages
+data_min		0
+data_max		U
+href			http://o-s.kpnqwest.pt/orca_services.html
+}
+
+plot {
+title			%g SMTP Failed
+source			orca_services
+data			smtp_torf
+data			smtp_c_ml
+data			smtp_c_rt
+data			smtp_ntfs
+legend			Temp or Fatal Error (5m)
+legend			Check Mail (5m)
+legend			Check Rcpt (5m)
+legend			Portmaster Notifies (5m)
+y_legend		Number of Messages
+data_min		0
+data_max		U
+href			http://o-s.kpnqwest.pt/orca_services.html#SMTP_Failed
 }
 
 plot {
@@ -163,23 +195,6 @@ href			http://o-s.kpnqwest.pt/orca_services.html#SMTP_Retries_and_Queueing
 }
 
 plot {
-title			%g SMTP Failed
-source			orca_services
-data			smtp_torf
-data			smtp_c_ml
-data			smtp_c_rt
-data			smtp_ntfs
-legend			Temp or Fatal Error (5m)
-legend			Check Mail (5m)
-legend			Check Rcpt (5m)
-legend			Portmaster Notifies (5m)
-y_legend		Number of Messages
-data_min		0
-data_max		U
-href			http://o-s.kpnqwest.pt/orca_services.html#SMTP_Failed
-}
-
-plot {
 title			%g SMTP DSN and Undefs
 source			orca_services
 data			smtp_dsns
@@ -190,6 +205,17 @@ y_legend		Number of Messages
 data_min		0
 data_max		U
 href			http://o-s.kpnqwest.pt/orca_services.html#SMTP_DSN_and_Undefs
+}
+
+plot {
+title			%g SMTP Over Quota in 5 minutes
+source			orca_services
+data			smtp_overquota
+legend			Over Quota (5m)
+y_legend		Number of Messages
+data_min		0
+data_max		U
+href			http://o-s.kpnqwest.pt/orca_services.html
 }
 
 
@@ -307,7 +333,19 @@ plot {
 title			%g Radius time usage
 source			orca_services
 line_type		line2
-data			rad_time/60
+data			rad_time / 60
+legend			Time consumption (5 min)
+y_legend		Minutes
+data_min		0
+data_max		U
+href			http://o-s.kpnqwest.pt/orca_services.html#Radius_time_usage
+}
+
+plot {
+title			%g Radius accumulated time usage
+source			orca_services
+line_type		line2
+data			radius_inc_time / 60
 legend			Time consumption (5 min)
 y_legend		Minutes
 data_min		0
@@ -327,10 +365,22 @@ data_max		U
 href			http://o-s.kpnqwest.pt/orca_services.html#Radius_sessions
 }
 
+plot {
+title			%g Radius accumulated sessions
+source			orca_services
+line_type		line2
+data			radius_inc_sessions
+legend			Number of Sessions (5 min)
+y_legend		Terminated Sessions
+data_min		0
+data_max		U
+href			http://o-s.kpnqwest.pt/orca_services.html#Radius_sessions
+}
+
 
 
 plot {
-title			%g NAMED CPU Usage in 1 hour
+title			%g NAMED CPU Usage in 10 minutes
 source			orca_services
 data			dns_cpu_u
 data			dns_cpu_s
@@ -344,7 +394,7 @@ legend			User
 legend			System
 legend			Child User
 legend			Child System
-y_legend		Seconds in 1 hour
+y_legend		Seconds in 10 minutes
 data_min		0
 data_max		U
 href			http://o-s.kpnqwest.pt/orca_services.html#NAMED_CPU_Usage_in_1_hour
@@ -365,7 +415,7 @@ legend			A
 legend			PTR
 legend			MX
 legend			ANY
-y_legend		Units in 1 hour
+y_legend		Units in 10 minutes
 data_min		0
 data_max		U
 href			http://o-s.kpnqwest.pt/orca_services.html#NAMED_Major_queries
@@ -389,7 +439,7 @@ legend			SOA
 legend			AXFR
 legend			AAAA
 legend			OTHER
-y_legend		Units in 1 hour
+y_legend		Units in 10 minutes
 data_min		0
 data_max		U
 href			http://o-s.kpnqwest.pt/orca_services.html#NAMED_Minor_queries
@@ -407,7 +457,7 @@ line_type		line2
 legend			R-Responses
 legend			R-Queries
 legend			R-OTHER
-y_legend		Units in 1 hour
+y_legend		Units in 10 minutes
 data_min		0
 data_max		U
 href			http://o-s.kpnqwest.pt/orca_services.html#NAMED_Received
@@ -428,8 +478,117 @@ legend			S-Answer
 legend			S-NA Answer
 legend			S-Negative
 legend			S-OTHER
-y_legend		Units in 1 hour
+y_legend		Units in 10 minutes
 data_min		0
 data_max		U
 href			http://o-s.kpnqwest.pt/orca_services.html#NAMED_Sent
 }
+
+plot {
+title			%g HTTP Processes
+source			orca_services
+data			http_procs
+line_type		line2
+legend			HTTP Processes
+y_legend		Number of processes
+data_min		0
+data_max		U
+href			http://o-s.kpnqwest.pt/orca_services.html#HTTP_Processes
+}
+
+plot {
+title			%g HTTP requests
+source			orca_services
+data			http_hits
+data			http_condgets
+data			http_gets
+data			http_heads
+data			http_posts
+data			http_errors
+data			http_undefs
+line_type		line2
+line_type		line2
+line_type		line2
+line_type		line2
+line_type		line2
+line_type		line2
+line_type		line2
+legend			HIT
+legend			cond GET
+legend			GET
+legend			HEAD
+legend			POST
+legend			Errors
+legend			Undefs
+y_legend		Units in 5 minutes
+data_min		0
+data_max		U
+href			http://o-s.kpnqwest.pt/orca_services.html#HTTP_requests
+}
+
+plot {
+title			%g HTTP Bps
+source			orca_services
+data			http_Bps
+line_type		line2
+legend			HTTP bandwidth
+y_legend		BYTES per Second
+data_min		0
+data_max		U
+href			http://o-s.kpnqwest.pt/orca_services.html#HTTP_Bps
+}
+
+plot {
+title			%g HTTP request size
+source			orca_services
+data			http_1k * 100
+data			http_10k * 100
+data			http_100k * 100
+data			http_1000k * 100
+data			http_1M * 100
+line_type		area
+line_type		stack
+line_type		stack
+line_type		stack
+line_type		stack
+legend			% of < 1Kb requests
+legend			% of < 10Kb requests
+legend			% of < 100Kb requests
+legend			% of < 1000Kb requests
+legend			% of > 1Mb requests
+y_legend		Percent
+data_min		0
+data_max		120
+href			http://o-s.kpnqwest.pt/orca_services.html#HTTP_request_size
+}
+
+
+
+plot {
+title			%g NNTP Statistics in 5 minutes
+source			orca_services
+data			nntpcache_connects
+data			nntpcache_groups
+data			nntpcache_articles
+legend			Connects (5m)
+legend			GROUPs (5m)
+legend			ARTICLEs (5m)
+y_legend		Units in 5 minutes
+data_min		0
+data_max		U
+href			http://o-s.kpnqwest.pt/orca_services.html
+}
+
+plot {
+title			%g SLAPD Statistics in 5 minutes
+source			orca_services
+data			slapd_binds
+data			slapd_searchs
+legend			BINDs (5m)
+legend			SRCHs (5m)
+y_legend		Units in 5 minutes
+data_min		0
+data_max		U
+href			http://o-s.kpnqwest.pt/orca_services.html
+}
+

@@ -53,9 +53,10 @@ generate_yearly_plot	1
 # web page and is primarly used to display the site's logo.
 html_page_header	<h3>Put your site's logo here.</h3>
 
-# This sets the text that is placed in the pages' <title></title>
-# element and just after the html_page_header HTML markup text is
-# placed on the page.
+# This sets the text, that should not be HTML markup, that is placed
+# in each web page's <title></title> element.  This text is also added
+# to each HTML page in a <h1></h1> element after the html_page_header
+# HTML markup.
 html_top_title		Orca Host Status
 
 # This sets the HTML markup that is placed at the bottom of every web

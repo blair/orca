@@ -1,11 +1,11 @@
 From Hans-Werner Jouy:
 
-   Is it possilbe to use different config files with a "include
-   xxx.conf" in the main configuration?  This makes sense when you use
-   different collectors (i.e. for different architectures), a change
-   in the collecting scripts then corresponds with the same include
-   files. In this way different maintainers can modify independly from
-   each other.
+    Is it possilbe to use different config files with a "include
+    xxx.conf" in the main configuration?  This makes sense when you
+    use different collectors (i.e. for different architectures), a
+    change in the collecting scripts then corresponds with the same
+    include files. In this way different maintainers can modify
+    independly from each other.
 
 From Hans-Werner Jouy:
 

@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# This script runs orca_services with the proper options for your site.
+# This script runs Orca_Services with the proper options for your site.
 
 # Define program locations that will be needed.
 prefix=@prefix@
@@ -9,7 +9,7 @@ libdir=@libexecdir@
 AWK=@AWK@
 CUT=@CUT@
 UNAME=@UNAME@
-ORCA_SERVICES_DIR=@VAR_DIR@/orca_services
+ORCA_SERVICES_DIR=@VAR_DIR@/Orca_Services
 
 # Get the hostname without the fully qualified part; that is, trim off
 # anything past the first `.'.
@@ -17,9 +17,9 @@ uname=`$UNAME -n | $CUT -d. -f1`
 
 OPERSYS=`$UNAME -s`
 if test "${OPERSYS}" = "Linux"; then
-    PSCMD="/bin/ps"
+    PSCMD="/bin/ps auxww"
 else
-    PSCMD="/usr/ucb/ps" # Solaris
+    PSCMD="/usr/bin/ps -ef" # Solaris
 fi
 
 # The directory these files go into is $ORCA_SERVICES_DIR/HOSTNAME
@@ -28,8 +28,8 @@ OUTDIR=$ORCA_SERVICES_DIR/$uname
 # Export the environmental variables.
 export OUTDIR
 
-# Check if orca_services is already running.
-pids=`$PSCMD auxww | $AWK '/orca_services/ && !/awk/ && !/start_orca_services/ && !/daemon/ && !/ \/etc\/init\.d/ && !/ \/etc\/rc/ {print $2}'`
+# Check if Orca_Services is already running.
+pids=`$PSCMD | $AWK '/Orca_Services/ && !/awk/ && !/start_Orca_Services/ && !/daemon/ && !/ \/etc\/init\.d/ && !/ \/etc\/rc/ {print $2}'`
 if test "$pids" != ""; then
   echo "Orca_Services already running.  Exiting."
   exit 1
@@ -54,15 +54,15 @@ fi
 # Now start the logging.
 echo "Starting logging"
 HOSTNAME=`hostname`
-if test -f "$libdir/orca_services.$HOSTNAME"; then
-    $libdir/orca_services `cat $libdir/orca_services.$HOSTNAME`
+if test -f "$libdir/Orca_Services.$HOSTNAME"; then
+    $libdir/Orca_Services `cat $libdir/Orca_Services.$HOSTNAME`
 else
-    $libdir/orca_services
+    $libdir/Orca_Services
 fi
 
-### # Write the PID of orca_services to a file to make killing easier.
+### # Write the PID of Orca_Services to a file to make killing easier.
 ### pid=$!
-### echo $pid > $OUTDIR/orca_services.pid
+### echo $pid > $OUTDIR/Orca_Services.pid
 
-# Sleep for a couple of seconds to allow any orca_services warnings to appear.
+# Sleep for a couple of seconds to allow any Orca_Services warnings to appear.
 sleep 5

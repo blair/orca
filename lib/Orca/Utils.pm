@@ -203,12 +203,6 @@ sub perl_glob {
 # starting time of the script.
 my $start_time = time;
 sub print_running_stats {
-  my $ps_self = '@PS_SELF@';
-  if ($ps_self) {
-    $ps_self =~ s/PID/$$/g;
-    system($ps_self);
-  }
-
   my $time_span = time - $start_time;
   my $minutes   = int($time_span/60);
   my $seconds   = $time_span - 60*$minutes;

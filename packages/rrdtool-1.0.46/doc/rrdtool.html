@@ -1,0 +1,276 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>rrdtool</title>
+<link rev="made" href="mailto:dws@ee.ethz.ch" />
+</head>
+
+<body style="background-color: white">
+
+<p><a name="__index__"></a></p>
+<!-- INDEX BEGIN -->
+<!--
+
+<ul>
+
+	<li><a href="#name">NAME</a></li>
+	<li><a href="#synopsis">SYNOPSIS</a></li>
+	<li><a href="#description">DESCRIPTION</a></li>
+	<ul>
+
+		<li><a href="#overview">OVERVIEW</a></li>
+		<li><a href="#functions">FUNCTIONS</a></li>
+		<li><a href="#how_does_rrdtool_work">HOW DOES RRDTOOL WORK?</a></li>
+		<li><a href="#remote_control">REMOTE CONTROL</a></li>
+	</ul>
+
+	<li><a href="#see_also">SEE ALSO</a></li>
+	<li><a href="#bugs">BUGS</a></li>
+	<li><a href="#author">AUTHOR</a></li>
+</ul>
+-->
+<!-- INDEX END -->
+
+<p>
+</p>
+<h1><a name="name">NAME</a></h1>
+<p>rrdtool - round robin database tool</p>
+<div align="right"><a href="rrdtool.pdf">PDF</a> version.</div><p>
+</p>
+<hr />
+<h1><a name="synopsis">SYNOPSIS</a></h1>
+<p><strong>rrdtool</strong> <strong>-</strong> | <em>function</em></p>
+<p>
+</p>
+<hr />
+<h1><a name="description">DESCRIPTION</a></h1>
+<p>
+</p>
+<h2><a name="overview">OVERVIEW</a></h2>
+<p>It is pretty easy to gather status information from all sorts of
+things, ranging from the temperature in your office to the number of
+octets which have passed through the FDDI interface of your
+router. But it is not so trivial to store this data in a efficient and
+systematic manner. This is where <strong>RRDTool</strong> kicks in. It lets you
+<em>log and analyze</em> the data you gather from all kinds of data-sources
+(<strong>DS</strong>). The data analysis part of RRDTool is based on the ability to
+quickly generate graphical representations of the data values
+collected over a definable time period.</p>
+<p>In this man page you will find general information on the design and
+functionality of the Round Robin Database Tool (RRDTool). For a more
+detailed description of how to use the individual functions of the
+<strong>RRDTool</strong> check the corresponding man page.</p>
+<p>For an introduction to the usage of RRDTool make sure you check <a href="././rrdtutorial.html">the rrdtutorial manpage</a>.</p>
+<p>
+</p>
+<h2><a name="functions">FUNCTIONS</a></h2>
+<p>While the man pages talk of command line switches you have to set in
+order to make <strong>RRDTool</strong> work it is important to note that the
+<strong>RRDTool</strong> can be 'remote controlled' through a set of pipes. This
+saves a considerable amount of startup time when you plan to make
+<strong>RRDTool</strong> do a lot of things quickly. Check the section on <a href="#remote_control">Remote Control</a> further down. There is also a number of language bindings
+for RRDTool which allow you to use it directly from Perl, Python, Tcl,
+Php, ...</p>
+<dl>
+<dt><strong><a name="item_create"><strong>create</strong></a></strong><br />
+</dt>
+<dd>
+Set up a new Round Robin Database (RRD). Check <a href="././rrdcreate.html">the rrdcreate manpage</a>.
+</dd>
+<p></p>
+<dt><strong><a name="item_update"><strong>update</strong></a></strong><br />
+</dt>
+<dd>
+Store new data values into an RRD. Check <a href="././rrdupdate.html">the rrdupdate manpage</a>.
+</dd>
+<p></p>
+<dt><strong><a name="item_graph"><strong>graph</strong></a></strong><br />
+</dt>
+<dd>
+Create a graph from data stored in one or several RRD. Apart from
+generating graphs, data can also be extracted to stdout. Check <a href="././rrdgraph.html">the rrdgraph manpage</a>.
+</dd>
+<p></p>
+<dt><strong><a name="item_dump"><strong>dump</strong></a></strong><br />
+</dt>
+<dd>
+Dump the contents of an RRD in plain ASCII. In connection with 
+restore you can use it to transport an RRD from one architecture to another.
+Check <a href="././rrddump.html">the rrddump manpage</a>.
+</dd>
+<p></p>
+<dt><strong><a name="item_restore"><strong>restore</strong></a></strong><br />
+</dt>
+<dd>
+Restore an RRD in XML format to a binary RRD ... Check <a href="././rrdrestore.html">the rrdrestore manpage</a>
+</dd>
+<p></p>
+<dt><strong><a name="item_fetch"><strong>fetch</strong></a></strong><br />
+</dt>
+<dd>
+Get data for a certain time period from a RRD. The graph function
+uses fetch to retrieve its data from an RRD. Check <a href="././rrdfetch.html">the rrdfetch manpage</a>.
+</dd>
+<p></p>
+<dt><strong><a name="item_tune"><strong>tune</strong></a></strong><br />
+</dt>
+<dd>
+Alter setup of an RRD. Check <a href="././rrdtune.html">the rrdtune manpage</a>.
+</dd>
+<p></p>
+<dt><strong><a name="item_last"><strong>last</strong></a></strong><br />
+</dt>
+<dd>
+Find last update time of an RRD. Check <a href="././rrdlast.html">the rrdlast manpage</a>.
+</dd>
+<p></p>
+<dt><strong><a name="item_info"><strong>info</strong></a></strong><br />
+</dt>
+<dd>
+Display information about an RRD ... Check <a href="././rrdinfo.html">the rrdinfo manpage</a>
+</dd>
+<p></p>
+<dt><strong><a name="item_rrdresize"><strong>rrdresize</strong></a></strong><br />
+</dt>
+<dd>
+Change the size of individual RRAs ... Dangerous! Check <a href="././rrdresize.html">the rrdresize manpage</a>.
+</dd>
+<p></p>
+<dt><strong><a name="item_xport"><strong>xport</strong></a></strong><br />
+</dt>
+<dd>
+Export data retrieved from one or several RRD. Check <a href="././rrdxport.html">the rrdxport manpage</a>
+</dd>
+<p></p>
+<dt><strong><a name="item_rrdcgi"><strong>rrdcgi</strong></a></strong><br />
+</dt>
+<dd>
+This is a standalone tool for producing RRD graphs on the fly. Check
+<a href="././rrdcgi.html">the rrdcgi manpage</a>.
+</dd>
+<p></p></dl>
+<p>
+</p>
+<h2><a name="how_does_rrdtool_work">HOW DOES RRDTOOL WORK?</a></h2>
+<dl>
+<dt><strong><a name="item_data_acquisition">Data acquisition</a></strong><br />
+</dt>
+<dd>
+When monitoring the state of a system, it is convenient to have the
+data available at a constant interval. Unfortunately you may not
+always be able to fetch data at exactly the time you want
+to. Therefore <strong>RRDTool</strong> lets you update the logfile at any time you
+want. It will automatically interpolate the value of the data-source
+(<strong>DS</strong>) at the latest official time-slot and write this value to the
+log. The value you have supplied is stored as well and is also taken
+into account when interpolating the next log entry.
+</dd>
+<p></p>
+<dt><strong><a name="item_consolidation">Consolidation</a></strong><br />
+</dt>
+<dd>
+You may log data at a 1 minute interval, but you are also be
+interested to know the development of the data over the last year. You
+could do this by simply storing the data in 1 minute interval, for one
+year. While this would take considerable disk space it would also take
+a lot of time to analyze the data when you wanted to create a graph
+covering the whole year. <strong>RRDTool</strong> offers a solution to this
+problem through its data consolidation feature. When setting up
+an Round Robin Database (<strong>RRD</strong>), you can define at which interval
+this consolidation should occur, and what consolidation function
+(<strong>CF</strong>) (average, minimum, maximum, last) should be used to
+build the consolidated values (see <a href="././rrdcreate.html">the rrdcreate manpage</a>). You can define any
+number of different consolidation setups within one <strong>RRD</strong>. They will
+all be maintained on the fly when new data is loaded into the <strong>RRD</strong>.
+</dd>
+<p></p>
+<dt><strong><a name="item_round_robin_archives">Round Robin Archives</a></strong><br />
+</dt>
+<dd>
+Data values of the same consolidation setup are stored into Round
+Robin Archives (<strong>RRA</strong>). This is a very efficient manner to store data
+for a certain amount of time, while using a known amount of storage
+space.
+</dd>
+<dd>
+<p>It works like this: If you want to store 1000 values in 5 minute
+interval, <strong>RRDTool</strong> will allocate space for 1000 data values and a
+header area. In the header it will store a pointer telling
+which one of the values in the storage area was last written to. New
+values are written to the Round Robin Archive in a ...  you guess it
+... round robin manner. This automatically limits the history to the last
+1000 values. Because you can define several <strong>RRA</strong>s within a single <strong>RRD</strong>,
+you can setup another one, storing 750 data values at a 2 hour interval
+and thus keeping a log for the last two months although at a lower
+resolution.</p>
+</dd>
+<dd>
+<p>The use of <strong>RRA</strong>s guarantees that the <strong>RRD</strong> does not grow over
+time and that old data is automatically eliminated. By using the
+consolidation feature, you can still keep data for a very long time,
+while gradually reducing the resolution of the data along the time
+axis. Using different consolidation functions (<strong>CF</strong>) allows you to
+store exactly the type of information that actually interests
+you. (Maximum one minute traffic on the LAN, minimum temperature of
+the wine cellar, total minutes down time ...)</p>
+</dd>
+<p></p>
+<dt><strong><a name="item_unknown_data">Unknown Data</a></strong><br />
+</dt>
+<dd>
+As mentioned earlier, the <strong>RRD</strong> stores data at a constant
+interval. Now it may happen that no new data is available when a
+value has to be written to the <strong>RRD</strong>. Data acquisition may not be
+possible for one reason or an other. The <strong>RRDTool</strong> handles these
+situations by storing an <em>*UNKNOWN*</em> value into the database. The
+value '<em>*UNKNOWN*</em>' is supported through all the functions of the
+database. When consolidating the amount of <em>*UNKNOWN*</em> data is
+accumulated and when a new consolidated value is ready to be written
+to its Round Robin Archive (<strong>RRA</strong>) a validity check is performed to
+make sure that the percentage of unknown data in the new value is
+below a configurable level. If so, an <em>*UNKNOWN*</em> value will be
+written to the <strong>RRA</strong>.
+</dd>
+<p></p>
+<dt><strong><a name="item_graphing">Graphing</a></strong><br />
+</dt>
+<dd>
+The <strong>RRDTool</strong> also allows one to generate reports in numerical and
+graphical form based on the data stored in one or several
+<strong>RRD</strong>s. The graphing feature is fully configurable. Size, color and
+contents of the graph can be defined freely. Check <a href="././rrdgraph.html">the rrdgraph manpage</a>
+for more information on this.
+</dd>
+<p></p></dl>
+<p>
+</p>
+<h2><a name="remote_control">REMOTE CONTROL</a></h2>
+<p>When you start <strong>RRDTool</strong> with the command line option '<strong>-</strong>', it waits
+for input via standard in. With this feature you can improve
+performance by attaching <strong>RRDTool</strong> to another process (MRTG is one
+example) through a set of pipes. Over the pipes <strong>RRDTool</strong> accepts the
+same arguments as on the command line. When a command is completed, 
+RRDTool will print the string  '<code>OK</code>', followed by timing information of
+the form <strong>u:</strong><em>usertime</em> <strong>s:</strong><em>systemtime</em> both values are running
+totals of seconds since RRDTool was started. If an error occurs, a line 
+of the form '<code>ERROR:</code> <em>Description of error</em>' will be printed. <strong>RRDTool</strong>
+will not abort if possible, but follow the ERROR line with an OK line.</p>
+<p>
+</p>
+<hr />
+<h1><a name="see_also">SEE ALSO</a></h1>
+<p>rrdcreate, rrdupdate, rrdgraph, rrddump, rrdfetch, rrdtune, rrdlast, rrdxport</p>
+<p>
+</p>
+<hr />
+<h1><a name="bugs">BUGS</a></h1>
+<p>Bugs ? Features !</p>
+<p>
+</p>
+<hr />
+<h1><a name="author">AUTHOR</a></h1>
+<p>Tobias Oetiker &lt;<a href="mailto:oetiker@ee.ethz.ch">oetiker@ee.ethz.ch</a>&gt;</p>
+
+</body>
+
+</html>

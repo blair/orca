@@ -1,0 +1,164 @@
+$Id: USAGE,v 1.1.1.1 2002/02/26 10:21:20 oetiker Exp $
+
+--------------------------------------------------
+Usage:
+
+	Loading the rrdtool module is a little bit different with
+PHP4/Zend.  If you build the rrdtool module into PHP4 at compile
+time (per INSTALL file), then there is nothing you need to do
+in your scripts to use the rrd_* functions. 
+
+
+	However, if you build the rrdtool module as a 'self-contained'
+module, you will need to load it for each php script you intend to use.
+To do this, you will need a line such as this in your script:
+
+	<? dl("rrdtool.so"); ?>
+
+Note that in PHP4/Zend, you cannot specify the directory where
+the module lives.  It restricts the search to a specifc directory
+which is defined at compile time.  'make install' will place
+this file in the appropriate location.
+
+
+
+API:
+
+--------------------------------------------------------------------
+string rrd_error()
+
+	rrd_error takes no arguments.
+
+	Use this function to retrieve the error message from
+the last rrd_* function that was called and failed.
+
+	If an error was set, a string will be returned.  
+
+	If no error was set, a blank string will be returned.
+
+
+
+
+--------------------------------------------------------------------
+int rrd_last(string filename)
+
+	rrd_last takes only one argument, a filename of an RRD
+file.  
+
+	If rrd_last is successful in obtaining the last modifiation
+time of the file, a date will be returned in the form of the
+number of seconds from the unix epoch (Jan 1, 1970, 00:00:00).
+You can then use any of php's excellent time functions on this
+value.
+
+	If rrd_last is not sucessful, a value of 0 will be returned,
+and the internal rrd error will be set.  You can access this error
+message via the rrd_error() function (if one was set).
+ 
+
+--------------------------------------------------------------------
+int rrd_update(string filename, string options)
+
+	rrd_update takes 2 arguments, a filename of an RRD file
+and a string with options to fill the RRD file with.
+
+	It has been designed to work similary to the rrd_update
+call in the RRDs perl library.
+
+Example:  $result = rrd_update("/some.rrd", "N:123:9873:235");
+ 
+	If rrd_update is successful, 1 is returned. 
+
+	If rrd_update is not successful, 0 is returned, and an
+error message should be obtainable by called 'rrd_error()'.
+
+
+--------------------------------------------------------------------
+int rrd_create(string filename, array options, int num_of_elements)
+
+	rrd_create takes 3 arguments, a filename of an RRD file to
+create, an array of options (exactly like you would pass in the RRDs 
+perl library, or on the command line to 'rrdtool'), and the last 
+argument is the number of elements in the array of options.  This 
+can be obtained by simply calling " count($opt_array) ".  See the 
+example scripts for a more clear example.
+
+	If rrd_update is successful, 1 is returned. 
+
+	If rrd_update is not successful, 0 is returned, and an
+error message should be obtainable by called 'rrd_error()'.
+
+
+
+--------------------------------------------------------------------
+mixed rrd_graph(string filename, array options, int num_of_elements) 
+
+	rrd_graph takes 3 arguments, a filename of an RRD file,
+an array of options (exactly like you would pass in the RRDs perl
+library, or on the command line to 'rrdtool'), and the last argument
+is the number of elements in the array of options.  This can be 
+obtained by simply calling " count($opt_array) ".  See the example
+scripts for a more clear example.
+
+
+	If rrd_graph is successful, an array is returned.  The
+array is an associate array with 3 values:
+
+$array[xsize]  -  The size of the image along the X axis.
+$array[ysize]  -  The size of the image along the Y axis.
+$array[calcpr] -  This is actually another array, that will contain
+                  the results of any PRINT statements.
+
+
+	If rrd_graph is not successful, a 0 is returned.
+
+IMPORTANT NOTE:  In order for php not to complain about mis-using
+the return value, it is important that you check the type of the
+return value.  use the " is_array() " function to check if the 
+returned value is an array (in which case rrd_graph was successful),
+or not an array (meaning rrd_graph was NOT successful).  See the
+examples for an illustration of this.
+
+
+--------------------------------------------------------------------
+mixed rrd_fetch(string filename, array options, int num_of_elements) 
+
+	rrd_fetch takes 3 arguments, a filename of an RRD file,
+an array of options (exactly like you would pass in the RRDs perl
+library, or on the command line to 'rrdtool'), and the last argument
+is the number of elements in the array of options.  This can be 
+obtained by simply calling " count($opt_array) ".  See the example
+scripts for a more clear example.
+
+
+	If rrd_fetch is successful, an array is returned.  The
+array is an associate array with 5 values:
+
+$array[start]   -  This is the start time of the data returned 
+                   (unix epoch timestamp format)
+$array[end]     -  This is the end time of the data returned
+                   (unix epoch timestamp format)
+$array[step]    -  This is the step interval of the data returned,
+                   in number of seconds.
+$array[ds_cnt]  -  This is the number of DS's returned from the
+                   RRD file.
+$array[ds_namv] -  This is an array with the names of the DS's
+                   returned from the RRD file.
+$array[data]    -  This is an array with all the values fetch'd
+                   from the rrd file by rrd_fetch.
+
+(This is very similar to the way rrd_fetch() in the RRDs
+perl library works, as well as the C function rrd_fetch()).
+
+	If rrd_fetch is not successful, a 0 is returned.
+
+IMPORTANT NOTE:  In order for php not to complain about mis-using
+the return value, it is important that you check the type of the
+return value.  use the " is_array() " function to check if the 
+returned value is an array (in which case rrd_fetch was successful),
+or not an array (meaning rrd_fetch was NOT successful).  See the
+examples for an illustration of this.
+
+
+--------------------------------------------------------------------
+

@@ -635,11 +635,14 @@ sub add_plots {
             $eval_result = 0;
             $@ =~ s/\s+$//g;
             my $m = $old_i + 1;
-            $message = "$0: warning: cannot compile '$sub_expr' for plot #$m 'data @{$plot->{data}[$j]}': $@\n";
+            $message = "$0: warning: cannot compile '$sub_expr' for " .
+                       "plot #$m 'data @{$plot->{data}[$j]}': $@\n";
           } elsif (!defined $test_value) {
             $eval_result = 0;
             my $m = $old_i + 1;
-            $message = "$0: warning: testing of '$sub_expr' for plot #$m 'data @{$plot->{data}[$j]}' yielded an undefined value.\n";
+            $message = "$0: warning: testing of '$sub_expr' for " .
+                       "plot #$m 'data @{$plot->{data}[$j]}' yielded " .
+                       "an undefined value.\n";
           }
           if ($message and ($required or $opt_verbose > 1)) {
             warn $message;
@@ -671,8 +674,8 @@ sub add_plots {
     # and a name for this plot that does not include the subgroup name.
     my @my_rrds;
     my @my_short_rrds;
-    my @name_with_subgroup;
-    my @name_without_subgroup;
+    my @names_with_subgroup;
+    my @names_without_subgroup;
     my $previous_data_type     = '';
     my $previous_group_index   = -1;
     my $previous_subgroup_name = '';
@@ -684,9 +687,17 @@ sub add_plots {
       my $original_data_expression    = join('_', @{$plot->{data}[$j]});
       my $substituted_data_expression = $substituted_data_expressions[$j];
 
-      my $name_with_subgroup = "${group_name}_${subgroup_name}_${data_type}_${original_data_expression}";
-      push(@name_with_subgroup,    $name_with_subgroup);
-      push(@name_without_subgroup, "${group_name}_${data_type}_${original_data_expression}");
+      my $name_with_subgroup          = join('_',
+                                             $group_name,
+                                             $subgroup_name,
+                                             $data_type,
+                                             $original_data_expression);
+      my $name_without_subgroup       = join('_',
+                                             $group_name,
+                                             $data_type,
+                                             $original_data_expression);
+      push(@names_with_subgroup,    $name_with_subgroup);
+      push(@names_without_subgroup, $name_without_subgroup);
 
       # If the current data expression is very similar to the previous
       # one, then do not include the group, subgroup and data_type.
@@ -715,7 +726,8 @@ sub add_plots {
       # valid get data subroutine is created.  Keep the
       # choose_data_sub for this file.
       if (defined $substituted_data_expression) {
-        $choose_data_expr .= "    '$name_with_subgroup', $substituted_data_expression,\n";
+        $choose_data_expr .= "    '$name_with_subgroup', " .
+                             "$substituted_data_expression,\n";
         unless (defined $rrd_data_files_ref->{$name_with_subgroup}) {
           my $rrd_file = Orca::RRDFile->new($group_index,
                                             $subgroup_name,
@@ -733,14 +745,14 @@ sub add_plots {
 
     # Generate a new plot for these data.
     my $image;
-    my $all_names_with_subgroup = join(',', @name_with_subgroup);
+    my $all_names_with_subgroup = join(',', @names_with_subgroup);
     if (defined ($image = $image_files_ref->{hash}{$all_names_with_subgroup})){
       $image->add_rrds(@my_rrds);
     } else {
       $image = Orca::ImageFile->new($group_index,
                                     $subgroup_name,
                                     join(',', @my_short_rrds),
-                                    join(',', @name_without_subgroup),
+                                    join(',', @names_without_subgroup),
                                     $plot,
                                     $rrd_data_files_ref,
                                     \@my_rrds);
@@ -763,7 +775,8 @@ sub add_plots {
   }
   if ($@) {
     my $m = $old_i + 1;
-    die "$0: warning: bad evaluation of command for plot #$m:\n$choose_data_expr\nOutput: $@\n";
+    die "$0: warning: bad evaluation of command for plot #$m:\n",
+        "$choose_data_expr\nOutput: $@\n";
   }
 
   $all_rrds_cache{$cache_key}        = $self->[I_ALL_RRD_REF];
@@ -903,7 +916,8 @@ sub load_new_data {
       if (defined $value) {
         if ($self->[I_ALL_RRD_REF]{$rrd_key}->queue_data($time, $value)) {
           if ($opt_verbose > 2 and !$add) {
-            print "  Loaded '@line' at ", scalar localtime($time), " ($time).\n";
+            print "  Loaded '@line' at ", scalar localtime($time),
+                  " ($time).\n";
           }
           $add = 1;
         }

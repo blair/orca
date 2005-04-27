@@ -1,0 +1,282 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>rrdcreate</title>
+<link rev="made" href="mailto:dws@ee.ethz.ch" />
+</head>
+
+<body style="background-color: white">
+
+<p><a name="__index__"></a></p>
+<!-- INDEX BEGIN -->
+<!--
+
+<ul>
+
+	<li><a href="#name">NAME</a></li>
+	<li><a href="#synopsis">SYNOPSIS</a></li>
+	<li><a href="#description">DESCRIPTION</a></li>
+	<li><a href="#the_heartbeat_and_the_step">The HEARTBEAT and the STEP</a></li>
+	<li><a href="#how_to_measure">HOW TO MEASURE</a></li>
+	<li><a href="#example">EXAMPLE</a></li>
+	<li><a href="#author">AUTHOR</a></li>
+</ul>
+-->
+<!-- INDEX END -->
+
+<p>
+</p>
+<h1><a name="name">NAME</a></h1>
+<p>rrdcreate - Set up a new Round Robin Database</p>
+<div align="right"><a href="rrdcreate.pdf">PDF</a> version.</div><p>
+</p>
+<hr />
+<h1><a name="synopsis">SYNOPSIS</a></h1>
+<p><strong>rrdtool</strong> <strong>create</strong> <em>filename</em> 
+[<strong>--start</strong>|<strong>-b</strong>&nbsp;<em>start&nbsp;time</em>] 
+[<strong>--step</strong>|<strong>-s</strong>&nbsp;<em>step</em>] 
+<strong>DS:</strong><em>ds-name</em><strong>:</strong><em>DST</em><strong>:</strong><em>heartbeat</em><strong>:</strong><em>min</em><strong>:</strong><em>max</em>&nbsp;[<strong>DS:</strong>...]&nbsp;...
+<strong>RRA:</strong><em>CF</em><strong>:</strong><em>xff</em><strong>:</strong><em>steps</em><strong>:</strong><em>rows</em>&nbsp;[<strong>RRA:</strong>...]&nbsp;...</p>
+<p>
+</p>
+<hr />
+<h1><a name="description">DESCRIPTION</a></h1>
+<p>The create function of the RRDTool lets you set up new
+Round Robin Database (<strong>RRD</strong>) files. 
+The file is created at its final, full size and filled
+with <em>*UNKNOWN*</em> data.</p>
+<dl>
+<dt><strong><a name="item_filename"><em>filename</em></a></strong><br />
+</dt>
+<dd>
+The name of the <strong>RRD</strong> you want to create. <strong>RRD</strong> files should end
+with the extension <em>.rrd</em>. However, <strong>RRDTool</strong> will accept any
+filename.
+</dd>
+<p></p>
+<dt><strong><a name="item_time"><strong>--start</strong>|<strong>-b</strong> <em>start time</em> (default: now - 10s)</a></strong><br />
+</dt>
+<dd>
+Specifies the time in seconds since 1970-01-01 UTC when the first
+value should be added to the <strong>RRD</strong>. <strong>RRDTool</strong> will not accept
+any data timed before or at the time specified.
+</dd>
+<dd>
+<p>See also AT-STYLE TIME SPECIFICATION section in the
+<em>rrdfetch</em> documentation for more ways to specify time.</p>
+</dd>
+<p></p>
+<dt><strong><a name="item_step"><strong>--step</strong>|<strong>-s</strong> <em>step</em> (default: 300 seconds)</a></strong><br />
+</dt>
+<dd>
+Specifies the base interval in seconds with which data will be fed
+into the <strong>RRD</strong>.
+</dd>
+<p></p>
+<dt><strong><a name="item_ds_3ads_2dname_3adst_3aheartbeat_3amin_3amax"><strong>DS:</strong><em>ds-name</em><strong>:</strong><em>DST</em><strong>:</strong><em>heartbeat</em><strong>:</strong><em>min</em><strong>:</strong><em>max</em></a></strong><br />
+</dt>
+<dd>
+A single <strong>RRD</strong> can accept input from several data sources (<strong>DS</strong>).
+(e.g. Incoming and Outgoing traffic on a specific communication
+line). With the <strong>DS</strong> configuration option you must define some basic
+properties of each data source you want to use to feed the <strong>RRD</strong>.
+</dd>
+<dd>
+<p><em>ds-name</em> is the name you will use to reference this particular data
+source from an <strong>RRD</strong>. A <em>ds-name</em> must be 1 to 19 characters long in
+the characters [a-zA-Z0-9_].</p>
+</dd>
+<dd>
+<p><em>DST</em> defines the Data Source Type. See the section on ``How to Measure'' below for further insight.
+The Data Source Type must be one of the following:</p>
+</dd>
+<dl>
+<dt><strong><a name="item_gauge"><strong>GAUGE</strong></a></strong><br />
+</dt>
+<dd>
+is for things like temperatures or number of people in a
+room or value of a RedHat share.
+</dd>
+<p></p>
+<dt><strong><a name="item_counter"><strong>COUNTER</strong></a></strong><br />
+</dt>
+<dd>
+is for continuous incrementing counters like the
+InOctets counter in a router. The <strong>COUNTER</strong> data source assumes that
+the counter never decreases, except when a counter overflows.  The update
+function takes the overflow into account.  The counter is stored as a
+per-second rate. When the counter overflows, RRDTool checks if the overflow happened at
+the 32bit or 64bit border and acts accordingly by adding an appropriate value to the result.
+</dd>
+<p></p>
+<dt><strong><a name="item_derive"><strong>DERIVE</strong></a></strong><br />
+</dt>
+<dd>
+will store the derivative of the line going from the last to the
+current value of the data source. This can be useful for gauges, for
+example, to measure the rate of people entering or leaving a
+room. Internally, derive works exactly like COUNTER but without
+overflow checks. So if your counter does not reset at 32 or 64 bit you
+might want to use DERIVE and combine it with a MIN value of 0.
+</dd>
+<p></p>
+<dt><strong><a name="item_absolute"><strong>ABSOLUTE</strong></a></strong><br />
+</dt>
+<dd>
+is for counters which get reset upon reading. This is used for fast counters
+which tend to overflow. So instead of reading them normally you reset them
+after every read to make sure you have a maximal time available before the
+next overflow. Another usage is for things you count like number of messages
+since the last update.
+</dd>
+<p></p></dl>
+<p><em>heartbeat</em> defines the maximum number of seconds that may pass
+between two updates of this data source before the value of the 
+data source is assumed to be <em>*UNKNOWN*</em>.</p>
+<p><em>min</em> and <em>max</em> are optional entries defining the expected range of
+the data supplied by this data source. If <em>min</em> and/or <em>max</em> are
+defined, any value outside the defined range will be regarded as
+<em>*UNKNOWN*</em>. If you do not know or care about min and max, set them
+to U for unknown. Note that min and max always refer to the processed values
+of the DS. For a traffic-<strong>COUNTER</strong> type DS this would be the max and min
+data-rate expected from the device.</p>
+<p><em>If information on minimal/maximal expected values is available,
+always set the min and/or max properties. This will help RRDTool in
+doing a simple sanity check on the data supplied when running update.</em></p>
+<dt><strong><a name="item_rra_3acf_3axff_3asteps_3arows"><strong>RRA:</strong><em>CF</em><strong>:</strong><em>xff</em><strong>:</strong><em>steps</em><strong>:</strong><em>rows</em></a></strong><br />
+</dt>
+<dd>
+The purpose of an <strong>RRD</strong> is to store data in the round robin archives
+(<strong>RRA</strong>). An archive consists of a number of data values from all the
+defined data-sources (<strong>DS</strong>) and is defined with an <strong>RRA</strong> line.
+</dd>
+<dd>
+<p>When data is entered into an <strong>RRD</strong>, it is first fit into time slots of
+the length defined with the <strong>-s</strong> option becoming a <em>primary data point</em>.</p>
+</dd>
+<dd>
+<p>The data is also consolidated with the consolidation function (<em>CF</em>)
+of the archive. The following consolidation functions are defined:
+<strong>AVERAGE</strong>, <strong>MIN</strong>, <strong>MAX</strong>, <strong>LAST</strong>.</p>
+</dd>
+<dd>
+<p><em>xff</em> The xfiles factor defines what part of a consolidation interval may
+be made up from <em>*UNKNOWN*</em> data while the consolidated value is still
+regarded as known.</p>
+</dd>
+<dd>
+<p><em>steps</em> defines how many of these <em>primary data points</em> are used to
+build a <em>consolidated data point</em> which then goes into the archive.</p>
+</dd>
+<dd>
+<p><em>rows</em> defines how many generations of data values are kept in an <strong>RRA</strong>.</p>
+</dd>
+<p></p></dl>
+<p>
+</p>
+<hr />
+<h1><a name="the_heartbeat_and_the_step">The HEARTBEAT and the STEP</a></h1>
+<p>Here is an explanation by Don Baarda on the inner workings of RRDTool.
+It may help you to sort out why all this *UNKNOWN* data is popping
+up in your databases:</p>
+<p>RRD gets fed samples at arbitrary times. From these it builds Primary
+Data Points (PDPs) at exact times every ``step'' interval. The PDPs are
+then accumulated into RRAs.</p>
+<p>The ``heartbeat'' defines the maximum acceptable interval between
+samples. If the interval between samples is less than ``heartbeat'',
+then an average rate is calculated and applied for that interval. If
+the interval between samples is longer than ``heartbeat'', then that
+entire interval is considered ``unknown''. Note that there are other
+things that can make a sample interval ``unknown'', such as the rate
+exceeding limits, or even an ``unknown'' input sample.</p>
+<p>The known rates during a PDP's ``step'' interval are used to calculate
+an average rate for that PDP. Also, if the total ``unknown'' time during
+the ``step'' interval exceeds the ``heartbeat'', the entire PDP is marked
+as ``unknown''. This means that a mixture of known and ``unknown'' sample
+time in a single PDP ``step'' may or may not add up to enough ``unknown''
+time to exceed ``heartbeat'' and hence mark the whole PDP ``unknown''. So
+``heartbeat'' is not only the maximum acceptable interval between
+samples, but also the maximum acceptable amount of ``unknown'' time per
+PDP (obviously this is only significant if you have ``heartbeat'' less
+than ``step'').</p>
+<p>The ``heartbeat'' can be short (unusual) or long (typical) relative to
+the ``step'' interval between PDPs. A short ``heartbeat'' means you
+require multiple samples per PDP, and if you don't get them mark the
+PDP unknown. A long heartbeat can span multiple ``steps'', which means
+it is acceptable to have multiple PDPs calculated from a single
+sample. An extreme example of this might be a ``step'' of 5 minutes and a
+``heartbeat'' of one day, in which case a single sample every day will
+result in all the PDPs for that entire day period being set to the
+same average rate. <em>-- Don Baarda &lt;<a href="mailto:don.baarda@baesystems.com">don.baarda@baesystems.com</a>&gt;</em></p>
+<p>
+</p>
+<hr />
+<h1><a name="how_to_measure">HOW TO MEASURE</a></h1>
+<p>Here are a few hints on how to measure:</p>
+<dl>
+<dt><strong><a name="item_temperature">Temperature</a></strong><br />
+</dt>
+<dd>
+Normally you have some type of meter you can read to get the temperature.
+The temperature is not really connected with a time. The only connection is
+that the temperature reading happened at a certain time. You can use the
+<strong>GAUGE</strong> data source type for this. RRDTool will then record your reading
+together with the time.
+</dd>
+<p></p>
+<dt><strong><a name="item_mail_messages">Mail Messages</a></strong><br />
+</dt>
+<dd>
+Assume you have a method to count the number of messages transported by
+your mailserver in a certain amount of time, this give you data like '5
+messages in the last 65 seconds'. If you look at the count of 5 like and
+<strong>ABSOLUTE</strong> datatype you can simply update the RRD with the number 5 and the
+end time of your monitoring period. RRDTool will then record the number of
+messages per second. If at some later stage you want to know the number of
+messages transported in a day, you can get the average messages per second
+from RRDTool for the day in question and multiply this number with the
+number of seconds in a day. Because all math is run with Doubles, the
+precision should be acceptable.
+</dd>
+<p></p>
+<dt><strong><a name="item_it_27s_always_a_rate">It's always a Rate</a></strong><br />
+</dt>
+<dd>
+RRDTool stores rates in amount/second for COUNTER, DERIVE and ABSOLUTE data.
+When you plot the data, you will get on the y axis amount/second which you
+might be tempted to convert to absolute amount volume by multiplying by the
+delta-time between the points. RRDTool plots continuous data, and as such is
+not appropriate for plotting absolute volumes as for example ``total bytes''
+sent and received in a router. What you probably want is plot rates that you
+can scale to for example bytes/hour or plot volumes with another tool that
+draws bar-plots, where the delta-time is clear on the plot for each point
+(such that when you read the graph you see for example GB on the y axis,
+days on the x axis and one bar for each day).
+</dd>
+<p></p></dl>
+<p>
+</p>
+<hr />
+<h1><a name="example">EXAMPLE</a></h1>
+<p><code>rrdtool create temperature.rrd --step 300 DS:temp:GAUGE:600:-273:5000
+RRA:AVERAGE:0.5:1:1200 RRA:MIN:0.5:12:2400 RRA:MAX:0.5:12:2400
+RRA:AVERAGE:0.5:12:2400</code></p>
+<p>This sets up an <strong>RRD</strong> called <em>temperature.rrd</em> which accepts one
+temperature value every 300 seconds. If no new data is supplied for
+more than 600 seconds, the temperature becomes <em>*UNKNOWN*</em>.  The
+minimum acceptable value is -273 and the maximum is 5000.</p>
+<p>A few archives areas are also defined. The first stores the
+temperatures supplied for 100 hours (1200 * 300 seconds = 100
+hours). The second RRA stores the minimum temperature recorded over
+every hour (12 * 300 seconds = 1 hour), for 100 days (2400 hours). The
+third and the fourth RRA's do the same for the maximum and
+average temperature, respectively.</p>
+<p>
+</p>
+<hr />
+<h1><a name="author">AUTHOR</a></h1>
+<p>Tobias Oetiker &lt;<a href="mailto:oetiker@ee.ethz.ch">oetiker@ee.ethz.ch</a>&gt;</p>
+
+</body>
+
+</html>

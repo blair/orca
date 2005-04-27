@@ -1,0 +1,67 @@
+RRDTUNE(1)                   RRDtool                   RRDTUNE(1)
+
+
+
+NNAAMMEE
+       rrdtune - Modify some basic properties of a Round Robin
+       Database
+
+SSYYNNOOPPSSIISS
+       rrrrddttooooll ttuunnee _f_i_l_e_n_a_m_e [----hheeaarrttbbeeaatt|--hh _d_s_-_n_a_m_e:_h_e_a_r_t_b_e_a_t]
+       [----mmiinniimmuumm|--ii _d_s_-_n_a_m_e:_m_i_n] [----mmaaxxiimmuumm|--aa _d_s_-_n_a_m_e:_m_a_x]
+       [----ddaattaa--ssoouurrccee--ttyyppee|--dd _d_s_-_n_a_m_e:_D_S_T]
+       [----ddaattaa--ssoouurrccee--rreennaammee|--rr _o_l_d_-_n_a_m_e:_n_e_w_-_n_a_m_e]
+
+DDEESSCCRRIIPPTTIIOONN
+       The tune option allows you to alter some of the basic con-
+       figuration values stored in the header area of a Round
+       Robin Database (RRRRDD).  All these tunable parameters
+       together decide when data fed into an RRRRDD is to be
+       regarded as invalid. Invalid data is entered into the
+       database as *UNKNOWN*.
+
+       The main application of the ttuunnee function is to relax the
+       validation rules on an RRRRDD. This allows to fill a new RRRRDD
+       with data available in larger intervals than what you
+       would normally want to permit.
+
+       _f_i_l_e_n_a_m_e
+               The name of the RRRRDD you want to tune.
+
+       ----hheeaarrttbbeeaatt|--hh _d_s_-_n_a_m_e:_h_e_a_r_t_b_e_a_t
+               modify the _h_e_a_r_t_b_e_a_t of a data source. By setting
+               this to a high value the RRD will accept things
+               like one value per day ...
+
+       ----mmiinniimmuumm|--ii _d_s_-_n_a_m_e:_m_i_n
+               alter the minimum value acceptable as input from
+               the data source.  Setting _m_i_n to 'U' will disable
+               this limit.
+
+       ----mmaaxxiimmuumm|--aa _d_s_-_n_a_m_e:_m_a_x
+               alter the maximum value acceptable as input from
+               the data source.  Setting _m_a_x to 'U' will disable
+               this limit.
+
+       ----ddaattaa--ssoouurrccee--ttyyppee|--dd _d_s_-_n_a_m_e:_D_S_T
+               alter the type DDSSTT of a data source.
+
+       [----ddaattaa--ssoouurrccee--rreennaammee|--rr _o_l_d_-_n_a_m_e:_n_e_w_-_n_a_m_e]
+               rename a data source
+
+EEXXAAMMPPLLEE
+       "rrdtool tune data.rrd -h in:100000 -h out:100000 -h
+       through:100000"
+
+       Set the minimum required heartbeat for data sources 'in',
+       'out' and 'through' to 10000 seconds which is a little
+       over one day in data.rrd.  This would allow to feed old
+       data from MRTG-2.0 right into RRDTool without generating
+       *UNKNOWN* entries.
+
+AAUUTTHHOORR
+       Tobias Oetiker <oetiker@ee.ethz.ch>
+
+
+
+1.0.50                      2004-01-17                 RRDTUNE(1)

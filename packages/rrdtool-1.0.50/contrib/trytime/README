@@ -1,0 +1,85 @@
+"trytime" is a small program that allows you to play with at-style
+time specifications without actually bothering any of the rrd databases.
+It takes either single at-style specification or two of those
+(for start and end time, just like rrdtool fetch or graph do) and
+reports what it thinks of it. The diagnostic is as close as possible
+to that of rrdtool compiled for at-style time specification support.
+
+To learn what's possible with at-style time specifications, see
+the AT-STYLE TIME SPECIFICATION section in the rrdfetch documentation.
+
+The formal syntax parsed is (this is taken right from the parsetime.c):
+
+/*
+ * The BNF-like specification of the time syntax parsed is below:
+ *                                                               
+ * As usual, [ X ] means that X is optional, { X } means that X may
+ * be either omitted or specified as many times as needed,
+ * alternatives are separated by |, brackets are used for grouping.
+ * (# marks the beginning of comment that extends to the end of line)
+ *
+ * TIME-SPECIFICATION ::= TIME-REFERENCE [ OFFSET-SPEC ] |
+ *			                   OFFSET-SPEC   |
+ *			   ( START | END ) OFFSET-SPEC 
+ *
+ * TIME-REFERENCE ::= NOW | TIME-OF-DAY-SPEC [ DAY-SPEC-1 ] |
+ *                        [ TIME-OF-DAY-SPEC ] DAY-SPEC-2
+ *
+ * TIME-OF-DAY-SPEC ::= NUMBER [(':'|'.') NUMBER] [am|pm] | # HH:MM HH.MM HH[MM]
+ *                     'noon' | 'midnight' | 'teatime'
+ *
+ * DAY-SPEC-1 ::= NUMBER '/' NUMBER '/' NUMBER |  # MM/DD/[YY]YY
+ *                NUMBER '.' NUMBER '.' NUMBER |  # DD.MM.[YY]YY
+ *                NUMBER                          # DDMM[YY]YY
+ *
+ * DAY-SPEC-2 ::= MONTH-NAME NUMBER [NUMBER] |    # Month DD [YY]YY
+ *                'yesterday' | 'today' | 'tomorrow' |
+ *                DAY-OF-WEEK
+ *
+ *
+ * OFFSET-SPEC ::= '+'|'-' NUMBER TIME-UNIT { ['+'|'-'] NUMBER TIME-UNIT }
+ *
+ * TIME-UNIT ::= SECONDS | MINUTES | HOURS |
+ *               DAYS | WEEKS | MONTHS | YEARS
+ *
+ * NOW ::= 'now' | 'n'
+ *
+ * START ::= 'start' | 's'
+ * END   ::= 'end' | 'e'
+ *
+ * SECONDS ::= 'seconds' | 'second' | 'sec' | 's'
+ * MINUTES ::= 'minutes' | 'minute' | 'min' | 'm'
+ * HOURS   ::= 'hours' | 'hour' | 'hr' | 'h'
+ * DAYS    ::= 'days' | 'day' | 'd'
+ * WEEKS   ::= 'weeks' | 'week' | 'wk' | 'w'
+ * MONTHS  ::= 'months' | 'month' | 'mon' | 'm'
+ * YEARS   ::= 'years' | 'year' | 'yr' | 'y'
+ *
+ * MONTH-NAME ::= 'jan' | 'january' | 'feb' | 'february' | 'mar' | 'march' |
+ *                'apr' | 'april' | 'may' | 'jun' | 'june' | 'jul' | 'july' |
+ *                'aug' | 'august' | 'sep' | 'september' | 'oct' | 'october' |
+ *		  'nov' | 'november' | 'dec' | 'december'
+ *
+ * DAY-OF-WEEK ::= 'sunday' | 'sun' | 'monday' | 'mon' | 'tuesday' | 'tue' |
+ *                 'wednesday' | 'wed' | 'thursday' | 'thu' | 'friday' | 'fri' |
+ *                 'saturday' | 'sat'
+ *
+ *
+ * As you may note, there is an ambiguity with respect to
+ * the 'm' time unit (which can mean either minutes or months).
+ * To cope with this, code tries to read users mind :) by applying
+ * certain heuristics. There are two of them:
+ *
+ * 1. If 'm' is used in context of (i.e. right after the) years,
+ *    months, weeks, or days it is assumed to mean months, while
+ *    in the context of hours, minutes, and seconds it means minutes.
+ *    (e.g., in -1y6m or +3w1m 'm' means 'months', while in
+ *    -3h20m or +5s2m 'm' means 'minutes')
+ *
+ * 2. Out of context (i.e. right after the '+' or '-' sign) the
+ *    meaning of 'm' is guessed from the number it directly follows.
+ *    Currently, if the number absolute value is below 6 it is assumed
+ *    that 'm' means months, otherwise it is treated as minutes.
+ *    (e.g., -6m == -6 minutes, while +5m == +5 months)
+ *
+ */

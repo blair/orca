@@ -1,0 +1,252 @@
+RRDCREATE(1)                 RRDtool                 RRDCREATE(1)
+
+
+
+NNAAMMEE
+       rrdcreate - Set up a new Round Robin Database
+
+SSYYNNOOPPSSIISS
+       rrrrddttooooll ccrreeaattee _f_i_l_e_n_a_m_e [----ssttaarrtt|--bb _s_t_a_r_t _t_i_m_e]
+       [----sstteepp|--ss _s_t_e_p] DDSS::_d_s_-_n_a_m_e::_D_S_T::_h_e_a_r_t_-
+       _b_e_a_t::_m_i_n::_m_a_x [DDSS::...] ...
+       RRRRAA::_C_F::_x_f_f::_s_t_e_p_s::_r_o_w_s [RRRRAA::...] ...
+
+DDEESSCCRRIIPPTTIIOONN
+       The create function of the RRDTool lets you set up new
+       Round Robin Database (RRRRDD) files.  The file is created at
+       its final, full size and filled with _*_U_N_K_N_O_W_N_* data.
+
+       _f_i_l_e_n_a_m_e
+               The name of the RRRRDD you want to create. RRRRDD files
+               should end with the extension _._r_r_d. However, RRRRDD--
+               TTooooll will accept any filename.
+
+       ----ssttaarrtt|--bb _s_t_a_r_t _t_i_m_e (default: now - 10s)
+               Specifies the time in seconds since 1970-01-01 UTC
+               when the first value should be added to the RRRRDD.
+               RRRRDDTTooooll will not accept any data timed before or
+               at the time specified.
+
+               See also AT-STYLE TIME SPECIFICATION section in
+               the _r_r_d_f_e_t_c_h documentation for more ways to spec-
+               ify time.
+
+       ----sstteepp|--ss _s_t_e_p (default: 300 seconds)
+               Specifies the base interval in seconds with which
+               data will be fed into the RRRRDD.
+
+       DDSS::_d_s_-_n_a_m_e::_D_S_T::_h_e_a_r_t_b_e_a_t::_m_i_n::_m_a_x
+               A single RRRRDD can accept input from several data
+               sources (DDSS).  (e.g. Incoming and Outgoing traffic
+               on a specific communication line). With the DDSS
+               configuration option you must define some basic
+               properties of each data source you want to use to
+               feed the RRRRDD.
+
+               _d_s_-_n_a_m_e is the name you will use to reference this
+               particular data source from an RRRRDD. A _d_s_-_n_a_m_e must
+               be 1 to 19 characters long in the characters
+               [a-zA-Z0-9_].
+
+               _D_S_T defines the Data Source Type. See the section
+               on "How to Measure" below for further insight.
+               The Data Source Type must be one of the following:
+
+               GGAAUUGGEE
+                   is for things like temperatures or number of
+                   people in a room or value of a RedHat share.
+
+               CCOOUUNNTTEERR
+                   is for continuous incrementing counters like
+                   the InOctets counter in a router. The CCOOUUNNTTEERR
+                   data source assumes that the counter never
+                   decreases, except when a counter overflows.
+                   The update function takes the overflow into
+                   account.  The counter is stored as a per-sec-
+                   ond rate. When the counter overflows, RRDTool
+                   checks if the overflow happened at the 32bit
+                   or 64bit border and acts accordingly by adding
+                   an appropriate value to the result.
+
+               DDEERRIIVVEE
+                   will store the derivative of the line going
+                   from the last to the current value of the data
+                   source. This can be useful for gauges, for
+                   example, to measure the rate of people enter-
+                   ing or leaving a room. Internally, derive
+                   works exactly like COUNTER but without over-
+                   flow checks. So if your counter does not reset
+                   at 32 or 64 bit you might want to use DERIVE
+                   and combine it with a MIN value of 0.
+
+               AABBSSOOLLUUTTEE
+                   is for counters which get reset upon reading.
+                   This is used for fast counters which tend to
+                   overflow. So instead of reading them normally
+                   you reset them after every read to make sure
+                   you have a maximal time available before the
+                   next overflow. Another usage is for things you
+                   count like number of messages since the last
+                   update.
+
+               _h_e_a_r_t_b_e_a_t defines the maximum number of seconds
+               that may pass between two updates of this data
+               source before the value of the data source is
+               assumed to be _*_U_N_K_N_O_W_N_*.
+
+               _m_i_n and _m_a_x are optional entries defining the
+               expected range of the data supplied by this data
+               source. If _m_i_n and/or _m_a_x are defined, any value
+               outside the defined range will be regarded as
+               _*_U_N_K_N_O_W_N_*. If you do not know or care about min
+               and max, set them to U for unknown. Note that min
+               and max always refer to the processed values of
+               the DS. For a traffic-CCOOUUNNTTEERR type DS this would
+               be the max and min data-rate expected from the
+               device.
+
+               _I_f _i_n_f_o_r_m_a_t_i_o_n _o_n _m_i_n_i_m_a_l_/_m_a_x_i_m_a_l _e_x_p_e_c_t_e_d _v_a_l_u_e_s
+               _i_s _a_v_a_i_l_a_b_l_e_, _a_l_w_a_y_s _s_e_t _t_h_e _m_i_n _a_n_d_/_o_r _m_a_x _p_r_o_p_-
+               _e_r_t_i_e_s_. _T_h_i_s _w_i_l_l _h_e_l_p _R_R_D_T_o_o_l _i_n _d_o_i_n_g _a _s_i_m_p_l_e
+               _s_a_n_i_t_y _c_h_e_c_k _o_n _t_h_e _d_a_t_a _s_u_p_p_l_i_e_d _w_h_e_n _r_u_n_n_i_n_g
+               _u_p_d_a_t_e_.
+
+       RRRRAA::_C_F::_x_f_f::_s_t_e_p_s::_r_o_w_s
+               The purpose of an RRRRDD is to store data in the
+               round robin archives (RRRRAA). An archive consists of
+               a number of data values from all the defined data-
+               sources (DDSS) and is defined with an RRRRAA line.
+
+               When data is entered into an RRRRDD, it is first fit
+               into time slots of the length defined with the --ss
+               option becoming a _p_r_i_m_a_r_y _d_a_t_a _p_o_i_n_t.
+
+               The data is also consolidated with the consolida-
+               tion function (_C_F) of the archive. The following
+               consolidation functions are defined: AAVVEERRAAGGEE, MMIINN,
+               MMAAXX, LLAASSTT.
+
+               _x_f_f The xfiles factor defines what part of a con-
+               solidation interval may be made up from _*_U_N_K_N_O_W_N_*
+               data while the consolidated value is still
+               regarded as known.
+
+               _s_t_e_p_s defines how many of these _p_r_i_m_a_r_y _d_a_t_a
+               _p_o_i_n_t_s are used to build a _c_o_n_s_o_l_i_d_a_t_e_d _d_a_t_a _p_o_i_n_t
+               which then goes into the archive.
+
+               _r_o_w_s defines how many generations of data values
+               are kept in an RRRRAA.
+
+TThhee HHEEAARRTTBBEEAATT aanndd tthhee SSTTEEPP
+       Here is an explanation by Don Baarda on the inner workings
+       of RRDTool.  It may help you to sort out why all this
+       *UNKNOWN* data is popping up in your databases:
+
+       RRD gets fed samples at arbitrary times. From these it
+       builds Primary Data Points (PDPs) at exact times every
+       "step" interval. The PDPs are then accumulated into RRAs.
+
+       The "heartbeat" defines the maximum acceptable interval
+       between samples. If the interval between samples is less
+       than "heartbeat", then an average rate is calculated and
+       applied for that interval. If the interval between samples
+       is longer than "heartbeat", then that entire interval is
+       considered "unknown". Note that there are other things
+       that can make a sample interval "unknown", such as the
+       rate exceeding limits, or even an "unknown" input sample.
+
+       The known rates during a PDP's "step" interval are used to
+       calculate an average rate for that PDP. Also, if the total
+       "unknown" time during the "step" interval exceeds the
+       "heartbeat", the entire PDP is marked as "unknown". This
+       means that a mixture of known and "unknown" sample time in
+       a single PDP "step" may or may not add up to enough
+       "unknown" time to exceed "heartbeat" and hence mark the
+       whole PDP "unknown". So "heartbeat" is not only the maxi-
+       mum acceptable interval between samples, but also the max-
+       imum acceptable amount of "unknown" time per PDP (obvi-
+       ously this is only significant if you have "heartbeat"
+       less than "step").
+
+       The "heartbeat" can be short (unusual) or long (typical)
+       relative to the "step" interval between PDPs. A short
+       "heartbeat" means you require multiple samples per PDP,
+       and if you don't get them mark the PDP unknown. A long
+       heartbeat can span multiple "steps", which means it is
+       acceptable to have multiple PDPs calculated from a single
+       sample. An extreme example of this might be a "step" of 5
+       minutes and a "heartbeat" of one day, in which case a sin-
+       gle sample every day will result in all the PDPs for that
+       entire day period being set to the same average rate. _-_-
+       _D_o_n _B_a_a_r_d_a _<_d_o_n_._b_a_a_r_d_a_@_b_a_e_s_y_s_t_e_m_s_._c_o_m_>
+
+HHOOWW TTOO MMEEAASSUURREE
+       Here are a few hints on how to measure:
+
+       Temperature
+           Normally you have some type of meter you can read to
+           get the temperature.  The temperature is not really
+           connected with a time. The only connection is that the
+           temperature reading happened at a certain time. You
+           can use the GGAAUUGGEE data source type for this. RRDTool
+           will then record your reading together with the time.
+
+       Mail Messages
+           Assume you have a method to count the number of mes-
+           sages transported by your mailserver in a certain
+           amount of time, this give you data like '5 messages in
+           the last 65 seconds'. If you look at the count of 5
+           like and AABBSSOOLLUUTTEE datatype you can simply update the
+           RRD with the number 5 and the end time of your moni-
+           toring period. RRDTool will then record the number of
+           messages per second. If at some later stage you want
+           to know the number of messages transported in a day,
+           you can get the average messages per second from RRD-
+           Tool for the day in question and multiply this number
+           with the number of seconds in a day. Because all math
+           is run with Doubles, the precision should be accept-
+           able.
+
+       It's always a Rate
+           RRDTool stores rates in amount/second for COUNTER,
+           DERIVE and ABSOLUTE data.  When you plot the data, you
+           will get on the y axis amount/second which you might
+           be tempted to convert to absolute amount volume by
+           multiplying by the delta-time between the points. RRD-
+           Tool plots continuous data, and as such is not appro-
+           priate for plotting absolute volumes as for example
+           "total bytes" sent and received in a router. What you
+           probably want is plot rates that you can scale to for
+           example bytes/hour or plot volumes with another tool
+           that draws bar-plots, where the delta-time is clear on
+           the plot for each point (such that when you read the
+           graph you see for example GB on the y axis, days on
+           the x axis and one bar for each day).
+
+EEXXAAMMPPLLEE
+       "rrdtool create temperature.rrd --step 300
+       DS:temp:GAUGE:600:-273:5000 RRA:AVERAGE:0.5:1:1200
+       RRA:MIN:0.5:12:2400 RRA:MAX:0.5:12:2400 RRA:AVER-
+       AGE:0.5:12:2400"
+
+       This sets up an RRRRDD called _t_e_m_p_e_r_a_t_u_r_e_._r_r_d which accepts
+       one temperature value every 300 seconds. If no new data is
+       supplied for more than 600 seconds, the temperature
+       becomes _*_U_N_K_N_O_W_N_*.  The minimum acceptable value is -273
+       and the maximum is 5000.
+
+       A few archives areas are also defined. The first stores
+       the temperatures supplied for 100 hours (1200 * 300 sec-
+       onds = 100 hours). The second RRA stores the minimum tem-
+       perature recorded over every hour (12 * 300 seconds = 1
+       hour), for 100 days (2400 hours). The third and the fourth
+       RRA's do the same for the maximum and average temperature,
+       respectively.
+
+AAUUTTHHOORR
+       Tobias Oetiker <oetiker@ee.ethz.ch>
+
+
+
+1.0.50                      2004-09-26               RRDCREATE(1)

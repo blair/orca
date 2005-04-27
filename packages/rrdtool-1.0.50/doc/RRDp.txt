@@ -1,0 +1,92 @@
+RRDp(3)                      RRDtool                      RRDp(3)
+
+
+
+NNAAMMEE
+       RRDp - Attach rrdtool from within a perl script via a set
+       of pipes;
+
+SSYYNNOOPPSSIISS
+       use RRRRDDpp
+
+       RRRRDDpp::::ssttaarrtt _p_a_t_h _t_o _r_r_d_t_o_o_l _e_x_e_c_u_t_a_b_l_e
+
+       RRRRDDpp::::ccmmdd  _r_r_d_t_o_o_l _c_o_m_m_a_n_d_l_i_n_e
+
+       $answer = RRRRDD::::rreeaadd
+
+       $status = RRRRDD::::eenndd
+
+       $$RRRRDDpp::::uusseerr,  $$RRRRDDpp::::ssyyss, $$RRRRDDpp::::rreeaall
+
+DDEESSCCRRIIPPTTIIOONN
+       With this module you can safely communicate with the rrd-
+       tool.
+
+       After every RRRRDDpp::::ccmmdd you have to issue an RRRRDDpp::::rreeaadd com-
+       mand to get rrrrddttoooolls answer to your command. The answer is
+       returned as a pointer, in order to speed things up. If the
+       last command did not return any data, RRRRDDpp::::rreeaadd will
+       return an undefined variable.
+
+       If you import the PERFORMANCE variables into your names-
+       pace, you can access rrdtools internal performance mea-
+       surements.
+
+       use RRRRDDpp
+               Load the RRDp::pipe module.
+
+       RRRRDDpp::::ssttaarrtt _p_a_t_h _t_o _r_r_d_t_o_o_l _e_x_e_c_u_t_a_b_l_e
+               start rrdtool. The argument must be the path to
+               the rrdtool executable
+
+       RRRRDDpp::::ccmmdd _r_r_d_t_o_o_l _c_o_m_m_a_n_d_l_i_n_e
+               pass commands on to rrdtool. check the rrdtool
+               documentation for more info on the rrdtool com-
+               mands.
+
+       $answer = RRRRDDpp::::rreeaadd
+               read rrdtools response to your command. Note that
+               the $answer variable will only contain a pointer
+               to the returned data. The reason for this is, that
+               rrdtool can potentially return quite excessive
+               amounts of data and we don't want to copy this
+               around in memory. So when you want to access the
+               contents of $answer you have to use $$answer which
+               dereferences the variable.
+
+       $status = RRRRDDpp::::eenndd
+               terminates rrdtool and returns rrdtools status ...
+
+       $$RRRRDDpp::::uusseerr,  $$RRRRDDpp::::ssyyss, $$RRRRDDpp::::rreeaall
+               these variables will contain totals of the user
+               time, system time and real time as seen by rrd-
+               tool.  User time is the time rrdtool is running,
+               System time is the time spend in system calls and
+               real time is the total time rrdtool has been
+               running.
+
+               The difference between user + system and real is
+               the time spent waiting for things like the hard
+               disk and new input from the perl script.
+
+EEXXAAMMPPLLEE
+        use RRDp;
+        RRDp::start "/usr/local/bin/rrdtool";
+        RRDp::cmd   qw(create demo.rrd --step 100
+                      DS:in:GAUGE:100:U:U
+                      RRA:AVERAGE:0.5:1:10);
+        $answer = RRDp::read;
+        print $$answer;
+        ($usertime,$systemtime,$realtime) =  ($RRDp::user,$RRDp::sys,$RRDp::real);
+
+SSEEEE AALLSSOO
+       For more information on how to use rrdtool, check the man-
+       pages.
+
+AAUUTTHHOORR
+       Tobias Oetiker <oetiker@ee.ethz.ch>
+
+
+
+1.0.50                      2005-04-25                    RRDp(3)

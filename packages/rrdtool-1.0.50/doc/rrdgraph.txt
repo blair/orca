@@ -1,0 +1,667 @@
+RRDGRAPH(1)                  RRDtool                  RRDGRAPH(1)
+
+
+
+NNAAMMEE
+       rrdgraph - Create a graph based on data from one or sev-
+       eral RRD
+
+SSYYNNOOPPSSIISS
+       rrrrddttooooll ggrraapphh _f_i_l_e_n_a_m_e [--ss|----ssttaarrtt _s_e_c_o_n_d_s] [--ee|----eenndd _s_e_c_-
+       _o_n_d_s] [--xx|----xx--ggrriidd _x_-_a_x_i_s _g_r_i_d _a_n_d _l_a_b_e_l]
+       [--yy|----yy--ggrriidd _y_-_a_x_i_s _g_r_i_d _a_n_d _l_a_b_e_l] [--YY|----aalltt--yy--ggrriidd]
+       [--RR|----aalltt--yy--mmrrttgg] [--AA|----aalltt--aauuttoossccaallee]
+       [--MM|----aalltt--aauuttoossccaallee--mmaaxx] [--NN|----nnoo--mmiinnoorr] [--XX|----uunniittss--eexxppoo--
+       nneenntt] _v_a_l_u_e]> [--LL|----uunniittss--lleennggtthh] _v_a_l_u_e]> [--vv|----vveerrttii--
+       ccaall--llaabbeell _t_e_x_t] [--ww|----wwiiddtthh _p_i_x_e_l_s] [--hh|----hheeiigghhtt _p_i_x_e_l_s]
+       [--ii|----iinntteerrllaacceedd] [--ff|----iimmggiinnffoo _f_o_r_m_a_t_s_t_r_i_n_g] [--aa|----iimmgg--
+       ffoorrmmaatt GGIIFF|PPNNGG|GGDD] [--BB|----bbaacckkggrroouunndd _v_a_l_u_e] [--OO|----oovveerr--
+       llaayy _v_a_l_u_e] [--UU|----uunniitt _v_a_l_u_e] [--zz|----llaazzyy] [--oo|----llooggaarriitthh--
+       mmiicc] [--uu|----uuppppeerr--lliimmiitt _v_a_l_u_e] [--ll|----lloowweerr--lliimmiitt _v_a_l_u_e]
+       [--gg|----nnoo--lleeggeenndd] [--jj|----oonnllyy--ggrraapphh] [--FF|----ffoorrccee--rruulleess--lleegg--
+       eenndd] [--rr|----rriiggiidd] [--SS|----sstteepp _v_a_l_u_e] [--bb|----bbaassee _v_a_l_u_e]
+       [--cc|----ccoolloorr _C_O_L_O_R_T_A_G##_r_r_g_g_b_b] [--tt|----ttiittllee _t_i_t_l_e]
+       [DDEEFF::_v_n_a_m_e==_r_r_d::_d_s_-_n_a_m_e::_C_F] [CCDDEEFF::_v_n_a_m_e==_r_p_n_-_e_x_p_r_e_s_s_i_o_n]
+       [PPRRIINNTT::_v_n_a_m_e::_C_F::_f_o_r_m_a_t] [GGPPRRIINNTT::_v_n_a_m_e::_C_F::_f_o_r_m_a_t] [CCOOMM--
+       MMEENNTT::_t_e_x_t] [HHRRUULLEE::_v_a_l_u_e##_r_r_g_g_b_b[::_l_e_g_e_n_d]]
+       [VVRRUULLEE::_t_i_m_e##_r_r_g_g_b_b[::_l_e_g_e_n_d]]
+       [LLIINNEE{11|22|33}::_v_n_a_m_e[##_r_r_g_g_b_b[::_l_e_g_e_n_d]]]
+       [AARREEAA::_v_n_a_m_e[##_r_r_g_g_b_b[::_l_e_g_e_n_d]]] [SSTTAACCKK::_v_n_a_m_e[##_r_r_g_g_b_b[::_l_e_g_-
+       _e_n_d]]]
+
+DDEESSCCRRIIPPTTIIOONN
+       The ggrraapphh functions main purpose is to create graphical
+       representations of the data stored in one or several RRRRDDs.
+       Apart from generating graphs, it can also extract numeri-
+       cal reports.
+
+       _f_i_l_e_n_a_m_e
+           The name of the graph to generate. Since RRRRDDTTooooll out-
+           puts GIFs and PNGs, it's recommended that the filename
+           end in either _._g_i_f or _._p_n_g.  RRRRDDTTooooll does not enforce
+           this, however.  If the  _f_i_l_e_n_a_m_e is set to '-' the
+           image file will be written to standard out.  All other
+           output will get suppressed.
+
+           PNG output is recommended, since it takes up to 40%
+           less disk space and 20-30% less time to generate than
+           a GIF file.
+
+           If no graph functions are called, the graph will not
+           be created.
+
+       --ss|----ssttaarrtt _s_e_c_o_n_d_s (default end-1day)
+           The time when the graph should begin. Time in seconds
+           since epoch (1970-01-01) is required. Negative numbers
+           are relative to the current time. By default one day
+           worth of data will be graphed.  See also AT-STYLE TIME
+           SPECIFICATION section in the _r_r_d_f_e_t_c_h documentation
+           for a detailed explanation on how to specify time.
+
+       --ee|----eenndd _s_e_c_o_n_d_s (default now)
+           The time when the graph should end. Time in seconds
+           since epoch.  See also AT-STYLE TIME SPECIFICATION
+           section in the _r_r_d_f_e_t_c_h documentation for a detailed
+           explanation of ways to specify time.
+
+       --xx|----xx--ggrriidd _x_-_a_x_i_s _g_r_i_d _a_n_d _l_a_b_e_l (default autoconfigure)
+           The x-axis label is quite complex to configure. So if
+           you don't have very special needs, you can rely on the
+           autoconfiguration to get this right.
+
+           If you want no x-grid at all, use the magic setting
+           nnoonnee.
+
+           The x-axis label and grid can be configured, using the
+           following format:
+
+           _G_T_M::_G_S_T::_M_T_M::_M_S_T::_L_T_M:_L_S_T::_L_P_R::_L_F_M
+
+           You have to configure three elements making up the
+           x-axis labels and grid. The base grid (_G_?_?), the major
+           grid (_M_?_?) and the labels (_L_?_?). The configuration is
+           based on the idea that you first specify a well known
+           amount of time (_?_T_M) and then say how many times it
+           has to pass between each grid line or label (_?_S_T). For
+           the label you have to define two additional items: The
+           precision of the label in seconds (_L_P_R) and the strf-
+           time format used to generate the text of the label
+           (_L_F_M).
+
+           The _?_T_M elements must be one of the following key-
+           words: SSEECCOONNDD, MMIINNUUTTEE, HHOOUURR, DDAAYY, WWEEEEKK, MMOONNTTHH or YYEEAARR.
+
+           If you wanted a graph with a base grid every 10 min-
+           utes and a major one every hour, with labels every
+           hour you would use the following x-axis definition.
+
+           "MINUTE:10:HOUR:1:HOUR:1:0:%X"
+
+           The precision in this example is 0 because the %X for-
+           mat is exact. If the label was the name of the day, we
+           would have had a precision of 24 hours, because when
+           you say something like 'Monday' you mean the whole day
+           and not Monday morning 00:00. Thus the label should be
+           positioned at noon. By defining a precision of 24
+           hours or rather 86400 seconds, you make sure that this
+           happens.
+
+           If you want to alter the generated text to another
+           language, use the LC_TIME environment variable to set
+           the locale you prefer prior to calling the graph func-
+           tion.
+
+       --yy|----yy--ggrriidd _g_r_i_d _s_t_e_p:_l_a_b_e_l _f_a_c_t_o_r (default autoconfigure)
+           Makes vertical grid lines appear at _g_r_i_d _s_t_e_p inter-
+           val. Every _l_a_b_e_l _f_a_c_t_o_r gridstep, a major grid line is
+           printed, along with label showing the value of the
+           grid line.
+
+           If you want no y-grid at all set specify the magic
+           word nnoonnee.
+
+       --YY|----aalltt--yy--ggrriidd
+           Place Y grid dynamically based on graph Y range. Algo-
+           rithm ensures that you always have grid, that there
+           are enough but not too many grid lines and the grid is
+           metric. That is grid lines are placed every 1, 2, 5 or
+           10 units.  (contributed by Sasha Mikheev)
+
+       ----nnoo--mmiinnoorr
+           Turn off the minor grid lines.  This is particularly
+           useful for small graphs which can be cluttered with
+           the minor grid lines. (contributed by Travis Brown)
+
+       --RR|----aalltt--yy--mmrrttgg
+           Y grid placed on graph Y range mimics MRTG's
+           (rateup-generated) graphs.  Currently axis is split
+           into 4 parts, just as rateup does.
+
+       --AA|----aalltt--aauuttoossccaallee
+           Compute Y range  based on function absolute minimum
+           and maximum values. Default algorithm uses predefined
+           set of ranges.  This is good in many cases but it
+           fails miserably when you need to graph something like
+           260 + 0.001 * sin(x). Default algorithm will use Y
+           range from 250 to 300 and on the graph you will see
+           almost straight line. With --alt-autoscale Y range
+           will be from slightly less the 260 - 0.001 to slightly
+           more then 260 + 0.001 and periodic behavior will be
+           seen.   (contributed by Sasha Mikheev)
+
+       --MM|----aalltt--aauuttoossccaallee--mmaaxx
+           Where --alt-autoscale will modify both the absolute
+           maximum AND minimum values, this option will only
+           affect the maximum value. The minimum value, if not
+           defined on the command line, will be 0. This option
+           can be useful when graphing router traffic when the
+           WAN line uses compression, and thus the throughput may
+           be higher than the WAN line speed.
+
+       --XX|----uunniittss--eexxppoonneenntt _v_a_l_u_e (default autoconfigure)
+           This sets the 10**exponent scaling of the y-axis val-
+           ues.  Normally values will be scaled to the appropri-
+           ate units (k, M, etc.).  However you may wish to dis-
+           play units always in k (Kilo, 10e3) even if the data
+           is in the M (Mega, 10e6) range for instance.  Value
+           should be an integer which is a multiple of 3 between
+           -18 and 18 inclusive.  It is the exponent on the units
+           you which to use.  For example, use 3 to display the
+           y-axis values in k (Kilo, 10e3, thousands), use -6 to
+           display the y-axis values in u (Micro, 10e-6, mil-
+           lionths).  Use a value of 0 to prevent any scaling of
+           the y-axis values.
+
+       --LL|----uunniittss--lleennggtthh _v_a_l_u_e (default 9 characters)
+           This sets the character width on the left side of the
+           graph for y-axis values.
+
+       --vv|----vveerrttiiccaall--llaabbeell _t_e_x_t
+           vertical label on the left side of the graph. This is
+           normally used to specify the units used.
+
+       --ww|----wwiiddtthh _p_i_x_e_l_s (default 400 pixel)
+           Width of the drawing area within the graph. This
+           affects the size of the gif.
+
+       --hh|----hheeiigghhtt _p_i_x_e_l_s (default 100 pixel)
+           Height of the drawing area within the graph. This
+           affects the size of the gif.
+
+       --ii|----iinntteerrllaacceedd (default: false)
+           If you set this option, then the resulting GIF will be
+           interlaced.  Most web browsers display these incremen-
+           tally as they load. If you do not use this option, the
+           GIFs default to being progressive scanned. The only
+           effect of this option is to control the format of the
+           GIF on disk. It makes no changes to the layout or con-
+           tents of the graph.
+
+       --ff|----iimmggiinnffoo _f_o_r_m_a_t_s_t_r_i_n_g
+           After the image has been created, the graph function
+           uses printf together with this format string to create
+           output similar to the PRINT function, only that the
+           printf is supplied with the parameters _f_i_l_e_n_a_m_e, _x_s_i_z_e
+           and _y_s_i_z_e. In order to generate an IIMMGG tag suitable
+           for including the graph into a web page, the command
+           line would look like this:
+
+            --imginfo '<IMG SRC="/img/%s" WIDTH="%lu" HEIGHT="%lu" ALT="Demo">'
+
+       --aa|----iimmggffoorrmmaatt GGIIFF|PPNNGG|GGDD (default: GIF)
+           Allows you to produce PNG or GD output from RRDTool.
+
+       --BB|----bbaacckkggrroouunndd _v_a_l_u_e
+           You could use image in (currently only) GD format for
+           background. It is used as background at the very
+           beginning of graph creation.
+
+       --OO|----oovveerrllaayy _v_a_l_u_e
+           You could use image in (currently only) GD format as
+           overlay. It is placed over created graph so that white
+           pixel (color 255,255,255) is considered transparent,
+           all other is replacing corresponding pixel in created
+           graph.
+
+       --UU|----uunniitt _v_a_l_u_e
+           You could use unit to be displayed on y axis. It is
+           wise to use only short units on graph, however.
+
+       --zz|----llaazzyy (default: false)
+           Only generate the graph, if the current gif is out of
+           date or not existent.
+
+       --uu|----uuppppeerr--lliimmiitt _v_a_l_u_e (default autoconfigure)
+           Defines the value normally located at the upper border
+           of the graph. If the graph contains higher values, the
+           upper border will move upwards to accommodate these
+           values as well.
+
+           If you want to define an upper-limit which will not
+           move in any event you have to set the ----rriiggiidd option
+           as well.
+
+       --ll|----lloowweerr--lliimmiitt _v_a_l_u_e (default autoconfigure)
+           This is not the lower limit of a graph.  But rather,
+           this is the maximum lower bound of a graph.  For exam-
+           ple, the value -100 will result in a graph that has a
+           lower limit of -100 or less.  Use this keyword to
+           expand graphs down.
+
+       --rr|----rriiggiidd
+           rigid boundaries mode.  Normally rrrrddggrraapphh will auto-
+           matically expand the lower and upper limit if the
+           graph contains a value outside the valid range. With
+           the r option you can disable this behavior
+
+       --bb|----bbaassee _v_a_l_u_e
+           if you are graphing memory (and NOT network traffic)
+           this switch should be set to 1024 so that one Kb is
+           1024 byte. For traffic measurement, 1 kb/s is 1000
+           b/s.
+
+       --oo|----llooggaarriitthhmmiicc
+           logarithmic y-axis scaling
+
+       --cc|----ccoolloorr _C_O_L_O_R_T_A_G##_r_r_g_g_b_b (default colors)
+           override the colors for the standard elements of the
+           graph. The _C_O_L_O_R_T_A_G must be one of the following sym-
+           bolic names: BBAACCKK ground, CCAANNVVAASS, SSHHAADDEEAA left/top bor-
+           der, SSHHAADDEEBB right/bottom border, GGRRIIDD, MMGGRRIIDD major
+           grid, FFOONNTT, FFRRAAMMEE and axis of the graph or AARRRROOWW. This
+           option can be called multiple times to set several
+           colors.
+
+       --gg|----nnoo--lleeggeenndd
+           Suppress generation of legend; only render the graph.
+
+       --jj|----oonnllyy--ggrraapphh
+           Suppress anything but the graph.
+
+       --FF|----ffoorrccee--rruulleess--lleeggeenndd
+           Force the generation of HRULE and VRULE legend even if
+           those HRULE or VRULE will not be drawn because out of
+           graph boundaries (mimics behaviour of pre 1.0.42 ver-
+           sions).
+
+       --tt|----ttiittllee _t_e_x_t (default no title)
+           Define a title to be written into the graph
+
+       --SS|----sstteepp _v_a_l_u_e (default automatic)
+           By default rrrrddggrraapphh calculates the width of one pixel
+           in the time domain and tries to get data at that reso-
+           lution from the RRD. With this switch you can override
+           this behavior. If you want rrrrddggrraapphh to get data at 1
+           hour resolution from the RRD, then you can set the
+           step to 3600 seconds. Note, that a step smaller than 1
+           pixel will be silently ignored.
+
+       DDEEFF::_v_n_a_m_e==_r_r_d::_d_s_-_n_a_m_e::_C_F
+           Define virtual name for a data source. This name can
+           then be used in the functions explained below. The DEF
+           call automatically chooses an RRRRAA which contains _C_F
+           consolidated data in a resolution appropriate for the
+           size of the graph to be drawn.  Ideally this means
+           that one data point from the RRRRAA should be represented
+           by one pixel in the graph.  If the resolution of the
+           RRRRAA is higher than the resolution of the graph, the
+           data in the RRA will be further consolidated according
+           to the consolidation function (_C_F) chosen.
+
+       CCDDEEFF::_v_n_a_m_e==_r_p_n_-_e_x_p_r_e_s_s_i_o_n
+           Create a new virtual data source by evaluating a math-
+           ematical expression, specified in Reverse Polish Nota-
+           tion (RPN). If you have ever used a traditional HP
+           calculator you already know RPN. The idea behind RPN
+           notation is, that you have a stack and push your data
+           onto this stack. When ever you execute an operation,
+           it takes as many data values from the stack as needed.
+           The pushing of data is implicit, so when ever you
+           specify a number or a variable, it gets pushed auto-
+           matically.
+
+           If this is all a big load of incomprehensible words
+           for you, maybe an example helps (a more complete
+           explanation is given in [1]): The expression _v_n_a_m_e_+_3_/_2
+           becomes "vname,3,2,/,+" in RPN. First the three values
+           get pushed onto the stack (which now contains (the
+           current value of) vname, a 3 and a 2).  Then the /
+           operator pops two values from the stack (3 and 2),
+           divides the first argument by the second (3/2) and
+           pushes the result (1.5) back onto the stack. Then the
+           + operator pops two values (vname and 1.5) from the
+           stack; both values are added up and the result gets
+           pushes back onto the stack. In the end there is only
+           one value left on the stack: The result of the expres-
+           sion.
+
+           The _r_p_n_-_e_x_p_r_e_s_s_i_o_n in the CCDDEEFF function takes both,
+           constant values as well as _v_n_a_m_e variables. The fol-
+           lowing operators can be used on these values:
+
+           +, -, *, /, %
+               pops two values from the stack applies the
+               selected operator and pushes the result back onto
+               the stack. The % operator stands for the modulo
+               operation.
+
+           SIN, COS, LOG, EXP, FLOOR, CEIL
+               pops one value from the stack, applies the
+               selected function and pushes the result back onto
+               the stack.
+
+           LT, LE, GT, GE, EQ
+               pops two values from the stack, compares them
+               according to the selected condition and pushes
+               either 1 back onto the stack if the condition is
+               true and 0 if the condition was not true.
+
+           IF  pops three values from the stack. If the last
+               value is not 0, the second value will be pushed
+               back onto the stack, otherwise the first value is
+               pushed back.
+
+               If the stack contains the values A, B, C, D, E are
+               presently on the stack, the IF operator will pop
+               the values E D and C of the stack. It will look at
+               C and if it is not 0 it will push D back onto the
+               stack, otherwise E will be sent back to the stack.
+
+           MIN, MAX
+               selects the lesser or larger of the two top stack
+               values respectively
+
+           LIMIT
+               replaces the value with _*_U_N_K_N_O_W_N_* if it is outside
+               the limits specified by the two values above it on
+               the stack.
+
+                CDEF:a=alpha,0,100,LIMIT
+
+           DUP, EXC, POP
+               These manipulate the stack directly.  DUP will
+               duplicate the top of the stack, pushing the result
+               back onto the stack.  EXC will exchange the top
+               two elements of the stack, and POP will pop off
+               the top element of the stack.  Having insufficient
+               elements on the stack for these operations is an
+               error.
+
+           UN  Pops one value off the stack, if it is _*_U_N_K_N_O_W_N_*,
+               1 will be pushed back otherwise 0.
+
+           UNKN
+               Push an _*_U_N_K_N_O_W_N_* value onto the stack.
+
+           PREV
+               Push _*_U_N_K_N_O_W_N_* if its at the first value of a data
+               set or otherwise the value of this CDEF at the
+               previous time step. This allows you to perform
+               calculations across the data.
+
+           PREV(vname)
+               Push _*_U_N_K_N_O_W_N_* if its at the first value of the
+               data set named vname or otherwise the value of the
+               CDEF named vname at the previous time step.  This
+               allows you to perform complex calculations across
+               the data.
+
+           INF, NEGINF
+               Push a positive or negative infinite (oo) value
+               onto the stack. When drawing an infinite number it
+               appears right at the top or bottom edge of the
+               graph, depending whether you have a positive or
+               negative infinite number.
+
+           NOW Push the current (real world) time onto the stack.
+
+           TIME
+               Push the time the current sample was taken onto
+               the stack. This is the number of non-skip seconds
+               since 0:00:00 January 1, 1970.
+
+           LTIME
+               This is like TIME ++ ccuurrrreenntt ttiimmeezzoonnee ooffffsseett iinn
+               sseeccoonnddss. The current offset takes daylight saving
+               time into account, given your OS supports this. If
+               you were looking at a sample, in Zurich, in sum-
+               mer, the offset would be 2*3600 seconds, as Zurich
+               at that time of year is 2 hours ahead of UTC.
+
+               Note that the timezone offset is always calculated
+               for the time the current sample was taken at. It
+               has nothing to do with the time you are doing the
+               calculation.
+
+           Please note that you may only use _v_n_a_m_e variables that
+           you previously defined by either DDEEFF or CCDDEEFF. Further-
+           more, as of this writing (version 0.99.25), you must
+           use at least one _v_n_a_m_e per expression, that is
+           "CDEF:fourtytwo=2,40,+" will yield an error message
+           but not a _v_n_a_m_e fourtytwo that's always equal to 42.
+
+       PPRRIINNTT::_v_n_a_m_e::_C_F::_f_o_r_m_a_t
+           Calculate the chosen consolidation function _C_F over
+           the data-source variable _v_n_a_m_e and "printf" the result
+           to stdout using _f_o_r_m_a_t.  In the _f_o_r_m_a_t string there
+           should be a '%lf', '%lg' or '%le' marker in the place
+           where the number should be printed.
+
+           If an additional '%s' is found AFTER the marker, the
+           value will be scaled and an appropriate SI magnitude
+           unit will be printed in place of the '%s' marker. The
+           scaling will take the '--base' argument into consider-
+           ation!
+
+           If a '%S' is used instead of a '%s', then instead of
+           calculating the appropriate SI magnitude unit for this
+           value, the previously calculated SI magnitude unit
+           will be used.  This is useful if you want all the val-
+           ues in a PRINT statement to have the same SI magnitude
+           unit.  If there was no previous SI magnitude calcula-
+           tion made, then '%S' behaves like a '%s', unless the
+           value is 0, in which case it does not remember a SI
+           magnitude unit and a SI magnitude unit will only be
+           calculated when the next '%s' is seen or the next '%S'
+           for a non-zero value.
+
+           If you want to put a '%' into your PRINT string, use
+           '%%' instead.
+
+       GGPPRRIINNTT::_v_n_a_m_e::_C_F::_f_o_r_m_a_t
+           Same as PPRRIINNTT but the result is printed into the graph
+           below the legend.
+
+       CCaavveeaatt:: When using the PPRRIINNTT and GGRRPPRRIINNTT functions to cal-
+       culate data summaries over time periods bounded by the
+       current time, it is important to note that the last sample
+       will almost always yield a value of UNKNOWN as it lies
+       after the last update time.  This can result in slight
+       data skewing, particularly with the AAVVEERRAAGGEE function.  In
+       order to avoid this, make sure that your end time is at
+       least one heartbeat prior to the current time.
+
+       CCOOMMMMEENNTT::_t_e_x_t
+           Like GGPPRRIINNTT but the _t_e_x_t is simply printed into the
+           graph.
+
+       HHRRUULLEE::_v_a_l_u_e##_r_r_g_g_b_b[::_l_e_g_e_n_d]
+           Draw a horizontal rule into the graph and optionally
+           add a legend
+
+       VVRRUULLEE::_t_i_m_e##_r_r_g_g_b_b[::_l_e_g_e_n_d]
+           Draw a vertical rule into the graph and optionally add
+           a legend
+
+       LLIINNEE{11|22|33}::_v_n_a_m_e[##_r_r_g_g_b_b[::_l_e_g_e_n_d]]
+           Plot for the requested data, using the color speci-
+           fied. Write a legend into the graph. The 3 possible
+           keywords LLIINNEE11, LLIINNEE22, and LLIINNEE33 generate increasingly
+           wide lines. If no color is defined, the drawing is
+           done 'blind' this is useful in connection with the
+           SSTTAACCKK function when you want to ADD the values of two
+           data-sources without showing it in the graph.
+
+       AARREEAA:_v_n_a_m_e[##_r_r_g_g_b_b[::_l_e_g_e_n_d]]
+           Does the same as LLIINNEE??, but the area between 0 and the
+           graph will be filled with the color specified.
+
+       SSTTAACCKK:_v_n_a_m_e[##_r_r_g_g_b_b[::_l_e_g_e_n_d]]
+           Does the same as LLIINNEE??, but the graph gets stacked on
+           top of the previous LLIINNEE??, AARREEAA or SSTTAACCKK graph.
+           Depending on the type of the previous graph, the SSTTAACCKK
+           will be either a LLIINNEE?? or an AARREEAA.  This obviously
+           implies that the first SSTTAACCKK must be preceded by an
+           AARREEAA or LLIINNEE?? -- you need something to stack something
+           onto in the first place ;)
+
+           Note, that when you STACK onto *UNKNOWN* data, RRDTool
+           will not draw any graphics ... *UNKNOWN* is not zero
+           ... if you want it to zero then you might want to use
+           a CDEF argument with IF and UN functions to turn
+           *UNKNOWN* into zero ...
+
+NNOOTTEESS oonn lleeggeenndd aarrgguummeennttss
+
+
+
+
+
+       EEssccaappiinngg tthhee ccoolloonn
+
+       In a ':' in a _l_e_g_e_n_d argument will mark the end of the
+       legend. To enter a ':' into a legend, the colon must be
+       escaped with a backslash '\:'.  Beware, that many environ-
+       ments look for backslashes themselves, so it may be neces-
+       sary to write two backslashes so that one is passed onto
+       rrrrddggrraapphh.
+
+       SSttrriinngg FFoorrmmaattttiinngg
+
+       The text printed below the actual graph can be formated by
+       appending special escaped characters at the end of a text.
+       When ever such a character occurs, all pending text is
+       pushed onto the graph according to the character speci-
+       fied.
+
+       Valid markers are: \\jj for justified, \\ll for left aligned,
+       \\rr for right aligned and \\cc for centered. In the next sec-
+       tion there is an example showing how to use centered for-
+       mating.
+
+       Normally there are two space characters inserted between
+       every two items printed into the graph. The space follow-
+       ing a string can be suppressed by putting a \\gg at the end
+       of the string. The \\gg also squashes any space inside the
+       string if it is at the very end of the string. This can be
+       used in connection with %%ss to suppress empty unit strings.
+
+        GPRINT:a:MAX:%lf%s\g
+
+       A special case is COMMENT:\\ss this inserts some additional
+       vertical space before placing the next row of legends.
+
+       When text has to be formated without special instructions
+       from your side, RRDTool will automatically justify the
+       text as soon as one string goes over the right edge. If
+       you want to prevent the justification without forcing a
+       newline, you can use the special tag \\JJ at the end of the
+       string to disable the auto justification.
+
+NNOOTTEE oonn RReettuurrnn VVaalluueess
+       Whenever rrrrddggrraapphh gets called, it prints a line telling
+       the size of the gif it has just created to STDOUT. This
+       line looks like this: XSIZExYSIZE.
+
+EEXXAAMMPPLLEE 11
+         rrdtool graph demo.gif --title="Demo Graph" \
+                 DEF:cel=demo.rrd:exhaust:AVERAGE \
+                 "CDEF:far=cel,1.8,*,32,+"" \
+                 LINE2:cel#00a000:"D. Celsius" \
+                 LINE2:far#ff0000:"D. Fahrenheit\c"
+
+EEXXAAMMPPLLEE 22
+       This example demonstrates the syntax for using IF and UN
+       to set _*_U_N_K_N_O_W_N_* values to 0.  This technique is useful if
+       you are aggregating interface data where the start dates
+       of the data sets doesn't match.
+
+
+
+
+
+
+
+         rrdtool graph demo.gif --title="Demo Graph" \
+                DEF:idat1=interface1.rrd:ds0:AVERAGE \
+                DEF:idat2=interface2.rrd:ds0:AVERAGE \
+                DEF:odat1=interface1.rrd:ds1:AVERAGE \
+                DEF:odat2=interface2.rrd:ds1:AVERAGE \
+                CDEF:agginput=idat1,UN,0,idat1,IF,idat2,UN,0,idat2,IF,+,8,* \
+                CDEF:aggoutput=odat1,UN,0,odat1,IF,odat2,UN,0,odat2,IF,+,8,* \
+                AREA:agginput#00cc00:Input Aggregate \
+                LINE1:aggoutput#0000FF:Output Aggregate
+
+       Assuming that idat1 has a data value of _*_U_N_K_N_O_W_N_*, the
+       CDEF expression
+
+        idat1,UN,0,idat1,IF
+
+       leaves us with a stack with contents of 1,0,NaN and the IF
+       function will pop off the 3 values and replace them with
+       0.  If idat1 had a real value like 7942099, then the stack
+       would have 0,0,7942099 and the real value would be the
+       replacement.
+
+EEXXAAMMPPLLEE 33
+       This example shows two ways to use the INF function. First
+       it makes the background change color during half of the
+       hours. Then, it uses AREA and STACK to draw a picture. If
+       one of the inputs was UNKNOWN, all inputs are overlaid
+       with another AREA.
+
+         rrdtool graph example.png --title="INF demo" \
+                DEF:val1=some.rrd:ds0:AVERAGE \
+                DEF:val2=some.rrd:ds1:AVERAGE \
+                DEF:val3=some.rrd:ds2:AVERAGE \
+                DEF:val4=other.rrd:ds0:AVERAGE \
+                CDEF:background=val4,POP,TIME,7200,%,3600,LE,INF,UNKN,IF \
+                CDEF:wipeout=val1,val2,val3,val4,+,+,+,UN,INF,UNKN,IF \
+                AREA:background#F0F0F0 \
+                AREA:val1#0000FF:Value1 \
+                STACK:val2#00C000:Value2 \
+                STACK:val3#FFFF00:Value3 \
+                STACK:val4#FFC000:Value4 \
+                AREA:wipeout#FF0000:Unknown
+
+       The first CDEF uses val4 as a dummy value. It's value is
+       removed immediately from the stack. Then a decision is
+       made based on the time that a sample was taken. If it is
+       an even hour (UTC time !) then the area will be filled. If
+       it is not, the value is set to UNKN and is not plotted.
+
+       The second CDEF looks if any of val1,val2,val3,val4 is
+       unknown. It does so by checking the outcome of
+       sum(val1,val2,val3,val4). Again, INF is returned when the
+       condition is true, UNKN is used to not plot the data.
+
+       The different items are plotted in a particular order.
+       First do the background, then use a normal area to overlay
+       it with data. Stack the other data until they are all
+       plotted. Last but not least, overlay everything with eye-
+       hurting red to signal any unknown data.
+
+       Note that this example assumes that your data is in the
+       positive half of the y-axis otherwise you would have to
+       add NEGINF in order to extend the coverage of the rea to
+       whole graph.
+
+AAUUTTHHOORR
+       Tobias Oetiker <oetiker@ee.ethz.ch>
+
+RREEFFEERREENNCCEESS
+       [1] http://www.dotpoint.com/xnumber/rpn_or_adl.htm
+
+
+
+1.0.50                      2004-11-08                RRDGRAPH(1)

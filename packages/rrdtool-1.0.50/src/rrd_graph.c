@@ -2460,7 +2460,7 @@ copyImage(gdImagePtr gif, char *image, int copy_white)
       }
       gdImageDestroy(img); 
      }
-     close(fi); 
+     fclose(fi); 
    } else {
      rrd_set_error("Error Opeing %s: %s",image,  strerror(errno));
    }
@@ -2623,7 +2623,7 @@ graph_paint(image_desc_t *im, char ***calcpr)
 
   if (im->bkg_image){	/* background image added first */
     copyImage(gif,im->bkg_image,1);
-    if (rrd_test_error) return(-1);
+    if (rrd_test_error()) return(-1);
   }
   else
    {
@@ -2770,7 +2770,7 @@ graph_paint(image_desc_t *im, char ***calcpr)
 
   if (im->ovl_image) {	/* overlay image added last */
     copyImage(gif,im->ovl_image,0);
-    if (rrd_test_error) return(-1);
+    if (rrd_test_error()) return(-1);
    }
     if (strcmp(im->graphfile,"-")==0) {
 #ifdef WIN32

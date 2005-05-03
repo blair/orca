@@ -127,6 +127,13 @@ GetOptions('daemon'     => \$opt_daemon,
            'verbose+'   => \$opt_verbose) or
   Usage;
 
+if ($opt_verbose) {
+  print "Orca at ", scalar localtime, " running on:\n",
+        "    Orca version $ORCA_VERSION\n",
+        "    RRDs version $RRDs::VERSION\n",
+        "    Perl version $]\n";
+}
+
 # Currently, Orca can only daemonize itself on Unix platforms.
 if ($opt_daemon and IS_WIN32) {
   die "$0: cannot daemonize on a Windows platform.\n";
@@ -205,11 +212,6 @@ if ($opt_daemon) {
 if ($opt_log_filename) {
   open(STDERR, '>&STDOUT') or
     die "$0: cannot dup stdout: $!\n";
-}
-
-if ($opt_verbose) {
-  print "Orca version $ORCA_VERSION using RRDs version $RRDs::VERSION at ",
-        scalar localtime, ".\n";
 }
 
 # Load the file state information from disk.

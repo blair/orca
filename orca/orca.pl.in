@@ -53,7 +53,6 @@ use Digest::MD5          @DIGEST_MD5_VER@;
 use Math::IntervalSearch @MATH_INTERVALSEARCH_VER@ qw(interval_search);
 use Storable             @STORABLE_VER@;
 use RRDs                 @RRDTOOL_VER@;
-use version              @VERSION_VER@;
 
 # Set behavior of the Data::Dumper module.
 $Data::Dumper::Indent   = 1;

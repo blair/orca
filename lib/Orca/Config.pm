@@ -30,11 +30,13 @@ package Orca::Config;
 use strict;
 use Carp;
 use Exporter;
-use version;
 
 use Orca::Constants     qw($opt_verbose
                            $is_sub_re
                            die_when_called
+                           $ORCA_VER_MAJOR
+                           $ORCA_VER_MINOR
+                           $ORCA_VER_PATCH
                            $ORCA_VER_QUOTED
                            @CONST_IMAGE_PLOT_TYPES
                            %CONST_IMAGE_PLOT_INFO
@@ -346,36 +348,56 @@ sub check_config {
   if (defined $config_global{require}) {
     my @require = @{$config_global{require}};
     if (@require == 2) {
-      my ($require_what, $require_version) = @require;
+      my ($require_what, $required_version) = @require;
       if ($require_what eq 'Orca') {
-        # Normalize the required version string to the form
-        # \d+\.\d+\.\d+ .  To handle almost any input version string,
-        # split on the existing periods and for each substring, if it
-        # is not defined or has 0 length, then set it to 0.  Do not
-        # worry about there being more than two periods in the given
-        # string, the regular expression match below will catch
-        # invalid version strings.
-        my @vers = split(/\./, $require_version);
+        # Split the required Orca version string on periods and
+        # compare each element in an array created from the split
+        # string with an array created from the Orca version numbers.
+        my @required_version = split(/\./, $required_version);
 
-        for (my $i=0; $i<3; ++$i) {
-          unless (defined $vers[$i] and length $vers[$i]) {
-            $vers[$i] = 0;
+        # Check each substring.  If it is not defined or has 0 length
+        # or is not an integer number, then set it to 0 and complain.
+        my $warned = 0;
+        for (my $i=0; $i<@required_version; ++$i) {
+          unless (defined $required_version[$i] and
+                  length $required_version[$i] and
+                  $required_version[$i] =~ /^\d+$/) {
+            unless ($warned) {
+              warn "$0: error: 'require Orca $required_version' has an ",
+                   "illegally formatted version string in ",
+                   "'$config_filename'.\n";
+              $warned = 1;
+            }
+            ++$number_errors;
+            $required_version[$i] = 0;
           }
         }
-        my $reformulated_required_version = join('.', @vers);
 
-        if ($reformulated_required_version =~ /^\d+\.\d+\.\d+$/) {
-          $require_version = version->new($reformulated_required_version);
-          my $orca_version = version->new($ORCA_VER_QUOTED);
+        # The Orca version number has three elements, so to have a
+        # good comparison, ensure that the required version number
+        # array has at least three elements.
+        for (my $i=@required_version; $i<3; ++$i) {
+          $required_version[$i] = 0;
+        }
 
-          if ($orca_version < $require_version) {
-            warn "$0: Orca version $ORCA_VER_QUOTED less than required ",
-                 "version $require_version specified in '$config_filename'.\n";
-            ++$number_errors;
+        # If the required version string has more elements than the
+        # Orca version array, then extend the Orca version array.
+        my @orca_version = ($ORCA_VER_MAJOR, $ORCA_VER_MINOR, $ORCA_VER_PATCH);
+        for (my $i=@orca_version; $i<@required_version; ++$i) {
+          $orca_version[$i] = 0;
+        }
+
+        my $orca_version_ok = 1;
+        for (my $i=0; $i<@orca_version; ++$i) {
+          if ($orca_version[$i] < $required_version[$i]) {
+            $orca_version_ok = 0;
+            last;
           }
-        } else {
-          warn "$0: error: 'require' second argument '$require_version' is ",
-               "not a valid version number in '$config_filename'.\n";
+        }
+
+        unless ($orca_version_ok) {
+          warn "$0: Orca version $ORCA_VER_QUOTED is less than the required ",
+               "version $required_version specified in '$config_filename'.\n";
           ++$number_errors;
         }
       } else {

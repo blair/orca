@@ -178,9 +178,8 @@ Outline:
     RRDs                    >= 1.000502    >= 1.0.50    1.0.50
     Storable                >= 2.14        >= 2.14      2.14
     Time::HiRes             Not required by Orca        1.66
-    version                 >= 0.42        >= 0.42      0.42
 
-    All seven of these modules are included with the Orca distribution
+    All eight of these modules are included with the Orca distribution
     in the packages directory.  When you configure Orca in step 3),
     configure will determine if you need any of these modules compiled
     and installed.  configure will then modify the packages/Makefile
@@ -283,17 +282,6 @@ Outline:
 
       % gunzip -c Time-HiRes-1.66.tar.gz | tar xvf -
       % cd Time-HiRes-1.66
-      % perl Makefile.PL
-      % make
-      % make test
-      % make install UNINST=1
-
-    version
-
-      http://www.perl.com/CPAN/authors/id/J/JP/JPEACOCK/version-0.42.tar.gz
-
-      % gunzip -c version-0.42.tar.gz | tar xvf -
-      % cd version-0.42
       % perl Makefile.PL
       % make
       % make test

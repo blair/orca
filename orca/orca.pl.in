@@ -43,9 +43,11 @@ use Carp;
 use Getopt::Long;
 use Cwd;
 
-# Load any modules that have required version numbers here in
-# addition to the loading of the modules in the other Orca
-# modules to keep all the requiste numbers here.
+# For this script and all of the Orca::* Perl modules loaded by this
+# script, load of the all Perl modules here that have a minimum
+# required version number so that the minimum module version numbers
+# can be listed in once place instead of spread out in each Orca::*
+# module.
 use Data::Dumper         @DATA_DUMPER_VER@;
 use Digest::MD5          @DIGEST_MD5_VER@;
 use Math::IntervalSearch @MATH_INTERVALSEARCH_VER@ qw(interval_search);

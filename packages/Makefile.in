@@ -10,7 +10,6 @@ CFLAGS                           = @CFLAGS@
 # instead of the newer installed module.
 UNINST                           = 1
 
-compress_zlib_dir                = @COMPRESS_ZLIB_DIR@
 data_dumper_dir                  = @DATA_DUMPER_DIR@
 date_parse_dir                   = @DATE_PARSE_DIR@
 devel_dprof_dir                  = @DEVEL_DPROF_DIR@
@@ -19,7 +18,6 @@ math_intervalsearch_dir          = @MATH_INTERVALSEARCH_DIR@
 rrdtool_dir                      = @RRDTOOL_DIR@
 storable_dir                     = @STORABLE_DIR@
 
-MAKE_COMPRESS_ZLIB               = @MAKE_COMPRESS_ZLIB@
 MAKE_DATA_DUMPER                 = @MAKE_DATA_DUMPER@
 MAKE_DATE_PARSE                  = @MAKE_DATE_PARSE@
 MAKE_DEVEL_DPROF                 = @MAKE_DEVEL_DPROF@
@@ -27,8 +25,7 @@ MAKE_DIGEST_MD5                  = @MAKE_DIGEST_MD5@
 MAKE_MATH_INTERVALSEARCH         = @MAKE_MATH_INTERVALSEARCH@
 MAKE_RRDTOOL                     = @MAKE_RRDTOOL@
 MAKE_STORABLE                    = @MAKE_STORABLE@
-MAKE_TARGETS                     = $(MAKE_COMPRESS_ZLIB) \
-                                   $(MAKE_DATA_DUMPER) \
+MAKE_TARGETS                     = $(MAKE_DATA_DUMPER) \
                                    $(MAKE_DATE_PARSE) \
                                    $(MAKE_DEVEL_DPROF) \
                                    $(MAKE_DIGEST_MD5) \
@@ -36,7 +33,6 @@ MAKE_TARGETS                     = $(MAKE_COMPRESS_ZLIB) \
                                    $(MAKE_RRDTOOL) \
                                    $(MAKE_STORABLE)
 
-TEST_COMPRESS_ZLIB               = @TEST_COMPRESS_ZLIB@
 TEST_DATA_DUMPER                 = @TEST_DATA_DUMPER@
 TEST_DATE_PARSE                  = @TEST_DATE_PARSE@
 TEST_DEVEL_DPROF                 = @TEST_DEVEL_DPROF@
@@ -44,8 +40,7 @@ TEST_DIGEST_MD5                  = @TEST_DIGEST_MD5@
 TEST_MATH_INTERVALSEARCH         = @TEST_MATH_INTERVALSEARCH@
 TEST_RRDTOOL                     = @TEST_RRDTOOL@
 TEST_STORABLE                    = @TEST_STORABLE@
-TEST_TARGETS                     = $(TEST_COMPRESS_ZLIB) \
-                                   $(TEST_DATA_DUMPER) \
+TEST_TARGETS                     = $(TEST_DATA_DUMPER) \
                                    $(TEST_DATE_PARSE) \
                                    $(TEST_DEVEL_DPROF) \
                                    $(TEST_DIGEST_MD5) \
@@ -53,7 +48,6 @@ TEST_TARGETS                     = $(TEST_COMPRESS_ZLIB) \
                                    $(TEST_RRDTOOL) \
                                    $(TEST_STORABLE)
 
-INSTALL_PERL_COMPRESS_ZLIB       = @INSTALL_PERL_COMPRESS_ZLIB@
 INSTALL_PERL_DATA_DUMPER         = @INSTALL_PERL_DATA_DUMPER@
 INSTALL_PERL_DATE_PARSE          = @INSTALL_PERL_DATE_PARSE@
 INSTALL_PERL_DEVEL_DPROF         = @INSTALL_PERL_DEVEL_DPROF@
@@ -61,8 +55,7 @@ INSTALL_PERL_DIGEST_MD5          = @INSTALL_PERL_DIGEST_MD5@
 INSTALL_PERL_MATH_INTERVALSEARCH = @INSTALL_PERL_MATH_INTERVALSEARCH@
 INSTALL_PERL_RRDTOOL             = @INSTALL_PERL_RRDTOOL@
 INSTALL_PERL_STORABLE            = @INSTALL_PERL_STORABLE@
-INSTALL_PERL_TARGETS             = $(INSTALL_PERL_COMPRESS_ZLIB) \
-                                   $(INSTALL_PERL_DATA_DUMPER) \
+INSTALL_PERL_TARGETS             = $(INSTALL_PERL_DATA_DUMPER) \
                                    $(INSTALL_PERL_DATE_PARSE) \
                                    $(INSTALL_PERL_DEVEL_DPROF) \
                                    $(INSTALL_PERL_DIGEST_MD5) \
@@ -73,7 +66,6 @@ INSTALL_PERL_TARGETS             = $(INSTALL_PERL_COMPRESS_ZLIB) \
 INSTALL_LIB_RRDTOOL              = @INSTALL_LIB_RRDTOOL@
 INSTALL_LIB_TARGETS              = $(INSTALL_LIB_RRDTOOL)
 
-CLEAN_COMPRESS_ZLIB              = @CLEAN_COMPRESS_ZLIB@
 CLEAN_DATA_DUMPER                = @CLEAN_DATA_DUMPER@
 CLEAN_DATE_PARSE                 = @CLEAN_DATE_PARSE@
 CLEAN_DEVEL_DPROF                = @CLEAN_DEVEL_DPROF@
@@ -81,8 +73,7 @@ CLEAN_DIGEST_MD5                 = @CLEAN_DIGEST_MD5@
 CLEAN_MATH_INTERVALSEARCH        = @CLEAN_MATH_INTERVALSEARCH@
 CLEAN_RRDTOOL                    = @CLEAN_RRDTOOL@
 CLEAN_STORABLE                   = @CLEAN_STORABLE@
-CLEAN_TARGETS                    = $(CLEAN_COMPRESS_ZLIB) \
-                                   $(CLEAN_DATA_DUMPER) \
+CLEAN_TARGETS                    = $(CLEAN_DATA_DUMPER) \
                                    $(CLEAN_DATE_PARSE) \
                                    $(CLEAN_DEVEL_DPROF) \
                                    $(CLEAN_DIGEST_MD5) \
@@ -90,7 +81,6 @@ CLEAN_TARGETS                    = $(CLEAN_COMPRESS_ZLIB) \
                                    $(CLEAN_RRDTOOL) \
                                    $(CLEAN_STORABLE)
 
-DISTCLEAN_COMPRESS_ZLIB          = @DISTCLEAN_COMPRESS_ZLIB@
 DISTCLEAN_DATA_DUMPER            = @DISTCLEAN_DATA_DUMPER@
 DISTCLEAN_DATE_PARSE             = @DISTCLEAN_DATE_PARSE@
 DISTCLEAN_DEVEL_DPROF            = @DISTCLEAN_DEVEL_DPROF@
@@ -98,8 +88,7 @@ DISTCLEAN_DIGEST_MD5             = @DISTCLEAN_DIGEST_MD5@
 DISTCLEAN_MATH_INTERVALSEARCH    = @DISTCLEAN_MATH_INTERVALSEARCH@
 DISTCLEAN_RRDTOOL                = @DISTCLEAN_RRDTOOL@
 DISTCLEAN_STORABLE               = @DISTCLEAN_STORABLE@
-DISTCLEAN_TARGETS                = $(DISTCLEAN_COMPRESS_ZLIB) \
-                                   $(DISTCLEAN_DATA_DUMPER) \
+DISTCLEAN_TARGETS                = $(DISTCLEAN_DATA_DUMPER) \
                                    $(DISTCLEAN_DATE_PARSE) \
                                    $(DISTCLEAN_DEVEL_DPROF) \
                                    $(DISTCLEAN_DIGEST_MD5) \
@@ -108,12 +97,6 @@ DISTCLEAN_TARGETS                = $(DISTCLEAN_COMPRESS_ZLIB) \
                                    $(DISTCLEAN_STORABLE)
 
 all: Makefile $(MAKE_TARGETS)
-
-make_compress_zlib: make_rrdtool_zlib $(compress_zlib_dir)/Makefile
-	cd $(compress_zlib_dir) && $(MAKE) OPTIMIZE="$(CFLAGS)"
-
-$(compress_zlib_dir)/Makefile: $(compress_zlib_dir)/Makefile.PL $(PERL)
-	cd $(compress_zlib_dir) && $(PERL) Makefile.PL
 
 make_data_dumper: $(data_dumper_dir)/Makefile
 	cd $(data_dumper_dir) && $(MAKE) OPTIMIZE="$(CFLAGS)"
@@ -148,9 +131,6 @@ $(math_intervalsearch_dir)/Makefile: $(math_intervalsearch_dir)/Makefile.PL $(PE
 make_rrdtool: $(rrdtool_dir)/Makefile $(PERL)
 	cd $(rrdtool_dir) && $(MAKE) CFLAGS="$(CFLAGS)"
 
-make_rrdtool_zlib: $(rrdtool_dir)/Makefile $(PERL)
-	cd $(rrdtool_dir) && $(MAKE) CFLAGS="$(CFLAGS)" zlib-1.1.3/librrd_z.a
-
 $(rrdtool_dir)/Makefile: $(rrdtool_dir)/config.status $(rrdtool_dir)/Makefile.in
 	cd $(rrdtool_dir) && CONFIG_FILES=Makefile ./config.status
 
@@ -166,9 +146,6 @@ $(storable_dir)/Makefile: $(storable_dir)/Makefile.PL $(PERL)
 test:
 
 test_modules: $(TEST_TARGETS)
-
-test_compress_zlib: make_rrdtool_zlib $(compress_zlib_dir)/Makefile
-	cd $(compress_zlib_dir) && $(MAKE) OPTIMIZE="$(CFLAGS)" test
 
 test_data_dumper: $(data_dumper_dir)/Makefile
 	cd $(data_dumper_dir) && $(MAKE) OPTIMIZE="$(CFLAGS)" test
@@ -198,9 +175,6 @@ install_lib_rrdtool: make_rrdtool
 
 install_modules: $(INSTALL_PERL_TARGETS)
 
-install_perl_compress_zlib: make_compress_zlib
-	cd $(compress_zlib_dir) && $(MAKE) OPTIMIZE="$(CFLAGS)" UNINST="$(UNINST)" install
-
 install_perl_data_dumper: $(data_dumper_dir)/Makefile
 	cd $(data_dumper_dir) && $(MAKE) OPTIMIZE="$(CFLAGS)" UNINST="$(UNINST)" install
 
@@ -223,12 +197,6 @@ install_perl_storable: $(storable_dir)/Makefile
 	cd $(storable_dir) && $(MAKE) OPTIMIZE="$(CFLAGS)" UNINST="$(UNINST)" install
 
 clean: $(CLEAN_TARGETS)
-
-clean_compress_zlib: clean_rrdtool
-	@if test -r $(compress_zlib_dir)/Makefile; then \
-	  echo 'cd $(compress_zlib_dir) && $(MAKE) clean'; \
-	  (cd $(compress_zlib_dir) && $(MAKE) clean); \
-	fi
 
 clean_data_dumper:
 	@if test -r $(data_dumper_dir)/Makefile; then \
@@ -271,8 +239,6 @@ clean_storable:
 
 distclean: $(DISTCLEAN_TARGETS)
 	$(RM) Makefile
-
-distclean_compress_zlib:       clean_compress_zlib
 
 distclean_data_dumper:         clean_data_dumper
 

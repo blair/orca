@@ -25,8 +25,6 @@ AC_SUBST(RRD_CONFIGURE_COMMAND_LINE)
 # Define the directories containing packages that Orca makes use of here.
 # The directory name packages where these packages are distributed with
 # Orca gets added where necessary.
-COMPRESS_ZLIB_DIR=Compress-Zlib-1.05
-COMPRESS_ZLIB_VER=1.05
 DATA_DUMPER_DIR=Data-Dumper-2.101
 DATA_DUMPER_VER=2.101
 DATE_PARSE_DIR=TimeDate-1.16
@@ -44,7 +42,6 @@ STORABLE_VER=2.14
 TIME_HIRES_DIR=Time-HiRes-1.66
 TIME_HIRES_VER=1.66
 
-AC_SUBST(COMPRESS_ZLIB_DIR)
 AC_SUBST(DATA_DUMPER_DIR)
 AC_SUBST(DATE_PARSE_DIR)
 AC_SUBST(DEVEL_DPROF_DIR)
@@ -54,7 +51,6 @@ AC_SUBST(RRDTOOL_DIR)
 AC_SUBST(STORABLE_DIR)
 AC_SUBST(TIME_HIRES_DIR)
 
-AC_SUBST(COMPRESS_ZLIB_VER)
 AC_SUBST(DATA_DUMPER_VER)
 AC_SUBST(DATE_PARSE_VER)
 AC_SUBST(DEVEL_DPROF_VER)
@@ -363,24 +359,6 @@ AC_SUBST(UNCOMPRESSOR_PIPE)
 # This command can be used to add --enable-shared to the configure
 # options for RRDtool if it is not already declared.
 # expr "$ORCA_CONFIGURE_COMMAND_LINE" : "--enable-shared" >/dev/null 2>&1 || ORCA_CONFIGURE_COMMAND_LINE="$ORCA_CONFIGURE_COMMAND_LINE --enable-shared"
-
-dnl BORP_PERL_MODULE(orca_cv_perl_module_compress_zlib,
-dnl                  $PERL,
-dnl                  Compress::Zlib,
-dnl                  $COMPRESS_ZLIB_VER)
-dnl test "$ALWAYS_BUILD_PERL_MODULES" && orca_cv_perl_module_compress_zlib=no
-dnl if test "$orca_cv_perl_module_compress_zlib" = no; then
-dnl   MAKE_COMPRESS_ZLIB=make_compress_zlib
-dnl   TEST_COMPRESS_ZLIB=test_compress_zlib
-dnl   INSTALL_PERL_COMPRESS_ZLIB=install_perl_compress_zlib
-dnl   CLEAN_COMPRESS_ZLIB=clean_compress_zlib
-dnl   DISTCLEAN_COMPRESS_ZLIB=distclean_compress_zlib
-dnl fi
-AC_SUBST(MAKE_COMPRESS_ZLIB)
-AC_SUBST(TEST_COMPRESS_ZLIB)
-AC_SUBST(INSTALL_PERL_COMPRESS_ZLIB)
-AC_SUBST(CLEAN_COMPRESS_ZLIB)
-AC_SUBST(DISTCLEAN_COMPRESS_ZLIB)
 
 BORP_PERL_MODULE(orca_cv_perl_module_data_dumper,
                  $PERL,

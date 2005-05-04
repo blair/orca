@@ -41,6 +41,10 @@ LIBEXEC_TARGETS       = $(LIBEXEC_PERL_SCRIPTS) \
 
 all: Makefile $(TARGETS) orca_services.cfg
 
+check:
+
+test: check
+
 install: all
 	$(MKDIR) $(bindir)
 	$(MKDIR) $(libexecdir)

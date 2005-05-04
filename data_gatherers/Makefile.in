@@ -1,5 +1,8 @@
 @SET_MAKE@
 
+CC                    = @CC@
+CFLAGS                = @CFLAGS@
+
 AIXALLATOR_SUBDIR     = @AIXALLATOR_SUBDIR@
 HPALLATOR_SUBDIR      = @HPALLATOR_SUBDIR@
 ORCALLATOR_SUBDIR     = @ORCALLATOR_SUBDIR@
@@ -14,13 +17,17 @@ SUBDIRS               = $(AIXALLATOR_SUBDIR) \
                         $(PROCALLATOR_SUBDIR) \
                         $(WINALLATOR_SUBDIR)
 
-ORCA_MAKE_DEFINES     = CFLAGS='$(CFLAGS)'
+ORCA_MAKE_DEFINES     = CC='$(CC)' CFLAGS='$(CFLAGS)'
 
 all install: Makefile $(TARGETS)
 	@for subdir in $(SUBDIRS); do \
 	  echo making $@ in $$subdir; \
 	  (cd $$subdir && $(MAKE) $(ORCA_MAKE_DEFINES) $@) || exit 1; \
 	done
+
+check:
+
+test: check
 
 orcallator_run_at_boot:
 	cd orcallator && $(MAKE) orcallator_run_at_boot

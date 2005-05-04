@@ -40,6 +40,10 @@ LIBEXEC_TARGETS       = $(LIBEXEC_PERL_SCRIPTS) \
 
 all: Makefile $(TARGETS) procallator.cfg
 
+check:
+
+test: check
+
 install: all
 	$(MKDIR) $(bindir)
 	$(MKDIR) $(RAW_PROCALLATOR_DIR)

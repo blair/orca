@@ -42,6 +42,10 @@ LIBEXEC_TARGETS       = $(LIBEXEC_PERL_SCRIPTS) \
 
 all: Makefile $(TARGETS) orcallator.cfg
 
+check:
+
+test: check
+
 install: all
 	$(MKDIR) $(bindir)
 	$(MKDIR) $(libdir)

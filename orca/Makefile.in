@@ -33,6 +33,10 @@ LIBEXEC_TARGETS       = $(LIBEXEC_PERL_SCRIPTS) \
 
 all: Makefile $(TARGETS)
 
+check:
+
+test: check
+
 install: all
 	$(MKDIR) $(bindir)
 	@for file in $(BIN_TARGETS); do \

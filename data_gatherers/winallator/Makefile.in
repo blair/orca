@@ -36,6 +36,10 @@ LIBEXEC_TARGETS       = $(LIBEXEC_PERL_SCRIPTS) \
 
 all: Makefile $(TARGETS) winallator.cfg
 
+check:
+
+test: check
+
 install: all
 	$(MKDIR) $(bindir)
 	$(MKDIR) $(libdir)

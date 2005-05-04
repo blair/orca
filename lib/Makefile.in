@@ -27,6 +27,10 @@ rrdtool_logo.gif.hex: rrdtool_logo.gif
 rothschild_image_logo.png.hex: rothschild_image_logo.png
 	$(PERL) -e 'while (sysread(STDIN, $$b, 35)){print unpack("h*", $$b),"\n"}' < $< > $@
 
+check:
+
+test: check
+
 install: all
 	$(MKDIR) $(libdir)/Orca
 	$(MKDIR) $(libdir)/SE/3.2.1

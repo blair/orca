@@ -1,34 +1,45 @@
 @SET_MAKE@
 
+CC                    = @CC@
+CFLAGS                = @CFLAGS@
+
 SUBDIRS               = rotate_orca_graphs
 
-all:	Makefile $(TARGETS)
-	@for dir in $(SUBDIRS); do \
-	  echo "cd $$dir && $(MAKE) CFLAGS=$(CFLAGS)"; \
-	  (cd $$dir && $(MAKE) CFLAGS="$(CFLAGS)"); \
+ORCA_MAKE_DEFINES     = CC='$(CC)' CFLAGS='$(CFLAGS)'
+
+all check: Makefile
+	@for subdir in $(SUBDIRS); do \
+	  echo making $@ in $$subdir; \
+	  (cd $$subdir && $(MAKE) $(ORCA_MAKE_DEFINES) $@) || exit 1; \
 	done
+
+test: check
 
 # Users will need to install the contributed programs by hand.
 install:
+	@echo "Run make install_contrib to install contributed packages"
 
 install_contrib:
-	@for dir in $(SUBDIRS); do \
-	  echo "cd $$dir && $(MAKE) CFLAGS=$(CFLAGS) install"; \
-	  (cd $$dir && $(MAKE) CFLAGS="$(CFLAGS)" install); \
+	@for subdir in $(SUBDIRS); do \
+	  echo making install in $$subdir; \
+	  (cd $$subdir && $(MAKE) $(ORCA_MAKE_DEFINES) install) || exit 1; \
 	done
 
-clean:
-	@for dir in $(SUBDIRS); do \
-	  echo "cd $$dir && $(MAKE) CFLAGS=$(CFLAGS) clean"; \
-	  (cd $$dir && $(MAKE) CFLAGS="$(CFLAGS)" clean); \
-	done
+clean: clean-recursive clean-local
 
-distclean: clean
-	@for dir in $(SUBDIRS); do \
-	  echo "cd $$dir && $(MAKE) CFLAGS=$(CFLAGS) distclean"; \
-	  (cd $$dir && $(MAKE) CFLAGS="$(CFLAGS)" distclean); \
-	done
+distclean: distclean-recursive distclean-local
+
+clean-local:
+
+distclean-local: clean-local
 	$(RM) Makefile
+
+clean-recursive distclean-recursive:
+	@for subdir in $(SUBDIRS); do \
+	  target=`echo $@ | sed 's/-recursive//'`; \
+	  echo making $$target in $$subdir; \
+	  (cd $$subdir && $(MAKE) $$target) || exit 1; \
+	done
 
 Makefile: Makefile.in
 	cd .. && CONFIG_FILES=contrib/Makefile ./config.status

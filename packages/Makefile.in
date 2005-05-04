@@ -145,7 +145,7 @@ $(storable_dir)/Makefile: $(storable_dir)/Makefile.PL $(PERL)
 
 check:
 
-test:
+test: check
 
 test_modules: $(TEST_TARGETS)
 

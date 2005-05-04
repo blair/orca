@@ -24,6 +24,10 @@ orca.man: $(ORCA)
 orca.txt: $(ORCA)
 	$(POD2TEXT) $(ORCA) > $@
 
+check:
+
+test: check
+
 install: all
 	$(MKDIR) $(mandir)
 	$(INSTALL) -m 0644 orca.man $(mandir)/orca.1

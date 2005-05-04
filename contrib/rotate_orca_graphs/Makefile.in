@@ -8,6 +8,10 @@ TARGETS	= rotate_orca_graphs
 
 all:	Makefile $(TARGETS)
 
+check:
+
+test: check
+
 Makefile: Makefile.in
 	cd ../.. && CONFIG_FILES=contrib/rotate_orca_graphs/Makefile ./config.status
 

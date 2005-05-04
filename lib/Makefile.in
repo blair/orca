@@ -35,13 +35,14 @@ install: all
 	$(MKDIR) $(libdir)/SE/3.4
 	@for f in Orca/*.pm; do \
 	  echo $(INSTALL) -m 0644 $$f $(libdir)/Orca; \
-	  $(INSTALL) -m 0644 $$f $(libdir)/Orca; \
+	  $(INSTALL) -m 0644 $$f $(libdir)/Orca || exit 1; \
 	done
 	@if test -d Orca/Config; then \
-	  $(MKDIR) $(libdir)/Orca/Config; \
+	  echo $(MKDIR) $(libdir)/Orca/Config; \
+	  $(MKDIR) $(libdir)/Orca/Config || exit 1; \
 	  for f in Orca/Config/*.pm; do \
 	    echo $(INSTALL) -m 0644 $$f $(libdir)/Orca/Config; \
-	    $(INSTALL) -m 0644 $$f $(libdir)/Orca/Config; \
+	    $(INSTALL) -m 0644 $$f $(libdir)/Orca/Config || exit 1; \
 	  done; \
 	fi
 	@for d in SE/*; do \
@@ -49,20 +50,23 @@ install: all
 	  for f in $$d/*; do \
 	    test ! -f $$f && continue; \
 	    echo $(INSTALL) -m 0644 $$f $(libdir)/$$d; \
-	    $(INSTALL) -m 0644 $$f $(libdir)/$$d; \
+	    $(INSTALL) -m 0644 $$f $(libdir)/$$d || exit 1; \
 	  done \
 	done
-	@echo "cd ..; sh -c 'svnversion .' 2>/dev/null || true"
+	@echo "cd ..; sh -c 'svnversion .'"
 	@current_rev="`cd ..; sh -c 'svnversion .' 2>/dev/null || true`"; \
+	echo "Subversion reversion of Orca is: $$current_rev"; \
 	if test "$$current_rev" != "" && \
-           test "$$current_rev" != "exported"; then \
-	  echo "Found good svnversion for `cd ..; pwd`: $$current_rev"; \
+	  test "$$current_rev" != "exported"; then \
+	  echo Fixing svn revision number in $(libdir)/Orca/Constants.pm; \
 	  echo $(PERL) -w -p -i \
 	    -e 's/^(\$$ORCA_VER_REVISION\s*=\s*).*/$${1}"'$$current_rev'";/' \
 	    $(libdir)/Orca/Constants.pm; \
 	  $(PERL) -w -p -i \
 	    -e 's/^(\$$ORCA_VER_REVISION\s*=\s*).*/$${1}"'$$current_rev'";/' \
-	    $(libdir)/Orca/Constants.pm; \
+	    $(libdir)/Orca/Constants.pm || exit 1; \
+	else \
+	  echo Not fixing svn revision number in $(libdir)/Orca/Constants.pm; \
 	fi
 
 clean:

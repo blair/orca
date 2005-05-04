@@ -37,7 +37,7 @@ install: all
 	$(MKDIR) $(bindir)
 	@for file in `echo $(BIN_TARGETS)`; do \
 	  echo $(INSTALL) $$file $(bindir); \
-	  $(INSTALL) $$file $(bindir); \
+	  $(INSTALL) $$file $(bindir) || exit 1; \
 	done
 
 clean:

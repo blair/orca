@@ -143,6 +143,8 @@ make_storable: $(storable_dir)/Makefile
 $(storable_dir)/Makefile: $(storable_dir)/Makefile.PL $(PERL)
 	cd $(storable_dir) && $(PERL) Makefile.PL
 
+check:
+
 test:
 
 test_modules: $(TEST_TARGETS)
@@ -160,7 +162,7 @@ test_digest_md5: $(digest_md5_dir)/Makefile
 	cd $(digest_md5_dir) && $(MAKE) OPTIMIZE="$(CFLAGS)" test
 
 test_math_intervalsearch: $(math_intervalsearch_dir)/Makefile
-	cd $(math_intervalsearch_dir) && $(MAKE) test
+	cd $(math_intervalsearch_dir) && $(MAKE) OPTIMIZE="$(CFLAGS)" test
 
 test_rrdtool: make_rrdtool
 	cd $(rrdtool_dir)/perl-shared && $(MAKE) CFLAGS="$(CFLAGS)" test
@@ -199,42 +201,42 @@ install_perl_storable: $(storable_dir)/Makefile
 clean: $(CLEAN_TARGETS)
 
 clean_data_dumper:
-	@if test -r $(data_dumper_dir)/Makefile; then \
-	  echo 'cd $(data_dumper_dir) && $(MAKE) clean'; \
-	  (cd $(data_dumper_dir) && $(MAKE) clean); \
+	if test -r $(data_dumper_dir)/Makefile; then \
+	  echo making clean in $(data_dumper_dir); \
+	  (cd $(data_dumper_dir) && $(MAKE) clean) || exit 1; \
 	fi
 
 clean_date_parse:
-	@if test -r $(date_parse_dir)/Makefile; then \
-	  echo 'cd $(date_parse_dir) && $(MAKE) clean'; \
-	  (cd $(date_parse_dir) && $(MAKE) clean); \
+	if test -r $(date_parse_dir)/Makefile; then \
+	  echo making clean in $(date_parse_dir); \
+	  (cd $(date_parse_dir) && $(MAKE) clean) || exit 1; \
 	fi
 
 clean_devel_dprof:
-	@if test -r $(devel_dprof_dir)/Makefile; then \
-	  echo 'cd $(devel_dprof_dir) && $(MAKE) clean'; \
-	  (cd $(devel_dprof_dir) && $(MAKE) clean); \
+	if test -r $(devel_dprof_dir)/Makefile; then \
+	  echo making clean in $(devel_dprof_dir); \
+	  (cd $(devel_dprof_dir) && $(MAKE) clean) || exit 1; \
 	fi
 
 clean_digest_md5:
-	@if test -r $(digest_md5_dir)/Makefile; then \
-	  echo 'cd $(digest_md5_dir) && $(MAKE) clean'; \
-	  (cd $(digest_md5_dir) && $(MAKE) clean); \
+	if test -r $(digest_md5_dir)/Makefile; then \
+	  echo making clean in $(digest_md5_dir); \
+	  (cd $(digest_md5_dir) && $(MAKE) clean) || exit 1; \
 	fi
 
 clean_math_intervalsearch:
-	@if test -r $(math_intervalsearch_dir)/Makefile; then \
-	  echo 'cd $(math_intervalsearch_dir) && $(MAKE) clean'; \
-	  (cd $(math_intervalsearch_dir) && $(MAKE) clean); \
+	if test -r $(math_intervalsearch_dir)/Makefile; then \
+	  echo making clean in $(math_intervalsearch_dir); \
+	  (cd $(math_intervalsearch_dir) && $(MAKE) clean) || exit 1; \
 	fi
 
 clean_rrdtool:
-	(cd $(rrdtool_dir) && $(MAKE) clean)
+	cd $(rrdtool_dir) && $(MAKE) clean
 
 clean_storable:
-	@if test -r $(storable_dir)/Makefile; then \
-	  echo 'cd $(storable_dir) && $(MAKE) clean'; \
-	  (cd $(storable_dir) && $(MAKE) clean); \
+	if test -r $(storable_dir)/Makefile; then \
+	  echo making clean in $(storable_dir); \
+	  (cd $(storable_dir) && $(MAKE) clean) || exit 1; \
 	fi
 
 distclean: $(DISTCLEAN_TARGETS)

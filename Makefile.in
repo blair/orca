@@ -11,38 +11,18 @@ SUBDIRS           = packages \
                     docs \
                     contrib
 
-all: configure config/PerlHead1 config/PerlHead2 Makefile
-	@for dir in $(SUBDIRS); do \
-	  if test -d $$dir; then \
-	    echo "cd $$dir"; \
-	    cd $$dir || exit 1; \
-	    echo "$(MAKE) CFLAGS=$(CFLAGS) || exit 1"; \
-	    $(MAKE) CFLAGS="$(CFLAGS)" || exit 1; \
-	    echo "cd .."; \
-	    cd ..; \
-	  else \
-	    exit 1; \
-	  fi \
+ORCA_MAKE_DEFINES = CFLAGS='$(CFLAGS)'
+
+all install check: configure config/PerlHead1 config/PerlHead2 Makefile
+	@for subdir in $(SUBDIRS); do \
+	  echo making $@ in $$subdir; \
+	  (cd $$subdir && $(MAKE) $(ORCA_MAKE_DEFINES) $@) || exit 1; \
 	done
 
-test: configure Makefile
+test: check
 
 upgrade:
 	cd src && $(MAKE) upgrade_installation
-
-install:
-	@for dir in $(SUBDIRS); do \
-	  if test -d $$dir; then \
-	    echo "cd $$dir"; \
-	    cd $$dir || exit 1; \
-	    echo "$(MAKE) CFLAGS=$(CFLAGS) install || exit 1"; \
-	    $(MAKE) CFLAGS="$(CFLAGS)" install || exit 1; \
-	    echo "cd .."; \
-	    cd ..; \
-	  else \
-	    exit 1; \
-	  fi \
-	done
 
 install_contrib:
 	cd contrib && $(MAKE) install_contrib
@@ -62,20 +42,23 @@ test_modules:
 install_modules:
 	cd packages && $(MAKE) CFLAGS="$(CFLAGS)" install_modules
 
-clean:
-	@for dir in $(SUBDIRS); do \
-	  echo "cd $$dir && $(MAKE) clean"; \
-	  (cd $$dir && $(MAKE) clean); \
-	done
+clean: clean-recursive clean-local
 
-distclean:
-	@for dir in $(SUBDIRS); do \
-	  echo "cd $$dir && $(MAKE) distclean"; \
-	  (cd $$dir && $(MAKE) distclean); \
-	done
+distclean: distclean-recursive distclean-local
+
+clean-local:
+
+distclean-local: clean-local
 	$(RM) -r autom4te*.cache
 	$(RM) config/aclocal.m4 config/PerlHead1 config/PerlHead2
 	$(RM) configure config.cache config.log config.status Makefile
+
+clean-recursive distclean-recursive:
+	@for subdir in $(SUBDIRS); do \
+	  target=`echo $@ | sed 's/-recursive//'`; \
+	  echo making $$target in $$subdir; \
+	  (cd $$subdir && $(MAKE) $$target) || exit 1; \
+	done
 
 to-autoconf:
 	aclocal -I config --output=config/aclocal.m4

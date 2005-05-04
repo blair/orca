@@ -14,10 +14,12 @@ SUBDIRS               = $(AIXALLATOR_SUBDIR) \
                         $(PROCALLATOR_SUBDIR) \
                         $(WINALLATOR_SUBDIR)
 
-all:	Makefile $(TARGETS)
-	@for dir in $(SUBDIRS); do \
-	  echo "cd $$dir && $(MAKE) CFLAGS=$(CFLAGS)"; \
-	  (cd $$dir && $(MAKE) CFLAGS="$(CFLAGS)"); \
+ORCA_MAKE_DEFINES     = CFLAGS='$(CFLAGS)'
+
+all install: Makefile $(TARGETS)
+	@for subdir in $(SUBDIRS); do \
+	  echo making $@ in $$subdir; \
+	  (cd $$subdir && $(MAKE) $(ORCA_MAKE_DEFINES) $@) || exit 1; \
 	done
 
 orcallator_run_at_boot:
@@ -29,24 +31,21 @@ orca_services_run_at_boot:
 procallator_run_at_boot:
 	cd procallator && $(MAKE) procallator_run_at_boot
 
-install:
-	@for dir in $(SUBDIRS); do \
-	  echo "cd $$dir && $(MAKE) CFLAGS=$(CFLAGS) install"; \
-	  (cd $$dir && $(MAKE) CFLAGS="$(CFLAGS)" install); \
-	done
+clean: clean-recursive clean-local
 
-clean:
-	@for dir in $(SUBDIRS); do \
-	  echo "cd $$dir && $(MAKE) CFLAGS=$(CFLAGS) clean"; \
-	  (cd $$dir && $(MAKE) CFLAGS="$(CFLAGS)" clean); \
-	done
+distclean: distclean-recursive distclean-local
 
-distclean: clean
-	@for dir in $(SUBDIRS); do \
-	  echo "cd $$dir && $(MAKE) CFLAGS=$(CFLAGS) distclean"; \
-	  (cd $$dir && $(MAKE) CFLAGS="$(CFLAGS)" distclean); \
-	done
+clean-local:
+
+distclean-local: clean-local
 	$(RM) Makefile
+
+clean-recursive distclean-recursive:
+        for subdir in $(SUBDIRS); do \
+          target=`echo $@ | sed 's/-recursive//'`; \
+          echo making $$target in $$subdir; \
+          (cd $$subdir && $(MAKE) $$target) || exit 1; \
+        done
 
 Makefile: Makefile.in
 	cd .. && CONFIG_FILES=data_gatherers/Makefile ./config.status

@@ -2,6 +2,7 @@
 
 prefix            = @prefix@
 MKDIR             = @MKDIR@
+CC                = @CC@
 CFLAGS            = @CFLAGS@
 
 SUBDIRS           = packages \
@@ -11,7 +12,7 @@ SUBDIRS           = packages \
                     docs \
                     contrib
 
-ORCA_MAKE_DEFINES = CFLAGS='$(CFLAGS)'
+ORCA_MAKE_DEFINES = CC='$(CC)' CFLAGS='$(CFLAGS)'
 
 all install check: configure config/PerlHead1 config/PerlHead2 Makefile
 	@for subdir in $(SUBDIRS); do \

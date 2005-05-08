@@ -5,12 +5,18 @@ exec_prefix                      = @exec_prefix@
 libdir                           = @libdir@
 perl_libdir                      = $(libdir)/perl
 
+# The top of the Orca source directory.
 abs_top_srcdir                   = @abs_top_srcdir@
+
+# The name of a directory to create in the packages directory where
+# all of the non-essential Perl files can be installed when a Perl
+# module is installed.
 srcdir_perl_install_rootdir      = $(abs_top_srcdir)/packages/fake_install_root
 
-PERL                             = @PERL@
 CC                               = @CC@
 CFLAGS                           = @CFLAGS@
+MKDIR                            = @MKDIR@
+PERL                             = @PERL@
 
 ORCA_MAKE_DEFINES                = CC='$(CC)' CFLAGS='$(CFLAGS)'
 
@@ -196,7 +202,7 @@ test_storable: $(storable_dir)/Makefile
 $(srcdir_perl_install_rootdir):
 	$(MKDIR) $(srcdir_perl_install_rootdir)
 
-install: $(INSTALL_LIB_TARGETS) $(INSTALL_PERL_TARGETS)
+install: $(srcdir_perl_install_rootdir) $(INSTALL_LIB_TARGETS) $(INSTALL_PERL_TARGETS)
 
 install_lib_rrdtool: make_rrdtool
 	cd $(rrdtool_dir)/src && $(MAKE) $(ORCA_MAKE_DEFINES) install-libLTLIBRARIES
@@ -223,6 +229,7 @@ install_perl_storable: $(storable_dir)/Makefile
 	cd $(storable_dir) && $(MAKE) $(ORCA_INSTALL_PERL_MODULE_FLAGS) install
 
 clean: $(CLEAN_TARGETS)
+	$(RM) -fr $(srcdir_perl_install_rootdir)
 
 clean_data_dumper:
 	if test -r $(data_dumper_dir)/Makefile; then \

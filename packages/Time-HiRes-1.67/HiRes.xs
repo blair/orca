@@ -810,16 +810,18 @@ gettimeofday()
         PPCODE:
         int status;
         status = gettimeofday (&Tp, &Tz);
-        Tp.tv_sec += Tz.tz_minuteswest * 60;	/* adjust for TZ */
 
-        if (GIMME == G_ARRAY) {
-             EXTEND(sp, 2);
-             /* Mac OS (Classic) has unsigned time_t */
-             PUSHs(sv_2mortal(newSVuv(Tp.tv_sec)));
-             PUSHs(sv_2mortal(newSViv(Tp.tv_usec)));
-        } else {
-             EXTEND(sp, 1);
-             PUSHs(sv_2mortal(newSVnv(Tp.tv_sec + (Tp.tv_usec / 1000000.0))));
+	if (status == 0) {
+	     Tp.tv_sec += Tz.tz_minuteswest * 60;	/* adjust for TZ */
+             if (GIMME == G_ARRAY) {
+                 EXTEND(sp, 2);
+                 /* Mac OS (Classic) has unsigned time_t */
+                 PUSHs(sv_2mortal(newSVuv(Tp.tv_sec)));
+                 PUSHs(sv_2mortal(newSViv(Tp.tv_usec)));
+             } else {
+                 EXTEND(sp, 1);
+                 PUSHs(sv_2mortal(newSVnv(Tp.tv_sec + (Tp.tv_usec / 1000000.0))));
+	     }
         }
 
 NV
@@ -830,8 +832,12 @@ time()
         CODE:
         int status;
         status = gettimeofday (&Tp, &Tz);
-        Tp.tv_sec += Tz.tz_minuteswest * 60;	/* adjust for TZ */
-        RETVAL = Tp.tv_sec + (Tp.tv_usec / 1000000.0);
+	if (status == 0) {
+            Tp.tv_sec += Tz.tz_minuteswest * 60;	/* adjust for TZ */
+	    RETVAL = Tp.tv_sec + (Tp.tv_usec / 1000000.0);
+        } else {
+	    RETVAL = -1.0;
+	}
 	OUTPUT:
 	RETVAL
 
@@ -843,13 +849,15 @@ gettimeofday()
         PPCODE:
 	int status;
         status = gettimeofday (&Tp, NULL);
-        if (GIMME == G_ARRAY) {
-	     EXTEND(sp, 2);
-             PUSHs(sv_2mortal(newSViv(Tp.tv_sec)));
-             PUSHs(sv_2mortal(newSViv(Tp.tv_usec)));
-        } else {
-             EXTEND(sp, 1);
-             PUSHs(sv_2mortal(newSVnv(Tp.tv_sec + (Tp.tv_usec / 1000000.0))));
+	if (status == 0) {
+	     if (GIMME == G_ARRAY) {
+	         EXTEND(sp, 2);
+                 PUSHs(sv_2mortal(newSViv(Tp.tv_sec)));
+                 PUSHs(sv_2mortal(newSViv(Tp.tv_usec)));
+             } else {
+                 EXTEND(sp, 1);
+                 PUSHs(sv_2mortal(newSVnv(Tp.tv_sec + (Tp.tv_usec / 1000000.0))));
+             }
         }
 
 NV
@@ -859,7 +867,11 @@ time()
         CODE:
 	int status;
         status = gettimeofday (&Tp, NULL);
-        RETVAL = Tp.tv_sec + (Tp.tv_usec / 1000000.);
+	if (status == 0) {
+            RETVAL = Tp.tv_sec + (Tp.tv_usec / 1000000.);
+	} else {
+	    RETVAL = -1.0;
+	}
 	OUTPUT:
 	RETVAL
 

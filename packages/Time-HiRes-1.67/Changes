@@ -1,5 +1,10 @@
 Revision history for Perl extension Time::HiRes.
 
+1.67
+	- (internal) don't ignore the return value of gettimeofday()
+	- (external) return undef or an empty if gettimeofday() fails
+	  (gettimeofday() and the hires time())
+
 1.66
 	- add nanosleep()
 	- fix the 'hierachy' typo in Makefile.PL [rt.cpan.org #8492]

@@ -37,12 +37,6 @@ orca_services_run_at_boot:
 procallator_run_at_boot:
 	cd data_gatherers/procallator && $(MAKE) procallator_run_at_boot
 
-test_modules:
-	cd packages && $(MAKE) CFLAGS="$(CFLAGS)" test_modules
-
-install_modules:
-	cd packages && $(MAKE) CFLAGS="$(CFLAGS)" install_modules
-
 clean: clean-recursive clean-local
 
 distclean: distclean-recursive distclean-local

@@ -1,14 +1,39 @@
 @SET_MAKE@
 
+prefix                           = @prefix@
+exec_prefix                      = @exec_prefix@
+libdir                           = @libdir@
+perl_libdir                      = $(libdir)/perl
+
+abs_top_srcdir                   = @abs_top_srcdir@
+srcdir_perl_install_rootdir      = $(abs_top_srcdir)/packages/fake_install_root
+
 PERL                             = @PERL@
+CC                               = @CC@
 CFLAGS                           = @CFLAGS@
 
-# By default, pass UNINST=1 down to the Perl Makefile's so that any
-# old installed Perl modules are properly deleted.  Otherwise, the
-# Perl installation may have the old and new modules installed and and
-# due to Perl's module search order, Perl may use the older module
-# instead of the newer installed module.
-UNINST                           = 1
+ORCA_MAKE_DEFINES                = CC='$(CC)' CFLAGS='$(CFLAGS)'
+
+# Flags to specify where the Perl modules will be installed.  Install
+# everything except the files that Perl needs to load the module back
+# into an empty directory created in this source tree.
+PERL_INSTALL_LOCATIONS_FLAGS     = PREFIX=$(srcdir_perl_install_rootdir) \
+                                   INSTALLPRIVLIB=$(perl_libdir) \
+                                   INSTALLARCHLIB=$(perl_libdir) \
+                                   INSTALLSITELIB=$(perl_libdir) \
+                                   INSTALLSITEARCH=$(perl_libdir)
+
+# Flags to pass to '$(PERL) Makefile.PL' to create the Makefile for a
+# Perl module.
+ORCA_CREATE_MAKEFILE_FLAGS       = $(PERL_INSTALL_LOCATIONS_FLAGS)
+
+# Flags to pass to '$(MAKE)' when a Perl module is being built.
+ORCA_MAKE_PERL_MODULE_FLAGS      = CC='$(CC)' OPTIMIZE='$(CFLAGS)'
+
+# Flags to pass to '$(MAKE) install' when a Perl module is being
+# installed.
+ORCA_INSTALL_PERL_MODULE_FLAGS   = $(ORCA_MAKE_PERL_MODULE_FLAGS) \
+                                   $(PERL_INSTALL_LOCATIONS_FLAGS)
 
 data_dumper_dir                  = @DATA_DUMPER_DIR@
 date_parse_dir                   = @DATE_PARSE_DIR@
@@ -99,37 +124,37 @@ DISTCLEAN_TARGETS                = $(DISTCLEAN_DATA_DUMPER) \
 all: Makefile $(MAKE_TARGETS)
 
 make_data_dumper: $(data_dumper_dir)/Makefile
-	cd $(data_dumper_dir) && $(MAKE) OPTIMIZE="$(CFLAGS)"
+	cd $(data_dumper_dir) && $(MAKE) $(ORCA_MAKE_PERL_MODULE_FLAGS)
 
 $(data_dumper_dir)/Makefile: $(data_dumper_dir)/Makefile.PL $(PERL)
-	cd $(data_dumper_dir) && $(PERL) Makefile.PL
+	cd $(data_dumper_dir) && $(PERL) Makefile.PL $(ORCA_CREATE_MAKEFILE_FLAGS)
 
 make_date_parse: $(date_parse_dir)/Makefile
-	cd $(date_parse_dir) && $(MAKE) OPTIMIZE="$(CFLAGS)"
+	cd $(date_parse_dir) && $(MAKE) $(ORCA_MAKE_PERL_MODULE_FLAGS)
 
 $(date_parse_dir)/Makefile: $(date_parse_dir)/Makefile.PL $(PERL)
-	cd $(date_parse_dir) && $(PERL) Makefile.PL
+	cd $(date_parse_dir) && $(PERL) Makefile.PL $(ORCA_CREATE_MAKEFILE_FLAGS)
 
 make_devel_dprof: $(devel_dprof_dir)/Makefile
-	cd $(devel_dprof_dir) && $(MAKE) OPTIMIZE="$(CFLAGS)"
+	cd $(devel_dprof_dir) && $(MAKE) $(ORCA_MAKE_PERL_MODULE_FLAGS)
 
 $(devel_dprof_dir)/Makefile: $(devel_dprof_dir)/Makefile.PL $(PERL)
-	cd $(devel_dprof_dir) && $(PERL) Makefile.PL
+	cd $(devel_dprof_dir) && $(PERL) Makefile.PL $(ORCA_CREATE_MAKEFILE_FLAGS)
 
 make_digest_md5: $(digest_md5_dir)/Makefile
-	cd $(digest_md5_dir) && $(MAKE) OPTIMIZE="$(CFLAGS)"
+	cd $(digest_md5_dir) && $(MAKE) $(ORCA_MAKE_PERL_MODULE_FLAGS)
 
 $(digest_md5_dir)/Makefile: $(digest_md5_dir)/Makefile.PL $(PERL)
-	cd $(digest_md5_dir) && $(PERL) Makefile.PL
+	cd $(digest_md5_dir) && $(PERL) Makefile.PL $(ORCA_CREATE_MAKEFILE_FLAGS)
 
 make_math_intervalsearch: $(math_intervalsearch_dir)/Makefile
-	cd $(math_intervalsearch_dir) && $(MAKE) OPTIMIZE="$(CFLAGS)"
+	cd $(math_intervalsearch_dir) && $(MAKE) $(ORCA_MAKE_PERL_MODULE_FLAGS)
 
 $(math_intervalsearch_dir)/Makefile: $(math_intervalsearch_dir)/Makefile.PL $(PERL)
-	cd $(math_intervalsearch_dir) && $(PERL) Makefile.PL
+	cd $(math_intervalsearch_dir) && $(PERL) Makefile.PL $(ORCA_CREATE_MAKEFILE_FLAGS)
 
 make_rrdtool: $(rrdtool_dir)/Makefile $(PERL)
-	cd $(rrdtool_dir) && $(MAKE) CFLAGS="$(CFLAGS)"
+	cd $(rrdtool_dir) && $(MAKE) $(ORCA_MAKE_DEFINES)
 
 $(rrdtool_dir)/Makefile: $(rrdtool_dir)/config.status $(rrdtool_dir)/Makefile.in
 	cd $(rrdtool_dir) && CONFIG_FILES=Makefile ./config.status
@@ -138,65 +163,64 @@ $(rrdtool_dir)/config.status:
 	cd $(rrdtool_dir) && ./configure @RRD_CONFIGURE_COMMAND_LINE@
 
 make_storable: $(storable_dir)/Makefile
-	cd $(storable_dir) && $(MAKE) OPTIMIZE="$(CFLAGS)"
+	cd $(storable_dir) && $(MAKE) $(ORCA_MAKE_PERL_MODULE_FLAGS)
 
 $(storable_dir)/Makefile: $(storable_dir)/Makefile.PL $(PERL)
-	cd $(storable_dir) && $(PERL) Makefile.PL
+	cd $(storable_dir) && $(PERL) Makefile.PL $(ORCA_CREATE_MAKEFILE_FLAGS)
 
-check:
+check: $(TEST_TARGETS)
 
 test: check
 
-test_modules: $(TEST_TARGETS)
-
 test_data_dumper: $(data_dumper_dir)/Makefile
-	cd $(data_dumper_dir) && $(MAKE) OPTIMIZE="$(CFLAGS)" test
+	cd $(data_dumper_dir) && $(MAKE) $(ORCA_MAKE_PERL_MODULE_FLAGS) test
 
 test_date_parse: $(date_parse_dir)/Makefile
-	cd $(date_parse_dir) && $(MAKE) OPTIMIZE="$(CFLAGS)" test
+	cd $(date_parse_dir) && $(MAKE) $(ORCA_MAKE_PERL_MODULE_FLAGS) test
 
 test_devel_dprof: $(devel_dprof_dir)/Makefile
-	cd $(devel_dprof_dir) && $(MAKE) OPTIMIZE="$(CFLAGS)" test
+	cd $(devel_dprof_dir) && $(MAKE) $(ORCA_MAKE_PERL_MODULE_FLAGS) test
 
 test_digest_md5: $(digest_md5_dir)/Makefile
-	cd $(digest_md5_dir) && $(MAKE) OPTIMIZE="$(CFLAGS)" test
+	cd $(digest_md5_dir) && $(MAKE) $(ORCA_MAKE_PERL_MODULE_FLAGS) test
 
 test_math_intervalsearch: $(math_intervalsearch_dir)/Makefile
-	cd $(math_intervalsearch_dir) && $(MAKE) OPTIMIZE="$(CFLAGS)" test
+	cd $(math_intervalsearch_dir) && $(MAKE) $(ORCA_MAKE_PERL_MODULE_FLAGS) test
 
 test_rrdtool: make_rrdtool
-	cd $(rrdtool_dir)/perl-shared && $(MAKE) CFLAGS="$(CFLAGS)" test
+	cd $(rrdtool_dir)/perl-shared && $(MAKE) $(ORCA_MAKE_PERL_MODULE_FLAGS) test
 
 test_storable: $(storable_dir)/Makefile
-	cd $(storable_dir) && $(MAKE) OPTIMIZE="$(CFLAGS)" test
+	cd $(storable_dir) && $(MAKE) $(ORCA_MAKE_PERL_MODULE_FLAGS) test
 
-install: $(INSTALL_LIB_TARGETS)
+$(srcdir_perl_install_rootdir):
+	$(MKDIR) $(srcdir_perl_install_rootdir)
+
+install: $(INSTALL_LIB_TARGETS) $(INSTALL_PERL_TARGETS)
 
 install_lib_rrdtool: make_rrdtool
-	cd $(rrdtool_dir)/src && $(MAKE) CFLAGS="$(CFLAGS)" install-libLTLIBRARIES
-
-install_modules: $(INSTALL_PERL_TARGETS)
+	cd $(rrdtool_dir)/src && $(MAKE) $(ORCA_MAKE_DEFINES) install-libLTLIBRARIES
 
 install_perl_data_dumper: $(data_dumper_dir)/Makefile
-	cd $(data_dumper_dir) && $(MAKE) OPTIMIZE="$(CFLAGS)" UNINST="$(UNINST)" install
+	cd $(data_dumper_dir) && $(MAKE) $(ORCA_INSTALL_PERL_MODULE_FLAGS) install
 
 install_perl_date_parse: $(date_parse_dir)/Makefile
-	cd $(date_parse_dir) && $(MAKE) OPTIMIZE="$(CFLAGS)" UNINST="$(UNINST)" install
+	cd $(date_parse_dir) && $(MAKE) $(ORCA_INSTALL_PERL_MODULE_FLAGS) install
 
 install_perl_devel_dprof: $(devel_dprof_dir)/Makefile
-	cd $(devel_dprof_dir) && $(MAKE) OPTIMIZE="$(CFLAGS)" UNINST="$(UNINST)" install
+	cd $(devel_dprof_dir) && $(MAKE) $(ORCA_INSTALL_PERL_MODULE_FLAGS) install
 
 install_perl_digest_md5: $(digest_md5_dir)/Makefile
-	cd $(digest_md5_dir) && $(MAKE) OPTIMIZE="$(CFLAGS)" UNINST="$(UNINST)" install
+	cd $(digest_md5_dir) && $(MAKE) $(ORCA_INSTALL_PERL_MODULE_FLAGS) install
 
 install_perl_math_intervalsearch: $(math_intervalsearch_dir)/Makefile
-	cd $(math_intervalsearch_dir) && $(MAKE) OPTIMIZE="$(CFLAGS)" UNINST="$(UNINST)" install
+	cd $(math_intervalsearch_dir) && $(MAKE) $(ORCA_INSTALL_PERL_MODULE_FLAGS) install
 
 install_perl_rrdtool: make_rrdtool
-	cd $(rrdtool_dir)/perl-shared && $(MAKE) OPTIMIZE="$(CFLAGS)" UNINST="$(UNINST)" install
+	cd $(rrdtool_dir)/perl-shared && $(MAKE) $(ORCA_INSTALL_PERL_MODULE_FLAGS) install
 
 install_perl_storable: $(storable_dir)/Makefile
-	cd $(storable_dir) && $(MAKE) OPTIMIZE="$(CFLAGS)" UNINST="$(UNINST)" install
+	cd $(storable_dir) && $(MAKE) $(ORCA_INSTALL_PERL_MODULE_FLAGS) install
 
 clean: $(CLEAN_TARGETS)
 

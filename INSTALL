@@ -14,13 +14,11 @@ Outline:
 
  6) Test if the Perl modules properly compiled.
 
- 7) Install any necessary Perl modules.
+ 7) Doing an upgrade from Orca 0.23 or older?  Follow these steps.
 
- 8) Doing an upgrade from Orca 0.23 or older?  Follow these steps.
+ 8) Install Orca and Orca's Perl modules.
 
- 9) Install Orca.
-
-10) [Solaris Only and Optional] Install orcallator.
+ 9) [Solaris Only and Optional] Install orcallator.
     a) Install the SE toolkit.
     b) Apply a patch to the SE 3.0 toolkit if necessary.
     c) Examine Orca/orcallator programs.
@@ -29,9 +27,9 @@ Outline:
     e) Run start_orcallator on all systems.
     f) Edit orcallator.cfg.
 
-11) [Systems with System Statistics in /proc, i.e. Linux] Install procallator.
+10) [Systems with System Statistics in /proc, i.e. Linux] Install procallator.
 
-12) Run Orca.
+11) Run Orca.
 
 
 
@@ -298,27 +296,9 @@ Outline:
     To check if the Perl modules were properly compiled run the
     following command:
 
-    % make test_modules
+    % make check
 
- 7) Install any necessary Perl modules.
-
-    To automatically install these modules into Perl run the following
-    command:
-
-    % make install_modules
-
-    This command will pass UNINST=1 down to the Perl Makefile's so
-    that any old installed Perl modules are properly deleted.
-    Otherwise, the Perl installation may have the old and new modules
-    installed and due to Perl's module search order, Perl may use the
-    older module instead of the newer installed module.
-
-    If you do not wish to delete older Perl modules, then run this
-    command:
-
-    % make install_modules UNINST=0
-
- 8) Doing an upgrade from Orca 0.23 or older?  Follow these steps.
+ 7) Doing an upgrade from Orca 0.23 or older?  Follow these steps.
 
     Due to various changes to Orca between releases, many of the RRD,
     HTML and image filenames that Orca creates have changed names.
@@ -381,15 +361,20 @@ Outline:
        kill any running percollator.se's before installing and running
        the following commands
 
- 9) Install Orca.
+ 8) Install Orca and Orca's Perl modules.
 
-    Run the following command to install Orca:
+    Run the following command to install Orca and all of the Perl
+    modules Orca needs to properly run.
 
     % make install
 
+    This will install the Perl modules into $libdir/perl, so it should
+    not overwrite or clobber the existing Perl modules that you
+    already have on your system.
+
     This may also install librrd.so in your $libdir.
 
-10) [Solaris Only and Optional] Install orcallator.
+ 9) [Solaris Only and Optional] Install orcallator.
     a) Install the SE toolkit.
 
        Get the SE toolkit and use the installation instructions at
@@ -474,7 +459,7 @@ Outline:
        of date, which may signify a orcallator program that has died
        and is no longer gathering data.
 
-11) [Systems with System Statistics in /proc, i.e. Linux] Install procallator.
+10) [Systems with System Statistics in /proc, i.e. Linux] Install procallator.
     a) Install procallator boot and halt time start/stop scripts in
        /etc/init.d/ and /etc/rc?.d/.
 
@@ -512,7 +497,7 @@ Outline:
        signify a procallator program that has died and is no longer
        gathering data.
 
-12) Run Orca.
+11) Run Orca.
 
     Log into the system that will run Orca and run the command:
 

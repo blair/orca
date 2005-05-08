@@ -35,7 +35,7 @@ $| = 1;
 BEGIN {
   my $prefix      = "@prefix@";
   my $exec_prefix = "@exec_prefix@";
-  my $libdir      = "@libdir@";
+  my $libdir      = "@libdir@/perl";
   unshift(@INC, $libdir);
 }
 

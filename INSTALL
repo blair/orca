@@ -2,23 +2,24 @@ Outline:
 
  1) Install Perl 5.005_03 or later.
 
- 2) Decide where Orca's binaries, raw data, RRD and HTML directories
-    will reside.  Make sure performance concerns are handled.
+ 2) Configure Orca.
+    a) Overview of the 'configure' script.
+    b) Decide where Orca's binaries, raw data, RRD and HTML
+       directories will reside.  Make sure performance concerns are
+       handled.
+    c) Find out where Orca's input files are located.
+    d) Other 'configure' command line options.
+    e) Run the configure script to configure Orca.
 
- 3) Determine which Perl modules need compiling and installing.
-    Optionally download newer versions of these modules.
+ 3) Make Orca and any necessary Perl modules.
 
- 4) Configure Orca.
+ 4) Test if the the Perl modules were properly compiled.
 
- 5) Make Orca and any necessary Perl modules.
+ 5) Doing an upgrade from Orca 0.23 or older?  Follow these steps.
 
- 6) Test if the Perl modules properly compiled.
+ 6) Install Orca and any Perl modules Orca requires.
 
- 7) Doing an upgrade from Orca 0.23 or older?  Follow these steps.
-
- 8) Install Orca and Orca's Perl modules.
-
- 9) [Solaris Only and Optional] Install orcallator.
+ 7) [Solaris Only and Optional] Install orcallator.
     a) Install the SE toolkit.
     b) Apply a patch to the SE 3.0 toolkit if necessary.
     c) Examine Orca/orcallator programs.
@@ -27,9 +28,9 @@ Outline:
     e) Run start_orcallator on all systems.
     f) Edit orcallator.cfg.
 
-10) [Systems with System Statistics in /proc, i.e. Linux] Install procallator.
+ 8) [Systems with System Statistics in /proc, i.e. Linux] Install procallator.
 
-11) Run Orca.
+ 9) Run Orca.
 
 
 
@@ -38,7 +39,7 @@ Outline:
     This step is too large to go into here.  The bottom line is to
     follow the instructions at
 
-       http://www.perl.com/pub/language/info/software.html
+       http://www.perl.com/download.csp
 
     or download a binary package from
 
@@ -46,83 +47,128 @@ Outline:
 
     if you happen to run Linux, Solaris or Windows.
 
- 2) Decide where Orca's binaries, raw data, RRD and HTML directories
-    will reside.  Make sure performance concerns are handled.
+    If you run Solaris, you can also get a binary Perl package from
 
-    First choose the location where Orca will be installed.  By
-    default, Orca will install into the following structure:
+        http://www.sunfreeware.com/
 
-    $prefix                     Prefix, set with --prefix
-    $prefix/bin                 Binaries, set with --bindir
-    $prefix/lib                 Libraries, set with --libdir
-    $prefix/man                 Manual pages, set with --mandir
-    $prefix/var/orca            Data storage directory, set with --with-var-dir
-    $prefix/var/orca/rrd        RRD directory, set with --with-rrd-dir
+ 2) Configure Orca.
 
-    The HTML output directory is not set by default and must be
-    specified by the Orca administrator.
+    Orca is configured when the user runs the 'configure' script
+    located in the same directory as this INSTALL file.
 
-    By default $prefix is set to /usr/local.  The -- arguments shown
-    above should be given to the configure script described below
-    which configures Orca.  If you want to change the installation
-    location of Orca, say into /opt/orca, you would do so by passing
-    --prefix=/opt/orca to the configure script.
+    a) Overview of the 'configure' script.
 
-    Because Orca is extremely IO intensive, I recommend the following
-    architecture.  Choose one host that can locally mount all the RRD
-    data files and the directory containing the HTML and image files
-    that are viewed by Orca users.  If these two locations must be on
-    separate hosts and one directory must be NFS mounted to the Orca
-    host, then I recommend that the RRD data file be local instead of
-    the HTML and image files, since the RRD files are much more
-    read/write intensive.
+       The 'configure' shell script attempts to guess correct values
+       for various system-dependent variables used during compilation.
+       It uses those values to create a 'Makefile' in each directory
+       of the package.  It may also create one or more '.h' files
+       containing system-dependent definitions.  Finally, it creates a
+       shell script 'config.status' that you can run in the future to
+       recreate the current configuration, and a file 'config.log'
+       containing compiler output (useful mainly for debugging
+       'configure').
 
-    If you are going to use the orcallator.se Orca addon to monitor
-    your Sun Solaris systems, then you will in addition need to decide
-    where to have orcallator store its data files.  By default, these
-    data files are written to once every 5 minutes, so IO is not an
-    issue.  The issue here is that orcallator needs to run as root and
-    all of the orcallator output files from all your hosts need to be
-    written into the same NFS shared directory that Orca can read.  It
-    is not too important that the directory that orcallator writes
-    into be mounted locally on the machine that Orca will run on,
-    since Orca will only read each file every five minutes.
+       The 'configure' script will find where your version of Perl and
+       some other assorted programs are located.  It will also
+       determine if you have the necessary Perl modules to run Orca.
+       If it does not find the required Perl modules, the modules that
+       are included with the Orca distribution will be built.
 
-    If you are running orcallator on a system running a web, proxy, or
-    Squid server, you can have orcallator watch the logs generated by
-    these programs.  In this case, note the location of the log file
-    for the configure script.
+       The 'configure' script will also determine if you run one of
+       the operating systems where a shared RRDtool library
+       (librrd.so) will be built and installed in $libdir.
 
- 3) Configure Orca.
+       The configure script takes a number of optional command line
+       arguments that customize its behavior.  All command line
+       arguments begin with the -- characters.  To see the command
+       line arguments that 'configure' takes, run it as
 
-    --prefix=DIR
-    --with-var-dir=DIR
-    --with-rrd-dir=DIR
-    --with-html-dir=DIR
+          ./configure --help
 
-       Now that you have decided where the RRD, HTML, and optionally
-       the orcallator data files and the web server access logs, are
-       located, the configure script can be passed the following
-       arguments:
+       or if you are using 'csh' on an old version of System V, you
+       might need to type
 
-          --prefix=ORCA_PREFIX_DIRECTORY
-          --with-var-dir=VAR_DIR_LOCATION
-          --with-rrd-dir=RRD_DIR_LOCATION
-          --with-html-dir=HTML_DIR_LOCATION
+          sh ./configure --help
 
-       If you choose nothing else, the --with-html-dir must always be
-       used, otherwise configure will fail.
+       instead to prevent 'csh' from trying to execute 'configure'
+       itself.
 
-    --with-ncsa-log=LOG_FILENAME
-    --with-proxy-log=LOG_FILENAME
-    --with-squid-log=LOG_FILENAME
+       Take a look through the available options, the important ones
+       are be discussed below.
 
-       If you use a web, proxy, or Squid server, you can have
-       orcallator gather statistics from the log file.  Use this table
-       to determine the appropriate configure command line option to
-       use.  LOG_FILENAME should be the location of the log file to
-       monitor.  Note that Apache and NCSA servers use the Common Log
-       Format.
+    b) Decide where Orca's binaries, raw data, RRD and HTML
+       directories will reside.  Make sure performance concerns are
+       handled.
+
+       First choose the location where Orca will be installed.  By
+       default, Orca will install into the following structure:
+
+       $prefix                  Prefix, set with --prefix
+       $prefix/bin              Binaries, set with --bindir
+       $prefix/lib              Libraries, set with --libdir
+       $prefix/man              Manual pages, set with --mandir
+       $prefix/var/orca         Data storage directory, set with --with-var-dir
+       $prefix/var/orca/rrd     RRD directory, set with --with-rrd-dir
+
+       By default $prefix is set to /usr/local.  The -- arguments
+       shown above should be given to the 'configure'.  If you want to
+       change the installation location of Orca, say into /opt/orca,
+       you would do so by passing --prefix=/opt/orca to the
+       'configure' script.
+
+       Because Orca is extremely IO intensive, we recommend the
+       following architecture.  Choose one host that can locally mount
+       all the RRD data files and the directory containing the HTML
+       and image files that are viewed by Orca users.  If these two
+       locations must be on separate hosts and one directory must be
+       NFS mounted to the Orca host, then I recommend that the RRD
+       data file be local instead of the HTML and image files, since
+       the RRD files are much more read/write intensive.
+
+       Orca requires a separate data gathering process to measure and
+       save the data that Orca will plot.  You need to decide where
+       these data gathering processes will save its data files.  Most
+       data gatherers take a measurement and write to their data files
+       once every 5 minutes, so IO is not an issue.  The issue here is
+       that most data gatherers need to run as root and all of the
+       data files from all your hosts need to be written into the same
+       NFS shared directory that Orca can read.  It is not too
+       important that the directory that data gatherer writes into be
+       mounted locally on the machine that Orca will run on, since
+       Orca will only read each file every five minutes.
+
+       The HTML output directory is not set by default and must be
+       specified by the Orca administrator with the 
+
+          --with-html-dir=DIR
+
+       command line option.  If you choose nothing else, the
+       --with-html-dir must always be used, otherwise 'configure' will
+       fail.
+
+       The HTML output directory will normally be accessible by a web
+       server so that Orca's files can be viewed in a browser.  It is
+       less important that this directory be locally mounted than the
+       RRD directory, as this directory sees much less IO than the RRD
+       directory.  Orca is smart enough not to update plots that do
+       not need to be updated even when new data is loaded.  For
+       example, Orca's daily plots do not need to be updated but once
+       a day, so even though measurements may be taken every five
+       minutes, only a measurement taken in the new day will cause
+       Orca to generate an updated plot.
+
+    c) Find out where Orca's input files are located.
+
+       If you are running a Solaris system and use a web, proxy, or
+       Squid server, you can have the Solaris orcallator gather
+       statistics from the log file.  Use this table to determine the
+       appropriate configure command line option to use.  LOG_FILENAME
+       should be the location of the log file to monitor.  Note that
+       Apache and NCSA servers use the Common Log Format.
+
+       --with-ncsa-log=LOG_FILENAME
+       --with-proxy-log=LOG_FILENAME
+       --with-squid-log=LOG_FILENAME
 
        Log Type                                   Configure Option
        -----------------------------------------------------------
@@ -130,175 +176,57 @@ Outline:
        Common Log Format with Proxy Information   --with-proxy-log
        Squid Log Format                           --with-squid-log
 
-       Configure will let you use only one of these options.
+       The 'configure' script will let you use only one of these
+       options.
 
-    --with-warn-email
+    d) Other 'configure' command line options.
 
-       Orca has a 'warn_email' configuration setting which is set to
-       an email address where Orca should send its warning messages.
-       By default this address is 'root@localhost'.  You can use this
-       configure option to change the default email address to use in
-       the Orca configuration scripts in this distribution.
+       --with-warn-email
 
-    The configure script will find where your version of Perl and some
-    other assorted programs are located.  It will also determine if
-    you have the necessary Perl modules to run Orca.  If it does not
-    find the required modules, the modules that are included with the
-    Orca distribution will be built.
+          Orca has a 'warn_email' configuration setting which is set
+          to an email address where Orca should send its warning
+          messages.  By default this address is 'root@localhost'.  You
+          can use this configure option to change the default email
+          address to use in the Orca configuration scripts in this
+          distribution.
 
-    Configure will also determine if you run one of the operating
-    systems where a shared librrd.so library will be built and
-    installed in $libdir.
+    e) Run the configure script to configure Orca.
 
- 4) Determine which Perl modules need compiling and installing.
-    Optionally download newer versions of these modules.
+       --prefix=DIR
+       --with-var-dir=DIR
+       --with-rrd-dir=DIR
+       --with-html-dir=DIR
 
-    The Orca distribution includes the following Perl modules.  Some
-    of them are required for Orca to execute and some are included as
-    modules that may be needed to help process data loaded by Orca
-    (such as Date::Parse) or to profile Orca for performance
-    improvements (Devel::DProf).
+          Now that you have decided where the RRD, HTML, and
+          optionally the orcallator data files and the web server
+          access logs, are located, the configure script can be passed
+          the following arguments:
 
-    Here, the module version refers to the $VERSION variable in the
-    Perl module that is loaded by Perl and the package version refers
-    to the version number in the file name of the .tar.gz that
-    includes the Perl module.
+             --prefix=ORCA_PREFIX_DIRECTORY
+             --with-var-dir=VAR_DIR_LOCATION
+             --with-rrd-dir=RRD_DIR_LOCATION
+             --with-html-dir=HTML_DIR_LOCATION
 
-    Module                  Required       Required     Package Version
-    Name                    Module         Package      Included With
-                            Version        Version      Orca
-    -------------------------------------------------------------------
-    Data::Dumper            >= 2.101       >= 2.101     2.101
-    Date::Parse             Not required by Orca        2.24
-    Devel::DProf            Not required by Orca        19990108
-    Digest::MD5             >= 2.33        >= 2.33      2.33
-    Math::IntervalSearch    >= 1.05        >= 1.05      1.05
-    RRDs                    >= 1.000502    >= 1.0.50    1.0.50
-    Storable                >= 2.14        >= 2.14      2.14
-    Time::HiRes             Not required by Orca        1.66
+    Now run the configure script like
 
-    All eight of these modules are included with the Orca distribution
-    in the packages directory.  When you configure Orca in step 3),
-    configure will determine if you need any of these modules compiled
-    and installed.  configure will then modify the packages/Makefile
-    file to only build those modules that need to be installed.
+      ./configure [flags]
 
-    All of the modules except for Date::Parse and Math::IntervalSearch
-    require a C compiler and generate shared libraries by default.
+    with the appropriate flags you want.
 
-    If you wish to download and install modules that have been updated
-    since this Orca package has been assembled, please use the
-    following information.
-
-    Data::Dumper
-
-      http://www.perl.com/CPAN/authors/id/G/GS/GSAR/Data-Dumper-2.101.tar.gz
-
-      % gunzip -c Data-Dumper-2.101.tar.gz | tar xvf -
-      % cd Data-Dumper-2.101
-      % perl Makefile.PL
-      % make
-      % make test
-      % make install UNINST=1
-
-    Date::Parse
-
-      http://www.perl.com/CPAN/authors/id/G/GB/GBARR/TimeDate-1.16.tar.gz
-
-      % gunzip -c TimeDate-1.16.tar.gz | tar xvf -
-      % cd TimeDate-1.16
-      % perl Makefile.PL
-      % make
-      % make test
-      % make install UNINST=1
-
-    Devel::DProf
-
-      http://www.perl.com/CPAN/authors/id/I/IL/ILYAZ/modules/DProf-19990108.tar.gz
-
-      % gunzip -c DProf-19990108.tar.gz | tar xvf -
-      % cd DProf-19990108
-      % perl Makefile.PL
-      % make
-      % make test
-      % make install UNINST=1
-
-    Digest::MD5
-
-      http://www.perl.com/CPAN/authors/id/G/GA/GAAS/Digest-MD5-2.33.tar.gz
-
-      % gunzip -c Digest-MD5-2.33.tar.gz | tar xvf -
-      % cd Digest-MD5-2.33
-      % perl Makefile.PL
-      % make
-      % make test
-      % make install UNINST=1
-
-    Math::IntervalSearch
-
-      http://www.perl.com/CPAN/authors/id/B/BZ/BZAJAC/Math-Interpolate-1.05.tar.gz
-
-      % gunzip -c Math-Interpolate-1.05.tar.gz | tar xvf -
-      % cd Math-Interpolate-1.05
-      % perl Makefile.PL
-      % make
-      % make test
-      % make install UNINST=1
-
-    RRDs
-
-      http://people.ee.ethz.ch/~oetiker/webtools/rrdtool/pub/rrdtool-1.0.x/
-
-      RRDs is the Perl module that comes with RRDtool, a package
-      written by Tobias Oetiker.
-
-      % gunzip -c rrdtool-1.0.??.tar.gz | tar xvf -
-      % cd rrdtool-1.0.??
-      % sh configure --verbose
-      % make
-      % cd perl-shared
-      % make test
-      % make install UNINST=1
-
-      For large installations, I recommend that RRDs be compiled with
-      optimization turned on.
-
-    Storable
-
-      http://www.perl.com/CPAN/authors/id/A/AM/AMS/Storable-2.14.tar.gz
-
-      % gunzip -c Storable-2.14.tar.gz | tar xvf -
-      % cd Storable-2.14
-      % perl Makefile.PL
-      % make
-      % make test
-      % make install UNINST=1
-
-    Time::HiRes
-
-      http://www.perl.com/CPAN/authors/id/J/JH/JHI/Time-HiRes-1.66.tar.gz
-
-      % gunzip -c Time-HiRes-1.66.tar.gz | tar xvf -
-      % cd Time-HiRes-1.66
-      % perl Makefile.PL
-      % make
-      % make test
-      % make install UNINST=1
-
- 5) Make Orca and any necessary Perl modules.
+ 3) Make Orca and any necessary Perl modules.
 
     To make Orca and these Perl modules run the following command:
 
     % make                [ To optimize: make CFLAGS=-O or CFLAGS=-O3 ]
 
- 6) Test if the Perl modules properly compiled.
+ 4) Test if the the Perl modules were properly compiled.
 
     To check if the Perl modules were properly compiled run the
     following command:
 
     % make check
 
- 7) Doing an upgrade from Orca 0.23 or older?  Follow these steps.
+ 5) Doing an upgrade from Orca 0.23 or older?  Follow these steps.
 
     Due to various changes to Orca between releases, many of the RRD,
     HTML and image filenames that Orca creates have changed names.
@@ -361,20 +289,20 @@ Outline:
        kill any running percollator.se's before installing and running
        the following commands
 
- 8) Install Orca and Orca's Perl modules.
+ 6) Install Orca and any Perl modules Orca requires.
 
-    Run the following command to install Orca and all of the Perl
-    modules Orca needs to properly run.
+    Run the following command to install Orca and all the Perl modules
+    Orca uses.
 
     % make install
 
     This will install the Perl modules into $libdir/perl, so it should
-    not overwrite or clobber the existing Perl modules that you
+    not overwrite or clobber any existing Perl modules that you
     already have on your system.
 
     This may also install librrd.so in your $libdir.
 
- 9) [Solaris Only and Optional] Install orcallator.
+ 7) [Solaris Only and Optional] Install orcallator.
     a) Install the SE toolkit.
 
        Get the SE toolkit and use the installation instructions at
@@ -459,7 +387,7 @@ Outline:
        of date, which may signify a orcallator program that has died
        and is no longer gathering data.
 
-10) [Systems with System Statistics in /proc, i.e. Linux] Install procallator.
+ 8) [Systems with System Statistics in /proc, i.e. Linux] Install procallator.
     a) Install procallator boot and halt time start/stop scripts in
        /etc/init.d/ and /etc/rc?.d/.
 
@@ -497,7 +425,7 @@ Outline:
        signify a procallator program that has died and is no longer
        gathering data.
 
-11) Run Orca.
+ 9) Run Orca.
 
     Log into the system that will run Orca and run the command:
 

@@ -46,6 +46,7 @@ test: check
 
 install: all
 	$(MKDIR) $(DESTDIR)$(bindir)
+	$(MKDIR) $(DESTDIR)$(sysconfdir)
 	$(MKDIR) $(DESTDIR)$(RAW_PROCALLATOR_DIR)
 	$(MKDIR) $(DESTDIR)$(RRD_PROCALLATOR_DIR)
 	@for file in `echo $(BIN_TARGETS)`; do \

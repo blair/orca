@@ -114,6 +114,7 @@ sub name_to_fsname {
   $name =~ s:\s+:_:g;
   $name =~ s:%:_pct_:g;
   $name =~ s:#:_num_:g;
+  $name =~ s:\?:_Q_:g;
   $name =~ s:\*:_X_:g;
 
   # Trim anything containing orcallator and orca to o.

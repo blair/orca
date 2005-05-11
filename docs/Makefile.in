@@ -29,8 +29,8 @@ check:
 test: check
 
 install: all
-	$(MKDIR) $(mandir)
-	$(INSTALL) -m 0644 orca.man $(mandir)/orca.1
+	$(MKDIR) $(DESTDIR)$(mandir)
+	$(INSTALL) -m 0644 orca.man $(DESTDIR)$(mandir)/orca.1
 
 Makefile: Makefile.in
 	cd .. && CONFIG_FILES=docs/Makefile ./config.status

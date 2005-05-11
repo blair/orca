@@ -32,29 +32,29 @@ check:
 test: check
 
 install: all
-	$(MKDIR) $(libdir)/perl/Orca
-	$(MKDIR) $(libdir)/SE/3.2.1
-	$(MKDIR) $(libdir)/SE/3.3
-	$(MKDIR) $(libdir)/SE/3.3.1
-	$(MKDIR) $(libdir)/SE/3.4
+	$(MKDIR) $(DESTDIR)$(libdir)/perl/Orca
+	$(MKDIR) $(DESTDIR)$(libdir)/SE/3.2.1
+	$(MKDIR) $(DESTDIR)$(libdir)/SE/3.3
+	$(MKDIR) $(DESTDIR)$(libdir)/SE/3.3.1
+	$(MKDIR) $(DESTDIR)$(libdir)/SE/3.4
 	@for f in Orca/*.pm; do \
-	  echo $(INSTALL) -m 0644 $$f $(libdir)/perl/Orca; \
-	  $(INSTALL) -m 0644 $$f $(libdir)/perl/Orca || exit 1; \
+	  echo $(INSTALL) -m 0644 $$f $(DESTDIR)$(libdir)/perl/Orca; \
+	  $(INSTALL) -m 0644 $$f $(DESTDIR)$(libdir)/perl/Orca || exit 1; \
 	done
 	@if test -d Orca/Config; then \
-	  echo $(MKDIR) $(libdir)/perl/Orca/Config; \
-	  $(MKDIR) $(libdir)/perl/Orca/Config || exit 1; \
+	  echo $(MKDIR) $(DESTDIR)$(libdir)/perl/Orca/Config; \
+	  $(MKDIR) $(DESTDIR)$(libdir)/perl/Orca/Config || exit 1; \
 	  for f in Orca/Config/*.pm; do \
-	    echo $(INSTALL) -m 0644 $$f $(libdir)/perl/Orca/Config; \
-	    $(INSTALL) -m 0644 $$f $(libdir)/perl/Orca/Config || exit 1; \
+	    echo $(INSTALL) -m 0644 $$f $(DESTDIR)$(libdir)/perl/Orca/Config; \
+	    $(INSTALL) -m 0644 $$f $(DESTDIR)$(libdir)/perl/Orca/Config || exit 1; \
 	  done; \
 	fi
 	@for d in SE/*; do \
 	  test ! -d $$d && continue; \
 	  for f in $$d/*; do \
 	    test ! -f $$f && continue; \
-	    echo $(INSTALL) -m 0644 $$f $(libdir)/$$d; \
-	    $(INSTALL) -m 0644 $$f $(libdir)/$$d || exit 1; \
+	    echo $(INSTALL) -m 0644 $$f $(DESTDIR)$(libdir)/$$d; \
+	    $(INSTALL) -m 0644 $$f $(DESTDIR)$(libdir)/$$d || exit 1; \
 	  done \
 	done
 	@echo "cd ..; sh -c 'svnversion .'"
@@ -62,15 +62,15 @@ install: all
 	echo "Subversion reversion of Orca is: $$current_rev"; \
 	if test "$$current_rev" != "" && \
 	  test "$$current_rev" != "exported"; then \
-	  echo Fixing svn revision number in $(libdir)/perl/Orca/Constants.pm; \
+	  echo Fixing svn revision number in $(DESTDIR)$(libdir)/perl/Orca/Constants.pm; \
 	  echo $(PERL) -w -p -i \
 	    -e 's/^(\$$ORCA_VER_REVISION\s*=\s*).*/$${1}"'$$current_rev'";/' \
-	    $(libdir)/perl/Orca/Constants.pm; \
+	    $(DESTDIR)$(libdir)/perl/Orca/Constants.pm; \
 	  $(PERL) -w -p -i \
 	    -e 's/^(\$$ORCA_VER_REVISION\s*=\s*).*/$${1}"'$$current_rev'";/' \
-	    $(libdir)/perl/Orca/Constants.pm || exit 1; \
+	    $(DESTDIR)$(libdir)/perl/Orca/Constants.pm || exit 1; \
 	else \
-	  echo Not fixing svn revision number in $(libdir)/perl/Orca/Constants.pm; \
+	  echo Not fixing svn revision number in $(DESTDIR)$(libdir)/perl/Orca/Constants.pm; \
 	fi
 
 clean:

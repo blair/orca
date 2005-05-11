@@ -38,10 +38,10 @@ check:
 test: check
 
 install: all
-	$(MKDIR) $(bindir)
+	$(MKDIR) $(DESTDIR)$(bindir)
 	@for file in $(BIN_TARGETS); do \
-	  echo $(INSTALL) $$file $(bindir); \
-	  $(INSTALL) $$file $(bindir) || exit 1; \
+	  echo $(INSTALL) $$file $(DESTDIR)$(bindir); \
+	  $(INSTALL) $$file $(DESTDIR)$(bindir) || exit 1; \
 	done
 
 upgrade: upgrade_installation

@@ -25,10 +25,10 @@ rotate_orca_graphs.sh: rotate_orca_graphs.sh.in
 	chmod 0755 $@
 
 install:
-	$(MKDIR) $(bindir)
-	@for file in $(TARGETS); do			\
-		echo $(INSTALL) $$file $(bindir);	\
-		$(INSTALL) $$file $(bindir);		\
+	$(MKDIR) $(DESTDIR)$(bindir)
+	@for file in $(TARGETS); do \
+		echo $(INSTALL) $$file $(DESTDIR)$(bindir); \
+		$(INSTALL) $$file $(DESTDIR)$(bindir) || exit 1; \
 	done
 
 clean:

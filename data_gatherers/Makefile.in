@@ -48,7 +48,7 @@ distclean-local: clean-local
 	$(RM) Makefile
 
 clean-recursive distclean-recursive:
-        for subdir in $(SUBDIRS); do \
+	for subdir in $(SUBDIRS); do \
           target=`echo $@ | sed 's/-recursive//'`; \
           echo making $$target in $$subdir; \
           (cd $$subdir && $(MAKE) $$target) || exit 1; \

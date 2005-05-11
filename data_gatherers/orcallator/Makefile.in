@@ -47,23 +47,23 @@ check:
 test: check
 
 install: all
-	$(MKDIR) $(bindir)
-	$(MKDIR) $(libdir)
-	$(MKDIR) $(sysconfdir)
-	$(MKDIR) $(RAW_ORCALLATOR_DIR)
-	$(MKDIR) $(RRD_ORCALLATOR_DIR)
+	$(MKDIR) $(DESTDIR)$(bindir)
+	$(MKDIR) $(DESTDIR)$(libdir)
+	$(MKDIR) $(DESTDIR)$(sysconfdir)
+	$(MKDIR) $(DESTDIR)$(RAW_ORCALLATOR_DIR)
+	$(MKDIR) $(DESTDIR)$(RRD_ORCALLATOR_DIR)
 	@for file in `echo $(BIN_TARGETS)`; do \
-	  echo $(INSTALL) $$file $(bindir); \
-	  $(INSTALL) $$file $(bindir) || exit 1; \
+	  echo $(INSTALL) $$file $(DESTDIR)$(bindir); \
+	  $(INSTALL) $$file $(DESTDIR)$(bindir) || exit 1; \
 	done
-	$(INSTALL) -m 0644 orcallator.se $(libdir)
-	if test -r $(sysconfdir)/orcallator.cfg; then \
+	$(INSTALL) -m 0644 orcallator.se $(DESTDIR)$(libdir)
+	if test -r $(DESTDIR)$(sysconfdir)/orcallator.cfg; then \
 	  date="`date +%Y-%m-%d-%H:%M:%S`"; \
-	  echo $(INSTALL) -m 0644 orcallator.cfg $(sysconfdir)/orcallator.cfg.$$date; \
-	  $(INSTALL) -m 0644 orcallator.cfg $(sysconfdir)/orcallator.cfg.$$date || exit 1; \
+	  echo $(INSTALL) -m 0644 orcallator.cfg $(DESTDIR)$(sysconfdir)/orcallator.cfg.$$date; \
+	  $(INSTALL) -m 0644 orcallator.cfg $(DESTDIR)$(sysconfdir)/orcallator.cfg.$$date || exit 1; \
 	else \
-	  echo $(INSTALL) -m 0644 orcallator.cfg $(sysconfdir); \
-	  $(INSTALL) -m 0644 orcallator.cfg $(sysconfdir) || exit 1; \
+	  echo $(INSTALL) -m 0644 orcallator.cfg $(DESTDIR)$(sysconfdir); \
+	  $(INSTALL) -m 0644 orcallator.cfg $(DESTDIR)$(sysconfdir) || exit 1; \
 	fi
 
 orcallator_run_at_boot: all

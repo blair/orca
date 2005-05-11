@@ -22,12 +22,17 @@ ORCA_MAKE_DEFINES                = CC='$(CC)' CFLAGS='$(CFLAGS)'
 
 # Flags to specify where the Perl modules will be installed.  Install
 # everything except the files that Perl needs to load the module back
-# into an empty directory created in this source tree.
+# into an empty directory created in this source tree.  Because the
+# Perl Makefile's honor $(DESTDIR) and by default the files that
+# should not be installed into $(perl_libdir) would be installed into
+# $(DESTDIR)$(srcdir_perl_install_rootdir), explicitly prefix the
+# $(INSTALL*) paths with $(DESTDIR) and clear $(DESTDIR).
 PERL_INSTALL_LOCATIONS_FLAGS     = PREFIX=$(srcdir_perl_install_rootdir) \
-                                   INSTALLPRIVLIB=$(perl_libdir) \
-                                   INSTALLARCHLIB=$(perl_libdir) \
-                                   INSTALLSITELIB=$(perl_libdir) \
-                                   INSTALLSITEARCH=$(perl_libdir)
+                                   INSTALLPRIVLIB=$(DESTDIR)$(perl_libdir) \
+                                   INSTALLARCHLIB=$(DESTDIR)$(perl_libdir) \
+                                   INSTALLSITELIB=$(DESTDIR)$(perl_libdir) \
+                                   INSTALLSITEARCH=$(DESTDIR)$(perl_libdir) \
+                                   DESTDIR=
 
 # Flags to pass to '$(PERL) Makefile.PL' to create the Makefile for a
 # Perl module.
@@ -199,6 +204,10 @@ test_rrdtool: make_rrdtool
 test_storable: $(storable_dir)/Makefile
 	cd $(storable_dir) && $(MAKE) $(ORCA_MAKE_PERL_MODULE_FLAGS) test
 
+# This directory is explicitly located in the source directory as a
+# place to install Perl files that should not be installed into the
+# final location with Orca, such as the Perl module manual pages.  So
+# $(DESTDIR) should not appear here.
 $(srcdir_perl_install_rootdir):
 	$(MKDIR) $(srcdir_perl_install_rootdir)
 

@@ -17,7 +17,7 @@ case "$1" in
 
 	;;
   stop)
-	action "Stoping procallator" kill `ps -ef | grep procallat | grep -v grep | tr -s " " | cut -f 2 -d " "`
+	action "Stopping procallator" kill `ps -ef | grep procallat | grep -v grep | tr -s " " | cut -f 2 -d " "`
 	
 	;;
   *)

@@ -3,8 +3,7 @@ Procallator TODO list:
 	- Document and optimize collectorn source code
 	- Write better config file for network and NFS stats
 	- Add web server stats
-	- LVM stats
-	- Organize and modularize code
+	- LVM statsi
 
 
 Copyright (C) 2001 Guilherme Carvalho Chehab.  All Rights Reserved

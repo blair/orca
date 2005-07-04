@@ -1,5 +1,5 @@
 server=Orca_Server::package
 host=`hostname` 
-cd @VAR_DIR@/procallator:/$host
+cd /usr/local/var/orca/$host
 rsync --times --delete --recursive . $server/$host
 cd /

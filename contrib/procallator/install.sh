@@ -1,11 +1,6 @@
 cp procallator.pl /usr/local/bin
 cp procallator /etc/rc.d/init.d
 ln -s /etc/rc.d/init.d/procallator /etc/rc.d/rc3.d/S99procallator
-ln -s /etc/rc.d/init.d/procallator /etc/rc.d/rc3.d/K10procallator
-ln -s /etc/rc.d/init.d/procallator /etc/rc.d/rc5.d/S99procallator
-ln -s /etc/rc.d/init.d/procallator /etc/rc.d/rc5.d/K10procallator
-chmod 755 /etc/rc.d/init.d/procallator
-chmod 755 /usr/local/bin/procallator.pl
 /etc/rc.d/init.d/procallator start
 echo "Dont forget to copy procallator.cfg to your orca server, and start a new instance of orca using this file as the config file"
 echo "To copy the collected files I suggest the use of rsync"

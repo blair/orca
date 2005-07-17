@@ -5,6 +5,7 @@
 # $LastChangedDate$
 # $LastChangedBy$
 
+
 # Require at least this version of Orca.
 require			Orca 0.28.0
 
@@ -41,28 +42,27 @@ find_times		0:10 1:00 6:00 12:00 19:00
 
 # This defines the email address of people to warn when a file that is
 # being updated constantly stops being updated.  For mathematical
-# expressions use the word 'interval' to get the interval number for
+# expressions use the word `interval' to get the interval number for
 # the data source.
 warn_email		@WARN_EMAIL@
-late_interval		interval + 30
+late_interval		interval + 30 
 
 # These parameters specify which plots to generate.
-generate_hourly_plot	0
-generate_daily_plot	1
-generate_weekly_plot	1
-generate_monthly_plot	1
-generate_quarterly_plot	1
-generate_yearly_plot	1
+generate_hourly_plot    0
+generate_daily_plot     1
+generate_weekly_plot    1
+generate_monthly_plot   1
+generate_quarterly_plot 1
+generate_yearly_plot    1
 
 # This sets the HTML markup that is placed at the very top of every
-# web page and is primarily used to display the site's logo.
-html_page_header	<h3>Put your site's logo here.</h3>
+# web page and is primarly used to display the site's logo.
+html_page_header       <h3>Put your site's logo here.</h3>
 
-# This sets the text, that should not be HTML markup, that is used
-# only in the main index.html file.  It is used in the <title></title>
-# element and also placed in the HTML body after the html_page_header
-# in a <h1></h1> element index.html file.
-html_top_title		Orca Host Status
+# This sets the text that is placed in the pages' <title></title>
+# element and just after the html_page_header HTML markup text is
+# placed on the page.
+html_top_title                Orca Host Status
 
 # This sets the HTML markup that is placed at the bottom of every web
 # page.
@@ -87,7 +87,7 @@ html_page_footer
 #   generated RRD data files.
 
 group procallator {
-find_files		@VAR_DIR@/procallator/(.*)/(?:(?:procallator)|(?:proccol))-\d{4}-\d{2}-\d{2}(?:-\d{3,})?(?:\.(?:Z|gz|bz2))?
+find_files		/usr/local/var/orca/procallator/(.*)/(?:(?:procallator)|(?:proccol))-\d{4}-\d{2}-\d{2}(?:-\d{3,})(?:\.(?:Z|gz|bz2))?
 column_description	first_line
 date_source		column_name timestamp
 interval		300
@@ -104,28 +104,16 @@ filename_compare	sub {
 }
 
 plot {
-title			%g Uptime
-source			procallator
-data			uptime / 86400
-data			uptime / ( 86400 * 7 )
-data			uptime / ( 86400 * 30 )
-line_type		area
-legend			Uptime in Days
-legend			Uptime in Weeks
-legend			Uptime in Months
-y_legend		Total Time
-data_min		0
-plot_min		0
-href			http://www.orcaware.com/orca/docs/orcallator.html#system_uptime
-}
-
-plot {
-title			%g Average # Processes in Run Queue (Load Average)
+title			%g Average # Processes in Run Queue (Load Average) & number of CPUs
 source			procallator
 data			1runq
-data			5runq
+data			5runq 
 data			15runq
-data			ncpus
+data			ncpus	
+color			00ff00
+color			0000ff
+color			ff00ff
+color			ff0000
 line_type		LINE1
 line_type		LINE1
 line_type		LINE1
@@ -133,11 +121,12 @@ line_type		LINE2
 legend			1 minute average
 legend			5 minute average
 legend			15 minute average
-legend			Number CPUs
-y_legend		Number Processes
+legend			CPUs (load threshold)
+y_legend		Number of processes and CPUs
+
 data_min		0
-data_max		1000
-href			http://www.orcaware.com/orca/docs/orcallator.html#processes_in_run_queue
+data_max		100
+href			http://www.orcaware.com/orca/docs/procallator.html#processes_in_run_queue
 }
 
 plot {
@@ -146,14 +135,17 @@ source			procallator
 data			usr%
 data			sys%
 data			nice%
-data			100 - usr% - sys% - nice%
+data			wait%
+data			100 - usr% - sys% - nice% - wait%
 line_type		area
+line_type		stack
 line_type		stack
 line_type		stack
 line_type		stack
 legend			User
 legend			System
 legend			Nice
+legend			Io Wait
 legend			Idle
 y_legend		Percent
 data_min		0
@@ -162,10 +154,11 @@ plot_min		0
 plot_max		100
 rigid_min_max		1
 color			00ff00
-color			ff0000
 color			0000ff
+color			ffff4f	
+color			ff0000
 color			ffffd0
-href			http://www.orcaware.com/orca/docs/orcallator.html#cpu_usage
+href			http://www.orcaware.com/orca/docs/procallator.html#cpu_usage
 }
 
 plot {
@@ -178,24 +171,26 @@ legend			5 min average
 y_legend		New processes/s
 data_min		0
 data_max		100000
-href			http://www.orcaware.com/orca/docs/orcallator.html#new_process_spawn_rate
+href			http://www.orcaware.com/orca/docs/procallator.html#new_process_spawn_rate
 }
 
 plot {
-title			%g Number of System & Running Processes
+title			%g Number of System & running Processes on cpu per cpu
 source			procallator
-data			#proc
-data			#proc_oncpu
+data			#proc / ncpus
+data			#proc_oncpu / ncpus
+data			#proc_blckd / ncpus
 line_type		line1
 line_type		area
-legend			System total
-legend			Running
+legend			System total / cpu
+legend			Running / cpu
+legend			Blocked / cpu
 y_legend		Number Processes
 data_min		0
 data_max		10000
 color			0000ff
 color			00ff00
-href			http://www.orcaware.com/orca/docs/orcallator.html#number_system_processes
+href			http://www.orcaware.com/orca/docs/procallator.html#number_system_processes
 }
 
 plot {
@@ -211,7 +206,7 @@ y_legend		Hits/s
 data_min		0
 color			00ff00
 color			0000ff
-href			http://www.orcaware.com/orca/docs/orcallator.html#web_server_hit_rate
+href			http://www.orcaware.com/orca/docs/procallator.html#web_server_hit_rate
 }
 
 plot {
@@ -238,7 +233,7 @@ data_max		100
 plot_min		0
 plot_max		100
 rigid_min_max		1
-href			http://www.orcaware.com/orca/docs/orcallator.html#web_server_file_size
+href			http://www.orcaware.com/orca/docs/procallator.html#web_server_file_size
 }
 
 plot {
@@ -249,7 +244,7 @@ line_type		area
 legend			Bytes/s
 y_legend		Bytes/s
 data_min		0
-href			http://www.orcaware.com/orca/docs/orcallator.html#web_server_data_transfer_rate
+href			http://www.orcaware.com/orca/docs/procallator.html#web_server_data_transfer_rate
 }
 
 plot {
@@ -260,42 +255,67 @@ line_type		area
 legend			HTTP errors/s
 y_legend		Errors/s
 data_min		0
-href			http://www.orcaware.com/orca/docs/orcallator.html#web_server_error_rate
+href			http://www.orcaware.com/orca/docs/procallator.html#web_server_error_rate
 }
 
 plot {
-title			%g Context Switches & Interrupts Rate
-source			procallator
-data			ctxt/s
-data			intr/s
-legend			Context switches
-legend			Interrupts
-y_legend		Counts/s
-data_min		0
+title                   %g Memory Page ins & outs rate
+source                  procallator
+data                    mempages_in
+data			mempages_out
+legend                  pages in/s
+legend			pages out/s
+y_legend                Pages/s
+data_min                0
 }
 
 plot {
-title			%g Interface Input Bits Per Second
-source			procallator
-data			8 * if_in_b_(.*)
-line_type		line1
-legend			$1
-y_legend		Bits/s
-data_min		0
-data_max		1000000000
-href			http://www.orcaware.com/orca/docs/orcallator.html#interface_bits_per_second
+title                   %g Swap ins & outs rate
+source                  procallator
+data                    swap_in
+data                    swap_out
+legend                  Swap in/s
+legend                  Swap out/s
+y_legend                Pages/s
+data_min                0
 }
 
 plot {
-title			%g Interface Output Bits Per Second
-source			procallator
-data			8 * if_out_b_(.*)
-line_type		line1
-legend			$1
-y_legend		Bits/s
-data_min		0
-data_max		1000000000
-href			http://www.orcaware.com/orca/docs/orcallator.html#interface_bits_per_second
+title                   %g Context switches & Interrupts rate per CPU
+source                  procallator
+data                    ctxt/s / ncpus
+data                    intr/s / ncpus
+legend                  Context switches / Cpu
+legend                  Interrupts / Cpu
+y_legend                rate/s
+data_min                0
+}
+
+
+plot {
+title                   %g Interface Input Bits Per Second
+source                  procallator
+data                  	8 * if_in_b_(.*) 
+line_type               line1
+legend                  $1
+y_legend                Bits/s
+data_min                0
+data_max                100000000
+flush_regexps		1
+href                    http://www.orcaware.com/orca/docs/procallator.html#interface_bits_per_second
+}
+
+plot {
+title                   %g Interface Ouput Bits Per Second
+source                  procallator
+data                    8 * if_out_b_(.*)
+line_type               line1
+legend                  $1
+y_legend                Bits/s
+data_min                0
+data_max                100000000
+flush_regexps		1
+href                    http://www.orcaware.com/orca/docs/procallator.html#interface_bits_per_second
 }
 
 plot {
@@ -308,20 +328,20 @@ y_legend		Packets/s
 data_min		0
 data_max		100000
 flush_regexps		1
-href			http://www.orcaware.com/orca/docs/orcallator.html#interface_packets_per_second
+href			http://www.orcaware.com/orca/docs/procallator.html#interface_packets_per_second
 }
 
 plot {
-title			%g Interface Output Packets Per Second
-source			procallator
-data			if_out_p_(.*)
-line_type		line1
-legend			$1
-y_legend		Packets/s
-data_min		0
-data_max		100000
-flush_regexps		1
-href			http://www.orcaware.com/orca/docs/orcallator.html#interface_packets_per_second
+title                   %g Interface Output Packets Per Second
+source                  procallator
+data                    if_out_p_(.*) 
+line_type               line1
+legend                  $1
+y_legend                Packets/s
+data_min                0
+data_max                100000
+flush_regexps           1
+href                    http://www.orcaware.com/orca/docs/procallator.html#interface_packets_per_second
 }
 
 plot {
@@ -333,144 +353,209 @@ legend			$1
 y_legend		Errors/s
 data_min		0
 flush_regexps		1
-href			http://www.orcaware.com/orca/docs/orcallator.html#interface_errors_per_second
+href			http://www.orcaware.com/orca/docs/procallator.html#interface_errors_per_second
 }
 
 plot {
-title			%g Interface Output Errors Per Second
-source			procallator
-data			if_out_e_(.*)
-line_type		line1
-legend			$1
-y_legend		Errors/s
-data_min		0
-flush_regexps		1
-href			http://www.orcaware.com/orca/docs/orcallator.html#interface_errors_per_second
+title                   %g Interface Output Errors Per Second
+source                  procallator
+data                    if_out_e_(.*)
+line_type               line1
+legend                  $1
+y_legend                Errors/s
+data_min                0
+flush_regexps           1
+href                    http://www.orcaware.com/orca/docs/procallator.html#interface_errors_per_second
 }
 
 plot {
-title			%g Interface Input Dropped Per Second
-source			procallator
-data			if_in_d_(.*)
-line_type		line1
-legend			$1
-y_legend		Errors/s
-data_min		0
-flush_regexps		1
-href			http://www.orcaware.com/orca/docs/orcallator.html#interface_deferred_packet_rate
+title                   %g Interface Input Dropped Per Second
+source                  procallator
+data                    if_in_d_(.*)
+line_type               line1
+legend                  $1
+y_legend                Errors/s
+data_min                0
+flush_regexps           1
+href                    http://www.orcaware.com/orca/docs/procallator.html#interface_deferred_packet_rate
 }
 
 plot {
-title			%g Interface Output Dropped Per Second
-source			procallator
-data			if_out_d_(.*)
-line_type		line1
-legend			$1
-y_legend		Errors/s
-data_min		0
-flush_regexps		1
-href			http://www.orcaware.com/orca/docs/orcallator.html#interface_deferred_packet_rate
+title                   %g Interface Output Dropped Per Second
+source                  procallator
+data                    if_out_d_(.*)
+line_type               line1
+legend                  $1
+y_legend                Errors/s
+data_min                0
+flush_regexps           1
+href                    http://www.orcaware.com/orca/docs/procallator.html#interface_deferred_packet_rate
 }
 
 plot {
-title			%g Interface Output Collisions
-source			procallator
-data			if_out_cl_(.*)
-line_type		area
-legend			$1
-y_legend		Percent
-data_min		0
-data_max		200
-flush_regexps		1
-href			http://www.orcaware.com/orca/docs/orcallator.html#interface_collisions
+title                   %g Interface Output Collisions
+source                  procallator
+data                    if_out_cl_(.*)
+line_type               area
+legend                  $1
+y_legend                Percent
+data_min                0
+data_max                200
+flush_regexps           1
+href                    http://www.orcaware.com/orca/docs/procallator.html#interface_collisions
 }
 
 plot {
-title			%g Interface Output Carrier Losses
-source			procallator
-data			if_out_ca_(.*)
-line_type		area
-legend			$1
-y_legend		Percent
-data_min		0
-data_max		200
-flush_regexps		1
-href			http://www.orcaware.com/orca/docs/orcallator.html#interface_collisions
+title                   %g Interface Output Carrier Losses
+source                  procallator
+data                    if_out_ca_(.*)
+line_type               area
+legend                  $1
+y_legend                Percent
+data_min                0
+data_max                200
+flush_regexps           1
+href                    http://www.orcaware.com/orca/docs/procallator.html#interface_collisions
 }
 
 plot {
-title			%g TCP Current Connections
+title			%g IP Traffic statistics
 source			procallator
-data			gTcp_(.*)
-line_type		area
-legend			Connections
-y_legend		Number Open TCP Connections
+data			Ip_InReceives
+data			Ip_OutRequests
+data			Ip_ForwDatagrams
+data_type		counter
+data_type		counter
+data_type		counter
+legend			IP Input datagrams
+legend			IP Ouput datagrams
+legend			IP Forwarded datagrams
+y_legend		rate
+data_min		0
+flush_regexps           1
+}
+
+plot {
+title			%g IP Error statistics
+source			procallator
+data			Ip_InHdrErrors + Ip_InHdrErrors + Ip_InAddrErrors + Ip_InUnknownProtos + Ip_InDiscards
+data			Ip_OutDiscards + Ip_OutNoRoutes
+data			Ip_ReasmTimeout + Ip_ReasmFails
+data			Ip_FragFails
+data_type		counter
+data_type		counter
+data_type		counter
+data_type		counter
+legend			IP Input errors
+legend			IP Output errors
+legend			IP Reassemble errors
+legend			IP Fragmentation fails
+y_legend		rate
+data_min		0
+flush_regexps           1
+}
+
+plot {
+title			%g TCP Connection statistics
+source			procallator
+data			Tcp_CurrEstab
+data			Tcp_ActiveOpens
+data			Tcp_PassiveOpens
+data			Tcp_AttemptFails + Tcp_EstabResets
+data			TcpExt_ListenOverflows + TcpExt_ListenDrops
+data_type		gauge
+data_type		counter
+data_type		counter
+data_type		counter
+data_type		counter
+legend			TCP Connections
+legend			TCP Active opens
+legend			TCP Passive opens
+legend			Connections attempts fails
+legend			Listen drops & overflows
+y_legend		Connections
 data_min		0
 flush_regexps		1
 }
 
+
 plot {
-title			%g IP Statistics
-source			procallator
-data			Ip_(.*)
-legend			$1 rate
-y_legend		Counts/s
-data_min		0
-flush_regexps		1
+title                   %g TCP Traffic statistics
+source                  procallator
+data                    Tcp_InSegs
+data			Tcp_OutSegs
+data_type		counter
+data_type		counter
+legend                  Tcp Input segments
+legend			Tcp Output segments
+y_legend                rate
+data_min                0
+flush_regexps           1
 }
 
 plot {
-title			%g TCP Statistics
-source			procallator
-data			Tcp_(.*)
-legend			$1 rate
-y_legend		Counts/s
-data_min		0
-flush_regexps		1
+title                   %g TCP Error statistics
+source                  procallator
+data			Tcp_InErrs
+data			Tcp_OutRsts
+data			Tcp_RetransSegs
+data_type		counter
+data_type		counter
+data_type		counter
+legend                  Tcp Input errors
+legend			Tcp Output errors
+legend			TCP Retransmissions
+y_legend                rate
+data_min                0
+flush_regexps           1
 }
 
 plot {
-title			%g ICMP Statistics
-source			procallator
-data			Icmp_(.*)
-legend			$1 rate
-y_legend		Counts/s
-data_min		0
-flush_regexps		1
+title                   %g ICMP statistics
+source                  procallator
+data                    Icmp_(.*)
+data_type		counter
+legend                  $1 rate
+y_legend                rate
+data_min                0
+flush_regexps           1
 }
 
 plot {
-title			%g UDP Statistics
-source			procallator
-data			Udp_(.*)
-legend			$1 rate
-y_legend		Counts/s
-data_min		0
-flush_regexps		1
+title                   %g UDP statistics
+source                  procallator
+data                    Udp_(.*)
+data_type		counter
+legend                  $1 rate
+y_legend                rate
+data_min                0
+flush_regexps           1
 }
 
 plot {
 title			%g NFS Server Statistics
 source			procallator
 data			nfs_s_(.*)
+data_type		counter
 line_type		line1
 legend			$1/s
-y_legend		Counts/s
+y_legend		rate
 data_min		0
 flush_regexps		1
-href			http://www.orcaware.com/orca/docs/orcallator.html#NFS_server_call_rate
+href			http://www.orcaware.com/orca/docs/procallator.html#NFS_server_call_rate
 }
 
 plot {
 title			%g NFS Client Statistics
-source			procallator
-data			nfs_c_(.*)
-line_type		line1
-legend			$1/s
-y_legend		Counts/s
-data_min		0
-flush_regexps		1
-href			http://www.orcaware.com/orca/docs/orcallator.html#NFS_server_call_rate
+source                  procallator
+data                    nfs_c_(.*)
+data_type		counter
+line_type               line1
+legend                  $1/s
+y_legend                rate
+data_min                0
+flush_regexps           1
+href                    http://www.orcaware.com/orca/docs/procallator.html#NFS_server_call_rate
 }
 
 plot {
@@ -484,8 +569,8 @@ legend			Reads/s
 legend			Writes/s
 y_legend		Ops/s
 data_min		0
-flush_regexps		1
-href			http://www.orcaware.com/orca/docs/orcallator.html#disk_system_wide_reads_writes_per_second
+flush_regexps           1
+href			http://www.orcaware.com/orca/docs/procallator.html#disk_system_wide_reads_writes_per_second
 }
 
 plot {
@@ -499,39 +584,41 @@ legend			Read transfer rate
 legend			Write transfer rate
 y_legend		Block/s
 data_min		0
-flush_regexps		1
-href			http://www.orcaware.com/orca/docs/orcallator.html#disk_system_wide_transfer_rate
+flush_regexps           1
+href			http://www.orcaware.com/orca/docs/procallator.html#disk_system_wide_transfer_rate
 }
 
 plot {
-title			%g Disk Reads/Writes Per Second
-source			procallator
-data			disk_rd_(.*)/s
-data			disk_wr_$1/s
-line_type		area
-line_type		line1
-legend			$1 Reads/s
-legend			$1 Writes/s
-y_legend		Ops/s
-data_min		0
-flush_regexps		1
-href			http://www.orcaware.com/orca/docs/orcallator.html#disk_system_wide_reads_writes_per_second
+title                   %g Disk Reads/Writes Per Second
+source                  procallator
+data                    disk_rd_(.*)/s
+data                    disk_wr_(.*)/s
+line_type               area
+line_type               line1
+legend                  $1 Reads/s
+legend                  $1 Writes/s
+y_legend                Ops/s
+data_min                0
+flush_regexps           1
+href                    http://www.orcaware.com/orca/docs/procallator.html#disk_system_wide_reads_writes_per_second
 }
 
 plot {
-title			%g Disk Transfer Rate
-source			procallator
-data			disk_rB_(.*)/s
-data			disk_wB_$1/s
-line_type		area
-line_type		line1
-legend			$1 Read transfer rate
-legend			$1 Write transfer rate
-y_legend		Block/s
-data_min		0
-flush_regexps		1
-href			http://www.orcaware.com/orca/docs/orcallator.html#disk_system_wide_transfer_rate
+title                   %g Disk Transfer Rate
+source                  procallator
+data                    disk_rB_(.*)/s
+data                    disk_wB_(.*)/s
+line_type               area
+line_type               line1
+legend                  $1 Read transfer rate
+legend                  $1 Write transfer rate
+y_legend                Block/s
+data_min                0
+flush_regexps           1
+href                    http://www.orcaware.com/orca/docs/procallator.html#disk_system_wide_transfer_rate
 }
+
+
 
 plot {
 title			%g Disk Space Percent Usage
@@ -544,11 +631,11 @@ data_min		0
 data_max		100
 plot_min		0
 plot_max		100
-href			http://www.orcaware.com/orca/docs/orcallator.html#disk_space_percent_usage
+href			http://www.orcaware.com/orca/docs/procallator.html#disk_space_percent_usage
 }
 
 plot {
-title			%g Physical Memory Usage
+title			%g Physical Memory usage percent 
 source			procallator
 data			mem_used%
 data			mem_free%
@@ -558,55 +645,36 @@ data			mem_cchd%
 line_type		area
 line_type		stack
 line_type		line1
-line_type		stack
-line_type		stack
+line_type               stack
+line_type               stack
 legend			Used memory
 legend			Free memory
-legend			Shared memory
-legend			Buffer memory
-legend			Cached memory
-y_legend		Percent
-data_min		0
-data_max		100
-href			http://www.orcaware.com/orca/docs/orcallator.html#memory_free
-}
-
-plot {
-title			%g Swap Usage
-source			procallator
-data			swp_used%
-data			swp_free%
-line_type		area
-line_type		stack
-legend			Swap Used
-legend			Swap Free
+legend                  shared memory
+legend                  buffer memory
+legend                  cached memory
 y_legend		percent
 data_min		0
 data_max		100
-href			http://www.orcaware.com/orca/docs/orcallator.html#memory_free
+plot_min		0
+plot_max		100
+href			http://www.orcaware.com/orca/docs/procallator.html#memory_free
 }
 
 plot {
-title			%g Page Ins & Outs Rate
-source			procallator
-data			pages_in
-data			pages_out
-legend			Pages in/s
-legend			Pages out/s
-y_legend		Pages/s
-data_min		0
+title                   %g Swap usage percent
+source                  procallator
+data                    swp_used%
+data                    swp_free%
+line_type               area
+line_type               stack
+legend                  Used swap
+legend                  Free swap
+y_legend                percent
+data_min                0
+data_max                100
+href                    http://www.orcaware.com/orca/docs/procallator.html#memory_free
 }
 
-plot {
-title			%g Swap Ins & Outs Rate
-source			procallator
-data			swap_in
-data			swap_out
-legend			Swap in/s
-legend			Swap out/s
-y_legend		Pages/s
-data_min		0
-}
 
 plot {
 title			%g Memory Page Scan Rate
@@ -616,7 +684,7 @@ line_type		area
 legend			Page scan rate
 y_legend		Pages/s
 data_min		0
-href			http://www.orcaware.com/orca/docs/orcallator.html#page_scan_rate
+href			http://www.orcaware.com/orca/docs/procallator.html#page_scan_rate
 }
 
 plot {
@@ -627,7 +695,7 @@ line_type		area
 legend			Page residence time
 y_legend		Seconds
 data_min		0
-href			http://www.orcaware.com/orca/docs/orcallator.html#page_residence_time
+href			http://www.orcaware.com/orca/docs/procallator.html#page_residence_time
 }
 
 plot {
@@ -639,7 +707,7 @@ legend			Available swap space
 y_legend		Bytes
 base			1024
 data_min		0
-href			http://www.orcaware.com/orca/docs/orcallator.html#available_swap_space
+href			http://www.orcaware.com/orca/docs/procallator.html#available_swap_space
 }
 
 plot {
@@ -663,7 +731,7 @@ plot_min		0
 color			00ff00
 color			ff0000
 color			0000ff
-href			http://www.orcaware.com/orca/docs/orcallator.html#page_usage
+href			http://www.orcaware.com/orca/docs/procallator.html#page_usage
 }
 
 plot {
@@ -678,5 +746,5 @@ legend			IO
 y_legend		Number Of Pages
 data_min		0
 plot_min		0
-href			http://www.orcaware.com/orca/docs/orcallator.html#pages_locked_IO
+href			http://www.orcaware.com/orca/docs/procallator.html#pages_locked_IO
 }

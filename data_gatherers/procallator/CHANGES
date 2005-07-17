@@ -1,0 +1,27 @@
+History change for procallator
+0.01:	- first version
+0.02:	- fixed some stats of disk usage on NFS disks
+0.03:   - License changed to GPL
+        - Multiple files per day if number of columns of the output changes
+        - Added compatibility with 2.6 kernel versions
+        - Added support for /proc/partitions -> partitions stats in 2.4 kernels
+        - Added support for /proc/diskstats  -> partitions stats in 2.6 kernels
+        - Removed support for page-ins e page-ous metrics due to misunderstood
+          interpretations real meaning of values
+        - New cfg file, with better handling of tcp stats - every stat is now a
+          counter and not gauges, this corrects the way the stas are plotted, 
+          unfornately its not compatible with older versions
+        - Added IO Wait for 2.6 kernels
+        - Using real device names on disk statistics for 2.4 and 2.6 kernels
+        - Added NFS4 statistics, and revised NFS config (now totalizes every NFS
+	  version by default)
+        - Added configuration variable to control some network protocol
+          colection
+        - Process now starts as a real daemon
+        - Now it is integrated with orca install and makefiles
+        - Used perltidy to embelish and uniformize perl source code
+        IMPORTANT - Due to the various fixes and additions the new config file
+        as well as the new collected files are not compatible with older 
+        versions, that way, using the new cfg with older collected data, or 
+        the older cfg with newer collected data may lead to some problems, like
+        missing graphs and so. That way the upgrade should be planned with care

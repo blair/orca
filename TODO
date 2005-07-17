@@ -1,13 +1,8 @@
-Have Orca's pages look much nicer.  Check out some of our competition
+have Orca's pages look much nicer.  Check out some of our competition
 from Cacti:
 
     http://www.raxnet.net/products/cacti/
     http://www.bigspring.k12.pa.us/cacti/graph_view.php?action=tree&tree_id=31&leaf_id=408&select_first=true
-
-Remove the warnings that procallator generates when it runs.
-
-See how much work there is to do (if any) in getting procallator to
-run on Linux 2.6 kernels.
 
 From Hans-Werner Jouy:
 
@@ -29,14 +24,9 @@ From Hans-Werner Jouy:
 Fix lib/Orca/OldState.pm to handle missing data files that are pointed
 to.
 
-Update procallator to the latest version.
-
-Remove the percol listing in find_files in procallator.cfg and
-orca_services.cfg.
+Remove the percol listing in find_files in orca_services.cfg.
 
 Update orca_services to 1.7.2 or 2.0.
-
-Update procallator's install and Makefile.
 
 Code review procallator.
 

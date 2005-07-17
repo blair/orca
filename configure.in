@@ -615,6 +615,7 @@ if test "$BUILD_PROCALLATOR" = yes; then
   OUTPUT_PROCALLATOR="data_gatherers/procallator/Makefile
                       data_gatherers/procallator/procallator.cfg
                       data_gatherers/procallator/procallator.pl
+                      data_gatherers/procallator/update_orca_server.sh
                       data_gatherers/procallator/S99procallator.sh"
 fi
 

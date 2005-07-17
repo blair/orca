@@ -1,21 +1,23 @@
-Linux Orca-aware statistics collector.
+Linux ORCA-aware statistics colector
 
-This piece of software is for use with Orca, by Blair Zajac
-    http://www.orcaware.com/orca/
-and intends to provide relevant system statistics in a friendly and
-graphical interface.
+This piece of software is for use with Orca, by Blair Zajac - 
+http://www.orcaware.com/ - and intends to provide relevant system statistics
+in a friendly and graphical interface.
 
-    Requirements:
-        - A running Orca server.
-        - Perl 5 installed on target Linux systems.
-        - a mechanism for remote distribution of software to send
-          collected stats from the target to the server.
+Requirements:
+- A running Orca server.
+- perl 5 installad on target linux systems
+- a mecanism for remote distribution of software to send 
+  collected stats from de target to the server.
 
-          I use rsync, but anything, ranging from ftp to NFS will do fine.
+I use rsync, but anything, ranging from ftp to NFS will do fine.
+Check the updat_orca_server.sh script (I use it in crontab) for reference on 
+doing it
 
-          Check the update_orca_server.sh script (I use it in
-          crontab) for reference on doing it.
+Installation:	
+The installation is quite simple. It installs with orca normal installations
+For instructions check orca documents
 
-This software is in alpha stage, so use at your own risk.
-Any comments to Guilherme Chehab <gchehab@abordo.com.br>
-Copyright (C) 2001 Guilherme Carvalho Chehab.  All Rights Reserved
+This software is in alpha stage, use at your own risk.
+Any comments to Guilherme Chehab <guilherme_chehab@yahoo.com>
+Copyright (C) 2001-2005 Guilherme Carvalho Chehab.  All Rights Reserved

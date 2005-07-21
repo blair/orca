@@ -6,7 +6,7 @@ You can view Orca's change log in one of two ways:
 
 1) Using a Subversion binary and running
 
-   svn log http://www.orcaware.com/svn/repos/trunk/orca/
+   svn log http://www.orcaware.com/svn/repos/orca/trunk/
 
    This output will be long, so you may want to pipe it to your
    favorite paging program.

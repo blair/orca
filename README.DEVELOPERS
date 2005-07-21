@@ -60,11 +60,11 @@ and above CVS.  To get an overview of Subversion, check out
 
 The Orca Subversion repository is located at
 
-   http://www.orcaware.com/svn/repos/trunk/orca/
+   http://www.orcaware.com/svn/repos/orca/trunk/
 
 with tagged releases located at
 
-   http://www.orcaware.com/svn/repos/tags/orca/
+   http://www.orcaware.com/svn/repos/orca/tags/
 
 The Subversion home page is at
 
@@ -93,7 +93,7 @@ file in the tar.gz.
 Once you've downloaded and installed Subversion, run the following
 command to check out Orca HEAD:
 
-   % svn co http://www.orcaware.com/svn/repos/trunk/orca/
+   % svn checkout http://www.orcaware.com/svn/repos/orca/trunk/ orca
 
 This will create a directory named 'orca' in the current working
 directory.

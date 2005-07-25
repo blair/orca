@@ -29,7 +29,10 @@
 
 $PROC     = "/proc";            # Proc directory, usually /proc
 $INTERVAL = 300;                # Interval between each measure, in seconds
-$COMPRESS = "/usr/bin/gzip";    # Compressor...
+
+$COMPRESS = "@COMPRESSOR@";     # Compressor...
+$COMPRESS = "/usr/bin/gzip" if ($COMPRESS eq "");  # Get a default
+
 $HOSTNAME = `/bin/hostname`;
 chomp $HOSTNAME;
 $DEST_DIR =

@@ -536,7 +536,6 @@ plot {
 title			%g NFS Server Statistics
 source			procallator
 data			nfs_s_(.*)
-data_type		counter
 line_type		line1
 legend			$1/s
 y_legend		rate
@@ -549,7 +548,6 @@ plot {
 title			%g NFS Client Statistics
 source                  procallator
 data                    nfs_c_(.*)
-data_type		counter
 line_type               line1
 legend                  $1/s
 y_legend                rate

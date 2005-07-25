@@ -10,7 +10,7 @@ History change for procallator
           interpretations real meaning of values
         - New cfg file, with better handling of tcp stats - every stat is now a
           counter and not gauges, this corrects the way the stas are plotted, 
-          unfornately its not compatible with older versions
+          sadly its not compatible with older versions
         - Added IO Wait for 2.6 kernels
         - Using real device names on disk statistics for 2.4 and 2.6 kernels
         - Added NFS4 statistics, and revised NFS config (now totalizes every NFS
@@ -25,3 +25,7 @@ History change for procallator
         versions, that way, using the new cfg with older collected data, or 
         the older cfg with newer collected data may lead to some problems, like
         missing graphs and so. That way the upgrade should be planned with care
+0.04	- Added support for COMPRESS variable in configure scripts, defaults to
+        /usr/bin/gzip
+        - Fixed error on .cfg regarding the NFS statsdata types, were COUNTERs
+        when they should be modelled as GAUGEs

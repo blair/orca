@@ -25,7 +25,8 @@ History change for procallator
         versions, that way, using the new cfg with older collected data, or 
         the older cfg with newer collected data may lead to some problems, like
         missing graphs and so. That way the upgrade should be planned with care
-0.04	- Added support for COMPRESS variable in configure scripts, defaults to
+0.04    - Added support for @COMPRESS@ variable in configure scripts, defaults to
         /usr/bin/gzip
         - Fixed error on .cfg regarding the NFS statsdata types, were COUNTERs
         when they should be modelled as GAUGEs
+0.05    - Added support for @PROC@ variable in configure scripts

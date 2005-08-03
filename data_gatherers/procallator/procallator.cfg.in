@@ -45,7 +45,7 @@ find_times		0:10 1:00 6:00 12:00 19:00
 # expressions use the word `interval' to get the interval number for
 # the data source.
 warn_email		@WARN_EMAIL@
-late_interval		interval + 30 
+late_interval		interval + 30
 
 # These parameters specify which plots to generate.
 generate_hourly_plot    0
@@ -107,9 +107,9 @@ plot {
 title			%g Average # Processes in Run Queue (Load Average) & number of CPUs
 source			procallator
 data			1runq
-data			5runq 
+data			5runq
 data			15runq
-data			ncpus	
+data			ncpus
 color			00ff00
 color			0000ff
 color			ff00ff
@@ -155,7 +155,7 @@ plot_max		100
 rigid_min_max		1
 color			00ff00
 color			0000ff
-color			ffff4f	
+color			ffff4f
 color			ff0000
 color			ffffd0
 href			http://www.orcaware.com/orca/docs/procallator.html#cpu_usage
@@ -295,7 +295,7 @@ data_min                0
 plot {
 title                   %g Interface Input Bits Per Second
 source                  procallator
-data                  	8 * if_in_b_(.*) 
+data                  	8 * if_in_b_(.*)
 line_type               line1
 legend                  $1
 y_legend                Bits/s
@@ -334,7 +334,7 @@ href			http://www.orcaware.com/orca/docs/procallator.html#interface_packets_per_
 plot {
 title                   %g Interface Output Packets Per Second
 source                  procallator
-data                    if_out_p_(.*) 
+data                    if_out_p_(.*)
 line_type               line1
 legend                  $1
 y_legend                Packets/s
@@ -633,7 +633,7 @@ href			http://www.orcaware.com/orca/docs/procallator.html#disk_space_percent_usa
 }
 
 plot {
-title			%g Physical Memory usage percent 
+title			%g Physical Memory usage percent
 source			procallator
 data			mem_used%
 data			mem_free%

@@ -1,5 +1,5 @@
 //
-//    Copyright (c) 1995-1998, by Sun Microsystems, Inc. 
+//    Copyright (c) 1995-1998, by Sun Microsystems, Inc.
 //      All Rights Reserved
 //
 
@@ -77,7 +77,7 @@ Include file dependencies - these should be included by the application:
 #include <p_iostat_class.se>
 #include <p_netstat_class.se>
 #include <p_vmstat_class.se>
-#include <pure_rules.se> 
+#include <pure_rules.se>
 */
 
 /* common string to use */
@@ -166,18 +166,18 @@ p_vmstat vmglobal_total() {
 
 /* Disk I/O live rule - special extra disk type thresholds */
 rule_thresh_dbl slowfd_thr = {"LR_DISK_SLOW_FD", 10.0, "x", 4, 1,
-	"derate slow floppys" }; 
-rule_thresh_dbl slowcd_thr = {"LR_DISK_SLOW_CD", 10.0, "x", 4, 1, 
-	"derate slow CDs" }; 
+	"derate slow floppys" };
+rule_thresh_dbl slowcd_thr = {"LR_DISK_SLOW_CD", 10.0, "x", 4, 1,
+	"derate slow CDs" };
 rule_thresh_str fdname = {"LR_DISK_FLOPPY", "fd0", "", 6, "default floppy device" };
 rule_thresh_str cdname = {"LR_DISK_CDROM", "c0t6d0", "", 6, "default CD device" };
 rule_thresh_str diskerr_thr = {"LR_DISK_ERROR", "new", "", 4, "report on <any> since boot, or only <new> errors" };
 
 print_lr_disk(ulong f) {
    print_thresh_dbl(f, slowfd_thr);
-   print_thresh_dbl(f, slowcd_thr); 
-   print_thresh_str(f, fdname); 
-   print_thresh_str(f, cdname); 
+   print_thresh_dbl(f, slowcd_thr);
+   print_thresh_str(f, fdname);
+   print_thresh_str(f, cdname);
    print_thresh_str(f, diskerr_thr);
 }
 
@@ -247,13 +247,13 @@ class lr_disk_t {
 
       diskerr_mode = get_thresh_str(diskerr_thr);
       GLOBAL_sderr = new ks_sderr[GLOBAL_sderr_size];
-      GLOBAL_sderr_state = new int[GLOBAL_sderr_size]; 
-      GLOBAL_sderr_errcnt = new int[GLOBAL_sderr_size]; 
+      GLOBAL_sderr_state = new int[GLOBAL_sderr_size];
+      GLOBAL_sderr_errcnt = new int[GLOBAL_sderr_size];
 
       timestamp = time(0);
       lasttime = timestamp;
       GLOBAL_disk_update_time = timestamp;
-#ifdef LIVE_DISK_DEBUG 
+#ifdef LIVE_DISK_DEBUG
       debug_off();
 #endif
       return;
@@ -322,7 +322,7 @@ stay black, count new errors black, media/soft errors red */
     disk_count = GLOBAL_disk_count;
     for(i=0; i < disk_count; i++){
       states[i] = disk_rule.states[i];
-    } 
+    }
 #ifdef LIVE_PRINTOUT
     printf("\nDisk       %-5s %s\n", state_string(state), action);
     printf("disk      r/s  w/s   Kr/s   Kw/s wait actv  svc_t  %%w  %%b State\n");
@@ -434,7 +434,7 @@ stay black, count new errors black, media/soft errors red */
     }
 
     lasttime = timestamp;
-#ifdef LIVE_DISK_DEBUG 
+#ifdef LIVE_DISK_DEBUG
     debug_off();
 #endif
   }
@@ -463,21 +463,21 @@ class lr_net_t {
     char ifname[12];
     int enet_count;
     int net[MAX_IF];	/* index between ethernets and all nets */
- 
+
     if (timestamp == 0) {       /* reset defaults */
       GLOBAL_net[0] = p_netstat$GLOBAL_net;
       net_count = GLOBAL_net[0].net_count;
       for(i=1; i < GLOBAL_net[0].net_count; i++){
         p_netstat$GLOBAL_net.number$ = i;
         GLOBAL_net[i] = p_netstat$GLOBAL_net;
-      }  
+      }
       net_rule.enet_count = net_count;
       net_rule.timestamp = 0;	/* force pure rule to reset */
       refresh$(net_rule);
       state = ST_GREEN;	/* non-ethernets should default to ST_GREEN */
       for(i=0; i < MAX_IF; i++){
         states[i] = ST_GREEN;
-      }  
+      }
       action = uninit;
       explanation = action;
       timestamp = time(0);
@@ -516,7 +516,7 @@ class lr_net_t {
 	/* XXX: add code to check FDDI, ATM, token ring here */
         states[i] = ST_GREEN;	/* not an ethernet so assume its OK */
       }
-    }  
+    }
     net_rule.enet_count = enet_count;
     net_rule.timestamp = timestamp;
     refresh$(net_rule);
@@ -544,13 +544,13 @@ class lr_rpcclient_t {
   double badxids;
 
   lr_rpcclient$()
-  { 
+  {
     ulong lasttime = 0;             /* previous timestamp */
     ulong timestamp = 0;
     pr_rpcclient_t rpcc_rule;
     double ttmp;
     double dtmp;
- 
+
     if (timestamp == 0) {
       rpcc_rule.timestamp = 0;
       refresh$(rpcc_rule);
@@ -571,10 +571,10 @@ class lr_rpcclient_t {
       return;   /* wait at least a second between rule invocations */
     }
     /* use the rule */
-    if (timestamp - GLOBAL_ks_rpc_client_update_time >= 
+    if (timestamp - GLOBAL_ks_rpc_client_update_time >=
 		KS_RPC_CLIENT_UPDATE_RATE) {
       GLOBAL_this_rpcc = kstat$GLOBAL_ks_rpc_client;
-      GLOBAL_ks_rpc_client_update_time = lasttime; 
+      GLOBAL_ks_rpc_client_update_time = lasttime;
     }
     ttmp = timestamp - lasttime;       /* double temporaries */
     dtmp = GLOBAL_this_rpcc.calls - GLOBAL_last_rpcc.calls;
@@ -617,13 +617,13 @@ class lr_swapspace_t {
   int state;
   string action;
   string explanation;
- 
+
   lr_swapspace$()
   {
     ulong lasttime = 0;             /* previous timestamp */
     ulong timestamp = 0;
     pr_swapspace_t swap_rule;
- 
+
     if (timestamp == 0) {
       timestamp = time(0);
       pvm_update(timestamp);
@@ -668,7 +668,7 @@ class lr_ram_t {
     ulong timestamp = 0;
     pr_ram_t ram_rule;
     ulong pages;
- 
+
     if (timestamp == 0) {
       ram_rule.timestamp = 0;
       /* default max handspread is 64MB worth of pages */
@@ -803,19 +803,19 @@ class lr_cpu_t {
       lasttime = timestamp;
       return;
     }
-    timestamp = time(0);  
-    if (timestamp == lasttime) { 
+    timestamp = time(0);
+    if (timestamp == lasttime) {
       return;   /* wait at least a second between rule invocations */
     }
     /* use the rule */
     pvm_update(timestamp);
     cpu_rule.runque = GLOBAL_pvm[0].runque;
-    cpu_rule.timestamp = timestamp;  
+    cpu_rule.timestamp = timestamp;
     refresh$(cpu_rule);
     state = cpu_rule.state;
     action = cpu_rule.action;
     explanation = cpu_rule.explanation;
-    lasttime = timestamp;   
+    lasttime = timestamp;
   }
 };
 
@@ -828,14 +828,14 @@ class lr_mutex_t {
   string explanation;
   int smtx;  /* back compatible sum of p_vmstat.smtx for all cpus */
   int ncpus;     /* i.e. sysconf(_SC_NPROCESSORS_ONLN) */
- 
+
   lr_mutex$()
-  { 
+  {
     ulong lasttime = 0;             /* previous timestamp */
     ulong timestamp = 0;
     pr_mutex_t mutex_rule;
     int i;
- 
+
     if (timestamp == 0) {
       timestamp = time(0);
       pvm_update(timestamp);
@@ -885,9 +885,9 @@ class lr_dnlc_t {
   string explanation;
   double refrate;               /* current DNLC reference rate */
   double hitrate;               /* current DNLC hit rate */
- 
+
   lr_dnlc$()
-  { 
+  {
     ulong lasttime = 0;             /* previous timestamp */
     ulong timestamp = 0;
     pr_dnlc_t dnlc_rule;
@@ -897,7 +897,7 @@ class lr_dnlc_t {
     ks_ncstats ncstats;
 #endif
     int i;
- 
+
     if (timestamp == 0) {
       timestamp = time(0);
       dnlc_rule.timestamp = 0;

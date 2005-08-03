@@ -258,7 +258,7 @@ find_tape_long_name(string name)   // return index into GLOBAL_tape_info
 
 // use this function to get the data for an index
 tape_info_t
-tape_info(int i, string name) 
+tape_info(int i, string name)
 {
   tape_info_t no_info;
 

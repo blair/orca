@@ -21,7 +21,7 @@ process it when called up by class. Feeds data to workload_class.se
 #include <se_trees.se>
 #if MINOR_VERSION >= 60
 #define	PCSET    16	/* set modes from long argument */
-#define PCUNSET  17 
+#define PCUNSET  17
 
 long msaccton[2] = { PCSET, PR_MSACCT | PR_MSFORK };
 long msacctoff[2] = { PCUNSET, PR_MSACCT };
@@ -41,7 +41,7 @@ exit(1);
 /* index$ returns -1 if no more data */
 /* proc data updates if index$ is -1 */
 
-struct pr_header_t { 
+struct pr_header_t {
 	long number_lwps;
 	size_t size_of_entries;
 };
@@ -77,7 +77,7 @@ struct raw_proc_info_t {            // all the per process info
 	char		pr_fname[PRFNSZ];  // last component of execed pathname
 #define PRARGSZ 80
 	char		pr_psargs[PRARGSZ];// initial characters of arg list
-        int		lwp_count; 
+        int		lwp_count;
         pointer_t	olwp;  // pointers to prev. lwp prusage linked list
         pointer_t	nlwp;  // pointers to current lwp prusage linked list
 };
@@ -111,7 +111,7 @@ struct  lwp_pr_info {
         ulong    next_class;
 };
 /* the process class that does all the real work */
-	
+
 /* get both types of hires timestamp into a common more useful form */
 double timestruc(timestruc_t ts_time)
 {
@@ -136,16 +136,16 @@ msprint(prusage_t pru, int pid, string cmd, string arg) {
     printf("Elapsed time        %12s  ", hr_min_sec(pru.pr_rtime));
     printf("Create time %s Timestamp %s\n", hr_min_sec(pru.pr_create),
 	hr_min_sec(pru.pr_tstamp));
-    printf("User CPU time       %12s  ", hr_min_sec(pru.pr_utime)); 
-    printf("System call time    %12s\n", hr_min_sec(pru.pr_stime)); 
-    printf("System trap time    %12s  ", hr_min_sec(pru.pr_ttime)); 
-    printf("Text pfault sleep   %12s\n", hr_min_sec(pru.pr_tftime)); 
-    printf("Data pfault sleep   %12s  ", hr_min_sec(pru.pr_dftime)); 
-    printf("Kernel pfault sleep %12s\n", hr_min_sec(pru.pr_kftime)); 
-    printf("User lock sleep     %12s  ", hr_min_sec(pru.pr_ltime)); 
-    printf("Other sleep time    %12s\n", hr_min_sec(pru.pr_slptime)); 
-    printf("Wait for CPU time   %12s  ", hr_min_sec(pru.pr_wtime)); 
-    printf("Stopped time        %12s\n", hr_min_sec(pru.pr_stoptime)); 
+    printf("User CPU time       %12s  ", hr_min_sec(pru.pr_utime));
+    printf("System call time    %12s\n", hr_min_sec(pru.pr_stime));
+    printf("System trap time    %12s  ", hr_min_sec(pru.pr_ttime));
+    printf("Text pfault sleep   %12s\n", hr_min_sec(pru.pr_tftime));
+    printf("Data pfault sleep   %12s  ", hr_min_sec(pru.pr_dftime));
+    printf("Kernel pfault sleep %12s\n", hr_min_sec(pru.pr_kftime));
+    printf("User lock sleep     %12s  ", hr_min_sec(pru.pr_ltime));
+    printf("Other sleep time    %12s\n", hr_min_sec(pru.pr_slptime));
+    printf("Wait for CPU time   %12s  ", hr_min_sec(pru.pr_wtime));
+    printf("Stopped time        %12s\n", hr_min_sec(pru.pr_stoptime));
     printf("pf %d mf %d sw %d inb %d oub %d ms %d mr %d\n", pru.pr_minf, pru.pr_majf,        pru.pr_nswap, pru.pr_inblk, pru.pr_oublk,
         pru.pr_msnd, pru.pr_mrcv);
     printf("sig %d vctx %d ictx %d sysc %d ioch %d\n", pru.pr_sigs, pru.pr_vctx,
@@ -159,7 +159,7 @@ class proc_class_t {
 	/* for ACTION_PID mode set pid$ and set index$ to -1 to get new data */
 	int	action$;
         int     off$;
-	int     wantlwp$;  /* 0 = do not want lwps, 1 = want lsps */ 
+	int     wantlwp$;  /* 0 = do not want lwps, 1 = want lsps */
 	/* summary totals */
 	double  lasttime; /* timestamp for the end of the last update */
 	int	nproc;	  /* current number of processes */
@@ -218,7 +218,7 @@ class proc_class_t {
 	char	fname[PRFNSZ];	/* last components of exec'd pathname */
 	char	args[PRARGSZ];	/* initial part of arg list */
         ulong   lwp_class_ptr; /* head of linked list of lwp_class_ptrs */
-	
+
 	proc$() {
 	  ulong MAX_PID;
 	  ulong_t	pp;		/* pointer to malloc for raw proc info */
@@ -266,8 +266,8 @@ class proc_class_t {
           pointer_t olwp_t_ptr;
           lwp_prusage lwp_t_struct;
           lwp_prusage olwp_t_struct;
-          lwp_pr_info lwp_t_class; 
-          long lwp_t_class_ptr; 
+          lwp_pr_info lwp_t_class;
+          long lwp_t_class_ptr;
           int ircw;
 /* ********************************************************** */
 
@@ -438,7 +438,7 @@ class proc_class_t {
 		  err = read(lfd, lwp_t_ptr, sizeof(prh));
                   prh = *((pr_header_t *) lwp_t_ptr);
                   free(lwp_t_ptr);
-		  if (err <= 0){ 
+		  if (err <= 0){
                     printf("Error reading pr_header %s error code = %d \n", lwpname, err); }
                   else { /* good read of pr_head */
                     /* printf (" size of lwp_prusage = %d, size from pr header = %d \n", sizeof(lwp_info), prh.size_of_entries ); */
@@ -481,7 +481,7 @@ class proc_class_t {
 		} /* end of wantlwp */
 /* ********** lwp info read ************************************** */
 		} /* good read on pfd */
-          
+
                 if (new_entry == 1 ) {
 		  rpi.nextpid = first_process;
 		  first_process = process_number;
@@ -493,7 +493,7 @@ class proc_class_t {
 		  newproc++;
 		  if (new_entry == 0) {
 		    /* leftover from an old process at same pid */
-		    if (rpi.orp != NULL) { 
+		    if (rpi.orp != NULL) {
                       free(rpi.orp);
 		      rpi.orp = NULL;	/* dump old rp, and overwrite new */
                     }
@@ -556,7 +556,7 @@ class proc_class_t {
 	    /* go through list and remove deadwood */
 	    /* printf("first process_number %d  \n",first_process); */
 	    process_number = first_process;
-	    next_process = -1; 
+	    next_process = -1;
 	    previous_process = -1;
 	    while ( process_number > 0 ) {
 	      /* printf("processing %d  \n",process_number);  */
@@ -625,7 +625,7 @@ class proc_class_t {
 		      first_process = next_process;
 		  }
                 } else {
-		/* update previous process ptr */ 
+		/* update previous process ptr */
 		  previous_process = process_number;
 		}
 	      }
@@ -652,10 +652,10 @@ class proc_class_t {
 	      /* ran out of data */
                 process_number = -1;
                 index$ = -1;
-                pid$ = -1; 
+                pid$ = -1;
 		/* printf(" thats all there is \n"); */
-                return;  
-	      } 
+                return;
+	      }
 	    index$++;
 	  }
 
@@ -669,16 +669,16 @@ class proc_class_t {
 	    index$++;
 	    /* look for the next data */
 	    pp = NULL;
-            pp_ret=int2int_get(pp_tree,process_number); 
+            pp_ret=int2int_get(pp_tree,process_number);
 	    if ( pp_ret != NULL ) {
-	       	pp = ((ulong_t) *((ulong_t *) pp_ret)); 
+	       	pp = ((ulong_t) *((ulong_t *) pp_ret));
 	    }
 	    while (process_number < MAX_PID && pp == NULL) {
 	      process_number++;
 	      pp = NULL;
-              pp_ret=int2int_get(pp_tree,process_number); 
+              pp_ret=int2int_get(pp_tree,process_number);
 	      if ( pp_ret != NULL ) {
-	        pp = ((ulong_t) *((ulong_t *) pp_ret)); 
+	        pp = ((ulong_t) *((ulong_t *) pp_ret));
 	      }
 	    }
 	    if (process_number < 0 || process_number > MAX_PID) {
@@ -702,7 +702,7 @@ class proc_class_t {
           pp_ret=int2int_get(pp_tree,process_number);
 	  pp = NULL;
 	  if (pp_ret != NULL) {
-	    pp = ((ulong_t) *((ulong_t *) pp_ret)); 
+	    pp = ((ulong_t) *((ulong_t *) pp_ret));
 	    }
             if ( pp != NULL) {
 	      rpi = *((raw_proc_info_t *) pp);
@@ -758,18 +758,18 @@ class proc_class_t {
 	        vcontexts = NU.pr_vctx - ou.pr_vctx;
 	        icontexts = NU.pr_ictx - ou.pr_ictx;
 	        charios = NU.pr_ioch - ou.pr_ioch;
-              } else { 
+              } else {
 	        /* new process will only have rpi.nrp set */
 	        interval = timestamp - creation; /* elapsed time so far */
                 if (interval == 0.0) {
                   printf("zero interval on pid %d state %c\n", pid$, rpi.pr_sname);
                   msprint(NU, pid$, fname, args);
                   interval = 1.0;
-                }  
+                }
                 user_time = total_user;
                 system_time = total_system;
 	        sampled_cpu = total_sampled_cpu;
-                trap_time = timestruc(NU.pr_ttime); 
+                trap_time = timestruc(NU.pr_ttime);
 	        child_time = total_child;
                 text_pf_time = timestruc(NU.pr_tftime);
                 data_pf_time = timestruc(NU.pr_dftime);
@@ -793,7 +793,7 @@ class proc_class_t {
 	      sched_class = rpi.pr_clname;
               lwp_max = NU.pr_count;
               lwp_count = rpi.lwp_count;
-              ppid = rpi.pr_ppid; 
+              ppid = rpi.pr_ppid;
 	      bindpset = rpi.pr_bindpset;
               fname = rpi.pr_fname;
 	      if (fname == "" && rpi.pr_sname == 'Z') {
@@ -844,12 +844,12 @@ class proc_class_t {
                   lwp_t_class.inblocks = lwp_t_struct.lwp_pru.pr_inblk ;
                   lwp_t_class.outblocks = lwp_t_struct.lwp_pru.pr_oublk ;
                   lwp_t_class.messages = lwp_t_struct.lwp_pru.pr_msnd + lwp_t_struct.lwp_pru.pr_mrcv;
-                  lwp_t_class.signals = lwp_t_struct.lwp_pru.pr_sigs; 
-                  lwp_t_class.vcontexts = lwp_t_struct.lwp_pru.pr_vctx; 
-                  lwp_t_class.icontexts = lwp_t_struct.lwp_pru.pr_ictx; 
-                  lwp_t_class.syscalls = lwp_t_struct.lwp_pru.pr_sysc; 
-                  lwp_t_class.charios = lwp_t_struct.lwp_pru.pr_ioch; 
-  
+                  lwp_t_class.signals = lwp_t_struct.lwp_pru.pr_sigs;
+                  lwp_t_class.vcontexts = lwp_t_struct.lwp_pru.pr_vctx;
+                  lwp_t_class.icontexts = lwp_t_struct.lwp_pru.pr_ictx;
+                  lwp_t_class.syscalls = lwp_t_struct.lwp_pru.pr_sysc;
+                  lwp_t_class.charios = lwp_t_struct.lwp_pru.pr_ioch;
+
                   olwp_t_ptr = rpi.olwp;
                   while ( olwp_t_ptr != NULL ) {
 		    olwp_t_struct = *((lwp_prusage *) olwp_t_ptr);
@@ -873,12 +873,12 @@ class proc_class_t {
                     lwp_t_class.inblocks = lwp_t_class.inblocks  - olwp_t_struct.lwp_pru.pr_inblk ;
                     lwp_t_class.outblocks = lwp_t_class.outblocks - olwp_t_struct.lwp_pru.pr_oublk ;
                     lwp_t_class.messages = lwp_t_class.messages - olwp_t_struct.lwp_pru.pr_msnd + lwp_t_struct.lwp_pru.pr_mrcv;
-                    lwp_t_class.signals = lwp_t_class.signals - olwp_t_struct.lwp_pru.pr_sigs; 
-                    lwp_t_class.vcontexts = lwp_t_class.vcontexts  - olwp_t_struct.lwp_pru.pr_vctx; 
-                    lwp_t_class.icontexts = lwp_t_class.icontexts - olwp_t_struct.lwp_pru.pr_ictx; 
-                    lwp_t_class.syscalls = lwp_t_class.syscalls - olwp_t_struct.lwp_pru.pr_sysc; 
-                    lwp_t_class.charios = lwp_t_class.charios - olwp_t_struct.lwp_pru.pr_ioch; 
-                    
+                    lwp_t_class.signals = lwp_t_class.signals - olwp_t_struct.lwp_pru.pr_sigs;
+                    lwp_t_class.vcontexts = lwp_t_class.vcontexts  - olwp_t_struct.lwp_pru.pr_vctx;
+                    lwp_t_class.icontexts = lwp_t_class.icontexts - olwp_t_struct.lwp_pru.pr_ictx;
+                    lwp_t_class.syscalls = lwp_t_class.syscalls - olwp_t_struct.lwp_pru.pr_sysc;
+                    lwp_t_class.charios = lwp_t_class.charios - olwp_t_struct.lwp_pru.pr_ioch;
+
 	         } /* end of if old pointer */
                     lwp_t_class_ptr = malloc(sizeof(lwp_t_class));
                     memset(lwp_t_class_ptr, NULL, sizeof(lwp_t_class));
@@ -889,7 +889,7 @@ class proc_class_t {
     } /* end of while */
 } /* end of if we have lwps */
 }/* end of we want lwps */
-/* End if valid pp */ 
+/* End if valid pp */
 }else {
 	      process_number = -1;
 	      index$ = -1;
@@ -898,5 +898,5 @@ class proc_class_t {
        }
 }
 };
-     
-     
+
+

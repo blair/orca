@@ -471,7 +471,7 @@ Solaris/Orcallator.se
           #SE_PATCHES="$SE_PATCHES -DHME_PATCH"
           #SE_PATCHES="$SE_PATCHES -DHME_PATCH_IFSPEED"
          +SE_PATCHES="$SE_PATCHES -DMAX_IF=10"
- 
+
           # Check if the SE executable was found upon configure.
           if test -z "$SE"; then
 

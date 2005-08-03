@@ -1,6 +1,6 @@
 Linux ORCA-aware statistics collector
 
-This piece of software is for use with Orca, by Blair Zajac - 
+This piece of software is for use with Orca, by Blair Zajac -
 http://www.orcaware.com/ - and intends to provide relevant system statistics
 in a friendly and graphical interface.
 
@@ -14,7 +14,7 @@ I use rsync, but anything, ranging from ftp to NFS will do fine.
 Check the update_orca_server.sh script (I use it in crontab) for
 reference on doing it.
 
-Installation:	
+Installation:
 The installation is quite simple. It installs with orca normal installations
 For instructions check orca documents
 

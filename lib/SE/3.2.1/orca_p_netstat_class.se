@@ -176,7 +176,7 @@ class p_netstat {
       /* grab the info for this net */
       interface.number$ = i;
       refresh$(interface);
-  
+
       /* compute new values */
       pnetGLOB_net_ipackets[i]   =
         UD_DIFF(interface.ipackets,   pnetGLOB_save_nets[i].ipackets) / et;
@@ -213,7 +213,7 @@ class p_netstat {
       /* save old */
       pnetGLOB_save_nets[i] = interface;
     }
-  
+
     /* update and return */
     strncpy(name$, pnetGLOB_save_nets[i].name$, 12);
     ipackets    = pnetGLOB_net_ipackets[i];

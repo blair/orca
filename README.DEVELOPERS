@@ -256,11 +256,11 @@ Later on, when someone is trying to figure out what happened to
 'twirling_baton_fast', they may not find it if they just search for
 "_fast".  A better entry would be:
 
-   * twirl.c 
+   * twirl.c
      (twirling_baton_fast, twirling_baton_slow): Removed these
-     obsolete structures. 
+     obsolete structures.
      (handle_parser_warning): Pass data directly to callees, instead
-     of storing in twirling_baton_*. 
+     of storing in twirling_baton_*.
 
    * twirl.h: Fix indentation.
 

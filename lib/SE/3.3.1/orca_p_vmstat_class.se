@@ -170,7 +170,7 @@ class p_vmstat {
       /* memory values */
       old_vminfo = kstat$vminfo;
       old_sysinfo = kstat$info;
-  
+
       initialized = 1;
       last_number = number$;
 
@@ -213,7 +213,7 @@ class p_vmstat {
         sysfork   = pvmGLOB_cpu_sysinfo[i].sysfork/pvmGLOB_etime[i];
         sysvfork  = pvmGLOB_cpu_sysinfo[i].sysvfork/pvmGLOB_etime[i];
         sysexec   = pvmGLOB_cpu_sysinfo[i].sysexec/pvmGLOB_etime[i];
-  
+
         namei     = pvmGLOB_cpu_sysinfo[i].namei/pvmGLOB_etime[i];
         ufsiget   = pvmGLOB_cpu_sysinfo[i].ufsiget/pvmGLOB_etime[i];
         ufsdirblk = pvmGLOB_cpu_sysinfo[i].ufsdirblk/pvmGLOB_etime[i];
@@ -246,7 +246,7 @@ class p_vmstat {
     }
     pvmGLOB_etime[i] = itime / hz;
     pvmGLOB_old_time[i] = new_time;
-  
+
     csi.number$ = i;
     refresh$(csi);
 
@@ -285,7 +285,7 @@ class p_vmstat {
 
     CSI_DIFF(ufsinopage);
 
-    /* compute percentages 
+    /* compute percentages
     total = pvmGLOB_cpu_sysinfo[i].cpu[CPU_USER] +
             pvmGLOB_cpu_sysinfo[i].cpu[CPU_KERNEL] +
             pvmGLOB_cpu_sysinfo[i].cpu[CPU_WAIT] +

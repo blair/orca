@@ -1,7 +1,7 @@
 Procallator TODO list:
-- Use the same names for data sets as in the Solaris version to use the same 
+- Use the same names for data sets as in the Solaris version to use the same
   config files -- that seems harder each version -> too many different metrics
-- Document and optimize collector source code. It is possible to do lots of 
+- Document and optimize collector source code. It is possible to do lots of
   optimizations and better memory handling
 - Write better config file for network and NFS stats
 - Add web server stats

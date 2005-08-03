@@ -9,7 +9,7 @@ History change for procallator
         - Removed support for page-ins and page-outs metrics due to
           misunderstood interpretations real meaning of values
         - New cfg file, with better handling of tcp stats - every stat is now a
-          counter and not gauges, this corrects the way the stats are plotted, 
+          counter and not gauges, this corrects the way the stats are plotted,
           sadly its not compatible with older versions
         - Added IO Wait for 2.6 kernels
         - Using real device names on disk statistics for 2.4 and 2.6 kernels
@@ -21,8 +21,8 @@ History change for procallator
         - Now it is integrated with orca install and makefiles
         - Used perltidy to embelish and uniformize perl source code
         IMPORTANT - Due to the various fixes and additions the new config file
-        as well as the new collected files are not compatible with older 
-        versions, that way, using the new cfg with older collected data, or 
+        as well as the new collected files are not compatible with older
+        versions, that way, using the new cfg with older collected data, or
         the older cfg with newer collected data may lead to some problems, like
         missing graphs and so. That way the upgrade should be planned with care
 0.04    - Added support for @COMPRESS@ variable in configure scripts, defaults

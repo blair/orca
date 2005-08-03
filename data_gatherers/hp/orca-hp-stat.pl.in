@@ -1,25 +1,25 @@
 # Collect general HP performance statistics formatted for
 # interpretation by Orca.
 #
-# Usage: 
+# Usage:
 # The following variables may be set:
-# 
+#
 # OUT_ROOT root directory for data files (eg /opt/log/performance)
 # INTERVAL the number of seconds between checks (eg 300 = 5 min)
 # DURATION number of hours to run (eg 1 = 1 hr)
-# 
+#
 # This script runs various standard system utilities to collect
 # system performance statistics and writes them out to datafile named
 # HOSTNAME/stats.YYYY-MM-DD-HHmm under the OUT_ROOT directory.
-# 
+#
 # It runs for the the numbers specified by DURATION collecting data
 # every INTERVAL number of seconds. After DURATION, the script
 # closes and compresses it's datafile via /usr/bin/compress and then
 # exits. If DURATION=24 and INTERVAL=300 (recommended) then the
 # following cron entry would collect continuous stats for a system:
-# 
+#
 # 0 0 * * * /<PATH_TO_SCRIPT>/orca-hp-stat.pl
-# 
+#
 # 2003-09-10 - RV - Modifies for HP ... Rajesh Verma(rajeshverma@aixdude.com)
 # ver 1.0
 # 2001-04-16 - JDK - Genesis... by Jason D. Kelleher
@@ -272,7 +272,7 @@ while ($iterations-- > 0) {
           $ipct_used, $mnt) = split;
 
       # Recalculate percents because df rounds.
-      $fs_info .= "\t" 
+      $fs_info .= "\t"
                . sprintf("%s\t%s\t%s\t%.5f\t%d\t%s\t%s\t%.5f",
                          $blocks,
                          $used,

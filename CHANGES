@@ -455,7 +455,7 @@ Sun Oct 21 14:56:45 PDT 2001 <blair@orcaware.com> Blair Zajac
 	  WATCH_OS was defined, but if WATCH_DISK was defined and
 	  WATCH_OS was not, then the new raw disk code was not being
 	  used.  This change makes the behavior consistent.
-	
+
 Sun Oct 21 14:40:41 PDT 2001 <blair@orcaware.com> Blair Zajac
 
 	* README: Add wish list URL.

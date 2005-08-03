@@ -2,8 +2,8 @@ These are the current documented BUGs in procallator:
 
 Version 0.3 - and probably the older versions
 - When running as a guest OS in MWARE Workstation the perl sleep function (that
-  calls nanosleep system call) seems to hang when the virtual machine is idle 
+  calls nanosleep system call) seems to hang when the virtual machine is idle
   (or with low load).  There is no known workaround, and apparently it happens
   with other programs using this system call. Have to confirm that this occurs
-  with other installations and verify viable alternatives, like time-hires or 
+  with other installations and verify viable alternatives, like time-hires or
   other ways to create reliable timers on vmware guests.

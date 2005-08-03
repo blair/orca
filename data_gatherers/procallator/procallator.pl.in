@@ -45,7 +45,7 @@ $NFS_PROTO_DETAILS = 0;  # Include per NFS per protocol versions stats on output
 
 # Initializations
 $DEBUG     = 0;
-$r         = 0;          # Rotating indice for measuring counter differences
+$r         = 0;          # Rotating index for measuring counter differences
 $rate_ok   = 0;          # Check if is ok to calculate rates
 $num       = 0;          # Serial number of output file
 $n_cols[0] = 0;
@@ -294,7 +294,7 @@ do {
         open( F_VMSTAT, "<$PROC/vmstat" );
         while ( $line = <F_VMSTAT> ) {
 
-            # Not sure about the meaning of theese
+            # Not sure about the meaning of these
             #if ( $line=~/pgactivate/) {
             #    ($dumb, $page_in[$r])= split / +/,$line;
             #}
@@ -311,8 +311,8 @@ do {
         close(F_VMSTAT);
     }
 
-# Now lets get 2.4 /proc/partitions and 2.5 /proc/diskstats for acurate disk measurements
-#
+    # Now lets get 2.4 /proc/partitions and 2.5 /proc/diskstats for
+    # accurate disk measurements
     if ( $minor >= 4 ) {
         (
             $dsk_stat_t[$r], $dsk_rio_t[$r], $dsk_rblk_t[$r],
@@ -370,7 +370,7 @@ do {
                     );
                 }
                 else {
-                    put_output(  # 2.6 has less metrics, wich  messes vars names
+                    put_output(  # 2.6 has fewer metrics, which messes vars names
                         "part_rd_$name[$r][$i]/s",
                         rate( $rdops[$r][$i], $rdops[ 1 - $r ][$i] ),
                         "part_wr_$name[$r][$i]/s",
@@ -430,7 +430,7 @@ do {
 
     close(F_STAT);
 
-    # Get memory ocupation
+    # Get memory occupation
     open( F_MEMINFO, "<$PROC/meminfo" );
     if ( $version !~ /^2\.6/ ) {
         <F_MEMINFO>;
@@ -970,7 +970,7 @@ do {
         );
     }
 
-    # Get filesystem ocupation
+    # Get filesystem occupation
     @df = `/bin/df -klP`;
     for ( $i = 1, $j = 0 ; $df[$i] ; $i++ ) {
         if ( !( ( $df[$i] =~ /cdrom/ ) || ( $df[$i] =~ /cdrom/ ) ) ) {
@@ -1013,9 +1013,9 @@ do {
     $r       = 1 - $r;
     $rate_ok = 1;
 
-} while ( !$DEBUG || $r );    # If in debug mode does only 2 iteractions
+} while ( !$DEBUG || $r );    # If in debug mode does only 2 iterations
 
-# to perl dont complain on unused vars
+# to perl don't complain on unused vars
 ( $os, $n_fs, $net_parms, $n_nets, $cpu, $yday, $isdst ) =
   ( $os, $n_fs, $net_parms, $n_nets, $cpu, $yday, $isdst );
 

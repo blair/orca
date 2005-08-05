@@ -27,7 +27,7 @@
 
 # Config variables
 
-$PROC     = "@PROC@";            # Proc directory, usually /proc
+$PROC     = "@PROC_DIR@";       # Proc directory, usually /proc
 $INTERVAL = 300;                # Interval between each measure, in seconds
 
 $COMPRESS = "@COMPRESSOR@";     # Compressor...

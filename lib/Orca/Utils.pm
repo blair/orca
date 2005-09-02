@@ -159,22 +159,6 @@ sub name_to_fsname {
   $name;
 }
 
-sub old_name_to_fsname {
-  my $name = shift;
-  $name =~ s/:/_/g;
-  $name =~ s:/:_per_:g;
-  $name =~ s:\s+:_:g;
-  $name =~ s:%:_percent_:g;
-  $name =~ s:#:_number_:g;
-  $name =~ s:\*:_X_:g;
-  $name =~ s:([_,]){2,}:$1:g;
-
-  # Remove trailing _'s.
-  $name =~ s:_+$::;
-  $name =~ s:_+,:,:g;
-  $name;
-}
-
 # Find all files matching a particular Perl regular expression and
 # return file ids.
 sub perl_glob {

@@ -110,7 +110,16 @@ sub name_to_fsname {
   my ($name, $postfix_length) = @_;
 
   $name =~ s/:/_/g;
+
+  # When Internet Explorer sees a \ in a URL, it converts it into a /
+  # when it makes a request to a web server which will fail, so change
+  # the \ to a |.
+  $name =~ s:\\:|:g;
+
+  # A / cannot appear in a filename because it'll look like a
+  # directory.
   $name =~ s:/:_per_:g;
+
   $name =~ s:\s+:_:g;
   $name =~ s:%:_pct_:g;
   $name =~ s:#:_num_:g;
@@ -139,11 +148,12 @@ sub name_to_fsname {
     my $trim_length = $max_filename_length - 23 - $postfix_length;
     $name           = substr($name, 0, $trim_length) . "-$md5";
 
-    # Be careful to convert any /, \ or + characters to _.  The /
-    # character definitely needs to be modified since / is a valid
+    # Be careful to convert any / or + characters to _ and any \'s to
+    # |'s.  The / character needs to be changed since / is a valid
     # base64 character and can't be used since we don't want a
     # directory.
-    $name =~ s:[/\\\+]:_:g;
+    $name =~ s:[/\+]:_:g;
+    $name =~ s:[\\]:|:g;
   }
 
   $name;

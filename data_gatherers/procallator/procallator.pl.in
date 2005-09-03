@@ -25,16 +25,17 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301, USA.
 
+use Sys::Hostname;
+
 # Config variables.
 
 $PROC     = "@PROC_DIR@";       # Proc directory, usually /proc
 $INTERVAL = 300;                # Interval between each measure, in seconds
 
 $COMPRESS = "@COMPRESSOR@";     # Compressor...
-$COMPRESS = "/usr/bin/gzip" if ($COMPRESS eq "");  # Get a default
+$COMPRESS = "@GZIP@" if $COMPRESS eq "";  # Get a default
 
-$HOSTNAME = `/bin/hostname`;
-chomp $HOSTNAME;
+$HOSTNAME = hostname;
 $DEST_DIR =
   "@VAR_DIR@/procallator/$HOSTNAME";    # Destination dir for output files
 
@@ -60,11 +61,13 @@ if ( !$DEBUG ) {
 
 # Create output dir if needed
 if ( !-d $DEST_DIR && !$DEBUG ) {
-    `mkdir -p $DEST_DIR`;
+    mkdir($DEST_DIR)
+        or die "$0: cannot mkdir '$DEST_DIR': $!\n";
 }
 
 # Read kernel version
-open( F_VERSION, "<$PROC/version" );
+open(F_VERSION, "$PROC/version")
+    or die "$0: cannot open '$PROC/version' for reading: $!\n";
 ( $os, $line, $version ) = split / +/, <F_VERSION>, 4;
 close(F_VERSION);
 
@@ -92,16 +95,23 @@ do {
     $locltime = sprintf "%02d:%02d:%02d", $hour, $min, $sec;
 
     # Get uptime
-    open( F_UPTIME, "<$PROC/uptime" );
+    open(F_UPTIME, "$PROC/uptime")
+        or warn "$0: cannot open '$PROC/uptime' for reading: $!\n";
     ($uptime) = split / +/, <F_UPTIME>;
     close(F_UPTIME);
 
     # insert in output table
-    put_output( "timestamp", $timestamp[$r], "locltime", $locltime, "uptime",
-        $uptime );
+    put_output("timestamp",
+               $timestamp[$r],
+               "locltime",
+               $locltime,
+               "uptime",
+               $uptime);
 
     # Read load average
-    open( F_LOADAVG, "<$PROC/loadavg" );
+    open(F_LOADAVG, "$PROC/loadavg")
+        or warn "$0: cannot open '$PROC/loadavg' for reading: $!\n";
+      
     ( $runq_1, $runq_5, $runq_15, $proc_run, $procs[$r], $last_pid ) =
       split / +|\//, <F_LOADAVG>;
     chomp $last_pid;
@@ -113,7 +123,8 @@ do {
     );
 
     # Read system stats
-    open( F_STAT, "<$PROC/stat" );
+    open(F_STAT, "$PROC/stat")
+        or warn "$0: cannot open '$PROC/stat' for reading: $!\n";
     $n_cpus = 0;
     while ( $line = <F_STAT> ) {
         chomp($line);
@@ -289,9 +300,11 @@ do {
         }
     }
 
-  # In kernel 2.6 paging and swapping information must be computed on other file
+    # In kernel 2.6 paging and swapping information must be computed
+    # on other file.
     if ( $version =~ /^2\.6/ ) {
-        open( F_VMSTAT, "<$PROC/vmstat" );
+        open(F_VMSTAT, "$PROC/vmstat")
+            or warn "$0: cannot open '$PROC/vmstat' for reading: $!\n";
         while ( $line = <F_VMSTAT> ) {
 
             # Not sure about the meaning of these
@@ -319,8 +332,9 @@ do {
             $dsk_wio_t[$r],  $dsk_wblk_t[$r]
           )
           = ( 0, 0, 0, 0 );
-        open( F_DSKSTAT, "<$PROC/partitions" ) if ( $minor == 4 );
-        open( F_DSKSTAT, "<$PROC/diskstats" )  if ( $minor > 4 );
+        my $filename = 4 == $minor ? 'partitions' : 'diskstats';
+        open(F_DSKSTAT, "$PROC/$filename")
+            or warn "$0: cannot open '$PROC/$filename' for reading: $!\n";
 
         $i = 0;
         while ( $line = <F_DSKSTAT> ) {
@@ -431,7 +445,8 @@ do {
     close(F_STAT);
 
     # Get memory occupation
-    open( F_MEMINFO, "<$PROC/meminfo" );
+    open( F_MEMINFO, "$PROC/meminfo" )
+        or warn "$0: cannot open '$PROC/meminfo' for reading: $!\n";
     if ( $version !~ /^2\.6/ ) {
         <F_MEMINFO>;
         (
@@ -488,7 +503,8 @@ do {
     );
 
     # Get network interface statistics
-    open( F_NET_DEV, "<$PROC/net/dev" );
+    open(F_NET_DEV, "$PROC/net/dev")
+        or warn "$0: cannot open '$PROC/net/dev' for reading: $!\n";
     $i = 0;
     while ( $line = <F_NET_DEV> ) {
         if ( $line =~ /:/ ) {
@@ -552,7 +568,9 @@ do {
 
         if ( $k == 1 ) {
             if ( $minor >= 4 ) {
-                open( F_SNMP, "<$PROC/net/netstat" );
+                open(F_SNMP, "$PROC/net/netstat")
+                    or warn "$0: cannot open '$PROC/net/netstat' for ",
+                            "reading: $!\n";
             }
             else {
                 next;
@@ -560,7 +578,8 @@ do {
 
         }
         else {
-            open( F_SNMP, "<$PROC/net/snmp" );
+            open(F_SNMP, "$PROC/net/snmp")
+                or warn "$0: cannot open '$PROC/net/snmp' for reading: $!\n";
         }
 
         $j = 0;
@@ -616,7 +635,8 @@ do {
 
     # Get NFS Client statistics
     if ( -f "$PROC/net/rpc/nfs" ) {
-        open( F_NFS, "<$PROC/net/rpc/nfs" );
+        open(F_NFS, "$PROC/net/rpc/nfs")
+            or warn "$0: cannot open '$PROC/net/rpc/nfs' for reading: $!\n";
         while ( $line = <F_NFS> ) {
 
             if ( $line =~ /rpc/ ) {
@@ -815,8 +835,9 @@ do {
     }
 
     # Get NFS Server statistics
-    if ( -f "$PROC/net/rpc/nfsd" ) {
-        open( F_NFS, "<$PROC/net/rpc/nfsd" );
+    if (-f "$PROC/net/rpc/nfsd") {
+        open(F_NFS, "$PROC/net/rpc/nfsd")
+            or warn "$0: cannot open '$PROC/net/rpc/nfsd' for reading: $!\n";
         while ( $line = <F_NFS> ) {
 
             if ( $line =~ /rpc/ ) {
@@ -1058,7 +1079,8 @@ sub flush_output {
     my $t;
 
     # check if new file is not required
-    open( F_OUT, ">>$out_filename[$r]" ) or die "Could not open output";
+    open(F_OUT, ">>$out_filename[$r]") or
+        die "$0: cannot open '$out_filename[$r]' for writing: $!\n";
 
     if ( !$rate_ok ) {
         for ( $t = 0 ; $t < $n_cols[$r] ; $t++ ) {
@@ -1098,7 +1120,7 @@ sub put_output {
         $out[0][ $n_cols[$r] ] = $a[$t];
         $out[1][ $n_cols[$r] ] = $a[ $t + 1 ];
         if ($DEBUG) {
-            print $out[0][ $n_cols[$r] ] . ": " . $out[1][ $n_cols[$r] ] . "\n";
+            print $out[0][ $n_cols[$r] ], ": ", $out[1][ $n_cols[$r] ], "\n";
         }
     }
 }

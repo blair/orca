@@ -15,7 +15,7 @@ require DynaLoader;
 		 d_usleep d_ualarm d_gettimeofday d_getitimer d_setitimer
 		 d_nanosleep);
 	
-$VERSION = '1.68';
+$VERSION = '1.73';
 $XS_VERSION = $VERSION;
 $VERSION = eval $VERSION;
 
@@ -24,7 +24,10 @@ sub AUTOLOAD {
     ($constname = $AUTOLOAD) =~ s/.*:://;
     die "&Time::HiRes::constant not defined" if $constname eq 'constant';
     my ($error, $val) = constant($constname);
-    if ($error) { die $error; }
+    if ($error) {
+        my (undef,$file,$line) = caller;
+        die "$error at $file line $line.\n";
+    }
     {
 	no strict 'refs';
 	*$AUTOLOAD = sub { $val };
@@ -111,9 +114,9 @@ C<&Time::HiRes::d_nanosleep> to see whether you have nanosleep, and
 then carefully read your C<nanosleep()> C API documentation for any
 peculiarities.
 
-Unless using C<nanosleep> for mixing sleeping with signals, give
-some thought to whether Perl is the tool you should be using for
-work requiring nanosecond accuracies.
+If you are using C<nanosleep> for something else than mixing sleeping
+with signals, give some thought to whether Perl is the tool you should
+be using for work requiring nanosecond accuracies.
 
 The following functions can be imported from this module.
 No functions are exported by default.
@@ -326,8 +329,8 @@ modglobal hash:
 Both functions return equivalent information (like C<gettimeofday>)
 but with different representations.  The names C<NVtime> and C<U2time>
 were selected mainly because they are operating system independent.
-(C<gettimeofday> is Unix-centric, though some platforms like VMS have
-emulations for it.)
+(C<gettimeofday> is Unix-centric, though some platforms like Win32 and
+VMS have emulations for it.)
 
 Here is an example of using C<NVtime> from C:
 
@@ -363,6 +366,10 @@ platforms like Cygwin and MinGW) the Time::HiRes::time() may temporarily
 drift off from the system clock (and the original time())  by up to 0.5
 seconds. Time::HiRes will notice this eventually and recalibrate.
 
+=head1 SEE ALSO
+
+L<BSD::Resource>, L<Time::TAI64>.
+
 =head1 AUTHORS
 
 D. Wegscheid <wegscd@whirlpool.com>
@@ -374,7 +381,7 @@ G. Aas <gisle@aas.no>
 
 Copyright (c) 1996-2002 Douglas E. Wegscheid.  All rights reserved.
 
-Copyright (c) 2002,2003,2004 Jarkko Hietaniemi.  All rights reserved.
+Copyright (c) 2002, 2003, 2004, 2005 Jarkko Hietaniemi.  All rights reserved.
 
 This program is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.

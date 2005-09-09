@@ -5,7 +5,6 @@
 # $LastChangedDate$
 # $LastChangedBy$
 
-
 # Require at least this version of Orca.
 require			Orca 0.28.0
 
@@ -42,27 +41,28 @@ find_times		0:10 1:00 6:00 12:00 19:00
 
 # This defines the email address of people to warn when a file that is
 # being updated constantly stops being updated.  For mathematical
-# expressions use the word `interval' to get the interval number for
+# expressions use the word 'interval' to get the interval number for
 # the data source.
 warn_email		@WARN_EMAIL@
 late_interval		interval + 30
 
 # These parameters specify which plots to generate.
-generate_hourly_plot    0
-generate_daily_plot     1
-generate_weekly_plot    1
-generate_monthly_plot   1
-generate_quarterly_plot 1
-generate_yearly_plot    1
+generate_hourly_plot	0
+generate_daily_plot	1
+generate_weekly_plot	1
+generate_monthly_plot	1
+generate_quarterly_plot	1
+generate_yearly_plot	1
 
 # This sets the HTML markup that is placed at the very top of every
-# web page and is primarly used to display the site's logo.
-html_page_header       <h3>Put your site's logo here.</h3>
+# web page and is primarily used to display the site's logo.
+html_page_header	<h3>Put your site's logo here.</h3>
 
-# This sets the text that is placed in the pages' <title></title>
-# element and just after the html_page_header HTML markup text is
-# placed on the page.
-html_top_title                Orca Host Status
+# This sets the text, that should not be HTML markup, that is used
+# only in the main index.html file.  It is used in the <title></title>
+# element and also placed in the HTML body after the html_page_header
+# in a <h1></h1> element index.html file.
+html_top_title		Orca Host Status
 
 # This sets the HTML markup that is placed at the bottom of every web
 # page.

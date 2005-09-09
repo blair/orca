@@ -111,7 +111,7 @@ do {
     # Read load average
     open(F_LOADAVG, "$PROC/loadavg")
         or warn "$0: cannot open '$PROC/loadavg' for reading: $!\n";
-      
+
     ( $runq_1, $runq_5, $runq_15, $proc_run, $procs[$r], $last_pid ) =
       split / +|\//, <F_LOADAVG>;
     chomp $last_pid;

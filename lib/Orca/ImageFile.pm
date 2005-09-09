@@ -317,7 +317,8 @@ sub image_height {
 # empty string or the size of the image.
 sub image_src_size {
   if ($_[0]->[I_IMAGE_HEIGHT] and $_[0]->[I_IMAGE_WIDTH]) {
-    return "width=$_[0]->[I_IMAGE_WIDTH] height=$_[0]->[I_IMAGE_HEIGHT]";
+    return "width=\"$_[0]->[I_IMAGE_WIDTH]\" " .
+           "height=\"$_[0]->[I_IMAGE_HEIGHT]\"";
   } else {
     return '';
   }

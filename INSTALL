@@ -349,9 +349,13 @@ Outline:
        /etc/init.d/orcallator and set up symbolic links from that file
        to the appropriate K* and S* files in /etc/rc?.d/.
 
-       To make installing this easier, you can run
+       To make installing this easier, there are several make targets
+       available for different operating systems.
 
-       % make orcallator_run_at_boot
+       For systems with chkconfig, which are normally RedHat based
+       ones, run
+
+       % make orcallator_run_at_boot_using_chkconfig
 
        from either the top of the Orca source tree or from the
        data_gatherers/orcallator directory.  This will first delete
@@ -396,9 +400,13 @@ Outline:
        into /etc/init.d/procallator and set up symbolic links from
        that file to the appropriate K* and S* files in /etc/rc?.d/.
 
-       To make installing this easier, you can run
+       To make installing this easier, there are several make targets
+       available for different operating systems.
 
-       % make procallator_run_at_boot
+       For systems with chkconfig, which are normally RedHat based
+       ones, run
+
+       % make procallator_run_at_boot_using_chkconfig
 
        from either the top of the Orca source tree or from the
        data_gatherers/procallator directory.  This uses Linux's

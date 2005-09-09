@@ -68,7 +68,7 @@ install: all
 	  $(INSTALL) -m 0644 orca_services.cfg $(DESTDIR)$(sysconfdir) || exit 1; \
 	fi
 
-orca_services_run_at_boot: all
+orca_services_run_at_boot_using_chkconfig: all
 	test "$(INIT_D_DIR)"
 	test "$(RCX_D_CONTAINING_DIR)"
 	-$(RM) $(INIT_D_DIR)/orca_services

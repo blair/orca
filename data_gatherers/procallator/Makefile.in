@@ -62,7 +62,7 @@ install: all
 	  $(INSTALL) -m 0644 procallator.cfg $(DESTDIR)$(sysconfdir) || exit 1; \
 	fi
 
-procallator_run_at_boot: all
+procallator_run_at_boot_using_chkconfig: all
 	test "$(INIT_D_DIR)"
 	-$(RM) $(INIT_D_DIR)/procallator
 	$(INSTALL) -m 0744 S99procallator $(INIT_D_DIR)/procallator

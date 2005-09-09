@@ -75,9 +75,10 @@ radius stats via the "--radius_db=off" parameter
    make
    make install
 
-   * if orca_services should run at boottime
+   If orca_services should run at boot time, for systems with chkconfig,
+   which are normally RedHat based systems, run
 
-   make orca_services_run_at_boot
+   make orca_services_run_at_boot_using_chkconfig
 
    Most of the skeleton code of orca_services comes from orcallator. So
    everything is very similar.

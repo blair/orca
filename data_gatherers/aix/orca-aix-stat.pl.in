@@ -12,11 +12,11 @@
 # system performance statistics and writes them out to datafile named
 # HOSTNAME/stats.YYYY-MM-DD-HHmm under the OUT_ROOT directory.
 #
-# It runs for the the numbers specified by DURATION collecting data
-# every INTERVAL number of seconds. After DURATION, the script
-# closes and compresses it's datafile via /usr/bin/compress and then
-# exits. If DURATION=24 and INTERVAL=300 (recommended) then the
-# following cron entry would collect continuous stats for a system:
+# It runs for the numbers specified by DURATION collecting data every
+# INTERVAL number of seconds.  After DURATION, the script closes and
+# compresses it's datafile via /usr/bin/compress and then exits.  If
+# DURATION=24 and INTERVAL=300 (recommended) then the following cron
+# entry would collect continuous stats for a system:
 #
 # 0 0 * * * /<PATH_TO_SCRIPT>/orca-aix-stat.pl
 #

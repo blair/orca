@@ -179,10 +179,9 @@ Sun Aug 11 20:12:38 PDT 2002 <blair@orcaware.com> Blair Zajac
 	      match each regular expression in a global integer array,
 	      count_procs_results.
 	* orcallator/start_orcallator.sh.in:
-	  Set WEB_SERVER to httpd and and WEB_SERVER_SECURE to
-	  httpsd and export them both into the environment for
-	  orcallator.se to use.  Add documentation for these two
-	  variables.
+	  Set WEB_SERVER to httpd and WEB_SERVER_SECURE to httpsd and
+	  export them both into the environment for orcallator.se to
+	  use.  Add documentation for these two variables.
 
 Wed Aug  7 19:57:45 PDT 2002 <blair@orcaware.com> Blair Zajac
 

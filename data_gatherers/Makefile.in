@@ -29,8 +29,8 @@ check:
 
 test: check
 
-orcallator_run_at_boot_using_chkconfig:
-	cd orcallator && $(MAKE) orcallator_run_at_boot_using_chkconfig
+orcallator_run_at_boot:
+	cd orcallator && $(MAKE) orcallator_run_at_boot
 
 orca_services_run_at_boot_using_chkconfig:
 	cd orca_services && $(MAKE) orca_services_run_at_boot_using_chkconfig

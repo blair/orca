@@ -355,7 +355,7 @@ Outline:
        For systems with chkconfig, which are normally RedHat based
        ones, run
 
-       % make orcallator_run_at_boot_using_chkconfig
+       % make orcallator_run_at_boot
 
        from either the top of the Orca source tree or from the
        data_gatherers/orcallator directory.  This will first delete

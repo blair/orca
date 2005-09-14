@@ -28,8 +28,8 @@ upgrade:
 install_contrib:
 	cd contrib && $(MAKE) install_contrib
 
-orcallator_run_at_boot_using_chkconfig:
-	cd data_gatherers/orcallator && $(MAKE) orcallator_run_at_boot_using_chkconfig
+orcallator_run_at_boot:
+	cd data_gatherers/orcallator && $(MAKE) orcallator_run_at_boot
 
 orca_services_run_at_boot_using_chkconfig:
 	cd data_gatherers/orca_services && $(MAKE) orca_services_run_at_boot_using_chkconfig

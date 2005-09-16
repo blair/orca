@@ -25,6 +25,8 @@ case "$1" in
   stop)
     if test -x $stop_orcallator; then
       $stop_orcallator
+    else
+      echo "$0: $stop_orcallator does not exist or is not executable."
     fi
     ;;
 

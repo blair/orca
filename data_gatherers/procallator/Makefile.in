@@ -63,6 +63,7 @@ install: all
 	fi
 
 procallator_run_at_boot_using_chkconfig: all
+	test "$(CHKCONFIG)"
 	test "$(INIT_D_DIR)"
 	-$(RM) $(INIT_D_DIR)/procallator
 	$(INSTALL) -m 0744 S99procallator $(INIT_D_DIR)/procallator

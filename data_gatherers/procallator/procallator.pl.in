@@ -1,5 +1,3 @@
-#!/usr/bin/perl -w
-#
 # Performance statistics collector for /proc statistics for use with
 # Linux 2.2, 2.4 & 2.6 kernels.
 #
@@ -25,32 +23,120 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301, USA.
 
+use strict;
+
 use Sys::Hostname;
 
 # Config variables.
 
-$PROC     = "@PROC_DIR@";       # Proc directory, usually /proc
-$INTERVAL = 300;                # Interval between each measure, in seconds
+my $PROC     = "@PROC_DIR@";       # Proc directory, usually /proc
+my $INTERVAL = 300;                # Interval between each measure, in seconds
 
-$COMPRESS = "@COMPRESSOR@";     # Compressor...
-$COMPRESS = "@GZIP@" if $COMPRESS eq "";  # Get a default
+my $COMPRESS = "@COMPRESSOR@";                 # Compressor...
+$COMPRESS = "@GZIP@" unless length $COMPRESS;  # Get a default
 
-$HOSTNAME = hostname;
-$DEST_DIR =
+my $HOSTNAME = hostname;
+my $DEST_DIR =
   "@VAR_DIR@/procallator/$HOSTNAME";    # Destination dir for output files
 
-#$DEST_DIR="/tmp";                      # Destination dir for output files
-#
 # Output Options
-$NFS_PROTO_DETAILS = 0;  # Include per NFS per protocol versions stats on output
+# Include per NFS per protocol versions stats on output
+my $NFS_PROTO_DETAILS = 0;
 
 # Initializations
-$DEBUG     = 0;
-$r         = 0;          # Rotating index for measuring counter differences
-$rate_ok   = 0;          # Check if is ok to calculate rates
-$num       = 0;          # Serial number of output file
-$n_cols[0] = 0;
-$n_cols[1] = 0;
+my $DEBUG     = 0;
+my $r         = 0;          # Rotating index for measuring counter differences
+my $rate_ok   = 0;          # Check if is ok to calculate rates
+my $num       = 0;          # Serial number of output file
+my @n_cols;
+
+#
+# Initializations.
+#
+
+# This section only contains scalars. Also all scalars are undefined.
+my ($i, $j);
+my ($os, $line, $version, $isdst, $dumb);
+my ($n_nets, $n_dsk, $line2, $cat, $net_parms, $n_fs, $cpu);
+
+# This section contains time based scalars.
+my ($sec, $min, $hour, $mday, $mon, $year, $yday);
+my ($locltime, $uptime);
+
+# This section deals with runq/proc.
+my ($runq_1, $runq_5, $runq_15, $proc_run);
+my ($n_cpus, $last_pid, $proc_block);
+
+# This section deals with memory.
+my ($mem_total, $mem_used, $mem_free, $mem_shrd, $mem_buff);
+my ($mem_cchd, $swp_total, $swp_used, $swp_free);
+
+# This section contains arrays.
+my (@df, @fs, @out_filename, @out);
+my (@timestamp, @yday, @procs, @cpu, @usr, @nice, @sys);
+my (@idle, @wait, @hi, @si, @total, @dumb, @dumb2);
+my (@name, @rdops, @rdops_seq, @rdsct, @rdtm, @wrops);
+my (@wrops_seq, @wrsct, @wrtm, @ioqueue, @iotm);
+
+# This section is disk related.
+my (@dsk, @dsk_rio_t, @dsk_wio_t, @page_in, @page_out);
+my (@dsk_stat_t, @dsk_rblk_t, @dsk_wblk_t);
+my (@dsk_maj, @dsk_min, @dsk_stat, @dsk_rio, @dsk_rblk);
+my (@dsk_wio, @dsk_wblk);
+
+# This section is memory/cpu related.
+my (@swap_in, @swap_out, @ctxt, @intr);
+my (@usr_100, @nice_100, @sys_100, @idle_100, @wait_100);
+my (@weightiotm, @ops_seq);
+
+# This section looks to be ifconfig/nic.
+my (@if_name, @if_in_b, @if_in_p);
+my (@if_in_e, @if_in_d, @if_in_ff, @if_in_fr, @if_in_c);
+my (@if_in_m, @if_out_b, @if_out_p, @if_out_e, @if_out_d);
+my (@if_out_ff, @if_out_cl, @if_out_ca, @if_out_cp);
+my (@net_parm, @nfs_c_rpc_calls, @nfs_c_rpc_retrs);
+my (@nfs_c_rpc_auth, @nfs_c_p2_getattr);
+my (@nfs_c_p2_setattr, @nfs_c_p2_root, @nfs_c_p2_lookup);
+my (@nfs_c_p2_readlink, @nfs_c_p2_read);
+my (@nfs_c_p2_wrcache, @nfs_c_p2_write, @nfs_c_p2_create);
+my (@nfs_c_p2_remove, @nfs_c_p2_rename, @nfs_c_p2_link);
+my (@nfs_c_p2_symlink, @nfs_c_p2_mkdir, @nfs_c_p2_rmdir);
+my (@nfs_c_p2_readdir, @nfs_c_p2_fsstat);
+my (@nfs_c_p3_getattr, @nfs_c_p3_setattr);
+my (@nfs_c_p3_lookup, @nfs_c_p3_access);
+my (@nfs_c_p3_readlink, @nfs_c_p3_read, @nfs_c_p3_write);
+my (@nfs_c_p3_create, @nfs_c_p3_mkdir, @nfs_c_p3_symlink);
+my (@nfs_c_p3_mknod, @nfs_c_p3_remove, @nfs_c_p3_rmdir);
+my (@nfs_c_p3_rename, @nfs_c_p3_link, @nfs_c_p3_readdir);
+my (@nfs_c_p3_readdirplus, @nfs_c_p3_fsstat);
+my (@nfs_c_p3_fsinfo, @nfs_c_p3_pathconf);
+my (@nfs_c_p3_commit, @nfs_c_p4_getattr);
+my (@nfs_c_p4_setattr, @nfs_c_p4_lookup);
+my (@nfs_c_p4_access, @nfs_c_p4_readlink, @nfs_c_p4_read);
+my (@nfs_c_p4_write, @nfs_c_p4_create, @nfs_c_p4_mkdir);
+my (@nfs_c_p4_symlink, @nfs_c_p4_mknod, @nfs_c_p4_remove);
+my (@nfs_c_p4_rmdir, @nfs_c_p4_rename, @nfs_c_p4_link);
+my (@nfs_c_p4_readdir, @nfs_c_p4_readdirplus);
+my (@nfs_c_p4_fsstat, @nfs_c_p4_fsinfo);
+my (@nfs_c_p4_pathconf, @nfs_c_p4_commit);
+my (@nfs_s_rpc_calls, @nfs_s_rpc_badcalls);
+my (@nfs_s_rpc_badauth, @nfs_s_rpc_badclnt);
+my (@nfs_s_rpc_xdrcall, @nfs_s_p2_getattr);
+my (@nfs_s_p2_setattr, @nfs_s_p2_root, @nfs_s_p2_lookup);
+my (@nfs_s_p2_readlink, @nfs_s_p2_read);
+my (@nfs_s_p2_wrcache, @nfs_s_p2_write, @nfs_s_p2_create);
+my (@nfs_s_p2_remove, @nfs_s_p2_rename, @nfs_s_p2_link);
+my (@nfs_s_p2_symlink, @nfs_s_p2_mkdir, @nfs_s_p2_rmdir);
+my (@nfs_s_p2_readdir, @nfs_s_p2_fsstat);
+my (@nfs_s_p3_getattr, @nfs_s_p3_setattr);
+my (@nfs_s_p3_lookup, @nfs_s_p3_access);
+my (@nfs_s_p3_readlink, @nfs_s_p3_read, @nfs_s_p3_write);
+my (@nfs_s_p3_create, @nfs_s_p3_mkdir, @nfs_s_p3_symlink);
+my (@nfs_s_p3_mknod, @nfs_s_p3_remove, @nfs_s_p3_rmdir);
+my (@nfs_s_p3_rename, @nfs_s_p3_link, @nfs_s_p3_readdir);
+my (@nfs_s_p3_readdirplus, @nfs_s_p3_fsstat);
+my (@nfs_s_p3_fsinfo, @nfs_s_p3_pathconf);
+my (@nfs_s_p3_commit, @nfs_s_p4_compound);
 
 if ( !$DEBUG ) {
     use POSIX qw(setsid);
@@ -459,6 +545,7 @@ do {
     }
     else {
         while ( $line = <F_MEMINFO> ) {
+            my $value;
             ( $dumb, $value ) = split / +/, $line;
             if ( $dumb eq 'MemTotal:' ) {
                 $mem_total = $value;

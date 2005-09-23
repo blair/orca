@@ -459,32 +459,27 @@ do {
     }
     else {
         while ( $line = <F_MEMINFO> ) {
-            if ( $line =~ /MemTotal/ ) {
-                ( $dumb, $mem_total ) = split / +/, $line;
+            ( $dumb, $value ) = split / +/, $line;
+            if ( $dumb eq 'MemTotal:' ) {
+                $mem_total = $value;
+            } elsif ( $dumb eq 'MemFree:' ) {
+                $mem_free = $value;
+            } elsif ( $dumb eq 'Buffers:' ) {
+                $mem_buff = $value;
+            } elsif ( $dumb eq 'Cached:' ) {
+                $mem_cchd = $value;
+            } elsif ( $dumb eq 'Shared:' ) {
+                # It does not exist anymore -- maybe get will have to
+                # get from /proc/sysvipc/shm?
+                $mem_shrd = $value;
+            } elsif ( $dumb eq 'SwapTotal:' ) {
+                $swp_total = $value;
+            } elsif ( $dumb eq 'SwapFree:' ) {
+                $swp_free = $value;
             }
-            if ( $line =~ /MemFree/ ) {
-                ( $dumb, $mem_free ) = split / +/, $line;
-            }
-            if ( $line =~ /Buffers/ ) {
-                ( $dumb, $mem_buff ) = split / +/, $line;
-            }
-            if ( $line =~ /Cached/ ) {
-                ( $dumb, $mem_cchd ) = split / +/, $line;
-            }
-            if ( $line =~ /Shared/ ) {
-                ( $dumb, $mem_shrd ) = split / +/, $line
-                  ; # It does not exist anymore -- maybe get will have to get from /proc/sysvipc/shm ?
-            }
-
-            #if ( $line=~/SwapCached/) {
-            #    ($dumb, $mem_swpcchd)= split / +/,$line;
-            #}
-            if ( $line =~ /SwapTotal/ ) {
-                ( $dumb, $swp_total ) = split / +/, $line;
-            }
-            if ( $line =~ /SwapFree/ ) {
-                ( $dumb, $swp_free ) = split / +/, $line;
-            }
+            # elsif ( $dump eq 'SwapCached:' ) {
+            #     $mem_swpcchd = $value;
+            # }
         }
         $mem_used = $mem_total - $mem_free;
         $swp_used = $swp_total - $swp_free;

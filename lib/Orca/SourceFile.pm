@@ -802,8 +802,20 @@ sub add_plots {
                                       lc($plot->{data_type}[0]),
                                       'volatile',
                                       @{$original_plot->{data}[0]});
+
+      # Because the regular expression in the configuration file is
+      # placed in these variables and these variables are used to
+      # generate the HTML and image filenames and hence the URLs, some
+      # characters will prevent the web server from properly serving
+      # the files.  Notably, the ? character will cause the web server
+      # to parse any following characters as part of the CGI query
+      # string and as not part of the filename, hence a 404 will be
+      # returned.
+      $all_names_with_subgroup =~ s/\?/q/g;
+
       @my_short_rrds = ($all_names_with_subgroup);
-      @names_without_subgroup = (join('_',
+      @names_without_subgroup = map { s/\?/q/g; $_ }
+                                (join('_',
                                       $group_name,
                                       lc($plot->{data_type}[0]),
                                       'volatile',

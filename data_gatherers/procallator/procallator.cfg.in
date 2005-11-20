@@ -87,7 +87,7 @@ html_page_footer
 #   generated RRD data files.
 
 group procallator {
-find_files		/usr/local/var/orca/procallator/(.*)/(?:(?:procallator)|(?:proccol))-\d{4}-\d{2}-\d{2}(?:-\d{3,})(?:\.(?:Z|gz|bz2))?
+find_files		@VAR_DIR@/procallator/(.*)/(?:(?:procallator)|(?:proccol))-\d{4}-\d{2}-\d{2}(?:-\d{3,})(?:\.(?:Z|gz|bz2))?
 column_description	first_line
 date_source		column_name timestamp
 interval		300

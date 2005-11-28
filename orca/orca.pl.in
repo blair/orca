@@ -48,7 +48,18 @@ use Cwd;
 # required version number so that the minimum module version numbers
 # can be listed in once place instead of spread out in each Orca::*
 # module.
+
+# Using the Data::Dumper module on an Ubuntu Breezy Badger (5.10)
+# system with Perl 5.8.7 generates the warning 'Argument "2.121_04"
+# isn't numeric in subroutine entry', so temporarily turn off warnings
+# when using this module.  Removing the minimum required version of
+# Data::Dumper also removes the warning, but Orca should demand a
+# particular version of Data::Dumper for systems with older Perls with
+# older Data::Dumper's.
+no warnings;
 use Data::Dumper         @DATA_DUMPER_VER@;
+use warnings;
+
 use Digest::MD5          @DIGEST_MD5_VER@;
 use Math::IntervalSearch @MATH_INTERVALSEARCH_VER@ qw(interval_search);
 use Storable             @STORABLE_VER@;

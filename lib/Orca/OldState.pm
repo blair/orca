@@ -6,7 +6,7 @@
 # $LastChangedBy$
 #
 # Copyright (C) 1998-1999 Blair Zajac and Yahoo!, Inc.
-# Copyright (C) 1999-2004 Blair Zajac.
+# Copyright (C) 1999-2005 Blair Zajac.
 #
 # This file is part of Orca.
 #

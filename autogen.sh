@@ -19,6 +19,16 @@ else
   echo "$0: autoconf version $ac_version (ok)"
 fi
 
+# Check for aclocal.
+${ACLOCAL:-aclocal} --version >/dev/null 2>&1
+if test $? -ne 0; then
+  echo "$0: aclocal not found."
+  echo "           You need aclocal installed to build Orca from Subversion."
+  exit 1
+else
+  echo "$0: aclocal found"
+fi
+
 # The Orca Subversion repository contains RRDtool, which has its own
 # automake, autoconf and libtool setup.  When checking out Orca from
 # Subversion, it does not preserve the relative timestamps of the

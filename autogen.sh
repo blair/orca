@@ -43,6 +43,6 @@ find packages -name configure -o -name Makefile.in -o -name stamp-h\* | xargs to
 
 # Now create configure and it's associated build files.
 echo "$0: creating configure and associated build files..."
-aclocal -I config --output=config/aclocal.m4
-autoconf --include=config
+${ACLOCAL:-aclocal} -I config --output=config/aclocal.m4
+${AUTOCONF:-autoconf} --include=config
 rm -fr autom4te*.cache

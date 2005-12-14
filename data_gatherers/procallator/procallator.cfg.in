@@ -123,7 +123,6 @@ legend			5 minute average
 legend			15 minute average
 legend			CPUs (load threshold)
 y_legend		Number of processes and CPUs
-
 data_min		0
 data_max		100
 href			http://www.orcaware.com/orca/docs/procallator.html#processes_in_run_queue
@@ -291,7 +290,6 @@ y_legend                rate/s
 data_min                0
 }
 
-
 plot {
 title                   %g Interface Input Bits Per Second
 source                  procallator
@@ -306,7 +304,7 @@ href                    http://www.orcaware.com/orca/docs/procallator.html#inter
 }
 
 plot {
-title                   %g Interface Ouput Bits Per Second
+title                   %g Interface Output Bits Per Second
 source                  procallator
 data                    8 * if_out_b_(.*)
 line_type               line1
@@ -419,7 +417,7 @@ href                    http://www.orcaware.com/orca/docs/procallator.html#inter
 }
 
 plot {
-title			%g IP Traffic statistics
+title			%g IP Traffic Statistics
 source			procallator
 data			Ip_InReceives
 data			Ip_OutRequests
@@ -428,7 +426,7 @@ data_type		counter
 data_type		counter
 data_type		counter
 legend			IP Input datagrams
-legend			IP Ouput datagrams
+legend			IP Output datagrams
 legend			IP Forwarded datagrams
 y_legend		rate
 data_min		0
@@ -436,7 +434,7 @@ flush_regexps           1
 }
 
 plot {
-title			%g IP Error statistics
+title			%g IP Error Statistics
 source			procallator
 data			Ip_InHdrErrors + Ip_InHdrErrors + Ip_InAddrErrors + Ip_InUnknownProtos + Ip_InDiscards
 data			Ip_OutDiscards + Ip_OutNoRoutes
@@ -456,7 +454,7 @@ flush_regexps           1
 }
 
 plot {
-title			%g TCP Connection statistics
+title			%g TCP Connection Statistics
 source			procallator
 data			Tcp_CurrEstab
 data			Tcp_ActiveOpens
@@ -478,9 +476,8 @@ data_min		0
 flush_regexps		1
 }
 
-
 plot {
-title                   %g TCP Traffic statistics
+title                   %g TCP Traffic Statistics
 source                  procallator
 data                    Tcp_InSegs
 data			Tcp_OutSegs
@@ -494,7 +491,7 @@ flush_regexps           1
 }
 
 plot {
-title                   %g TCP Error statistics
+title                   %g TCP Error Statistics
 source                  procallator
 data			Tcp_InErrs
 data			Tcp_OutRsts
@@ -511,7 +508,7 @@ flush_regexps           1
 }
 
 plot {
-title                   %g ICMP statistics
+title                   %g ICMP Statistics
 source                  procallator
 data                    Icmp_(.*)
 data_type		counter
@@ -522,7 +519,7 @@ flush_regexps           1
 }
 
 plot {
-title                   %g UDP statistics
+title                   %g UDP Statistics
 source                  procallator
 data                    Udp_(.*)
 data_type		counter
@@ -616,8 +613,6 @@ flush_regexps           1
 href                    http://www.orcaware.com/orca/docs/procallator.html#disk_system_wide_transfer_rate
 }
 
-
-
 plot {
 title			%g Disk Space Percent Usage
 source			procallator
@@ -672,7 +667,6 @@ data_min                0
 data_max                100
 href                    http://www.orcaware.com/orca/docs/procallator.html#memory_free
 }
-
 
 plot {
 title			%g Memory Page Scan Rate

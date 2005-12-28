@@ -1,8 +1,6 @@
-Index: SourceFile.pm
-===================================================================
---- SourceFile.pm	(revision 362)
-+++ SourceFile.pm	(working copy)
-@@ -31,6 +31,10 @@
+--- SourceFile.pm.orig	2005-12-27 23:14:54.000000000 -0800
++++ SourceFile.pm	2005-12-27 23:14:58.000000000 -0800
+@@ -48,6 +48,10 @@
  use Orca::Utils         qw(email_message);
  use vars                qw(@ISA $VERSION);
  
@@ -11,9 +9,9 @@ Index: SourceFile.pm
 +use Time::Local;
 +
  @ISA     = qw(Orca::DataFile);
- $VERSION = substr q$Revision: 0.01 $, 10;
+ $VERSION = (substr q$Revision: 513 $, 10)/100.0;
  
-@@ -153,9 +157,39 @@
+@@ -170,9 +174,39 @@
        return unless $fd;
        my $line = <$fd>;
        chomp($line);
@@ -54,7 +52,7 @@ Index: SourceFile.pm
        } else {
          warn "$0: warning: no first_line for '$filename' yet.\n";
          $open_file_cache->close($fid) or
-@@ -921,8 +955,19 @@
+@@ -965,7 +999,18 @@
      # in the output file when it starts up.
      next if $line =~ /timestamp/;
  
@@ -64,18 +62,17 @@ Index: SourceFile.pm
 +s/ /:/g;
 +s/"//g;
 +$line = $_;
- 
++
 +    # Andy Fox - 2nd July 2002
 +    # Changed this to a tab (was a space), so it can read tsv format files
 +    my @line = split('	', $line);
 +
 +    ##ANDY##
 +    #print "@line\n";
-+
+ 
      # Skip this input line if 1) the file uses the first line to
      # define the column names, 2) the number of columns loaded is not
-     # equal to the number of columns in the column description.
-@@ -940,6 +985,58 @@
+@@ -984,6 +1029,58 @@
      } else {
        $time = $line[$date_column_index];
      }

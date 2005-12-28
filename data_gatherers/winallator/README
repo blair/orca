@@ -26,7 +26,7 @@ renamed winallator.
     a) Get a copy of the Orca source tree on the system that will
        process the Winallator log files.
 
-    b) Find the SourceFile.pm-patch-with-r362.txt file and note where
+    b) Find the SourceFile.pm-patch-with-r519.txt file and note where
        it is.
 
     c) cd into the $prefix/lib/Orca directory, where $prefix is where
@@ -35,7 +35,7 @@ renamed winallator.
     c) Apply the patch by running:
 
        cp -p SourceFile.pm SourceFile.FCS
-       patch -s -p0 < path/to/SourceFile.pm-patch-with-r362.txt
+       patch -s -p0 < path/to/SourceFile.pm-patch-with-r519.txt
 
  4. You have two choices now.  The first and easy choice is to load in
     a previously designed log configuration.  You can always modify

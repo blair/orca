@@ -1,0 +1,82 @@
+--- SourceFile.pm.orig	2005-12-28 19:51:32.000000000 -0800
++++ SourceFile.pm	2005-12-28 20:04:16.000000000 -0800
+@@ -31,6 +31,7 @@
+ use Carp;
+ use Digest::MD5         qw(md5);
+ use Storable            qw(dclone);
++use Time::Local;
+ use Orca::Constants     qw($opt_verbose
+                            die_when_called
+                            $INCORRECT_NUMBER_OF_ARGS);
+@@ -170,9 +171,33 @@
+       return unless $fd;
+       my $line = <$fd>;
+       chomp($line);
++
++      # Take the first line (headers) and convert it into a format
++      # Orca can understand.
+       if ($line) {
+         $self->[I_FIRST_LINE] = 1;
+-        @column_description = split(' ', $line);
++        $_ = $line;
++        s/ /_/g;
++        s/\\\\[^\\ ]+\\//g;
++        s/"//g;
++        s/\\/_/g;
++        s/\?//g;
++        s/\(/_/g;
++        s/\)/_/g;
++        s/,//g;
++        s/://g;
++        s/\?//g;
++        s/__/_/g;
++        s/__/_/g;
++
++        $line = $_;
++        print "$line\n";
++
++        # Change this space to a tab, so it can read tsv format files.
++        @column_description = split("\t", $line);
++
++        # Set the first field of the first line 'timestamp'
++        $column_description[0] = "timestamp";
+       } else {
+         warn "$0: warning: no first_line for '$filename' yet.\n";
+         $open_file_cache->close($fid) or
+@@ -965,7 +990,12 @@
+     # in the output file when it starts up.
+     next if $line =~ /timestamp/;
+ 
+-    my @line = split(' ', $line);
++    print "$line\n";
++    $line =~ s/ /:/g;
++    $line =~ s/"//g;
++
++    # Change this space to a tab, so it can read tsv format files.
++    my @line = split("\t", $line);
+ 
+     # Skip this input line if 1) the file uses the first line to
+     # define the column names, 2) the number of columns loaded is not
+@@ -984,6 +1014,22 @@
+     } else {
+       $time = $line[$date_column_index];
+     }
++
++    # At this stage the date is in this format: 06/18/2002:21:56:06.096
++    $time =~ s/\//:/g;
++    $time =~ s/\./:/;
++
++    # Now we have this: "06:18:2002:21:56:06:096"
++    my @time = split(':', $time);
++
++    my ($mon, $day, $yr, $hr, $min, $sec) = @time;
++
++    $mon -= 1;
++    $yr -= 1900;
++
++    $time = timelocal($sec, $min, $hr, $day, $mon, $yr);
++    print "$time\n";
++
+     $last_data_time = $time if $time > $last_data_time;
+ 
+     # If the file status from the source data file is greater than

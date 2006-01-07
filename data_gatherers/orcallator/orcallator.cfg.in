@@ -340,7 +340,7 @@ href			http://www.orcaware.com/orca/docs/orcallator.html#interface_bits_per_seco
 plot {
 title			%g Interface Bits Per Second: $1
 source			orcallator
-data			1024 * 8 * ((?:(?:be)|(?:dmfe)|(?:eri)|(?:hme)|(?:qfe)|(?:znb))\d+)InKB/s
+data			1024 * 8 * ((?:(?:be)|(?:dmfe)|(?:eri)|(?:hme)|(?:iprb)|(?:qfe)|(?:znb))\d+)InKB/s
 data			1024 * 8 * $1OuKB/s
 line_type		area
 line_type		line1

@@ -1,5 +1,5 @@
 ORCA
-=====
+====
 
 Orca is a tool useful for plotting arbitrary data from text files onto
 a directory on a Web server.  It has the following features:

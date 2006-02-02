@@ -202,9 +202,7 @@ if ($opt_log_filename) {
     die "$0: cannot open '$opt_log_filename' for writing: $!\n";
 }
 
-# If Orca should daemonize itself, then do so now.  Find POSIX::setsid
-# but do not always use it unless it is needed since some systems do
-# not supply POSIX::setsid and Orca should not quit on those systems.
+# If Orca should daemonize itself, then do so now.
 if ($opt_daemon) {
   my $expr = 'use POSIX qw(setsid)';
   local $SIG{__DIE__}  = 'DEFAULT';
@@ -214,9 +212,9 @@ if ($opt_daemon) {
     die "$0: cannot get setsid since eval '$expr' failed: $@\n";
   }
   chdir('/')               or die "$0: cannot chdir '/': $!\n";
-  open(STDIN, '/dev/null') or die "$0: cannot read '/dev/null': $!\n";
+  open(STDIN, '/dev/null') or die "$0: cannot open '/dev/null': $!\n";
   defined(my $pid = fork)  or die "$0: cannot fork: $!\n";
-  exit if $pid;
+  exit(0) if $pid;
   POSIX::setsid()          or die "$0: cannot start a new session: $!\n";
 }
 

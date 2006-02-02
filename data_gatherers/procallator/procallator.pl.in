@@ -138,11 +138,20 @@ my (@nfs_s_p3_readdirplus, @nfs_s_p3_fsstat);
 my (@nfs_s_p3_fsinfo, @nfs_s_p3_pathconf);
 my (@nfs_s_p3_commit, @nfs_s_p4_compound);
 
+# If procallator should daemonize itself, then do so now.
 if ( !$DEBUG ) {
-    use POSIX qw(setsid);
-    umask 0;
-    exit(0) if (fork);
-    setsid;
+    my $expr = 'use POSIX qw(setsid)';
+    local $SIG{__DIE__}  = 'DEFAULT';
+    local $SIG{__WARN__} = \&die_when_called;
+    eval $expr;
+    if ($@) {
+        die "$0: cannot get POSIX::setsid since eval '$expr' failed: $@\n";
+    }
+    chdir('/')               or die "$0: cannot chdir '/': $!\n";
+    open(STDIN, '/dev/null') or die "$0: cannot open '/dev/null': $!\n";
+    defined(my $pid = fork)  or die "$0: cannot fork: $!\n";
+    exit(0) if $pid;
+    POSIX::setsid()          or die "$0: cannot start a new session: $!\n";
 }
 
 # Create output dir if needed

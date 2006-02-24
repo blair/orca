@@ -31,12 +31,10 @@ check:
 
 test: check
 
-install: all
+install: install-orca install-se
+
+install-orca: all
 	$(MKDIR) $(DESTDIR)$(libdir)/perl/Orca
-	$(MKDIR) $(DESTDIR)$(libdir)/SE/3.2.1
-	$(MKDIR) $(DESTDIR)$(libdir)/SE/3.3
-	$(MKDIR) $(DESTDIR)$(libdir)/SE/3.3.1
-	$(MKDIR) $(DESTDIR)$(libdir)/SE/3.4
 	@for f in Orca/*.pm; do \
 	  echo $(INSTALL) -m 0644 $$f $(DESTDIR)$(libdir)/perl/Orca; \
 	  $(INSTALL) -m 0644 $$f $(DESTDIR)$(libdir)/perl/Orca || exit 1; \
@@ -49,14 +47,6 @@ install: all
 	    $(INSTALL) -m 0644 $$f $(DESTDIR)$(libdir)/perl/Orca/Config || exit 1; \
 	  done; \
 	fi
-	@for d in SE/*; do \
-	  test ! -d $$d && continue; \
-	  for f in $$d/*; do \
-	    test ! -f $$f && continue; \
-	    echo $(INSTALL) -m 0644 $$f $(DESTDIR)$(libdir)/$$d; \
-	    $(INSTALL) -m 0644 $$f $(DESTDIR)$(libdir)/$$d || exit 1; \
-	  done \
-	done
 	@echo "cd ..; sh -c 'svnversion .'"
 	@current_rev="`cd ..; sh -c 'svnversion .' 2>/dev/null || true`"; \
 	echo "Subversion reversion of Orca is: $$current_rev"; \
@@ -72,6 +62,20 @@ install: all
 	else \
 	  echo Not fixing svn revision number in $(DESTDIR)$(libdir)/perl/Orca/Constants.pm; \
 	fi
+
+install-se: all
+	$(MKDIR) $(DESTDIR)$(libdir)/SE/3.2.1
+	$(MKDIR) $(DESTDIR)$(libdir)/SE/3.3
+	$(MKDIR) $(DESTDIR)$(libdir)/SE/3.3.1
+	$(MKDIR) $(DESTDIR)$(libdir)/SE/3.4
+	@for d in SE/*; do \
+	  test ! -d $$d && continue; \
+	  for f in $$d/*; do \
+	    test ! -f $$f && continue; \
+	    echo $(INSTALL) -m 0644 $$f $(DESTDIR)$(libdir)/$$d; \
+	    $(INSTALL) -m 0644 $$f $(DESTDIR)$(libdir)/$$d || exit 1; \
+	  done \
+	done
 
 clean:
 

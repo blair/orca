@@ -36,10 +36,22 @@ fi
 # environment.
 #
 # To work around this, touch the build files in chronological order.
+# These files are touched in the same order that the files appear in
+# the offical RRDtool tarball.
 echo "$0: touching RRDtool build files to preserve relative timestamps..."
-find packages -name configure.in -o -name Makefile.am | xargs touch
-sleep 2
-find packages -name configure -o -name Makefile.in -o -name stamp-h\* | xargs touch
+for f in \
+  Makefile.am \
+  configure.ac \
+  aclocal.m4 \
+  Makefile.in \
+  configure \
+  config.h.in;
+  do
+    path=packages/rrdtool-1.0.50/$f
+    echo Touching $path
+    touch $path
+    sleep 2
+done
 
 # Now create configure and it's associated build files.
 echo "$0: creating configure and associated build files..."

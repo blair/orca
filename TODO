@@ -1,3 +1,14 @@
+From Neil Tan <ntan@e2open.com>
+
+    I am not very conversant with Perl scripting and would like a
+    feature added to the Orca main index page. I have Orca charts
+    running for 600-800 machines Solaris and Linux. One constant
+    problem is machines falling out due to Jumpstarts, ssh upgrades,
+    etc. A common problem with a large computer environment with
+    several system administrators. A feature I think would be a good
+    addition would be to change the color of the name of the host in
+    the main index page to red if that Orca client's data was overdue.
+
 have Orca's pages look much nicer.  Check out some of our competition
 from Cacti:
 

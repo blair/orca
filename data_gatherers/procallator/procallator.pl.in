@@ -138,6 +138,10 @@ my (@nfs_s_p3_readdirplus, @nfs_s_p3_fsstat);
 my (@nfs_s_p3_fsinfo, @nfs_s_p3_pathconf);
 my (@nfs_s_p3_commit, @nfs_s_p4_compound);
 
+sub die_when_called {
+  die $_[0];
+}
+
 # If procallator should daemonize itself, then do so now.
 if ( !$DEBUG ) {
     my $expr = 'use POSIX qw(setsid)';

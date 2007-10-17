@@ -1,7 +1,7 @@
 @SET_MAKE@
 
 bindir	= @bindir@
-INSTALL	= @INSTALL
+INSTALL	= @INSTALL@
 MKDIR	= @MKDIR@
 
 TARGETS	= rotate_orca_graphs

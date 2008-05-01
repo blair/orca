@@ -1449,10 +1449,11 @@ measure_mounts()
   int       current_count;
 
   current_count = 0;
-  // Traverse the mount table to find mounted ufs/vxfs file systems.
+  // Traverse the mount table to find mounted ufs/vxfs/zfs file systems.
   for (mnt$mnt.number$=0; mnt$mnt.number$ != -1; mnt$mnt.number$++) {
     tmp_mnt = mnt$mnt;
-    if (tmp_mnt.mnt_fstype == "ufs" || tmp_mnt.mnt_fstype == "vxfs") {
+    if (tmp_mnt.mnt_fstype == "ufs" || tmp_mnt.mnt_fstype == "vxfs" ||
+	tmp_mnt.mnt_fstype == "zfs") {
       // Skip locally mounted /cdrom partitions.
       if (tmp_mnt.mnt_mountp =~ "^/cdrom/") {
         continue;

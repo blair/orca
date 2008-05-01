@@ -35,6 +35,7 @@
 #define WATCH_MUTEX             1
 #define WATCH_NET               1
 #define WATCH_TCP               1
+#define WATCH_UDP               1
 #define WATCH_NFS_CLIENT        1
 #define WATCH_NFS_SERVER        1
 #define WATCH_MOUNTS            1
@@ -216,6 +217,12 @@ ks_system_misc  tmp_kstat_misc;
 #ifdef WATCH_TCP
 tcp             tcp$tcp;
 tcp             tmp_tcp;
+#endif
+#ifdef WATCH_UDP
+mib2_ip_t       mib$ip;
+mib2_ip_t       tmp_mib_ip;
+mib2_udp_t      mib$udp;
+mib2_udp_t      tmp_mib_udp;
 #endif
 #ifdef WATCH_PAGES
 ks_system_pages kstat$pages;
@@ -770,6 +777,7 @@ int main(int argc, string argv[])
       fprintf(stderr, "   -DWATCH_MUTEX      watch the number of mutex spins\n");
       fprintf(stderr, "   -DWATCH_NET        watch all Ethernet interfaces\n");
       fprintf(stderr, "   -DWATCH_TCP        watch all the TCP/IP stack\n");
+      fprintf(stderr, "   -DWATCH_UDP        watch all the UDP/IP stack\n");
       fprintf(stderr, "   -DWATCH_NFS_CLIENT watch NFS client requests\n");
       fprintf(stderr, "   -DWATCH_NFS_SERVER watch NFS server requests\n");
       fprintf(stderr, "   -DWATCH_MOUNTS     watch usage of mount points\n");
@@ -945,6 +953,10 @@ _measure_os()
 #ifdef WATCH_TCP
   tmp_tcp           = tcp$tcp;
 #endif
+#ifdef WATCH_UDP
+  tmp_mib_ip        = mib$ip;
+  tmp_mib_udp       = mib$udp;
+#endif
 
 #if defined (USE_KSTAT_IO) && (defined (WATCH_DISK) || defined (WATCH_TAPE))
   orca_io_info_update();
@@ -1004,6 +1016,11 @@ measure_os(long now, tm_t tm_now)
   // Take care of TCP/IP.
 #ifdef WATCH_TCP
   measure_tcp();
+#endif
+
+  // Take care of UDP/IP.
+#ifdef WATCH_UDP
+  measure_udp();
 #endif
 
   // Take care of NFS client statistics.
@@ -1365,6 +1382,18 @@ measure_tcp()
   put_output("tcp_Ldrp/s", sprintf("%10.3f", tmp_tcp.ListenDrop));
   put_output("tcp_LdQ0/s", sprintf("%10.3f", tmp_tcp.ListenDropQ0));
   put_output("tcp_HOdp/s", sprintf("%10.3f", tmp_tcp.HalfOpenDrop));
+}
+#endif
+
+#ifdef WATCH_UDP
+measure_udp()
+{
+  put_output("udpNoPorts", sprintf("%8lu", tmp_mib_ip.udpNoPorts));
+  put_output("udpInOverflows", sprintf("%8lu", tmp_mib_ip.udpInOverflows));
+  put_output("udpInCksumErrs", sprintf("%8lu", tmp_mib_ip.udpInCksumErrs));
+  put_output("udpInDatagrams", sprintf("%8lu", tmp_mib_udp.udpInDatagrams));
+  put_output("udpInErrors", sprintf("%8lu", tmp_mib_udp.udpInErrors));
+  put_output("udpOutDatagrams", sprintf("%8lu", tmp_mib_udp.udpOutDatagrams));
 }
 #endif
 

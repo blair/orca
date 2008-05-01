@@ -601,6 +601,36 @@ href			http://www.orcaware.com/orca/docs/orcallator.html#TCP_listen_drop_rate
 }
 
 plot {
+title			%g UDP datagram rate
+source			orcallator
+data			udpInDatagrams
+data			udpOutDatagrams
+data_type		counter
+line_type		area
+line_type		line1
+legend			Input
+legend			Output
+y_legend		Datagrams/s
+data_min		0
+}
+
+plot {
+title			%g UDP drop rate
+source			orcallator
+data			udpInOverflows
+data			udpInCksumErrs
+data			udpNoPorts
+data			udpInErrors
+data_type		counter
+legend			Queue overflow
+legend			Checksum errors
+legend			No port
+legend			Not deliverable
+y_legend		Drops/s
+data_min		0
+}
+
+plot {
 title			%g Sleeps on Mutex Rate
 source			orcallator
 data			smtx

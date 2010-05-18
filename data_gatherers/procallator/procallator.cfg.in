@@ -298,7 +298,7 @@ line_type               line1
 legend                  $1
 y_legend                Bits/s
 data_min                0
-data_max                100000000
+data_max                1000000000
 flush_regexps		1
 href                    http://www.orcaware.com/orca/docs/procallator.html#interface_bits_per_second
 }
@@ -311,7 +311,7 @@ line_type               line1
 legend                  $1
 y_legend                Bits/s
 data_min                0
-data_max                100000000
+data_max                1000000000
 flush_regexps		1
 href                    http://www.orcaware.com/orca/docs/procallator.html#interface_bits_per_second
 }

@@ -430,7 +430,7 @@ do {
 
         $i = 0;
         while ($line = <F_DSKSTAT>) {
-            if ($line =~ /sd|hd/) {    # just IDE or SCSI disks
+            if ($line =~ /dm-|fio|hd|sd/) {
                 chomp $line;
                 $line = " 0 " . $line
                     if ($minor == 6);  # make 2.6 version look alike a 2.4 one

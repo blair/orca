@@ -2280,10 +2280,10 @@ An arbitrary number of B<hrule>'s may be added to a plot.
 
 =head2 Multiple Plot Plotting Parameters
 
-=over 4
-
 The following parameters should be specified multiple times for each
 data source in the plot.
+
+=over 4
 
 =item B<line_type> I<type>
 

@@ -1,10 +1,5 @@
 # Orca configuration file for orcallator files.
 
-# $HeadURL$
-# $LastChangedRevision$
-# $LastChangedDate$
-# $LastChangedBy$
-
 # Require at least this version of Orca.
 require			Orca 0.28.0
 

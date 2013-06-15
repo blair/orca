@@ -30,11 +30,6 @@
 # 2001-07-09 - JDK - added signal handler, column checks, & umask
 # 2001-07-10 - JDK - now auto detects interfaces via netstat -i
 # v1.5
-#
-# $HeadURL$
-# $LastChangedDate$
-# $LastChangedBy$
-# $LastChangedRevision$
 
 my $COMPRESS = '@COMPRESSOR@';
 

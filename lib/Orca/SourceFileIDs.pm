@@ -2,11 +2,6 @@
 # identifiers.  The primary purpose of this module is to keep only two
 # copies of all the filenames used by Orca.
 #
-# $HeadURL$
-# $LastChangedRevision$
-# $LastChangedDate$
-# $LastChangedBy$
-#
 # Copyright (C) 1998-1999 Blair Zajac and Yahoo!, Inc.
 # Copyright (C) 1999-2005 Blair Zajac.
 #

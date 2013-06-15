@@ -2,11 +2,6 @@
 
 # This script runs orcallator.se with the proper options for your site.
 
-# $HeadURL$
-# $LastChangedRevision$
-# $LastChangedDate$
-# $LastChangedBy$
-
 prefix=@prefix@
 exec_prefix=@exec_prefix@
 libdir=@libdir@

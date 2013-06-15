@@ -4,11 +4,6 @@
 # 1) Migrate from a percollator named installation to orcallator.
 # 2) Rename all files with * in them to _times_.
 #
-# $HeadURL$
-# $LastChangedRevision$
-# $LastChangedDate$
-# $LastChangedBy$
-#
 # Copyright (C) 1999 Blair Zajac and GeoCities, Inc.
 # Copyright (C) 1999-2005 Blair Zajac.
 #

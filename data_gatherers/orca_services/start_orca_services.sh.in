@@ -3,11 +3,6 @@
 # This script runs orca_services with the proper options for your
 # site.
 
-# $HeadURL$
-# $LastChangedRevision$
-# $LastChangedDate$
-# $LastChangedBy$
-
 prefix=@prefix@
 exec_prefix=@exec_prefix@
 libexecdir=@libexecdir@

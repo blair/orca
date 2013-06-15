@@ -8,11 +8,6 @@
 # 1) Set the ARCHIVE_DIR to the location of the archive directory.
 # 2) Set up a cron job that runs this script:
 #    59 23 * * * create_orca_daily_graphs.sh
-#
-# $HeadURL$
-# $LastChangedRevision$
-# $LastChangedDate$
-# $LastChangedBy$
 
 # Set this directory to archive the daily plots in.
 ARCHIVE_DIR=

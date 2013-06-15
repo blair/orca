@@ -1,10 +1,5 @@
 # Orca configuration file for Windows Performance Monitor log files.
 
-# $HeadURL$
-# $LastChangedRevision$
-# $LastChangedDate$
-# $LastChangedBy$
-
 # Require at least this version of Orca.
 require			Orca 0.28.0
 

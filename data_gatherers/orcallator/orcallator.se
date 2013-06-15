@@ -7,15 +7,6 @@
 // Author: Blair Zajac <blair@orcaware.com>.
 //
 // Portions copied from percollator.se written by Adrian Cockroft.
-//
-// $HeadURL$
-// $LastChangedDate$
-// $LastChangedBy$
-// $LastChangedRevision$
-//
-// Revision history for this file can be retrieved by running svn log
-// on the HeadURL listed above.
-//
 
 // The default sampling interval in seconds.
 #define SAMPLE_INTERVAL         300

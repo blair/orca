@@ -253,25 +253,25 @@ href			http://www.orcaware.com/orca/docs/procallator.html#web_server_error_rate
 }
 
 plot {
-title                   %g Memory Page ins & outs rate
-source                  procallator
-data                    mempages_in
+title			%g Memory Page ins & outs rate
+source			procallator
+data			mempages_in
 data			mempages_out
-legend                  pages in/s
+legend			pages in/s
 legend			pages out/s
-y_legend                Pages/s
-data_min                0
+y_legend		Pages/s
+data_min		0
 }
 
 plot {
-title                   %g Swap ins & outs rate
-source                  procallator
-data                    swap_in
-data                    swap_out
-legend                  Swap in/s
-legend                  Swap out/s
-y_legend                Pages/s
-data_min                0
+title			%g Swap ins & outs rate
+source			procallator
+data			swap_in
+data			swap_out
+legend			Swap in/s
+legend			Swap out/s
+y_legend		Pages/s
+data_min		0
 }
 
 plot {
@@ -319,7 +319,7 @@ line_type		line1
 legend			$1
 y_legend		Packets/s
 data_min		0
-data_max		100000
+data_max		1000000
 flush_regexps		1
 href			http://www.orcaware.com/orca/docs/procallator.html#interface_packets_per_second
 }
@@ -332,7 +332,7 @@ line_type               line1
 legend                  $1
 y_legend                Packets/s
 data_min                0
-data_max                100000
+data_max                1000000
 flush_regexps           1
 href                    http://www.orcaware.com/orca/docs/procallator.html#interface_packets_per_second
 }
@@ -445,7 +445,7 @@ legend			IP Reassemble errors
 legend			IP Fragmentation fails
 y_legend		rate
 data_min		0
-flush_regexps           1
+flush_regexps		1
 }
 
 plot {

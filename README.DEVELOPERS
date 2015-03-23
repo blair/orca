@@ -52,48 +52,13 @@ patches to orca-dev@orcaware.com. :-)
 Getting the source
 ==================
 
-Orca uses the Subversion source control system to manage the source
-code.  Subversion is a CVS replacement that offers many features over
-and above CVS.  To get an overview of Subversion, check out
+Orca is hosted at GitHub:
 
-   http://www.orcaware.com/svn/Subversion-Blair_Zajac.ppt
+  https://github.com/blair/orca
 
-The Orca Subversion repository is located at
+You can get a copy of it using:
 
-   http://www.orcaware.com/svn/repos/orca/trunk/
-
-with tagged releases located at
-
-   http://www.orcaware.com/svn/repos/orca/tags/
-
-The Subversion home page is at
-
-   http://subversion.tigris.org/
-
-You'll need a Subversion client to check out the latest Orca code and
-make commits to the repository.
-
-If you are using Windows, then you can use the Windows binaries
-available at
-
-   http://subversion.tigris.org/servlets/ProjectDocumentList?folderID=91
-
-Make sure to use the latest svn-*-setup.exe file.
-
-If you are running Unix, then you'll either need to compile Subversion
-for yourself, or if you're lucky and on a recent enough OS, then it's
-probably a simple download and install.  If you do need to compile it,
-get the source code for Subversion at
-
-   http://subversion.tigris.org/servlets/ProjectDocumentList?folderID=260
-
-and download the latest tar.gz.  To build Subversion, read the INSTALL
-file in the tar.gz.
-
-Once you've downloaded and installed Subversion, run the following
-command to check out Orca HEAD:
-
-   % svn checkout http://www.orcaware.com/svn/repos/orca/trunk/ orca
+   % git clone https://github.com/blair/orca
 
 This will create a directory named 'orca' in the current working
 directory.
@@ -117,8 +82,7 @@ What to read
 Before you can contribute code, you'll need to familiarize yourself
 with the existing code base and interfaces.
 
-Check out a copy of Orca (anonymously, if you don't yet have an
-account with commit-access) -- so you can look at the code base.
+Check out a copy of Orca so you can look at the code base.
 
 
 
@@ -514,32 +478,3 @@ parallizable, and we need you to shoulder your share of the management
 as well as the coding.  Every patch needs someone to shepherd it
 through the process, and the person best qualified to do that is the
 original submitter.
-
-
-
-Commit access
-=============
-
-After someone has successfully contributed a few non-trivial patches,
-some committer, usually whoever has reviewed and applied the most
-patches from that contributor, proposes them for commit access.  This
-proposal is sent only to the other full committers -- the ensuing
-discussion is private, so that everyone can feel comfortable speaking
-their minds.  Assuming there are no objections, the contributor is
-granted commit access.  The decision is made by consensus; there are
-no formal rules governing the procedure, though generally if someone
-strongly objects the access is not offered, or is offered on a
-provisional basis.
-
-The criteria for commit access are that the person's patches adhere to
-the guidelines in this file, adhere to all the usual unquantifiable
-rules of coding (code should readable, robust, maintainable, etc), and
-that the person respects the "Hippocratic Principle": first, do no
-harm.  In other words, what is significant is not the size or quantity
-of patches submitted, but the degree of care shown in avoiding bugs
-and minimizing unnecessary impact on the rest of the code.  Many
-committers are people who have not made major code contributions, but
-rather lots of small, clean fixes, each of which was an unambiguous
-improvement to the code.
-
-See the COMMITTERS file for a complete list of committers.

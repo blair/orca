@@ -136,9 +136,9 @@ orca-checkins@orcaware.com
     moderated list which is used to disseminate version control
     check-in messages made by the Orca maintainers, to the Orca
     developer community.  This list is an adjunct to the publically
-    available Subversion tree currently residing on OrcaWare. If you
-    intend to follow the Subversion checkins, you should also join the
-    orca-dev@orcaware.com mailing list for discussions.
+    available GitHub tree.  If you intend to follow the git checkins,
+    you should also join the orca-dev@orcaware.com mailing list for
+    discussions.
 
     Home                http://www.orcaware.com/mailman/listinfo/orca-checkins
     Subscribe via web   http://www.orcaware.com/mailman/listinfo/orca-checkins
